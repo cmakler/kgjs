@@ -1,0 +1,109 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <title>Paramaterizable Interactive</title>
+    <link rel="stylesheet" href="kg.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.13.3/math.min.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>Parameterizable Interactive V1: Draggable Points</h1>
+</header>
+<p><i>Source: <a href="https://github.com/cmakler/kgjs/" target="_blank">https://github.com/cmakler/kgjs</a></i></p>
+
+<p><b>Goal: </b>to create an easy way to create an interactive diagram from a JSON object. Initial state and behavior should be described in the most succinct way possible.</p>
+
+<p><b>Scope: </b></p>
+<ul><li>Draw two points, A and B.</li>
+
+<li>Initially place point A at (2,5) and point B at (20,8).</li>
+<li>Allow the user to move point A up and down at increments of 0.5</li>
+<li>Allow the user to move point B up and down at increments of 1, and left and right at increments of 0.25.</li>
+<li>Draw two labels for the points, at coordinates which are expressions based on parameters.</li>
+    <li>Display the coordinates of the points in HTML.</li>
+    <li>Create scrubbable numbers that allow the user to change the values of the coordinates from the HTML.</li>
+    <li>Display the slope of a line connecting the two points, calculated from a string expression.</li>
+
+</ul>
+
+<p><b>Approach: </b>Modify the amazing work of Red Blob Games' <a href="http://www.redblobgames.com/making-of/line-drawing/" target="_blank">Making of: line-drawing tutorial</a>. That tutorial has a lot about interpolation of a line between two points, but I wanted to focus on two specific aspects: the draggable dots, and the scrubbable numbers. I also wanted to figure out how to make those two types of objects more generalizable, and to really understand how it might be possible to do two-way data binding using only D3, rather than resorting to a framework like Angular or React.</p>
+<div id="diagramDiv">
+    <hr/>
+<p>Here's the final result:</p>
+
+    <svg width="550" height="220">
+    </svg>
+    <p>
+        Point A = (<span>2</span>, <span data-name="yA" class="scrubbable"></span>).
+    </p>
+    <p>
+        Point B = (<span data-name="xB" class="scrubbable"></span>, <span data-name="yB" class="scrubbable"></span>).
+    </p>
+    <p>
+        Slope = <span calculation="(yA - yB)/(2 - xB)" precision="2"></span>
+    </p>
+
+    <hr/>
+
+    <p>And here is the object that describes it:</p>
+
+<pre>
+    {
+    containerId: 'diagramDiv',
+    params: {
+        yA: {
+            value: 5,
+            min: 1,
+            max: 9,
+            round: 0.5
+        },
+        xB: {
+            value: 20,
+            min: 1,
+            max: 24,
+            round: 0.25
+        },
+        yB: {
+            value: 8,
+            min: 1,
+            max: 9
+        }
+    },
+    objects: {
+        points: [
+            {
+                x: 2,
+                y: 'yA'
+            },
+            {
+                x: 'xB',
+                y: 'yB'
+            }
+        ],
+        labels: [
+            {
+                x: 2.25,
+                y: 'yA + 0.25',
+                text: 'A'
+            },
+            {
+                x: 'xB + 0.25',
+                y: 'yB + 0.25',
+                text: 'B'
+            }
+        ]
+    }
+</pre>
+<hr>
+    <p>Fundamentally, I create four classes: Diagram, Param, Point and Label.</p>
+    <p>The role of the Diagram is to act as a controller. It instantiates Param, Point, and Label objects and updates them. It also updates fields in the view.</p>
+    <p>The role of each Param is to maintain and update the parameter vales. The three Params (yA, xB, and yB) are the only numbers that change due to user interactions. When there is an interaction, the user's action is sent to the Param object. The Param object knows what legal updates are (it knows its min, max, and precision). It can also generate a text version of its own value, displayed to the appropriate number of decimal places.</p>
+    <p>The role of each Point is to draw and update the visible points, as well as manage the drag behavior for coordinates that are Params.</p>
+    <p>The role of each Label is to draw and update the labels.</p>
+</div>
+
+<script src="kg.js"></script>
+</body>
+</html>
