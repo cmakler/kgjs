@@ -10,51 +10,19 @@
 /// <reference path="src/viewObjects/point.ts" />
 /// <reference path="src/viewObjects/label.ts" />
 
-const diagramDef = {
-    containerId: 'diagramDiv',
-    params: {
-        yA: {
-            value: 5,
-            min: 1,
-            max: 9,
-            round: 0.5
-        },
-        xB: {
-            value: 20,
-            min: 1,
-            max: 24,
-            round: 0.25
-        },
-        yB: {
-            value: 8,
-            min: 1,
-            max: 9
-        }
-    }, objects: {
-        points: [{
-            x: 2,
-            y: 'yA'
-        }, {
-            x: 'xB',
-            y: 'yB'
-        }],
-        labels: [
-            {
-                x: 2.25,
-                y: 'yA + 0.25',
-                text: 'A'
-            },
-            {
-                x: 'xB + 0.25',
-                y: 'yB + 0.25',
-                text: 'B'
-            }
-        ]
-    }
-};
-
-
 // initialize the diagram
 
-let d = new KG.Scope(diagramDef);
+let scopeDefs: KG.Scope[] = [];
+
+let kgDivs = d3.selectAll("[kg-src]");
+
+kgDivs.attr('loaded', function () {
+    d3.json(kgDivs.attr('kg-src'), function (data) {
+            data.containerId = kgDivs.attr('id');
+            let d = new KG.Scope(data);
+        });
+        return 'true'
+});
+
+
 
