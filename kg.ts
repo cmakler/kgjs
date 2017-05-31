@@ -1,5 +1,6 @@
 /// <reference path="node_modules/@types/d3/index.d.ts"/>
 
+/// <reference path="src/container.ts"/>
 /// <reference path="src/scope.ts"/>
 
 /// <reference path="src/param.ts" />
@@ -12,17 +13,13 @@
 
 // initialize the diagram
 
-let scopeDefs: KG.Scope[] = [];
+let containers = document.getElementsByClassName('kg-container');
 
-let kgDivs = d3.selectAll("[kg-src]");
+for(let i = 0; i< containers.length; i++) {
+    new KG.Container(containers[i]);
+}
 
-kgDivs.attr('loaded', function () {
-    d3.json(kgDivs.attr('kg-src'), function (data) {
-            data.containerId = kgDivs.attr('id');
-            let d = new KG.Scope(data);
-        });
-        return 'true'
-});
+
 
 
 

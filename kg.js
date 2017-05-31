@@ -11,6 +11,29 @@ var __extends = (this && this.__extends) || (function () {
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
+    var Container = (function () {
+        function Container(div) {
+            var container = this;
+            container.div = div;
+            d3.json(div.getAttribute('src'), function (data) {
+                data.containerId = div.getAttribute('id');
+                // override params from JSON if there are attributes on the div with the same name
+                for (var param in data.params) {
+                    if (data.params.hasOwnProperty(param) && div.hasAttribute(param)) {
+                        data.params[param].value = div.getAttribute(param);
+                    }
+                }
+                container.data = data;
+                container.scope = new KG.Scope(data);
+            });
+        }
+        return Container;
+    }());
+    KG.Container = Container;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
     var Scope = (function () {
         function Scope(scopeDef) {
             var scope = this;
@@ -57,6 +80,8 @@ var KG;
             scopeDef.objects.labels.forEach(function (def) {
                 scope.children.push(new KG.Label(scope, labelLayer, def));
             });
+            // initialize explanation HTML
+            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function (d) { return d; });
             scope.updateChildren();
             scope.updateCalculations();
             console.log('initialized scope object: ', scope);
@@ -266,6 +291,7 @@ var KG;
     KG.Label = Label;
 })(KG || (KG = {}));
 /// <reference path="node_modules/@types/d3/index.d.ts"/>
+/// <reference path="src/container.ts"/>
 /// <reference path="src/scope.ts"/>
 /// <reference path="src/param.ts" />
 /// <reference path="src/view.ts" />
@@ -273,13 +299,8 @@ var KG;
 /// <reference path="src/viewObjects/point.ts" />
 /// <reference path="src/viewObjects/label.ts" />
 // initialize the diagram
-var scopeDefs = [];
-var kgDivs = d3.selectAll("[kg-src]");
-kgDivs.attr('loaded', function () {
-    d3.json(kgDivs.attr('kg-src'), function (data) {
-        data.containerId = kgDivs.attr('id');
-        var d = new KG.Scope(data);
-    });
-    return 'true';
-});
+var containers = document.getElementsByClassName('kg-container');
+for (var i = 0; i < containers.length; i++) {
+    new KG.Container(containers[i]);
+}
 //# sourceMappingURL=kg.js.map

@@ -29,21 +29,13 @@
 </ul>
 
 <p><b>Approach: </b>Modify the amazing work of Red Blob Games' <a href="http://www.redblobgames.com/making-of/line-drawing/" target="_blank">Making of: line-drawing tutorial</a>. That tutorial has a lot about interpolation of a line between two points, but I wanted to focus on two specific aspects: the draggable dots, and the scrubbable numbers. I also wanted to figure out how to make those two types of objects more generalizable, and to really understand how it might be possible to do two-way data binding using only D3, rather than resorting to a framework like Angular or React.</p>
-<div id="diagramDiv" kg-src="/kgjs/json/draggable-points.json">
+<div id="diagramDiv" class="kg-container" src="/kgjs/json/draggable-points.json">
     <hr/>
 <p>Here's the final result:</p>
 
     <svg width="550" height="220">
     </svg>
-    <p>
-        Point A = (<span>2</span>, <span data-name="yA" class="scrubbable"></span>).
-    </p>
-    <p>
-        Point B = (<span data-name="xB" class="scrubbable"></span>, <span data-name="yB" class="scrubbable"></span>).
-    </p>
-    <p>
-        Slope = <span calculation="(yA - yB)/(2 - xB)" precision="2"></span>
-    </p>
+
 
     <hr/>
 
@@ -51,7 +43,6 @@
 
 <pre>
     {
-    containerId: 'diagramDiv',
     params: {
         yA: {
             value: 5,
@@ -104,6 +95,13 @@
     <p>The role of each Label is to draw and update the labels.</p>
 </div>
 
+<p>What the heck, here it is again. But this time, we want to override some of the parameters...so we set the attributes xB and yB equal to 5. This allows the author to exert some last-minute customization over the diagram...indeed, you could conceivably create a generic diagram and just have authors override in the HTML if you wanted to get really crazy!</p>
+
+
+</div>
+<div id="diagramDiv2" class="kg-container" src="/kgjs/json/draggable-points.json" xB="5" yB="5">
+    <svg width="550" height="220"></svg>
+</div>
 <script src="kg.js"></script>
 </body>
 </html>

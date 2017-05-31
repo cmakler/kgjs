@@ -69,6 +69,9 @@ module KG {
                 scope.children.push(new Label(scope, labelLayer, def))
             });
 
+            // initialize explanation HTML
+            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function(d) { return d});
+
             scope.updateChildren();
             scope.updateCalculations();
 
