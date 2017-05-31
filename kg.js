@@ -42,6 +42,8 @@ var KG;
             scope.params = {};
             scope.children = [];
             scope.scale = 22;
+            // initialize explanation HTML
+            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function (d) { return d; });
             var _loop_1 = function (paramName) {
                 if (scopeDef.params.hasOwnProperty(paramName)) {
                     //initialize parameter
@@ -80,8 +82,6 @@ var KG;
             scopeDef.objects.labels.forEach(function (def) {
                 scope.children.push(new KG.Label(scope, labelLayer, def));
             });
-            // initialize explanation HTML
-            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function (d) { return d; });
             scope.updateChildren();
             scope.updateCalculations();
             console.log('initialized scope object: ', scope);

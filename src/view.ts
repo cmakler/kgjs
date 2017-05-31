@@ -3,7 +3,7 @@
 module KG {
 
     export interface IView {
-        update : (scope:Scope) => ViewObject;
+        update : (scope:Scope) => View;
     }
 
     export class View implements IView {

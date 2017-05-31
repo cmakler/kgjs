@@ -39,7 +39,7 @@
         ],
         "explanation": [
           "Point A = (<span>2</span>, <span data-name='yA' class='scrubbable'></span>).",
-          "Point B = (<span data-name='xB' class='scrubbable'></span>, <span data-name='yB; class='scrubbable'></span>).",
+          "Point B = (<span data-name='xB' class='scrubbable'></span>, <span data-name='yB' class='scrubbable'></span>).",
           "Slope = <span calculation='(yA - yB)/(2 - xB)' precision='2'></span>"
         ]
 }

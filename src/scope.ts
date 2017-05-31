@@ -27,6 +27,9 @@ module KG {
             scope.children = [];
             scope.scale = 22;
 
+            // initialize explanation HTML
+            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function(d) { return d});
+
             // initialize parameters
             for (const paramName in scopeDef.params) {
 
@@ -68,9 +71,6 @@ module KG {
             scopeDef.objects.labels.forEach(function (def) {
                 scope.children.push(new Label(scope, labelLayer, def))
             });
-
-            // initialize explanation HTML
-            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function(d) { return d});
 
             scope.updateChildren();
             scope.updateCalculations();
