@@ -4,10 +4,12 @@
   "description": "js renderer for kineticgraphs",
   "main": "kg.js",
   "dependencies": {
-    "d3": "^4.9.1"
+    "d3": "^4.9.1",
+    "mathjs": "^3.13.3"
   },
   "devDependencies": {
-    "@types/d3": "^4.9.0"
+    "@types/d3": "^4.9.0",
+    "@types/mathjs": "0.0.34"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

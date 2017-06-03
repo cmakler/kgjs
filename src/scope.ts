@@ -3,26 +3,29 @@
 module KG {
 
     export interface IScope {
-        root: any;
+        container: Container;
         params: Param[];
-        parent: d3.Selection<SVGElement, {}, HTMLElement, any>;
+        root: HTMLDivElement;
+        svg: d3.Selection<SVGElement, {}, HTMLElement, any>;
         children: ViewObject[];
 
     }
 
     export class Scope implements IScope {
 
+        public container;
         public root;
-        public parent;
         public params;
         public children;
         public scale;
+        public svg;
 
-        constructor(scopeDef) {
+        constructor(scopeDef,container) {
             
             let scope = this;
-            scope.root = d3.select(`#${scopeDef.containerId}`);
-            scope.parent = scope.root.select("svg");
+            scope.container = container;
+            scope.root = d3.select(container.div);
+            scope.svg = scope.root.selectAll("svg").append("svg");
             scope.params = {};
             scope.children = [];
             scope.scale = 22;
@@ -50,7 +53,7 @@ module KG {
             }
 
             // draw backgraound grid (will replace with more general axis objects)
-            let g = scope.parent.append('g').attr('class', "grid");
+            let g = scope.svg.append('g').attr('class', "grid");
             for (let x = 0; x < 25; x++) {
                 for (let y = 0; y < 10; y++) {
                     g.append('rect')
@@ -61,13 +64,13 @@ module KG {
             }
 
             // initialize points by adding them to a point layer and to the scope's array of children
-            let pointLayer = scope.parent.append('g').attr('class', 'points');
+            let pointLayer = scope.svg.append('g').attr('class', 'points');
             scopeDef.objects.points.forEach(function (def) {
                 scope.children.push(new Point(scope, pointLayer, def))
             });
 
             // initialize labels by adding them to a label layer and to the scope's array of children
-            let labelLayer = scope.parent.append('g').attr('class', 'labels');
+            let labelLayer = scope.svg.append('g').attr('class', 'labels');
             scopeDef.objects.labels.forEach(function (def) {
                 scope.children.push(new Label(scope, labelLayer, def))
             });
@@ -139,9 +142,11 @@ module KG {
         // update cycle stage 4: update text fields based on calculations
         updateCalculations() {
             let scope = this,
-                elements = scope.root.selectAll(`[calculation]`),
-                precision = elements.attr('precision') || 0;
-            elements.text(() => d3.format(`.${precision}f`)(scope.evaluate(elements.attr('calculation'))));
+                elements = scope.root.selectAll(`[calculation]`);
+            console.log(elements);
+            if(elements.size() > 0) {
+                let precision = elements.attr('precision') || 0;
+            elements.text(() => d3.format(`.${precision}f`)(scope.evaluate(elements.attr('calculation'))));}
         }
     }
 

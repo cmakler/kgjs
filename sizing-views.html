@@ -18,22 +18,22 @@
 <p><b>Scope: </b></p>
 <ul>
     <li>Define container height by aspect ratio -- e.g., 2 means height = width / 2.</li>
-    <li>Resize container on window resize</li>
+    <li>Generate "height" attribute on container div</li>
+    <li>On a window resize event, update height</li>
 </ul>
 
 <p><b>Approach: </b></p>
-<p>Add :</p>
+<p>Get client width of container div; set client height; listen for window resize events and do same.</p>
 <hr/>
-<p>Diagram 1: display JSON as is</p>
-<div id="diagramDiv" class="kg-container" src="/kgjs/json/draggable-points.json">
-    <svg width="550" height="220">
-    </svg>
+<p>Diagram 1: fixed width div</p>
+<div id="diagramDiv" class="kg-container" src="/kgjs/json/resize-div.json" style="width: 200px; background-color:cornflowerblue">
+
 </div>
 <hr/>
-<p>Diagram 2: set the attributes xB and yB equal to 5:</p>
+<p>Diagram 2: 50% width div:</p>
 </div>
-<div id="diagramDiv2" class="kg-container" src="/kgjs/json/draggable-points.json" xB="5" yB="5">
-    <svg width="550" height="220"></svg>
+<div id="diagramDiv2" class="kg-container" src="/kgjs/json/resize-div.json" style="width: 50%; background-color:cornflowerblue">
+
 </div>
 <script src="kg.js"></script>
 </body>

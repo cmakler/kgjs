@@ -7,6 +7,9 @@ module KG {
         div: HTMLElement;
         scope: Scope;
         data: any;
+        width: number;
+        height: number;
+        updateWidth: () => Container;
     }
 
     export class Container implements IContainer {
@@ -15,6 +18,9 @@ module KG {
         public data;
         public id;
         public scope;
+        public width;
+        public height;
+        public aspectRatio;
 
         constructor(div: any) {
 
@@ -34,9 +40,23 @@ module KG {
                 }
 
                 container.data = data;
-                container.scope = new KG.Scope(data);
-            })
+                container.scope = new KG.Scope(data,container);
+                container.aspectRatio = data.aspectRatio || 1;
+                container.updateWidth();
+
+            });
+
+
+
+
         }
+        updateWidth() {
+            let container= this;
+                container.width = container.div.clientWidth;
+            container.height = container.width/container.aspectRatio;
+            container.div.style.height = container.height + 'px';
+            return container;
+            }
     }
 
 }

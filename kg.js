@@ -24,9 +24,18 @@ var KG;
                     }
                 }
                 container.data = data;
-                container.scope = new KG.Scope(data);
+                container.scope = new KG.Scope(data, container);
+                container.aspectRatio = data.aspectRatio || 1;
+                container.updateWidth();
             });
         }
+        Container.prototype.updateWidth = function () {
+            var container = this;
+            container.width = container.div.clientWidth;
+            container.height = container.width / container.aspectRatio;
+            container.div.style.height = container.height + 'px';
+            return container;
+        };
         return Container;
     }());
     KG.Container = Container;
@@ -35,10 +44,11 @@ var KG;
 var KG;
 (function (KG) {
     var Scope = (function () {
-        function Scope(scopeDef) {
+        function Scope(scopeDef, container) {
             var scope = this;
-            scope.root = d3.select("#" + scopeDef.containerId);
-            scope.parent = scope.root.select("svg");
+            scope.container = container;
+            scope.root = d3.select(container.div);
+            scope.svg = scope.root.selectAll("svg").append("svg");
             scope.params = {};
             scope.children = [];
             scope.scale = 22;
@@ -63,7 +73,7 @@ var KG;
                 _loop_1(paramName);
             }
             // draw backgraound grid (will replace with more general axis objects)
-            var g = scope.parent.append('g').attr('class', "grid");
+            var g = scope.svg.append('g').attr('class', "grid");
             for (var x = 0; x < 25; x++) {
                 for (var y = 0; y < 10; y++) {
                     g.append('rect')
@@ -73,12 +83,12 @@ var KG;
                 }
             }
             // initialize points by adding them to a point layer and to the scope's array of children
-            var pointLayer = scope.parent.append('g').attr('class', 'points');
+            var pointLayer = scope.svg.append('g').attr('class', 'points');
             scopeDef.objects.points.forEach(function (def) {
                 scope.children.push(new KG.Point(scope, pointLayer, def));
             });
             // initialize labels by adding them to a label layer and to the scope's array of children
-            var labelLayer = scope.parent.append('g').attr('class', 'labels');
+            var labelLayer = scope.svg.append('g').attr('class', 'labels');
             scopeDef.objects.labels.forEach(function (def) {
                 scope.children.push(new KG.Label(scope, labelLayer, def));
             });
@@ -136,8 +146,12 @@ var KG;
         };
         // update cycle stage 4: update text fields based on calculations
         Scope.prototype.updateCalculations = function () {
-            var scope = this, elements = scope.root.selectAll("[calculation]"), precision = elements.attr('precision') || 0;
-            elements.text(function () { return d3.format("." + precision + "f")(scope.evaluate(elements.attr('calculation'))); });
+            var scope = this, elements = scope.root.selectAll("[calculation]");
+            console.log(elements);
+            if (elements.size() > 0) {
+                var precision_1 = elements.attr('precision') || 0;
+                elements.text(function () { return d3.format("." + precision_1 + "f")(scope.evaluate(elements.attr('calculation'))); });
+            }
         };
         return Scope;
     }());
@@ -291,6 +305,7 @@ var KG;
     KG.Label = Label;
 })(KG || (KG = {}));
 /// <reference path="node_modules/@types/d3/index.d.ts"/>
+/// <reference path="node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="src/container.ts"/>
 /// <reference path="src/scope.ts"/>
 /// <reference path="src/param.ts" />
@@ -299,8 +314,11 @@ var KG;
 /// <reference path="src/viewObjects/point.ts" />
 /// <reference path="src/viewObjects/label.ts" />
 // initialize the diagram
-var containers = document.getElementsByClassName('kg-container');
-for (var i = 0; i < containers.length; i++) {
-    new KG.Container(containers[i]);
+var containerDivs = document.getElementsByClassName('kg-container'), containers = [];
+for (var i = 0; i < containerDivs.length; i++) {
+    containers.push(new KG.Container(containerDivs[i]));
 }
+window.onresize = function () {
+    containers.forEach(function (c) { c.updateWidth(); });
+};
 //# sourceMappingURL=kg.js.map
