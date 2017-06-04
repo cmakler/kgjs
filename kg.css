@@ -109,6 +109,11 @@ g.points circle.invisible {
     fill-opacity: 0.0;
 }
 
+g.axes line.axis {
+    stroke: red;
+    stroke-width: 0.5px;
+}
+
 .scrubbable {
     cursor: col-resize;
     font-weight: bold;

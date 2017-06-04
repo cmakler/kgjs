@@ -1,0 +1,102 @@
+{
+  "aspectRatio": 2,
+  "params": {
+    "yA": {
+      "value": 5,
+      "min": 1,
+      "max": 9,
+      "round": 0.5
+    },
+    "xB": {
+      "value": 12,
+      "min": 1,
+      "max": 15,
+      "round": 0.25
+    },
+    "yB": {
+      "value": 8,
+      "min": 1,
+      "max": 9
+    }
+  },
+  "views": [
+    {
+      "dim": {
+        "x": 0.1,
+        "y": 0.1,
+        "width": 0.8,
+        "height": 0.8
+      },
+      "scales": [
+        {
+          "name": "x",
+          "axis": "x",
+          "domain": {
+            "min": 0,
+            "max": 20
+          },
+          "range": {
+            "min": 0.05,
+            "max": 0.95
+          }
+        },
+        {
+          "name": "y",
+          "axis": "y",
+          "domain": {
+            "min": 0,
+            "max": 10
+          },
+          "range": {
+            "min": 0.95,
+            "max": 0.05
+          }
+        }
+      ],
+      "objects": {
+        "axes" : [
+          {
+            "xScaleName": "x",
+            "yScaleName": "y",
+            "orientation": "bottom"
+          },
+          {
+            "xScaleName": "x",
+            "yScaleName": "y",
+            "orientation": "left"
+          }
+        ],
+        "points": [
+          {
+            "x": 2,
+            "y": "yA",
+            "xScaleName": "x",
+            "yScaleName": "y"
+          },
+          {
+            "x": "xB",
+            "y": "yB",
+            "xScaleName": "x",
+            "yScaleName": "y"
+          }
+        ],
+        "labels": [
+          {
+            "x": 2.25,
+            "y": "yA + 0.25",
+            "text": "A",
+            "xScaleName": "x",
+            "yScaleName": "y"
+          },
+          {
+            "x": "xB + 0.25",
+            "y": "yB + 0.25",
+            "text": "B",
+            "xScaleName": "x",
+            "yScaleName": "y"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -13,6 +13,7 @@ module KG {
         dim?: DimensionsDefinition;
         scales: ScaleDefinition[];
         objects: {
+            axes?: AxisDefinition[]
             points?: ViewObjectDefinition[];
             labels?: ViewObjectDefinition[];
         };
@@ -70,6 +71,12 @@ module KG {
             // add child objects
             if (def.hasOwnProperty('objects')) {
                 v.viewObjects = [];
+                if (def.objects.hasOwnProperty('axes')) {
+                    let pointLayer = v.svg.append('g').attr('class', 'axes');
+                    for (let i = 0; i < def.objects.axes.length; i++) {
+                        v.viewObjects.push(new Axis(v, pointLayer, def.objects.axes[i]));
+                    }
+                }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
                     for (let i = 0; i < def.objects.points.length; i++) {

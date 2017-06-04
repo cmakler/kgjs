@@ -1,0 +1,40 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <title>Axes</title>
+    <link rel="stylesheet" href="../kg.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.13.3/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>Parameterizable Interactive V5: Axes</h1>
+</header>
+<p><i>Source: <a href="https://github.com/cmakler/kgjs/" target="_blank">https://github.com/cmakler/kgjs</a></i></p>
+
+<p><b>Goal: </b>introduce axes.</p>
+
+<p><b>Scope: </b></p>
+<ul>
+    <li>Define axes by two scales, an orientation, and an optional intercept</li>
+    <li>Draw axes like any other ViewObject</li>
+</ul>
+
+<p><b>Approach: </b></p>
+<p>Get client width of container div; set client height; listen for window resize events and do same.</p>
+<hr/>
+<p>Diagram 1: fixed width div</p>
+<div id="diagramDiv" class="kg-container" src="/kgjs/json/axes.json" style="width: 200px; background-color:cornflowerblue">
+
+</div>
+<hr/>
+<p>Diagram 2: 50% width div:</p>
+</div>
+<div id="diagramDiv2" class="kg-container" src="/kgjs/json/axes.json" style="width: 50%; background-color:cornflowerblue">
+
+</div>
+<script src="../kg.js"></script>
+</body>
+</html>

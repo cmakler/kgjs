@@ -11,6 +11,7 @@
 /// <reference path="views/scale.ts" />
 
 /// <reference path="views/viewObjects/viewObject.ts" />
+/// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
 /// <reference path="views/viewObjects/label.ts" />
 
@@ -26,7 +27,7 @@ for(let i = 0; i< containerDivs.length; i++) {
     containers.push(new KG.Container(containerDivs[i]));
 }
 
-// if the window changes size, update the sizes of the containers
+// if the window changes size, update the dimensions of the containers
 
 window.onresize = function() {
     containers.forEach(function(c) {c.updateDimensions()} )

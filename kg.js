@@ -222,6 +222,12 @@ var KG;
             // add child objects
             if (def.hasOwnProperty('objects')) {
                 v.viewObjects = [];
+                if (def.objects.hasOwnProperty('axes')) {
+                    var pointLayer = v.svg.append('g').attr('class', 'axes');
+                    for (var i = 0; i < def.objects.axes.length; i++) {
+                        v.viewObjects.push(new KG.Axis(v, pointLayer, def.objects.axes[i]));
+                    }
+                }
                 if (def.objects.hasOwnProperty('points')) {
                     var pointLayer = v.svg.append('g').attr('class', 'points');
                     for (var i = 0; i < def.objects.points.length; i++) {
@@ -306,6 +312,42 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Axis = (function (_super) {
+        __extends(Axis, _super);
+        function Axis(view, layer, def) {
+            var _this = _super.call(this, view, layer, def) || this;
+            var axis = _this;
+            axis.line = layer.append('line')
+                .attr('class', "axis");
+            if (def.orientation == 'top' || def.orientation == 'bottom') {
+                var intercept = def.intercept || axis.yScale.domain.min;
+                axis.origin = { x: axis.xScale.domain.min, y: intercept };
+                axis.end = { x: axis.xScale.domain.max, y: intercept };
+            }
+            else {
+                var intercept = def.intercept || axis.xScale.domain.min;
+                axis.origin = { x: intercept, y: axis.yScale.domain.min };
+                axis.end = { x: intercept, y: axis.yScale.domain.max };
+            }
+            axis.update();
+            console.log('initialized axis object: ', axis);
+            return _this;
+        }
+        Axis.prototype.update = function () {
+            var axis = this;
+            axis.line.attr('x1', axis.xScale.scale(axis.model.eval(axis.origin.x)));
+            axis.line.attr('y1', axis.yScale.scale(axis.model.eval(axis.origin.y)));
+            axis.line.attr('x2', axis.xScale.scale(axis.model.eval(axis.end.x)));
+            axis.line.attr('y2', axis.yScale.scale(axis.model.eval(axis.end.y)));
+            return axis;
+        };
+        return Axis;
+    }(KG.ViewObject));
+    KG.Axis = Axis;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Point = (function (_super) {
         __extends(Point, _super);
         function Point(view, layer, def) {
@@ -377,6 +419,7 @@ var KG;
 /// <reference path="views/view.ts" />
 /// <reference path="views/scale.ts" />
 /// <reference path="views/viewObjects/viewObject.ts" />
+/// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
 /// <reference path="views/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
@@ -385,7 +428,7 @@ var containerDivs = document.getElementsByClassName('kg-container'), containers 
 for (var i = 0; i < containerDivs.length; i++) {
     containers.push(new KG.Container(containerDivs[i]));
 }
-// if the window changes size, update the sizes of the containers
+// if the window changes size, update the dimensions of the containers
 window.onresize = function () {
     containers.forEach(function (c) { c.updateDimensions(); });
 };
