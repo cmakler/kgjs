@@ -8,32 +8,41 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/// <reference path="../kg.ts" />
+/// <reference path="./kg.ts" />
 var KG;
 (function (KG) {
     var Container = (function () {
         function Container(div) {
             var container = this;
             container.div = div;
+            container.views = [];
             d3.json(div.getAttribute('src'), function (data) {
-                data.containerId = div.getAttribute('id');
                 // override params from JSON if there are attributes on the div with the same name
                 for (var param in data.params) {
                     if (data.params.hasOwnProperty(param) && div.hasAttribute(param)) {
                         data.params[param].value = div.getAttribute(param);
                     }
                 }
-                container.data = data;
-                container.scope = new KG.Scope(data, container);
+                container.model = new KG.Model(data);
                 container.aspectRatio = data.aspectRatio || 1;
-                container.updateWidth();
+                // establish container dimensions
+                container.updateDimensions();
+                // create new view objects from data
+                if (data.hasOwnProperty('views')) {
+                    container.views = data.views.map(function (viewDef) {
+                        return new KG.View(container, viewDef);
+                    });
+                }
             });
         }
-        Container.prototype.updateWidth = function () {
+        Container.prototype.updateDimensions = function () {
             var container = this;
             container.width = container.div.clientWidth;
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
+            container.views.forEach(function (v) {
+                v.updateDimensions();
+            });
             return container;
         };
         return Container;
@@ -43,61 +52,25 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var Scope = (function () {
-        function Scope(scopeDef, container) {
-            var scope = this;
-            scope.container = container;
-            scope.root = d3.select(container.div);
-            scope.svg = scope.root.selectAll("svg").append("svg");
-            scope.params = {};
-            scope.children = [];
-            scope.scale = 22;
-            // initialize explanation HTML
-            scope.root.selectAll("p").data(scopeDef.objects.explanation).enter().append("p").html(function (d) { return d; });
-            var _loop_1 = function (paramName) {
-                if (scopeDef.params.hasOwnProperty(paramName)) {
-                    //initialize parameter
-                    var param_1 = new KG.Param(scopeDef.params[paramName]);
-                    scope.params[paramName] = param_1;
-                    //initialize all fields that display this param
-                    scope.updateParamFields(paramName);
-                    // set scrubbing behavior on any element that identifies itself as a control for this param
-                    scope.root.selectAll("[data-name='" + paramName + "']").call(d3.drag()
-                        .on('drag', function () {
-                        scope.updateParam(paramName, param_1.positionToValue()(d3.event.x));
-                    }));
-                }
-            };
+    var Model = (function () {
+        function Model(modelDef) {
+            var model = this;
+            model.updateListeners = [];
             // initialize parameters
-            for (var paramName in scopeDef.params) {
-                _loop_1(paramName);
-            }
-            // draw backgraound grid (will replace with more general axis objects)
-            var g = scope.svg.append('g').attr('class', "grid");
-            for (var x = 0; x < 25; x++) {
-                for (var y = 0; y < 10; y++) {
-                    g.append('rect')
-                        .attr('transform', "translate(" + x * scope.scale + ", " + y * scope.scale + ")")
-                        .attr('width', scope.scale)
-                        .attr('height', scope.scale);
+            model.params = {};
+            for (var paramName in modelDef.params) {
+                if (modelDef.params.hasOwnProperty(paramName)) {
+                    model.params[paramName] = new KG.Param(modelDef.params[paramName]);
                 }
             }
-            // initialize points by adding them to a point layer and to the scope's array of children
-            var pointLayer = scope.svg.append('g').attr('class', 'points');
-            scopeDef.objects.points.forEach(function (def) {
-                scope.children.push(new KG.Point(scope, pointLayer, def));
-            });
-            // initialize labels by adding them to a label layer and to the scope's array of children
-            var labelLayer = scope.svg.append('g').attr('class', 'labels');
-            scopeDef.objects.labels.forEach(function (def) {
-                scope.children.push(new KG.Label(scope, labelLayer, def));
-            });
-            scope.updateChildren();
-            scope.updateCalculations();
-            console.log('initialized scope object: ', scope);
+            model.update();
         }
-        // the scope serves as a scope, and can evaluate expressions within the context of that scope
-        Scope.prototype.evaluate = function (name) {
+        Model.prototype.addUpdateListener = function (viewObject) {
+            this.updateListeners.push(viewObject);
+            return this;
+        };
+        // the model serves as a model, and can evaluate expressions within the context of that model
+        Model.prototype.eval = function (name) {
             console.log('getting current value of param ', name);
             var params = this.params;
             if (params.hasOwnProperty(name)) {
@@ -116,48 +89,61 @@ var KG;
                 return 'fail';
             }
         };
-        /* UPDATE CYCLE */
-        // update cycle stage 1: user interaction sends an updateParam event to the scope
-        Scope.prototype.updateParam = function (name, newValue) {
-            var scope = this;
-            if (scope.params.hasOwnProperty(name)) {
-                var oldValue = scope.params[name].value;
-                scope.params[name].update(newValue);
+        // method exposed to viewObjects to allow them to try to change a parameter
+        Model.prototype.updateParam = function (name, newValue) {
+            var model = this;
+            if (model.params.hasOwnProperty(name)) {
+                var oldValue = model.params[name].value;
+                model.params[name].update(newValue);
                 // if param has changed, propagate change to fields and children
-                if (oldValue != scope.params[name].value) {
-                    scope.updateParamFields(name);
-                    scope.updateChildren();
-                    scope.updateCalculations();
+                if (oldValue != model.params[name].value) {
+                    model.update();
                 }
             }
         };
-        // update cycle stage 2: all fields displaying the updated parameter show new value
-        Scope.prototype.updateParamFields = function (paramName) {
-            var scope = this;
-            scope.root.selectAll("[data-name='" + paramName + "']").text(function () {
-                return scope.params[paramName].formatted();
-            });
+        Model.prototype.update = function () {
+            this.updateListeners.forEach(function (listener) { listener.update(); });
         };
-        // update cycle stage 3: coordinates of all objects are updated
-        Scope.prototype.updateChildren = function () {
-            this.children.forEach(function (child) {
-                child.update();
-            });
-        };
-        // update cycle stage 4: update text fields based on calculations
-        Scope.prototype.updateCalculations = function () {
-            var scope = this, elements = scope.root.selectAll("[calculation]");
-            console.log(elements);
-            if (elements.size() > 0) {
-                var precision_1 = elements.attr('precision') || 0;
-                elements.text(function () { return d3.format("." + precision_1 + "f")(scope.evaluate(elements.attr('calculation'))); });
-            }
-        };
-        return Scope;
+        return Model;
     }());
-    KG.Scope = Scope;
+    KG.Model = Model;
+    /*
+
+    //initialize all fields that display this param
+                    model.updateParamFields(paramName);
+
+                    // set scrubbing behavior on any element that identifies itself as a control for this param
+                    model.root.selectAll(`[data-name='${paramName}']`).call(d3.drag()
+                        .on('drag', function () {
+                            model.updateParam(paramName, param.positionToValue()(d3.event.x));
+                        }));
+
+    // update cycle stage 2: all fields displaying the updated parameter show new value
+        updateParamFields(paramName) {
+            let model = this;
+            model.root.selectAll(`[data-name='${paramName}']`).text(() => {
+                return model.params[paramName].formatted();
+            });
+        }
+
+        // update cycle stage 3: coordinates of all objects are updated
+        updateChildren() {
+            this.children.forEach(function (child) {
+                child.update()
+            });
+        }
+
+        // update cycle stage 4: update text fields based on calculations
+        updateCalculations() {
+            let model = this,
+                elements = model.root.selectAll(`[calculation]`);
+            console.log(elements);
+            if(elements.size() > 0) {
+                let precision = elements.attr('precision') || 0;
+            elements.text(() => d3.format(`.${precision}f`)(model.evaluate(elements.attr('calculation'))));}
+        }*/
 })(KG || (KG = {}));
-/// <reference path="scope.ts" />
+/// <reference path="model.ts" />
 var KG;
 (function (KG) {
     var Param = (function () {
@@ -212,27 +198,103 @@ var KG;
     }());
     KG.Param = Param;
 })(KG || (KG = {}));
-/// <reference path="scope.ts" />
+/// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
     var View = (function () {
-        function View(def) {
-            this.def = def;
+        function View(container, def) {
+            var v = this;
+            v.container = container;
+            v.dimensions = _.defaults(def.dim, { x: 0, y: 0, width: 1, height: 1 });
+            // add div element as a child of the enclosing container
+            v.div = d3.select(container.div).append("div").style('position', 'relative').style('background-color', 'white');
+            // add svg element as a child of the div
+            v.svg = v.div.append("svg");
+            // establish scales
+            if (def.hasOwnProperty('scales')) {
+                v.scales = {};
+                for (var i = 0; i < def.scales.length; i++) {
+                    v.scales[def.scales[i].name] = new KG.Scale(def.scales[i]);
+                }
+            }
+            // set initial dimensions of the div and svg
+            v.updateDimensions();
+            // add child objects
+            if (def.hasOwnProperty('objects')) {
+                v.viewObjects = [];
+                if (def.objects.hasOwnProperty('points')) {
+                    var pointLayer = v.svg.append('g').attr('class', 'points');
+                    for (var i = 0; i < def.objects.points.length; i++) {
+                        v.viewObjects.push(new KG.Point(v, pointLayer, def.objects.points[i]));
+                    }
+                }
+                if (def.objects.hasOwnProperty('labels')) {
+                    var labelLayer = v.svg.append('g').attr('class', 'points');
+                    for (var i = 0; i < def.objects.labels.length; i++) {
+                        v.viewObjects.push(new KG.Label(v, labelLayer, def.objects.labels[i]));
+                    }
+                }
+            }
         }
-        View.prototype.update = function () {
-            return this;
+        View.prototype.updateDimensions = function () {
+            var v = this, w = v.container.width, h = v.container.height, dim = v.dimensions, vx = dim.x * w, vy = dim.y * h, vw = dim.width * w, vh = dim.height * h;
+            v.div.style('left', vx + 'px');
+            v.div.style('top', vy + 'px');
+            v.div.style('width', vw + 'px');
+            v.div.style('height', vh + 'px');
+            v.svg.style('width', vw);
+            v.svg.style('height', vh);
+            for (var scaleName in v.scales) {
+                if (v.scales.hasOwnProperty(scaleName)) {
+                    var s = v.scales[scaleName];
+                    s.extent = (s.axis == 'x') ? vw : vh;
+                }
+            }
+            ;
+            v.container.model.update();
+            return v;
         };
         return View;
     }());
     KG.View = View;
 })(KG || (KG = {}));
-/// <reference path="scope.ts" />
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Scale = (function () {
+        function Scale(def) {
+            var s = this;
+            s.name = def.name;
+            s.axis = def.axis;
+            s.domain = def.domain;
+            s.range = def.range;
+        }
+        Scale.prototype.scale = function (value) {
+            var s = this;
+            var percent = (value - s.domain.min) / (s.domain.max - s.domain.min);
+            return (s.range.min + percent * (s.range.max - s.range.min)) * s.extent;
+        };
+        Scale.prototype.invert = function (pixels) {
+            var s = this;
+            var pixelMin = s.range.min * s.extent, pixelMax = s.range.max * s.extent;
+            var percent = (pixels - pixelMin) / (pixelMax - pixelMin);
+            return s.domain.min + percent * (s.domain.max - s.domain.min);
+        };
+        return Scale;
+    }());
+    KG.Scale = Scale;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
     var ViewObject = (function () {
-        function ViewObject(scope, layer, def) {
-            this.scope = scope;
-            this.layer = layer;
+        function ViewObject(view, layer, def) {
+            var vo = this;
+            vo.view = view;
+            vo.model = view.container.model;
+            vo.xScale = view.scales[def.xScaleName];
+            vo.yScale = view.scales[def.yScaleName];
+            view.container.model.addUpdateListener(vo);
         }
         ViewObject.prototype.update = function () {
             return this;
@@ -241,13 +303,13 @@ var KG;
     }());
     KG.ViewObject = ViewObject;
 })(KG || (KG = {}));
-/// <reference path="../scope.ts" />
+/// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
     var Point = (function (_super) {
         __extends(Point, _super);
-        function Point(scope, layer, def) {
-            var _this = _super.call(this, scope, layer, def) || this;
+        function Point(view, layer, def) {
+            var _this = _super.call(this, view, layer, def) || this;
             var point = _this;
             point.x = def.x;
             point.y = def.y;
@@ -255,8 +317,8 @@ var KG;
             point.circle = layer.append('g')
                 .attr('class', "draggable")
                 .call(d3.drag().on('drag', function () {
-                point.scope.updateParam(point.x, d3.event.x / scope.scale);
-                point.scope.updateParam(point.y, 10 - d3.event.y / scope.scale);
+                point.model.updateParam(point.x, point.xScale.invert(d3.event.x));
+                point.model.updateParam(point.y, point.yScale.invert(d3.event.y));
             }));
             point.circle.append('circle')
                 .attr('class', "invisible")
@@ -264,26 +326,27 @@ var KG;
             point.circle.append('circle')
                 .attr('class', "visible")
                 .attr('r', 6.5);
+            point.update();
             console.log('initialized point object: ', point);
             return _this;
         }
         Point.prototype.update = function () {
             var point = this;
-            var x = point.scope.evaluate(point.x), y = point.scope.evaluate(point.y);
-            point.circle.attr('transform', "translate(" + (x - 0.5) * point.scope.scale + " " + (10.5 - y) * point.scope.scale + ")");
+            var x = point.xScale.scale(point.model.eval(point.x)), y = point.yScale.scale(point.model.eval(point.y));
+            point.circle.attr('transform', "translate(" + x + " " + y + ")");
             return point;
         };
         return Point;
     }(KG.ViewObject));
     KG.Point = Point;
 })(KG || (KG = {}));
-/// <reference path="../scope.ts" />
+/// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
     var Label = (function (_super) {
         __extends(Label, _super);
-        function Label(scope, layer, def) {
-            var _this = _super.call(this, scope, layer, def) || this;
+        function Label(view, layer, def) {
+            var _this = _super.call(this, view, layer, def) || this;
             var label = _this;
             label.x = def.x;
             label.y = def.y;
@@ -291,34 +354,39 @@ var KG;
             //initialize text element (svg for now, will become KaTex)
             label.element = layer.append('text');
             console.log('initialized label object: ', label);
+            label.update();
             return _this;
         }
         Label.prototype.update = function () {
             var label = this;
-            label.element.attr('x', (label.scope.evaluate(label.x) - 0.5) * label.scope.scale);
-            label.element.attr('y', (10.5 - label.scope.evaluate(label.y)) * label.scope.scale);
-            label.element.text(label.scope.evaluate(label.text));
+            label.element.attr('x', label.xScale.scale(label.model.eval(label.x)));
+            label.element.attr('y', label.yScale.scale(label.model.eval(label.y)));
+            label.element.text(label.model.eval(label.text));
             return label;
         };
         return Label;
     }(KG.ViewObject));
     KG.Label = Label;
 })(KG || (KG = {}));
-/// <reference path="node_modules/@types/d3/index.d.ts"/>
-/// <reference path="node_modules/@types/mathjs/index.d.ts"/>
-/// <reference path="src/container.ts"/>
-/// <reference path="src/scope.ts"/>
-/// <reference path="src/param.ts" />
-/// <reference path="src/view.ts" />
-/// <reference path="src/viewObject.ts" />
-/// <reference path="src/viewObjects/point.ts" />
-/// <reference path="src/viewObjects/label.ts" />
-// initialize the diagram
+/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
+/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="../../node_modules/@types/underscore/index.d.ts"/>
+/// <reference path="container.ts"/>
+/// <reference path="model/model.ts"/>
+/// <reference path="model/param.ts" />
+/// <reference path="views/view.ts" />
+/// <reference path="views/scale.ts" />
+/// <reference path="views/viewObjects/viewObject.ts" />
+/// <reference path="views/viewObjects/point.ts" />
+/// <reference path="views/viewObjects/label.ts" />
+// this file provides the interface with the overall web page
+// initialize the diagram from divs with class kg-container
 var containerDivs = document.getElementsByClassName('kg-container'), containers = [];
 for (var i = 0; i < containerDivs.length; i++) {
     containers.push(new KG.Container(containerDivs[i]));
 }
+// if the window changes size, update the sizes of the containers
 window.onresize = function () {
-    containers.forEach(function (c) { c.updateWidth(); });
+    containers.forEach(function (c) { c.updateDimensions(); });
 };
 //# sourceMappingURL=kg.js.map

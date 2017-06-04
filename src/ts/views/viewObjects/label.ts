@@ -1,4 +1,4 @@
-/// <reference path="../scope.ts" />
+/// <reference path="../../kg.ts" />
 
 module KG {
 
@@ -17,8 +17,8 @@ module KG {
         public foo;
         public element;
 
-        constructor(scope, layer, def) {
-            super(scope, layer, def);
+        constructor(view, layer, def) {
+            super(view, layer, def);
             let label = this;
             label.x = def.x;
             label.y = def.y;
@@ -28,13 +28,15 @@ module KG {
             label.element = layer.append('text');
 
             console.log('initialized label object: ', label);
+
+            label.update();
         }
 
         update() {
             let label = this;
-            label.element.attr('x', (label.scope.evaluate(label.x) - 0.5) * label.scope.scale);
-            label.element.attr('y', (10.5 - label.scope.evaluate(label.y)) * label.scope.scale);
-            label.element.text(label.scope.evaluate(label.text));
+            label.element.attr('x', label.xScale.scale(label.model.eval(label.x)));
+            label.element.attr('y', label.yScale.scale(label.model.eval(label.y)));
+            label.element.text(label.model.eval(label.text));
             return label;
         }
     }

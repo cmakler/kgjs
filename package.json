@@ -5,11 +5,13 @@
   "main": "kg.js",
   "dependencies": {
     "d3": "^4.9.1",
-    "mathjs": "^3.13.3"
+    "mathjs": "^3.13.3",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "@types/d3": "^4.9.0",
-    "@types/mathjs": "0.0.34"
+    "@types/mathjs": "0.0.34",
+    "@types/underscore": "^1.8.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,4 +1,4 @@
-/// <reference path="scope.ts" />
+/// <reference path="model.ts" />
 
 module KG {
 

@@ -1,4 +1,4 @@
-/// <reference path="../scope.ts" />
+/// <reference path="../../kg.ts" />
 
 module KG {
 
@@ -14,8 +14,8 @@ module KG {
         public y;
         public circle;
 
-        constructor(scope, layer, def) {
-            super(scope, layer, def);
+        constructor(view, layer, def) {
+            super(view, layer, def);
 
             let point = this;
             point.x = def.x;
@@ -25,8 +25,8 @@ module KG {
             point.circle = layer.append('g')
                 .attr('class', "draggable")
                 .call(d3.drag().on('drag', function () {
-                    point.scope.updateParam(point.x, d3.event.x / scope.scale);
-                    point.scope.updateParam(point.y, 10 - d3.event.y / scope.scale);
+                    point.model.updateParam(point.x, point.xScale.invert(d3.event.x));
+                    point.model.updateParam(point.y, point.yScale.invert(d3.event.y));
                 }));
             point.circle.append('circle')
                 .attr('class', "invisible")
@@ -35,15 +35,17 @@ module KG {
                 .attr('class', "visible")
                 .attr('r', 6.5);
 
+            point.update();
+
             console.log('initialized point object: ', point);
         }
 
         update() {
             let point = this;
-            let x = point.scope.evaluate(point.x),
-                y = point.scope.evaluate(point.y);
+            let x = point.xScale.scale(point.model.eval(point.x)),
+                y = point.yScale.scale(point.model.eval(point.y));
             point.circle.attr('transform',
-                `translate(${(x - 0.5) * point.scope.scale} ${(10.5 - y) * point.scope.scale})`);
+                `translate(${x} ${y})`);
             return point;
         }
     }
