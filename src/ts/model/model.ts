@@ -44,17 +44,18 @@ module KG {
             if (params.hasOwnProperty(name)) {
                 return params[name].value
             }
-            try {
-                let currentParamValues = {};
+            let p = {};
                 for (const paramName in params) {
                     if(params.hasOwnProperty(paramName)) {
-                        currentParamValues[paramName] = params[paramName].value;
+                        p[paramName] = params[paramName].value;
                     }
                 }
-                return math.eval(name, currentParamValues);
+            try {
+                return math.eval(name, p);
             }
             catch (err) {
-                return 'fail';
+                    console.log('failed to parse ',name);
+                return eval(name);
             }
         }
 

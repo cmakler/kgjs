@@ -1,5 +1,5 @@
 {
-  "aspectRatio": 2,
+  "aspectRatio": 1,
   "params": {
     "yA": {
       "value": 5,
@@ -84,14 +84,14 @@
           {
             "x": 2.25,
             "y": "yA + 0.25",
-            "text": "A",
+            "text": "`A = (2,${p.yA.toFixed(1)})`",
             "xScaleName": "x",
             "yScaleName": "y"
           },
           {
             "x": "xB + 0.25",
             "y": "yB + 0.25",
-            "text": "B",
+            "text": "`A = (${p.xB.toFixed(2)},${p.yB})`",
             "xScaleName": "x",
             "yScaleName": "y"
           }
