@@ -34,7 +34,7 @@ module KG {
             vo.model = vo.view.container.model;
             vo.xScale = vo.view.scales[def.xScaleName];
             vo.yScale = vo.view.scales[def.yScaleName];
-            vo.view.container.model.addUpdateListener(vo);
+            vo.model.addUpdateListener(vo);
             if(def.hasOwnProperty('interaction')) {
                 def.interaction.viewObject = vo;
                 vo.interactionHandler = new InteractionHandler(def.interaction);
