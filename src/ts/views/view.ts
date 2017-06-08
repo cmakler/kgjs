@@ -61,7 +61,9 @@ module KG {
             if (def.hasOwnProperty('scales')) {
                 v.scales = {};
                 for(let i = 0; i<def.scales.length; i++) {
-                    v.scales[def.scales[i].name] = new Scale(def.scales[i]);
+                    let scaleDef = def.scales[i];
+                    scaleDef.model = v.container.model;
+                    v.scales[scaleDef.name] = new Scale(scaleDef);
                 }
             }
 
@@ -72,21 +74,33 @@ module KG {
             if (def.hasOwnProperty('objects')) {
                 v.viewObjects = [];
                 if (def.objects.hasOwnProperty('axes')) {
-                    let pointLayer = v.svg.append('g').attr('class', 'axes');
+                    let axisLayer = v.svg.append('g').attr('class', 'axes');
                     for (let i = 0; i < def.objects.axes.length; i++) {
-                        v.viewObjects.push(new Axis(v, pointLayer, def.objects.axes[i]));
+                        let axisDef = def.objects.axes[i];
+                        axisDef.view = v;
+                        axisDef.model = v.container.model;
+                        axisDef.layer = axisLayer;
+                        v.viewObjects.push(new Axis(axisDef));
                     }
                 }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
                     for (let i = 0; i < def.objects.points.length; i++) {
-                        v.viewObjects.push(new Point(v, pointLayer, def.objects.points[i]));
+                        let pointDef = def.objects.points[i];
+                        pointDef.view = v;
+                        pointDef.model = v.container.model;
+                        pointDef.layer = pointLayer;
+                        v.viewObjects.push(new Point(pointDef));
                     }
                 }
                 if (def.objects.hasOwnProperty('labels')) {
-                    let labelLayer = v.svg.append('g').attr('class', 'points');
+                    let labelLayer = v.div.append('div').attr('class', 'labels');
                     for (let i = 0; i < def.objects.labels.length; i++) {
-                        v.viewObjects.push(new Label(v, labelLayer, def.objects.labels[i]));
+                        let labelDef =  def.objects.labels[i];
+                        labelDef.view = v;
+                        labelDef.model = v.container.model;
+                        labelDef.layer = labelLayer;
+                        v.viewObjects.push(new Label(labelDef));
                     }
                 }
             }

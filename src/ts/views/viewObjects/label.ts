@@ -14,29 +14,29 @@ module KG {
         public x;
         public y;
         public text;
-        public foo;
         public element;
 
-        constructor(view, layer, def) {
-            super(view, layer, def);
+        constructor(def) {
+            super(def);
             let label = this;
             label.x = def.x;
             label.y = def.y;
             label.text = def.text;
 
-            //initialize text element (svg for now, will become KaTex)
-            label.element = layer.append('text');
+            label.element = def.layer.append('div')
+                .style('position','absolute')
+                .style('background-color','green');
 
-            console.log('initialized label object: ', label);
+            label.updatables = ['x','y','text'];
 
             label.update();
         }
 
         update() {
-            let label = this;
-            label.element.attr('x', label.xScale.scale(label.model.eval(label.x)));
-            label.element.attr('y', label.yScale.scale(label.model.eval(label.y)));
-            label.element.text(label.model.eval(label.text));
+            let label = super.update();
+            label.element.style('left', label.xScale.scale(label.x)+'px');
+            label.element.style('top', label.yScale.scale(label.y)+'px');
+            katex.render(label.text,label.element.node());
             return label;
         }
     }

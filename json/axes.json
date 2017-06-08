@@ -31,26 +31,18 @@
         {
           "name": "x",
           "axis": "x",
-          "domain": {
-            "min": 0,
-            "max": 20
-          },
-          "range": {
-            "min": 0.05,
-            "max": 0.95
-          }
+          "domainMin": 0,
+          "domainMax": 20,
+          "rangeMin": 0.05,
+          "rangeMax": 0.95
         },
         {
           "name": "y",
           "axis": "y",
-          "domain": {
-            "min": 0,
-            "max": 10
-          },
-          "range": {
-            "min": 0.95,
-            "max": 0.05
-          }
+          "domainMin": 0,
+          "domainMax": 10,
+          "rangeMin": 0.95,
+          "rangeMax": 0.05
         }
       ],
       "objects": {
@@ -82,16 +74,16 @@
         ],
         "labels": [
           {
-            "x": 2.25,
-            "y": "yA + 0.25",
-            "text": "`A = (2,${p.yA.toFixed(1)})`",
+            "x": 2,
+            "y": "yA",
+            "text": "`A = (2, ${p.yA.toFixed(1)})`",
             "xScaleName": "x",
             "yScaleName": "y"
           },
           {
-            "x": "xB + 0.25",
-            "y": "yB + 0.25",
-            "text": "`A = (${p.xB.toFixed(2)},${p.yB})`",
+            "x": "xB",
+            "y": "yB",
+            "text": "`B = (${p.xB.toFixed(2)}, ${p.yB})`",
             "xScaleName": "x",
             "yScaleName": "y"
           }

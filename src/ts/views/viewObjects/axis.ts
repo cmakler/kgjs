@@ -21,22 +21,22 @@ module KG {
         public end;
         public line;
 
-        constructor(view, layer, def:AxisDefinition) {
-            super(view, layer, def);
+        constructor(def:AxisDefinition) {
+            super(def);
 
             let axis = this;
 
-            axis.line = layer.append('line')
+            axis.line = def.layer.append('line')
                 .attr('class', "axis");
 
             if(def.orientation == 'top' || def.orientation == 'bottom') {
-                let intercept = def.intercept || axis.yScale.domain.min;
-                axis.origin = {x: axis.xScale.domain.min, y: intercept};
-                axis.end = {x: axis.xScale.domain.max, y: intercept};
+                let intercept = def.intercept || axis.yScale.domainMin;
+                axis.origin = {x: axis.xScale.domainMin, y: intercept};
+                axis.end = {x: axis.xScale.domainMax, y: intercept};
             } else {
-                let intercept = def.intercept || axis.xScale.domain.min;
-                axis.origin = {x: intercept, y: axis.yScale.domain.min};
-                axis.end = {x: intercept, y: axis.yScale.domain.max};
+                let intercept = def.intercept || axis.xScale.domainMin;
+                axis.origin = {x: intercept, y: axis.yScale.domainMin};
+                axis.end = {x: intercept, y: axis.yScale.domainMax};
             }
 
             axis.update();
@@ -45,11 +45,11 @@ module KG {
         }
 
         update() {
-            let axis = this;
-            axis.line.attr('x1', axis.xScale.scale(axis.model.eval(axis.origin.x)));
-            axis.line.attr('y1', axis.yScale.scale(axis.model.eval(axis.origin.y)));
-            axis.line.attr('x2', axis.xScale.scale(axis.model.eval(axis.end.x)));
-            axis.line.attr('y2', axis.yScale.scale(axis.model.eval(axis.end.y)));
+            let axis = super.update();
+            axis.line.attr('x1', axis.xScale.scale(axis.origin.x));
+            axis.line.attr('y1', axis.yScale.scale(axis.origin.y));
+            axis.line.attr('x2', axis.xScale.scale(axis.end.x));
+            axis.line.attr('y2', axis.yScale.scale(axis.end.y));
             return axis;
         }
     }

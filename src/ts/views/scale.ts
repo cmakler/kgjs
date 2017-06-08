@@ -2,55 +2,56 @@
 
 module KG {
 
-    export interface ScaleDefinition {
+    export interface ScaleDefinition extends UpdateListenerDefinition {
         name: string;
         axis: string; //x or y
-        domain: {min: any; max: any;};
+        domainMin: any;
+        domainMax: any;
+        rangeMin: any;
+        rangeMax: any;
         range: {min: number; max: number;}; // fractional amounts of enclosing view dimension
     }
 
     export interface IScale {
         name: string;
         axis: string;
-        domain: {min: number; max: number;};
-        range: {min: number; max: number;};
+        domainMin: any;
+        domainMax: any;
+        rangeMin: any;
+        rangeMax: any;
         extent: number; // pixel length of enclosing view dimension
         scale: (value:number) => number;
         invert: (pixels:number) => number;
     }
 
-    export class Scale implements IScale {
+    export class Scale extends UpdateListener implements IScale {
 
         public name;
         public axis;
-        public domain;   // container object that contains this view, and also the model
-        public range;         // root div of this view
+        public domainMin;
+        public domainMax;
+        public rangeMin;
+        public rangeMax;;         // root div of this view
         public extent;
 
 
         constructor(def:ScaleDefinition) {
-
-            let s = this;
-            s.name = def.name;
-            s.axis = def.axis;
-            s.domain = def.domain;
-            s.range = def.range;
-
+            super(def);
+            this.updatables = ['domainMin','domainMax','rangeMin','rangeMax']
         }
 
         scale(value) {
             const s = this;
-            let percent = (value - s.domain.min)/(s.domain.max - s.domain.min);
-            return (s.range.min + percent*(s.range.max - s.range.min))*s.extent;
-
+            let percent = (value - s.domainMin)/(s.domainMax - s.domainMin);
+            return (s.rangeMin + percent*(s.rangeMax - s.rangeMin))*s.extent;
         }
 
         invert(pixels) {
             const s = this;
-            let pixelMin = s.range.min*s.extent,
-                pixelMax = s.range.max*s.extent;
+            let pixelMin = s.rangeMin*s.extent,
+                pixelMax = s.rangeMax*s.extent;
             let percent = (pixels - pixelMin)/(pixelMax - pixelMin);
-            return s.domain.min + percent*(s.domain.max - s.domain.min);
+            return s.domainMin + percent*(s.domainMax - s.domainMin);
         }
 
     }

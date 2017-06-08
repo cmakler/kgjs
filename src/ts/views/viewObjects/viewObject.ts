@@ -2,9 +2,12 @@
 
 module KG {
 
-    export interface ViewObjectDefinition {
+    export interface ViewObjectDefinition extends UpdateListenerDefinition {
+        view: View;
+        layer: any;
         xScaleName?: string;
         yScaleName?: string;
+        interaction?: InteractionHandlerDefintion;
     }
 
     export interface IViewObject {
@@ -13,26 +16,29 @@ module KG {
         update: () => ViewObject;
         xScale: Scale;
         yScale: Scale;
+        interactionHandler: InteractionHandler;
     }
 
-    export class ViewObject implements IViewObject {
+    export class ViewObject extends UpdateListener implements IViewObject {
 
         public view;
         public model;
         public xScale;
         public yScale;
+        public interactionHandler;
 
-        constructor(view:View, layer: any, def:ViewObjectDefinition) {
+        constructor(def:ViewObjectDefinition) {
+            super(def);
             let vo = this;
-            vo.view = view;
-            vo.model = view.container.model;
-            vo.xScale = view.scales[def.xScaleName];
-            vo.yScale = view.scales[def.yScaleName];
-            view.container.model.addUpdateListener(vo);
-        }
-
-        update() {
-            return this;
+            vo.view = def.view;
+            vo.model = vo.view.container.model;
+            vo.xScale = vo.view.scales[def.xScaleName];
+            vo.yScale = vo.view.scales[def.yScaleName];
+            vo.view.container.model.addUpdateListener(vo);
+            if(def.hasOwnProperty('interaction')) {
+                def.interaction.viewObject = vo;
+                vo.interactionHandler = new InteractionHandler(def.interaction);
+            }
         }
 
     }
