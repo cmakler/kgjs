@@ -20,29 +20,24 @@ module KG {
     }
 
     export interface IView {
-        container: Container;
+        //container: Container;
         dimensions: {
             x: number; // coordinate of left edge, as fraction of container width
             y: number; // coordinate of top edge, as fraction of container height
             width: number; // width of view, as fraction of container width
             height: number; // height of view, as fraction of container height
         }
-
-        // each view has a root <div> element, with a single child <svg> with same dimensions.
-        div: HTMLDivElement;
-        svg: SVGAElement;
-        viewObjects: ViewObject[];
         scales: any;
     }
 
     export class View implements IView {
 
-        public container;   // container object that contains this view, and also the model
-        public div;         // root div of this view
-        public svg;         // root svg of this view
+        private div;         // root div of this view
+        private svg;         // root svg of this view
+
+        private container;   // container object that contains this view, and also the model
         public dimensions;  // position, height, and width of this view (in pixels)
         public scales;      // scales associated with this view (if there are multiple graphs, could be multiple scales)
-        public viewObjects; // array of ViewObjects
 
 
         constructor(container: Container, def: ViewDefinition) {
@@ -52,7 +47,9 @@ module KG {
             v.dimensions = _.defaults(def.dim, {x: 0, y: 0, width: 1, height: 1});
 
             // add div element as a child of the enclosing container
-            v.div = d3.select(container.div).append("div").style('position', 'relative').style('background-color', 'white');
+            v.div = d3.select(container.div).append("div")
+                .style('position', 'relative')
+                .style('background-color', 'white');
 
             // add svg element as a child of the div
             v.svg = v.div.append("svg");
@@ -62,7 +59,7 @@ module KG {
                 v.scales = {};
                 for (let i = 0; i < def.scales.length; i++) {
                     let scaleDef = def.scales[i];
-                    scaleDef.model = v.container.model;
+                    scaleDef.model = container.model;
                     v.scales[scaleDef.name] = new Scale(scaleDef);
                 }
             }
@@ -72,9 +69,9 @@ module KG {
 
             // add child objects
             if (def.hasOwnProperty('objects')) {
-                v.viewObjects = [];
+                //v.viewObjects = [];
 
-                let prepareDef = function(def,layer) {
+                let prepareDef = function (def, layer) {
                     def.view = v;
                     def.model = v.container.model;
                     def.layer = layer;
@@ -84,19 +81,19 @@ module KG {
                 if (def.objects.hasOwnProperty('axes')) {
                     let axisLayer = v.svg.append('g').attr('class', 'axes');
                     def.objects.axes.forEach(function (axisDef) {
-                        v.viewObjects.push(new Axis(prepareDef(axisDef,axisLayer)));
+                        new Axis(prepareDef(axisDef, axisLayer));
                     });
                 }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
                     def.objects.points.forEach(function (pointDef) {
-                        v.viewObjects.push(new Point(prepareDef(pointDef,pointLayer)));
+                        new Point(prepareDef(pointDef, pointLayer));
                     });
                 }
                 if (def.objects.hasOwnProperty('labels')) {
                     let labelLayer = v.div.append('div').attr('class', 'labels');
-                    def.objects.labels.forEach(function(labelDef) {
-                        v.viewObjects.push(new Label(prepareDef(labelDef,labelLayer)));
+                    def.objects.labels.forEach(function (labelDef) {
+                        new Label(prepareDef(labelDef, labelLayer));
                     });
                 }
             }
@@ -124,7 +121,6 @@ module KG {
                     s.extent = (s.axis == 'x') ? vw : vh;
                 }
             }
-            ;
             v.container.model.update();
             return v;
         }

@@ -10,17 +10,11 @@ module KG {
         offset: number; // offset in pixels
     }
 
-    export interface IAxis extends IViewObject {
-        origin: {x: any, y: any};
-        end: {x: any, y: any};
-        line: any;
-    }
+    export class Axis extends ViewObject {
 
-    export class Axis extends ViewObject implements IAxis {
-
-        public origin;
-        public end;
-        public line;
+        private origin;
+        private end;
+        private line;
 
         constructor(def:AxisDefinition) {
             super(def);

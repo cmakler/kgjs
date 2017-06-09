@@ -8,16 +8,12 @@ module KG {
         text: string;
     }
 
-    export interface ILabel extends IViewObject {
-        element: d3.Selection<SVGElement, {}, HTMLElement, any>
-    }
+    export class Label extends ViewObject {
 
-    export class Label extends ViewObject implements ILabel {
-
-        private x;
-        private y;
-        private text;
-        public element;
+        private x: number;
+        private y: number;
+        private text: string;
+        private element: any;
 
         constructor(def) {
             def.updatables = ['x','y','text'];
