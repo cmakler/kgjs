@@ -27,15 +27,20 @@ module KG {
                 fontSize: 12
             });
             super(def);
-            let label = this;
+
+        }
+
+        draw(layer) {
+            let label = this,
+                def = label.def;
             label.xPixelOffset = def.xPixelOffset;
             label.yPixelOffset = def.yPixelOffset;
 
-            label.element = def.layer.append('div')
+            label.element = layer.append('div')
                 .style('position','absolute')
                 .style('font-size',def.fontSize + 'pt');
 
-            label.update();
+            return label;
         }
 
         update() {

@@ -14,14 +14,16 @@ module KG {
         private circle;
 
         constructor(def:PointDefinition) {
-
             def.updatables = ['x','y'];
             super(def);
+        }
+
+        draw(layer) {
 
             let point = this;
 
             //initialize circle
-            point.circle = def.layer.append('g')
+            point.circle = layer.append('g')
                 .attr('class', "draggable");
 
             point.circle.append('circle')
@@ -34,9 +36,7 @@ module KG {
 
             point.interactionHandler.addTrigger(point.circle);
 
-            point.update();
-
-            console.log('initialized point object: ', point);
+            return point;
         }
 
         update() {

@@ -14,6 +14,7 @@ module KG {
         xScale: Scale;
         yScale: Scale;
         interactionHandler: InteractionHandler;
+        draw: (layer:any) => ViewObject;
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
@@ -32,6 +33,11 @@ module KG {
                 def.interaction.model = vo.model;
                 vo.interactionHandler = new InteractionHandler(def.interaction);
             }
+            vo.draw(def.layer).update();
+        }
+
+        draw(layer) {
+            return this;
         }
 
     }

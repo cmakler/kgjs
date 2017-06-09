@@ -18,8 +18,11 @@ module KG {
 
         constructor(def:AxisDefinition) {
             super(def);
+        }
 
-            let axis = this;
+        draw(layer) {
+            let axis = this,
+                def = axis.def;
 
             axis.line = def.layer.append('line')
                 .attr('class', "axis");
@@ -33,10 +36,7 @@ module KG {
                 axis.origin = {x: intercept, y: axis.yScale.domainMin};
                 axis.end = {x: intercept, y: axis.yScale.domainMax};
             }
-
-            axis.update();
-
-            console.log('initialized axis object: ', axis);
+            return axis;
         }
 
         update() {

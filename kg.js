@@ -368,8 +368,12 @@ var KG;
                 def.interaction.model = vo.model;
                 vo.interactionHandler = new KG.InteractionHandler(def.interaction);
             }
+            vo.draw(def.layer).update();
             return _this;
         }
+        ViewObject.prototype.draw = function (layer) {
+            return this;
+        };
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
@@ -415,8 +419,10 @@ var KG;
     var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def) {
-            var _this = _super.call(this, def) || this;
-            var axis = _this;
+            return _super.call(this, def) || this;
+        }
+        Axis.prototype.draw = function (layer) {
+            var axis = this, def = axis.def;
             axis.line = def.layer.append('line')
                 .attr('class', "axis");
             if (def.orientation == 'top' || def.orientation == 'bottom') {
@@ -429,10 +435,8 @@ var KG;
                 axis.origin = { x: intercept, y: axis.yScale.domainMin };
                 axis.end = { x: intercept, y: axis.yScale.domainMax };
             }
-            axis.update();
-            console.log('initialized axis object: ', axis);
-            return _this;
-        }
+            return axis;
+        };
         Axis.prototype.update = function () {
             var axis = _super.prototype.update.call(this);
             axis.line.attr('x1', axis.xScale.scale(axis.origin.x));
@@ -454,9 +458,12 @@ var KG;
             var _this = this;
             def.updatables = ['x', 'y'];
             _this = _super.call(this, def) || this;
-            var point = _this;
+            return _this;
+        }
+        Point.prototype.draw = function (layer) {
+            var point = this;
             //initialize circle
-            point.circle = def.layer.append('g')
+            point.circle = layer.append('g')
                 .attr('class', "draggable");
             point.circle.append('circle')
                 .attr('class', "invisible")
@@ -465,10 +472,8 @@ var KG;
                 .attr('class', "visible")
                 .attr('r', 6.5);
             point.interactionHandler.addTrigger(point.circle);
-            point.update();
-            console.log('initialized point object: ', point);
-            return _this;
-        }
+            return point;
+        };
         Point.prototype.update = function () {
             var point = _super.prototype.update.call(this);
             point.circle.attr('transform', "translate(" + point.xScale.scale(point.x) + " " + point.yScale.scale(point.y) + ")");
@@ -492,15 +497,17 @@ var KG;
                 fontSize: 12
             });
             _this = _super.call(this, def) || this;
-            var label = _this;
-            label.xPixelOffset = def.xPixelOffset;
-            label.yPixelOffset = def.yPixelOffset;
-            label.element = def.layer.append('div')
-                .style('position', 'absolute')
-                .style('font-size', def.fontSize + 'pt');
-            label.update();
             return _this;
         }
+        Label.prototype.draw = function (layer) {
+            var label = this, def = label.def;
+            label.xPixelOffset = def.xPixelOffset;
+            label.yPixelOffset = def.yPixelOffset;
+            label.element = layer.append('div')
+                .style('position', 'absolute')
+                .style('font-size', def.fontSize + 'pt');
+            return label;
+        };
         Label.prototype.update = function () {
             var label = _super.prototype.update.call(this);
             label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');

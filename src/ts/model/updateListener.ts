@@ -14,8 +14,8 @@ module KG {
 
     export class UpdateListener implements IUpdateListener {
 
-        private def;
         private updatables;
+        public def;
         public model;
 
         constructor(def: UpdateListenerDefinition) {
