@@ -14,8 +14,8 @@ module KG {
         scales: ScaleDefinition[];
         objects: {
             axes?: AxisDefinition[]
-            points?: ViewObjectDefinition[];
-            labels?: ViewObjectDefinition[];
+            points?: PointDefinition[];
+            labels?: LabelDefinition[];
         };
     }
 
@@ -49,7 +49,7 @@ module KG {
 
             let v = this;
             v.container = container;
-            v.dimensions = _.defaults(def.dim,{x: 0, y: 0, width: 1, height: 1});
+            v.dimensions = _.defaults(def.dim, {x: 0, y: 0, width: 1, height: 1});
 
             // add div element as a child of the enclosing container
             v.div = d3.select(container.div).append("div").style('position', 'relative').style('background-color', 'white');
@@ -60,7 +60,7 @@ module KG {
             // establish scales
             if (def.hasOwnProperty('scales')) {
                 v.scales = {};
-                for(let i = 0; i<def.scales.length; i++) {
+                for (let i = 0; i < def.scales.length; i++) {
                     let scaleDef = def.scales[i];
                     scaleDef.model = v.container.model;
                     v.scales[scaleDef.name] = new Scale(scaleDef);
@@ -73,35 +73,31 @@ module KG {
             // add child objects
             if (def.hasOwnProperty('objects')) {
                 v.viewObjects = [];
+
+                let prepareDef = function(def,layer) {
+                    def.view = v;
+                    def.model = v.container.model;
+                    def.layer = layer;
+                    return def;
+                };
+
                 if (def.objects.hasOwnProperty('axes')) {
                     let axisLayer = v.svg.append('g').attr('class', 'axes');
-                    for (let i = 0; i < def.objects.axes.length; i++) {
-                        let axisDef = def.objects.axes[i];
-                        axisDef.view = v;
-                        axisDef.model = v.container.model;
-                        axisDef.layer = axisLayer;
-                        v.viewObjects.push(new Axis(axisDef));
-                    }
+                    def.objects.axes.forEach(function (axisDef) {
+                        v.viewObjects.push(new Axis(prepareDef(axisDef,axisLayer)));
+                    });
                 }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
-                    for (let i = 0; i < def.objects.points.length; i++) {
-                        let pointDef = def.objects.points[i];
-                        pointDef.view = v;
-                        pointDef.model = v.container.model;
-                        pointDef.layer = pointLayer;
-                        v.viewObjects.push(new Point(pointDef));
-                    }
+                    def.objects.points.forEach(function (pointDef) {
+                        v.viewObjects.push(new Point(prepareDef(pointDef,pointLayer)));
+                    });
                 }
                 if (def.objects.hasOwnProperty('labels')) {
                     let labelLayer = v.div.append('div').attr('class', 'labels');
-                    for (let i = 0; i < def.objects.labels.length; i++) {
-                        let labelDef =  def.objects.labels[i];
-                        labelDef.view = v;
-                        labelDef.model = v.container.model;
-                        labelDef.layer = labelLayer;
-                        v.viewObjects.push(new Label(labelDef));
-                    }
+                    def.objects.labels.forEach(function(labelDef) {
+                        v.viewObjects.push(new Label(prepareDef(labelDef,labelLayer)));
+                    });
                 }
             }
 
@@ -112,22 +108,23 @@ module KG {
                 w = v.container.width,
                 h = v.container.height,
                 dim = v.dimensions,
-                vx = dim.x*w,
-                vy = dim.y*h,
-                vw = dim.width*w,
-                vh = dim.height*h;
+                vx = dim.x * w,
+                vy = dim.y * h,
+                vw = dim.width * w,
+                vh = dim.height * h;
             v.div.style('left', vx + 'px');
             v.div.style('top', vy + 'px');
             v.div.style('width', vw + 'px');
             v.div.style('height', vh + 'px');
             v.svg.style('width', vw);
             v.svg.style('height', vh);
-            for(let scaleName in v.scales) {
-                if(v.scales.hasOwnProperty(scaleName)) {
+            for (let scaleName in v.scales) {
+                if (v.scales.hasOwnProperty(scaleName)) {
                     let s = v.scales[scaleName];
                     s.extent = (s.axis == 'x') ? vw : vh;
                 }
-            };
+            }
+            ;
             v.container.model.update();
             return v;
         }

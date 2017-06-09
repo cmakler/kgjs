@@ -2,27 +2,27 @@
 
 module KG {
 
-    export interface ILabel extends IViewObject {
+    export interface LabelDefinition extends ViewObjectDefinition {
         x: any;
         y: any;
         text: string;
+    }
+
+    export interface ILabel extends IViewObject {
         element: d3.Selection<SVGElement, {}, HTMLElement, any>
     }
 
     export class Label extends ViewObject implements ILabel {
 
-        public x;
-        public y;
-        public text;
+        private x;
+        private y;
+        private text;
         public element;
 
         constructor(def) {
             def.updatables = ['x','y','text'];
             super(def);
             let label = this;
-            label.x = def.x;
-            label.y = def.y;
-            label.text = def.text;
 
             label.element = def.layer.append('div')
                 .style('position','absolute')

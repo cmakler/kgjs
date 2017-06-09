@@ -36,8 +36,9 @@ module KG {
 
 
         constructor(def:ScaleDefinition) {
+            def.updatables = ['domainMin','domainMax','rangeMin','rangeMax'];
             super(def);
-            this.updatables = ['domainMin','domainMax','rangeMin','rangeMax']
+            this.update();
         }
 
         scale(value) {

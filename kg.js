@@ -277,35 +277,29 @@ var KG;
             // add child objects
             if (def.hasOwnProperty('objects')) {
                 v.viewObjects = [];
+                var prepareDef_1 = function (def, layer) {
+                    def.view = v;
+                    def.model = v.container.model;
+                    def.layer = layer;
+                    return def;
+                };
                 if (def.objects.hasOwnProperty('axes')) {
-                    var axisLayer = v.svg.append('g').attr('class', 'axes');
-                    for (var i = 0; i < def.objects.axes.length; i++) {
-                        var axisDef = def.objects.axes[i];
-                        axisDef.view = v;
-                        axisDef.model = v.container.model;
-                        axisDef.layer = axisLayer;
-                        v.viewObjects.push(new KG.Axis(axisDef));
-                    }
+                    var axisLayer_1 = v.svg.append('g').attr('class', 'axes');
+                    def.objects.axes.forEach(function (axisDef) {
+                        v.viewObjects.push(new KG.Axis(prepareDef_1(axisDef, axisLayer_1)));
+                    });
                 }
                 if (def.objects.hasOwnProperty('points')) {
-                    var pointLayer = v.svg.append('g').attr('class', 'points');
-                    for (var i = 0; i < def.objects.points.length; i++) {
-                        var pointDef = def.objects.points[i];
-                        pointDef.view = v;
-                        pointDef.model = v.container.model;
-                        pointDef.layer = pointLayer;
-                        v.viewObjects.push(new KG.Point(pointDef));
-                    }
+                    var pointLayer_1 = v.svg.append('g').attr('class', 'points');
+                    def.objects.points.forEach(function (pointDef) {
+                        v.viewObjects.push(new KG.Point(prepareDef_1(pointDef, pointLayer_1)));
+                    });
                 }
                 if (def.objects.hasOwnProperty('labels')) {
-                    var labelLayer = v.div.append('div').attr('class', 'labels');
-                    for (var i = 0; i < def.objects.labels.length; i++) {
-                        var labelDef = def.objects.labels[i];
-                        labelDef.view = v;
-                        labelDef.model = v.container.model;
-                        labelDef.layer = labelLayer;
-                        v.viewObjects.push(new KG.Label(labelDef));
-                    }
+                    var labelLayer_1 = v.div.append('div').attr('class', 'labels');
+                    def.objects.labels.forEach(function (labelDef) {
+                        v.viewObjects.push(new KG.Label(prepareDef_1(labelDef, labelLayer_1)));
+                    });
                 }
             }
         }
@@ -337,8 +331,10 @@ var KG;
     var Scale = (function (_super) {
         __extends(Scale, _super);
         function Scale(def) {
-            var _this = _super.call(this, def) || this;
-            _this.updatables = ['domainMin', 'domainMax', 'rangeMin', 'rangeMax'];
+            var _this = this;
+            def.updatables = ['domainMin', 'domainMax', 'rangeMin', 'rangeMax'];
+            _this = _super.call(this, def) || this;
+            _this.update();
             return _this;
         }
         ; // root div of this view
@@ -495,9 +491,6 @@ var KG;
             def.updatables = ['x', 'y', 'text'];
             _this = _super.call(this, def) || this;
             var label = _this;
-            label.x = def.x;
-            label.y = def.y;
-            label.text = def.text;
             label.element = def.layer.append('div')
                 .style('position', 'absolute')
                 .style('background-color', 'green');

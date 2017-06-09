@@ -7,6 +7,7 @@ module KG {
         labels?: {coord: any, label: any}[];
         intercept?: number;
         orientation: string; // 'top', 'bottom', 'left' or 'right' - also implies whether this is horiz. or vert.
+        offset: number; // offset in pixels
     }
 
     export interface IAxis extends IViewObject {
