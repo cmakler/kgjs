@@ -338,7 +338,6 @@ var KG;
             _this.update();
             return _this;
         }
-        ; // root div of this view
         Scale.prototype.scale = function (value) {
             var s = this;
             var percent = (value - s.domainMin) / (s.domainMax - s.domainMin);
@@ -487,18 +486,25 @@ var KG;
         function Label(def) {
             var _this = this;
             def.updatables = ['x', 'y', 'text'];
+            def = _.defaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12
+            });
             _this = _super.call(this, def) || this;
             var label = _this;
+            label.xPixelOffset = def.xPixelOffset;
+            label.yPixelOffset = def.yPixelOffset;
             label.element = def.layer.append('div')
                 .style('position', 'absolute')
-                .style('background-color', 'green');
+                .style('font-size', def.fontSize + 'pt');
             label.update();
             return _this;
         }
         Label.prototype.update = function () {
             var label = _super.prototype.update.call(this);
-            label.element.style('left', label.xScale.scale(label.x) + 'px');
-            label.element.style('top', label.yScale.scale(label.y) + 'px');
+            label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
+            label.element.style('top', label.yScale.scale(label.y) + label.yPixelOffset + 'px');
             katex.render(label.text, label.element.node());
             return label;
         };

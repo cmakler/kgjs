@@ -31,7 +31,7 @@ module KG {
         public domainMin;
         public domainMax;
         public rangeMin;
-        public rangeMax;;         // root div of this view
+        public rangeMax;
         public extent;
 
 

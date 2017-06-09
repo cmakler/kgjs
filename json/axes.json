@@ -92,14 +92,20 @@
             "y": "yA",
             "text": "`A = (2, ${p.yA.toFixed(1)})`",
             "xScaleName": "x",
-            "yScaleName": "y"
+            "yScaleName": "y",
+            "xPixelOffset": 5,
+            "yPixelOffset": -15,
+            "fontSize": 8
           },
           {
             "x": "xB",
             "y": "yB",
             "text": "`B = (${p.xB.toFixed(2)}, ${p.yB})`",
             "xScaleName": "x",
-            "yScaleName": "y"
+            "yScaleName": "y",
+            "xPixelOffset": 5,
+            "yPixelOffset": -15,
+            "fontSize": 8
           }
         ]
       }
