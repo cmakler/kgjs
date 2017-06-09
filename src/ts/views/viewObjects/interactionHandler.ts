@@ -28,13 +28,19 @@ module KG {
         }
 
         private onDrag(handler) {
+
+            // get scaled x and y coordiantes of the drag event
             let coords = {
                 x: handler.def.viewObject.xScale.invert(d3.event.x),
                 y: handler.def.viewObject.yScale.invert(d3.event.y)
             };
+
+            // if horizontal dragging enabled, update the xDragUpdateParam with the evaluated value of xDragUpdateValue
             if(handler.xDrag) {
                 handler.model.updateParam(handler.def.xDragUpdateParam, math.eval(handler.def.xDragUpdateValue,coords));
             }
+
+            // if vertical dragging enabled, update the yDragUpdateParam with the evaluated value of yDragUpdateValue
             if(handler.yDrag) {
                 handler.model.updateParam(handler.def.yDragUpdateParam, math.eval(handler.def.yDragUpdateValue,coords));
             }
