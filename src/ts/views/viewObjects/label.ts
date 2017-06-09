@@ -17,6 +17,7 @@ module KG {
         public element;
 
         constructor(def) {
+            def.updatables = ['x','y','text'];
             super(def);
             let label = this;
             label.x = def.x;
@@ -26,8 +27,6 @@ module KG {
             label.element = def.layer.append('div')
                 .style('position','absolute')
                 .style('background-color','green');
-
-            label.updatables = ['x','y','text'];
 
             label.update();
         }

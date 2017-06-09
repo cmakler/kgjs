@@ -4,29 +4,28 @@ module KG {
 
     export interface UpdateListenerDefinition {
         model: Model;
+        updatables: string[];
     }
 
     export interface IUpdateListener {
-        def: UpdateListenerDefinition;
-        updatables: string[];
+        model: Model;
         update: () => UpdateListener;
-        updateDef: (name:string) => UpdateListener;
     }
 
     export class UpdateListener implements IUpdateListener {
 
-        public def;
+        private def;
+        private updatables;
         public model;
-        public updatables;
 
         constructor(def: UpdateListenerDefinition) {
             this.def = def;
             this.model = def.model;
             this.model.addUpdateListener(this);
-            this.updatables = [];
+            this.updatables = def.updatables || [];
         }
 
-        updateDef(name) {
+        private updateDef(name) {
             if(this.def.hasOwnProperty(name)) {
                 const d = this.def[name];
                 this[name] = this.model.eval(d);

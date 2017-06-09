@@ -63,13 +63,27 @@
             "x": 2,
             "y": "yA",
             "xScaleName": "x",
-            "yScaleName": "y"
+            "yScaleName": "y",
+            "interaction": {
+              "xDrag": false,
+              "yDrag": true,
+              "yDragUpdateParam": "yA",
+              "yDragUpdateValue": "y"
+            }
           },
           {
             "x": "xB",
             "y": "yB",
             "xScaleName": "x",
-            "yScaleName": "y"
+            "yScaleName": "y",
+            "interaction": {
+              "xDrag": true,
+              "yDrag": true,
+              "xDragUpdateParam": "xB",
+              "xDragUpdateValue": "x",
+              "yDragUpdateParam": "yB",
+              "yDragUpdateValue": "y"
+            }
           }
         ],
         "labels": [

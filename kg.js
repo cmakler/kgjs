@@ -233,7 +233,7 @@ var KG;
             this.def = def;
             this.model = def.model;
             this.model.addUpdateListener(this);
-            this.updatables = [];
+            this.updatables = def.updatables || [];
         }
         UpdateListener.prototype.updateDef = function (name) {
             if (this.def.hasOwnProperty(name)) {
@@ -372,6 +372,7 @@ var KG;
             vo.model.addUpdateListener(vo);
             if (def.hasOwnProperty('interaction')) {
                 def.interaction.viewObject = vo;
+                def.interaction.model = vo.model;
                 vo.interactionHandler = new KG.InteractionHandler(def.interaction);
             }
             return _this;
@@ -386,26 +387,27 @@ var KG;
     var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
-            var _this = _super.call(this, def) || this;
-            var handler = _this;
-            handler.viewObject = def.viewObject;
-            handler.xDrag = def.xDrag;
-            handler.yDrag = def.yDrag;
-            handler.xDragUpdateParam = def.xDragUpdateParam;
-            handler.yDragUpdateParam = def.yDragUpdateParam;
-            handler.xDragUpdateValue = def.xDragUpdateValue;
-            handler.yDragUpdateValue = def.yDragUpdateValue;
-            handler.elements = [];
+            var _this = this;
+            def.updatables = ['xDrag', 'yDrag'];
+            _this = _super.call(this, def) || this;
+            _this.update();
             return _this;
         }
-        InteractionHandler.prototype.xDragFunction = function () {
-            return this;
-        };
-        InteractionHandler.prototype.yDragFunction = function () {
-            return this;
+        InteractionHandler.prototype.onDrag = function (handler) {
+            var coords = {
+                x: handler.def.viewObject.xScale.invert(d3.event.x),
+                y: handler.def.viewObject.yScale.invert(d3.event.y)
+            };
+            if (handler.xDrag) {
+                handler.model.updateParam(handler.def.xDragUpdateParam, math.eval(handler.def.xDragUpdateValue, coords));
+            }
+            if (handler.yDrag) {
+                handler.model.updateParam(handler.def.yDragUpdateParam, math.eval(handler.def.yDragUpdateValue, coords));
+            }
         };
         InteractionHandler.prototype.addTrigger = function (element) {
-            return this;
+            var handler = this;
+            element.call(d3.drag().on('drag', function () { handler.onDrag(handler); }));
         };
         return InteractionHandler;
     }(KG.UpdateListener));
@@ -453,24 +455,20 @@ var KG;
     var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def.updatables = ['x', 'y'];
+            _this = _super.call(this, def) || this;
             var point = _this;
-            point.x = def.x;
-            point.y = def.y;
             //initialize circle
             point.circle = def.layer.append('g')
-                .attr('class', "draggable")
-                .call(d3.drag().on('drag', function () {
-                point.model.updateParam(point.def.x, point.xScale.invert(d3.event.x));
-                point.model.updateParam(point.def.y, point.yScale.invert(d3.event.y));
-            }));
+                .attr('class', "draggable");
             point.circle.append('circle')
                 .attr('class', "invisible")
                 .attr('r', 20);
             point.circle.append('circle')
                 .attr('class', "visible")
                 .attr('r', 6.5);
-            point.updatables = ['x', 'y'];
+            point.interactionHandler.addTrigger(point.circle);
             point.update();
             console.log('initialized point object: ', point);
             return _this;
@@ -490,7 +488,9 @@ var KG;
     var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def.updatables = ['x', 'y', 'text'];
+            _this = _super.call(this, def) || this;
             var label = _this;
             label.x = def.x;
             label.y = def.y;
@@ -498,7 +498,6 @@ var KG;
             label.element = def.layer.append('div')
                 .style('position', 'absolute')
                 .style('background-color', 'green');
-            label.updatables = ['x', 'y', 'text'];
             label.update();
             return _this;
         }

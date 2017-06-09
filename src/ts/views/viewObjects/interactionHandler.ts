@@ -2,7 +2,7 @@
 
 module KG {
 
-    export interface InteractionHandlerDefintion extends UpdateListenerDefinition {
+    export interface InteractionHandlerDefinition extends UpdateListenerDefinition {
         viewObject: ViewObject;
         xDrag?: any;
         yDrag?: any;
@@ -13,52 +13,36 @@ module KG {
     }
 
     export interface IInteractionHandler {
-        viewObject: View;
-        xDrag?: any;
-        yDrag?: any;
-        xDragUpdateParam?: string;
-        yDragUpdateParam?: string;
-        xDragUpdateValue?: string;
-        yDragUpdateValue?: string;
-        xDragFunction: () => any;
-        yDragFunction: () => any;
-        addTrigger: (el:HTMLElement) => InteractionHandler;
+        addTrigger: (el:HTMLElement) => void;
     }
 
     export class InteractionHandler extends UpdateListener implements IInteractionHandler {
 
-        public viewObject;
-        public elements: HTMLElement[];
-        public xDrag;
-        public yDrag;
-        public xDragUpdateParam;
-        public yDragUpdateParam;
-        public xDragUpdateValue;
-        public yDragUpdateValue;
+        private xDrag;
+        private yDrag;
 
-        constructor(def:InteractionHandlerDefintion) {
+        constructor(def:InteractionHandlerDefinition) {
+            def.updatables = ['xDrag','yDrag'];
             super(def);
-            let handler = this;
-            handler.viewObject = def.viewObject;
-            handler.xDrag = def.xDrag;
-            handler.yDrag = def.yDrag;
-            handler.xDragUpdateParam = def.xDragUpdateParam;
-            handler.yDragUpdateParam = def.yDragUpdateParam;
-            handler.xDragUpdateValue = def.xDragUpdateValue;
-            handler.yDragUpdateValue = def.yDragUpdateValue;
-            handler.elements = [];
+            this.update();
         }
 
-        xDragFunction() {
-            return this;
-        }
-
-        yDragFunction() {
-            return this;
+        private onDrag(handler) {
+            let coords = {
+                x: handler.def.viewObject.xScale.invert(d3.event.x),
+                y: handler.def.viewObject.yScale.invert(d3.event.y)
+            };
+            if(handler.xDrag) {
+                handler.model.updateParam(handler.def.xDragUpdateParam, math.eval(handler.def.xDragUpdateValue,coords));
+            }
+            if(handler.yDrag) {
+                handler.model.updateParam(handler.def.yDragUpdateParam, math.eval(handler.def.yDragUpdateValue,coords));
+            }
         }
 
         addTrigger(element) {
-            return this;
+            let handler = this;
+            element.call(d3.drag().on('drag', function() {handler.onDrag(handler)}));
         }
 
     }
