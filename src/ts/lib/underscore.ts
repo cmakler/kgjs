@@ -52,5 +52,5 @@ module _ {
         };
     }
 
-    export const defaults = createAssigner(allKeys, true);
+    export const defaults:(obj:{},def:{}) => any = createAssigner(allKeys, true);
 }

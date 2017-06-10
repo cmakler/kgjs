@@ -27,9 +27,8 @@ module KG {
             let segment = this;
 
             //initialize circle
-            segment.line = document.createElementNS("http://www.w3.org/2000/svg","line");
+            segment.line = segment.addSVGElement(layer,'line');
             segment.line.setAttributeNS(null, "stroke", "green");
-            layer.append(segment.line);
 
             //segment.interactionHandler.addTrigger(segment.line);
 

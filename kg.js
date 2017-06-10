@@ -431,6 +431,11 @@ var KG;
             vo.draw(def.layer).update();
             return _this;
         }
+        ViewObject.prototype.addSVGElement = function (layer, type) {
+            var element = document.createElementNS("http://www.w3.org/2000/svg", type);
+            layer.append(element);
+            return element;
+        };
         ViewObject.prototype.draw = function (layer) {
             return this;
         };
@@ -526,9 +531,8 @@ var KG;
         Segment.prototype.draw = function (layer) {
             var segment = this;
             //initialize circle
-            segment.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            segment.line = segment.addSVGElement(layer, 'line');
             segment.line.setAttributeNS(null, "stroke", "green");
-            layer.append(segment.line);
             //segment.interactionHandler.addTrigger(segment.line);
             return segment;
         };

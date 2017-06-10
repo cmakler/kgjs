@@ -15,6 +15,7 @@ module KG {
         yScale: Scale;
         interactionHandler: InteractionHandler;
         draw: (layer: any) => ViewObject;
+        addSVGElement: (layer:SVGGElement,type:string) => SVGElement;
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
@@ -35,6 +36,12 @@ module KG {
             });
             vo.interactionHandler = new InteractionHandler(def.interaction);
             vo.draw(def.layer).update();
+        }
+
+        addSVGElement(layer,type) {
+            let element = document.createElementNS("http://www.w3.org/2000/svg",type);
+            layer.append(element);
+            return element;
         }
 
         draw(layer) {
