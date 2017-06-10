@@ -13,8 +13,8 @@ module KG {
         private y;
         private circle;
 
-        constructor(def:PointDefinition) {
-            def.updatables = ['x','y'];
+        constructor(def: PointDefinition) {
+            def.updatables = ['x', 'y'];
             super(def);
         }
 
@@ -41,8 +41,10 @@ module KG {
 
         update() {
             let point = super.update();
-            point.circle.attr('transform',
-                `translate(${point.xScale.scale(point.x)} ${point.yScale.scale(point.y)})`);
+            if (point.hasChanged) {
+                point.circle.attr('transform',
+                    `translate(${point.xScale.scale(point.x)} ${point.yScale.scale(point.y)})`);
+            }
             return point;
         }
     }

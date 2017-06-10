@@ -46,16 +46,14 @@
         }
       ],
       "objects": {
-        "axes" : [
+        "segments" : [
           {
+            "x1": 2,
+            "y1": "yA",
+            "x2": "xB",
+            "y2": "yB",
             "xScaleName": "x",
-            "yScaleName": "y",
-            "orientation": "bottom"
-          },
-          {
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "orientation": "left"
+            "yScaleName": "y"
           }
         ],
         "points": [

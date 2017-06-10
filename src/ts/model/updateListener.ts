@@ -10,6 +10,7 @@ module KG {
     export interface IUpdateListener {
         model: Model;
         update: () => UpdateListener;
+        hasChanged: boolean;
     }
 
     export class UpdateListener implements IUpdateListener {
@@ -17,6 +18,7 @@ module KG {
         private updatables;
         public def;
         public model;
+        public hasChanged;
 
         constructor(def: UpdateListenerDefinition) {
             this.def = def;
@@ -26,17 +28,25 @@ module KG {
         }
 
         private updateDef(name) {
-            if(this.def.hasOwnProperty(name)) {
-                const d = this.def[name];
-                this[name] = this.model.eval(d);
+            let u = this;
+            if(u.def.hasOwnProperty(name)) {
+                const d = u.def[name],
+                    initialValue = u[name];
+                let newValue = u.model.eval(d);
+                if(initialValue != newValue) {
+                    u.hasChanged = true;
+                    u[name] = newValue;
+                    console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
+                }
             }
-            return this;
+            return u;
         }
 
         update() {
             let u = this;
-            this.updatables.forEach(function(name) { u.updateDef(name) });
-            return this;
+            u.hasChanged = false;
+            u.updatables.forEach(function(name) { u.updateDef(name) });
+            return u;
         }
 
     }

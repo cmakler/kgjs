@@ -20,8 +20,8 @@ module KG {
         private yPixelOffset: number;
 
         constructor(def) {
-            def.updatables = ['x','y','text'];
-            def = _.defaults(def,{
+            def.updatables = ['x', 'y', 'text'];
+            def = _.defaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
                 fontSize: 12
@@ -37,17 +37,20 @@ module KG {
             label.yPixelOffset = def.yPixelOffset;
 
             label.element = layer.append('div')
-                .style('position','absolute')
-                .style('font-size',def.fontSize + 'pt');
+                .style('position', 'absolute')
+                .style('font-size', def.fontSize + 'pt');
 
             return label;
         }
 
         update() {
             let label = super.update();
-            label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
-            label.element.style('top', label.yScale.scale(label.y)+ label.yPixelOffset + 'px');
-            katex.render(label.text,label.element.node());
+            if (label.hasChanged) {
+                label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
+                label.element.style('top', label.yScale.scale(label.y) + label.yPixelOffset + 'px');
+                console.log('redrawing katex');
+                katex.render(label.text, label.element.node());
+            }
             return label;
         }
     }

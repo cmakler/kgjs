@@ -43,13 +43,13 @@ module KG {
 
             // don't just evaluate numbers
             if (typeof name == 'number') {
-                console.log('parsed', name, 'as a number');
+                //console.log('parsed', name, 'as a number');
                 return name;
             }
 
             // check to see if name is a param
             else if (params.hasOwnProperty(name)) {
-                console.log('parsed', name, 'as a parameter');
+                //console.log('parsed', name, 'as a parameter');
                 return params[name].value
             }
 
@@ -71,23 +71,23 @@ module KG {
             // try to evaluate using mathjs
             try {
                 let result = v(name);
-                console.log('parsed', name, 'as a pure math expression with value', result);
+                //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
             catch (err) {
 
                 // if that doesn't work, try to evaluate using native js eval
-                console.log('unable to parse', name, 'as a pure math function, trying general eval');
+                //console.log('unable to parse', name, 'as a pure math function, trying general eval');
 
                 try {
                     let result = eval(name);
-                    console.log('parsed', name, 'as an expression with value', result);
+                    //console.log('parsed', name, 'as an expression with value', result);
                     return eval(name);
                 }
 
                 catch (err) {
                     // if that doesn't work, try to evaluate using native js eval
-                    console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
+                    //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
                     return name;
                 }
 
