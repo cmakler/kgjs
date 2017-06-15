@@ -346,7 +346,7 @@ var KG;
                     return def;
                 };
                 if (def.objects.hasOwnProperty('segments')) {
-                    var segmentLayer_1 = v.svg.append('g').attr('class', 'segments').node();
+                    var segmentLayer_1 = v.svg.append('g').attr('class', 'segments');
                     def.objects.segments.forEach(function (segmentDef) {
                         new KG.Segment(prepareDef_1(segmentDef, segmentLayer_1));
                     });
@@ -431,11 +431,6 @@ var KG;
             vo.draw(def.layer).update();
             return _this;
         }
-        ViewObject.prototype.addSVGElement = function (layer, type) {
-            var element = document.createElementNS("http://www.w3.org/2000/svg", type);
-            layer.append(element);
-            return element;
-        };
         ViewObject.prototype.draw = function (layer) {
             return this;
         };
@@ -524,25 +519,24 @@ var KG;
         __extends(Segment, _super);
         function Segment(def) {
             var _this = this;
-            def.updatables = ['x1', 'y1', 'x2', 'y2'];
+            def.updatables = ['x1', 'y1', 'x2', 'y2', 'color'];
             _this = _super.call(this, def) || this;
             return _this;
         }
         Segment.prototype.draw = function (layer) {
             var segment = this;
-            //initialize circle
-            segment.line = segment.addSVGElement(layer, 'line');
-            segment.line.setAttributeNS(null, "stroke", "green");
-            //segment.interactionHandler.addTrigger(segment.line);
+            //initialize line
+            segment.line = layer.append('line');
             return segment;
         };
         Segment.prototype.update = function () {
             var segment = _super.prototype.update.call(this);
             if (segment.hasChanged) {
-                segment.line.setAttributeNS(null, "x1", segment.xScale.scale(segment.x1));
-                segment.line.setAttributeNS(null, "y1", segment.yScale.scale(segment.y1));
-                segment.line.setAttributeNS(null, "x2", segment.xScale.scale(segment.x2));
-                segment.line.setAttributeNS(null, "y2", segment.yScale.scale(segment.y2));
+                segment.line.attr("x1", segment.xScale.scale(segment.x1));
+                segment.line.attr("y1", segment.yScale.scale(segment.y1));
+                segment.line.attr("x2", segment.xScale.scale(segment.x2));
+                segment.line.attr("y2", segment.yScale.scale(segment.y2));
+                segment.line.attr("stroke", segment.color);
             }
             return segment;
         };

@@ -79,7 +79,7 @@ module KG {
                 };
 
                 if (def.objects.hasOwnProperty('segments')) {
-                    let segmentLayer = v.svg.append('g').attr('class', 'segments').node();
+                    let segmentLayer = v.svg.append('g').attr('class', 'segments');
                     def.objects.segments.forEach(function (segmentDef) {
                         new Segment(prepareDef(segmentDef, segmentLayer));
                     });

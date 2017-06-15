@@ -53,7 +53,8 @@
             "x2": "xB",
             "y2": "yB",
             "xScaleName": "x",
-            "yScaleName": "y"
+            "yScaleName": "y",
+            "color": "green"
           }
         ],
         "points": [
