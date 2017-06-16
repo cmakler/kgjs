@@ -112,7 +112,15 @@
             "yScaleName": "y",
             "xPixelOffset": 5,
             "yPixelOffset": -15,
-            "fontSize": 8
+            "fontSize": 8,
+            "interaction": {
+              "dragUpdates": [
+                {
+                  "dragParam": "yA",
+                  "dragUpdateExpression": "params.yA + drag.dy"
+                }
+              ]
+            }
           },
           {
             "x": "xB",
@@ -122,7 +130,19 @@
             "yScaleName": "y",
             "xPixelOffset": 5,
             "yPixelOffset": -15,
-            "fontSize": 8
+            "fontSize": 8,
+            "interaction": {
+              "dragUpdates": [
+                {
+                  "dragParam": "xB",
+                  "dragUpdateExpression": "params.xB + drag.dx"
+                },
+                {
+                  "dragParam": "yB",
+                  "dragUpdateExpression": "params.yB + drag.dy"
+                }
+              ]
+            }
           }
         ]
       }

@@ -37,8 +37,11 @@ module KG {
             label.yPixelOffset = def.yPixelOffset;
 
             label.element = layer.append('div')
+                .attr('class','draggable')
                 .style('position', 'absolute')
                 .style('font-size', def.fontSize + 'pt');
+
+            label.interactionHandler.addTrigger(label.element);
 
             return label;
         }

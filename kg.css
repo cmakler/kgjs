@@ -96,6 +96,10 @@ g.segments line {
     pointer-events: all;
 }
 
+g.labels div {
+    pointer-events: all;
+}
+
 g.points circle.visible {
     fill: hsl(0, 50%, 50%);
     stroke: white;
