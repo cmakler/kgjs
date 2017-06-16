@@ -51,7 +51,7 @@ module KG {
 
         // the model serves as a model, and can evaluate expressions within the context of that model
         eval(name) {
-            let params = this.params;
+            let p = this.params;
 
             // don't just evaluate numbers
             if (typeof name == 'number') {
@@ -60,20 +60,21 @@ module KG {
             }
 
             // check to see if name is a param
-            else if (params.hasOwnProperty(name)) {
+            else if (p.hasOwnProperty(name)) {
                 //console.log('parsed', name, 'as a parameter');
-                return params[name].value
+                return p[name].value
             }
 
             // collect current parameter values in a p object
-            let p = this.currentParamValues();
+            let params = this.currentParamValues();
 
 
 
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
-            // TODO this isn't working; math.eval is "not available"
             let v = function (s) {
-                return math.eval(s, p)
+                let compiledMath = math.compile(s);
+                let parsedMath = compiledMath.eval();
+                return parsedMath;
             };
 
             // try to evaluate using mathjs
@@ -90,7 +91,7 @@ module KG {
                 try {
                     let result = eval(name);
                     //console.log('parsed', name, 'as an expression with value', result);
-                    return eval(name);
+                    return result;
                 }
 
                 catch (err) {

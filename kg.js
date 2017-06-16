@@ -134,22 +134,23 @@ var KG;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model
         Model.prototype.eval = function (name) {
-            var params = this.params;
+            var p = this.params;
             // don't just evaluate numbers
             if (typeof name == 'number') {
                 //console.log('parsed', name, 'as a number');
                 return name;
             }
-            else if (params.hasOwnProperty(name)) {
+            else if (p.hasOwnProperty(name)) {
                 //console.log('parsed', name, 'as a parameter');
-                return params[name].value;
+                return p[name].value;
             }
             // collect current parameter values in a p object
-            var p = this.currentParamValues();
+            var params = this.currentParamValues();
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
-            // TODO this isn't working; math.eval is "not available"
             var v = function (s) {
-                return math.eval(s, p);
+                var compiledMath = math.compile(s);
+                var parsedMath = compiledMath.eval();
+                return parsedMath;
             };
             // try to evaluate using mathjs
             try {
@@ -163,7 +164,7 @@ var KG;
                 try {
                     var result = eval(name);
                     //console.log('parsed', name, 'as an expression with value', result);
-                    return eval(name);
+                    return result;
                 }
                 catch (err) {
                     // if that doesn't work, try to evaluate using native js eval

@@ -54,7 +54,7 @@
             "y2": "yB",
             "xScaleName": "x",
             "yScaleName": "y",
-            "color": "green",
+            "color": "(params.xB > 10) ? 'green' : 'blue'",
             "interaction": {
               "dragUpdates": [
                 {
@@ -107,7 +107,7 @@
           {
             "x": 2,
             "y": "yA",
-            "text": "`A = (2, ${p.yA.toFixed(1)})`",
+            "text": "`A = (2, ${params.yA.toFixed(1)})`",
             "xScaleName": "x",
             "yScaleName": "y",
             "xPixelOffset": 5,
@@ -125,7 +125,7 @@
           {
             "x": "xB",
             "y": "yB",
-            "text": "`B = (${p.xB.toFixed(2)}, ${p.yB})`",
+            "text": "`B = (${params.xB.toFixed(2)}, ${params.yB})`",
             "xScaleName": "x",
             "yScaleName": "y",
             "xPixelOffset": 5,
