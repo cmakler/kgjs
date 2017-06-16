@@ -122,6 +122,16 @@ var KG;
             this.updateListeners.push(updateListener);
             return this;
         };
+        Model.prototype.currentParamValues = function () {
+            var params = this.params;
+            var p = {};
+            for (var paramName in params) {
+                if (params.hasOwnProperty(paramName)) {
+                    p[paramName] = params[paramName].value;
+                }
+            }
+            return p;
+        };
         // the model serves as a model, and can evaluate expressions within the context of that model
         Model.prototype.eval = function (name) {
             var params = this.params;
@@ -135,12 +145,7 @@ var KG;
                 return params[name].value;
             }
             // collect current parameter values in a p object
-            var p = {};
-            for (var paramName in params) {
-                if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = params[paramName].value;
-                }
-            }
+            var p = this.currentParamValues();
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             // TODO this isn't working; math.eval is "not available"
             var v = function (s) {
@@ -425,7 +430,8 @@ var KG;
             vo.yScale = def.view.scales[def.yScaleName];
             def.interaction = _.defaults(def.interaction || {}, {
                 viewObject: vo,
-                model: vo.model
+                model: vo.model,
+                dragUpdates: []
             });
             vo.interactionHandler = new KG.InteractionHandler(def.interaction);
             vo.draw(def.layer).update();
@@ -441,6 +447,30 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var DragUpdateListener = (function (_super) {
+        __extends(DragUpdateListener, _super);
+        function DragUpdateListener(def) {
+            var _this = this;
+            def.updatables = ['draggable'];
+            def.draggable = !!def.draggable;
+            _this = _super.call(this, def) || this;
+            var d = _this;
+            d.dragParam = def.dragParam;
+            d.dragUpdateExpression = def.dragUpdateExpression;
+            return _this;
+        }
+        DragUpdateListener.prototype.updateDrag = function (coords) {
+            var d = this;
+            d.draggable = true; //TODO make things draggable or not
+            if (d.draggable) {
+                var compiledMath = math.compile(d.dragUpdateExpression);
+                var parsedMath = compiledMath.eval(coords);
+                d.model.updateParam(d.dragParam, parsedMath);
+            }
+        };
+        return DragUpdateListener;
+    }(KG.UpdateListener));
+    KG.DragUpdateListener = DragUpdateListener;
     var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
@@ -448,26 +478,43 @@ var KG;
             def.updatables = ['xDrag', 'yDrag'];
             _this = _super.call(this, def) || this;
             _this.update();
+            _this.dragUpdateListeners = def.dragUpdates.map(function (d) {
+                d.model = def.model;
+                return new DragUpdateListener(d);
+            });
             return _this;
         }
+        InteractionHandler.prototype.startDrag = function (handler) {
+            handler.scope = _.defaults(handler.model.currentParamValues(), {
+                x0: handler.def.viewObject.xScale.invert(d3.event.x),
+                y0: handler.def.viewObject.yScale.invert(d3.event.y)
+            });
+        };
         InteractionHandler.prototype.onDrag = function (handler) {
-            // get scaled x and y coordiantes of the drag event
-            var coords = {
-                x: handler.def.viewObject.xScale.invert(d3.event.x),
-                y: handler.def.viewObject.yScale.invert(d3.event.y)
-            };
-            // if horizontal dragging enabled, update the xDragUpdateParam with the evaluated value of xDragUpdateValue
-            if (handler.xDrag) {
-                handler.model.updateParam(handler.def.xDragUpdateParam, math.eval(handler.def.xDragUpdateValue, coords));
-            }
-            // if vertical dragging enabled, update the yDragUpdateParam with the evaluated value of yDragUpdateValue
-            if (handler.yDrag) {
-                handler.model.updateParam(handler.def.yDragUpdateParam, math.eval(handler.def.yDragUpdateValue, coords));
-            }
+            handler.scope.x = handler.def.viewObject.xScale.invert(d3.event.x);
+            handler.scope.y = handler.def.viewObject.yScale.invert(d3.event.y);
+            handler.scope.dx = handler.scope.x - handler.scope.x0;
+            handler.scope.dy = handler.scope.y - handler.scope.y0;
+            handler.dragUpdateListeners.forEach(function (d) {
+                d.updateDrag(handler.scope);
+            });
+        };
+        InteractionHandler.prototype.endDrag = function (handler) {
+            handler.scope = {};
+            console.log('finished dragging');
         };
         InteractionHandler.prototype.addTrigger = function (element) {
             var handler = this;
-            element.call(d3.drag().on('drag', function () { handler.onDrag(handler); }));
+            element.call(d3.drag()
+                .on('start', function () {
+                handler.startDrag(handler);
+            })
+                .on('drag', function () {
+                handler.onDrag(handler);
+            })
+                .on('end', function () {
+                handler.endDrag(handler);
+            }));
         };
         return InteractionHandler;
     }(KG.UpdateListener));
@@ -526,7 +573,8 @@ var KG;
         Segment.prototype.draw = function (layer) {
             var segment = this;
             //initialize line
-            segment.line = layer.append('line');
+            segment.line = layer.append('line').attr('class', 'draggable').attr('stroke-width', '5px');
+            segment.interactionHandler.addTrigger(segment.line);
             return segment;
         };
         Segment.prototype.update = function () {

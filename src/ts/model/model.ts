@@ -5,6 +5,7 @@ module KG {
     export interface IModel {
         params: Param[];
         eval: (name: string) => any;
+        currentParamValues: () => {};
         updateListeners: UpdateListener[];
         addUpdateListener: (updateListener: UpdateListener) => Model;
     }
@@ -37,6 +38,17 @@ module KG {
             return this;
         }
 
+        currentParamValues() {
+            let params = this.params;
+            let p = {};
+            for (const paramName in params) {
+                if (params.hasOwnProperty(paramName)) {
+                    p[paramName] = params[paramName].value;
+                }
+            }
+            return p;
+        }
+
         // the model serves as a model, and can evaluate expressions within the context of that model
         eval(name) {
             let params = this.params;
@@ -54,13 +66,9 @@ module KG {
             }
 
             // collect current parameter values in a p object
-            let p = {};
+            let p = this.currentParamValues();
 
-            for (const paramName in params) {
-                if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = params[paramName].value;
-                }
-            }
+
 
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             // TODO this isn't working; math.eval is "not available"

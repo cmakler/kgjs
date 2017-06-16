@@ -69,12 +69,6 @@ g.grid rect {
     stroke: hsl(60, 10%, 95%);
 }
 
-g.track line {
-    stroke: white;
-    stroke-opacity: 0.5;
-    stroke-width: 15px;
-}
-
 g.interpolated circle {
     fill: hsl(0, 100%, 20%);
     stroke: white;
@@ -95,6 +89,10 @@ g.points circle {
     stroke: hsl(0, 50%, 50%);
     stroke-width: 1px;
     stroke-opacity: 0.0;
+    pointer-events: all;
+}
+
+g.segments line {
     pointer-events: all;
 }
 

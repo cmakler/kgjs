@@ -28,7 +28,9 @@ module KG {
             let segment = this;
 
             //initialize line
-            segment.line = layer.append('line');
+            segment.line = layer.append('line').attr('class','draggable').attr('stroke-width','5px');
+
+            segment.interactionHandler.addTrigger(segment.line);
 
             return segment;
         }

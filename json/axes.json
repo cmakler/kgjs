@@ -46,7 +46,7 @@
         }
       ],
       "objects": {
-        "segments" : [
+        "segments": [
           {
             "x1": 2,
             "y1": "yA",
@@ -54,7 +54,19 @@
             "y2": "yB",
             "xScaleName": "x",
             "yScaleName": "y",
-            "color": "green"
+            "color": "green",
+            "interaction": {
+              "dragUpdates": [
+                {
+                  "dragParam": "yA",
+                  "dragUpdateExpression": "yA + dy"
+                },
+                {
+                  "dragParam": "yB",
+                  "dragUpdateExpression": "yB + dy"
+                }
+              ]
+            }
           }
         ],
         "points": [
@@ -64,10 +76,12 @@
             "xScaleName": "x",
             "yScaleName": "y",
             "interaction": {
-              "xDrag": false,
-              "yDrag": true,
-              "yDragUpdateParam": "yA",
-              "yDragUpdateValue": "y"
+              "dragUpdates": [
+                {
+                  "dragParam": "yA",
+                  "dragUpdateExpression": "yA + dy"
+                }
+              ]
             }
           },
           {
@@ -76,12 +90,16 @@
             "xScaleName": "x",
             "yScaleName": "y",
             "interaction": {
-              "xDrag": true,
-              "yDrag": true,
-              "xDragUpdateParam": "xB",
-              "xDragUpdateValue": "x",
-              "yDragUpdateParam": "yB",
-              "yDragUpdateValue": "y"
+              "dragUpdates": [
+                {
+                  "dragParam": "xB",
+                  "dragUpdateExpression": "xB + dx"
+                },
+                {
+                  "dragParam": "yB",
+                  "dragUpdateExpression": "yB + dy"
+                }
+              ]
             }
           }
         ],

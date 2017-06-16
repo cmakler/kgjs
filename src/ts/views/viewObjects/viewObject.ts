@@ -31,7 +31,8 @@ module KG {
 
             def.interaction = _.defaults(def.interaction || {}, {
                 viewObject: vo,
-                model: vo.model
+                model: vo.model,
+                dragUpdates: []
             });
             vo.interactionHandler = new InteractionHandler(def.interaction);
             vo.draw(def.layer).update();
