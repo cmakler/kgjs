@@ -29,12 +29,12 @@ module KG {
 
         }
 
-        updateDrag(coords) {
+        updateDrag(scope:{params: {}, drag: {}}) {
             const d = this;
             d.draggable = true; //TODO make things draggable or not
             if (d.draggable) {
                 let compiledMath = math.compile(d.dragUpdateExpression);
-                let parsedMath = compiledMath.eval(coords);
+                let parsedMath = compiledMath.eval(scope);
                 d.model.updateParam(d.dragParam, parsedMath);
             }
         }
@@ -51,7 +51,7 @@ module KG {
 
     export class InteractionHandler extends UpdateListener implements IInteractionHandler {
 
-        private scope: number;
+        private scope: {params: {}, drag: {}};
         private dragUpdateListeners: DragUpdateListener[];
 
         constructor(def: InteractionHandlerDefinition) {
@@ -62,21 +62,22 @@ module KG {
                 d.model = def.model;
                 return new DragUpdateListener(d)
             });
+            this.scope = {params: {}, drag: {}}
         }
 
         private startDrag(handler) {
-            handler.scope = _.defaults(handler.model.currentParamValues(),{
-                x0: handler.def.viewObject.xScale.invert(d3.event.x),
-                y0: handler.def.viewObject.yScale.invert(d3.event.y)
-            });
+            handler.scope.params = handler.model.currentParamValues();
+            handler.scope.drag.x0 = handler.def.viewObject.xScale.invert(d3.event.x);
+            handler.scope.drag.y0 = handler.def.viewObject.yScale.invert(d3.event.y);
         }
 
         private onDrag(handler) {
 
-            handler.scope.x = handler.def.viewObject.xScale.invert(d3.event.x);
-            handler.scope.y = handler.def.viewObject.yScale.invert(d3.event.y);
-            handler.scope.dx = handler.scope.x - handler.scope.x0;
-            handler.scope.dy = handler.scope.y - handler.scope.y0;
+            let drag = handler.scope.drag;
+            drag.x = handler.def.viewObject.xScale.invert(d3.event.x);
+            drag.y = handler.def.viewObject.yScale.invert(d3.event.y);
+            drag.dx = drag.x - drag.x0;
+            drag.dy = drag.y - drag.y0;
 
             handler.dragUpdateListeners.forEach(function (d) {
                 d.updateDrag(handler.scope)
@@ -84,7 +85,6 @@ module KG {
         }
 
         private endDrag(handler) {
-            handler.scope = {};
             console.log('finished dragging');
         }
 

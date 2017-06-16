@@ -459,12 +459,12 @@ var KG;
             d.dragUpdateExpression = def.dragUpdateExpression;
             return _this;
         }
-        DragUpdateListener.prototype.updateDrag = function (coords) {
+        DragUpdateListener.prototype.updateDrag = function (scope) {
             var d = this;
             d.draggable = true; //TODO make things draggable or not
             if (d.draggable) {
                 var compiledMath = math.compile(d.dragUpdateExpression);
-                var parsedMath = compiledMath.eval(coords);
+                var parsedMath = compiledMath.eval(scope);
                 d.model.updateParam(d.dragParam, parsedMath);
             }
         };
@@ -482,25 +482,25 @@ var KG;
                 d.model = def.model;
                 return new DragUpdateListener(d);
             });
+            _this.scope = { params: {}, drag: {} };
             return _this;
         }
         InteractionHandler.prototype.startDrag = function (handler) {
-            handler.scope = _.defaults(handler.model.currentParamValues(), {
-                x0: handler.def.viewObject.xScale.invert(d3.event.x),
-                y0: handler.def.viewObject.yScale.invert(d3.event.y)
-            });
+            handler.scope.params = handler.model.currentParamValues();
+            handler.scope.drag.x0 = handler.def.viewObject.xScale.invert(d3.event.x);
+            handler.scope.drag.y0 = handler.def.viewObject.yScale.invert(d3.event.y);
         };
         InteractionHandler.prototype.onDrag = function (handler) {
-            handler.scope.x = handler.def.viewObject.xScale.invert(d3.event.x);
-            handler.scope.y = handler.def.viewObject.yScale.invert(d3.event.y);
-            handler.scope.dx = handler.scope.x - handler.scope.x0;
-            handler.scope.dy = handler.scope.y - handler.scope.y0;
+            var drag = handler.scope.drag;
+            drag.x = handler.def.viewObject.xScale.invert(d3.event.x);
+            drag.y = handler.def.viewObject.yScale.invert(d3.event.y);
+            drag.dx = drag.x - drag.x0;
+            drag.dy = drag.y - drag.y0;
             handler.dragUpdateListeners.forEach(function (d) {
                 d.updateDrag(handler.scope);
             });
         };
         InteractionHandler.prototype.endDrag = function (handler) {
-            handler.scope = {};
             console.log('finished dragging');
         };
         InteractionHandler.prototype.addTrigger = function (element) {

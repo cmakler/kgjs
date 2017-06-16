@@ -59,11 +59,11 @@
               "dragUpdates": [
                 {
                   "dragParam": "yA",
-                  "dragUpdateExpression": "yA + dy"
+                  "dragUpdateExpression": "params.yA + drag.dy"
                 },
                 {
                   "dragParam": "yB",
-                  "dragUpdateExpression": "yB + dy"
+                  "dragUpdateExpression": "params.yB + drag.dy"
                 }
               ]
             }
@@ -79,7 +79,7 @@
               "dragUpdates": [
                 {
                   "dragParam": "yA",
-                  "dragUpdateExpression": "yA + dy"
+                  "dragUpdateExpression": "drag.y"
                 }
               ]
             }
@@ -93,11 +93,11 @@
               "dragUpdates": [
                 {
                   "dragParam": "xB",
-                  "dragUpdateExpression": "xB + dx"
+                  "dragUpdateExpression": "drag.x"
                 },
                 {
                   "dragParam": "yB",
-                  "dragUpdateExpression": "yB + dy"
+                  "dragUpdateExpression": "drag.y"
                 }
               ]
             }
