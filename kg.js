@@ -556,25 +556,25 @@ var KG;
             return _this;
         }
         Point.prototype.draw = function (layer) {
-            var point = this;
+            var p = this;
             //initialize circle
-            point.circle = layer.append('g')
+            p.circle = layer.append('g')
                 .attr('class', "draggable");
-            point.circle.append('circle')
+            p.circle.append('circle')
                 .attr('class', "invisible")
                 .attr('r', 20);
-            point.circle.append('circle')
+            p.circle.append('circle')
                 .attr('class', "visible")
                 .attr('r', 6.5);
-            point.interactionHandler.addTrigger(point.circle);
-            return point;
+            p.interactionHandler.addTrigger(p.circle);
+            return p;
         };
         Point.prototype.update = function () {
-            var point = _super.prototype.update.call(this);
-            if (point.hasChanged) {
-                point.circle.attr('transform', "translate(" + point.xScale.scale(point.x) + " " + point.yScale.scale(point.y) + ")");
+            var p = _super.prototype.update.call(this);
+            if (p.hasChanged) {
+                p.circle.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
             }
-            return point;
+            return p;
         };
         return Point;
     }(KG.ViewObject));
