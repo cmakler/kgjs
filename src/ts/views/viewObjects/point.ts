@@ -20,32 +20,31 @@ module KG {
 
         draw(layer) {
 
-            let point = this;
+            let p = this;
 
             //initialize circle
-            point.circle = layer.append('g')
+            p.circle = layer.append('g')
                 .attr('class', "draggable");
 
-            point.circle.append('circle')
+            p.circle.append('circle')
                 .attr('class', "invisible")
                 .attr('r', 20);
 
-            point.circle.append('circle')
+            p.circle.append('circle')
                 .attr('class', "visible")
                 .attr('r', 6.5);
 
-            point.interactionHandler.addTrigger(point.circle);
+            p.interactionHandler.addTrigger(p.circle);
 
-            return point;
+            return p;
         }
 
         update() {
-            let point = super.update();
-            if (point.hasChanged) {
-                point.circle.attr('transform',
-                    `translate(${point.xScale.scale(point.x)} ${point.yScale.scale(point.y)})`);
+            let p = super.update();
+            if (p.hasChanged) {
+                p.circle.attr('transform',`translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
             }
-            return point;
+            return p;
         }
     }
 
