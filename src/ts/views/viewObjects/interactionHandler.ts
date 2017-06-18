@@ -57,7 +57,7 @@ module KG {
         constructor(def: InteractionHandlerDefinition) {
             def.updatables = ['xDrag', 'yDrag'];
             super(def);
-            this.update();
+            this.update(true);
             this.dragUpdateListeners = def.dragUpdates.map(function (d) {
                 d.model = def.model;
                 return new DragUpdateListener(d)
@@ -67,15 +67,15 @@ module KG {
 
         private startDrag(handler) {
             handler.scope.params = handler.model.currentParamValues();
-            handler.scope.drag.x0 = handler.def.viewObject.xScale.invert(d3.event.x);
-            handler.scope.drag.y0 = handler.def.viewObject.yScale.invert(d3.event.y);
+            handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+            handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
         }
 
         private onDrag(handler) {
 
             let drag = handler.scope.drag;
-            drag.x = handler.def.viewObject.xScale.invert(d3.event.x);
-            drag.y = handler.def.viewObject.yScale.invert(d3.event.y);
+            drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+            drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
             drag.dx = drag.x - drag.x0;
             drag.dy = drag.y - drag.y0;
 

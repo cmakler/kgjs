@@ -46,8 +46,8 @@ module KG {
             return label;
         }
 
-        update() {
-            let label = super.update();
+        update(force) {
+            let label = super.update(force);
             if (label.hasChanged) {
                 label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
                 label.element.style('top', label.yScale.scale(label.y) + label.yPixelOffset + 'px');

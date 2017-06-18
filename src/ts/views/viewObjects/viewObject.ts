@@ -35,7 +35,7 @@ module KG {
                 dragUpdates: []
             });
             vo.interactionHandler = new InteractionHandler(def.interaction);
-            vo.draw(def.layer).update();
+            vo.draw(def.layer).update(true);
         }
 
         draw(layer) {

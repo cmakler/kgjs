@@ -39,8 +39,8 @@ module KG {
             return p;
         }
 
-        update() {
-            let p = super.update();
+        update(force) {
+            let p = super.update(force);
             if (p.hasChanged) {
                 p.circle.attr('transform',`translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
             }

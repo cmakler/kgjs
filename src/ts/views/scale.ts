@@ -9,25 +9,16 @@ module KG {
         domainMax: any;
         rangeMin: any;
         rangeMax: any;
-        range: {min: number; max: number;}; // fractional amounts of enclosing view dimension
+        range: { min: number; max: number; }; // fractional amounts of enclosing view dimension
     }
 
     export interface IScale {
-        name: string;
-        axis: string;
-        domainMin: any;
-        domainMax: any;
-        rangeMin: any;
-        rangeMax: any;
-        extent: number; // pixel length of enclosing view dimension
-        scale: (value:number) => number;
-        invert: (pixels:number) => number;
+        scale: d3.ScaleLinear<Range, Range>
     }
 
     export class Scale extends UpdateListener implements IScale {
 
-        public name;
-        public axis;
+        public scale;
         public domainMin;
         public domainMax;
         public rangeMin;
@@ -35,24 +26,24 @@ module KG {
         public extent;
 
 
-        constructor(def:ScaleDefinition) {
-            def.updatables = ['domainMin','domainMax','rangeMin','rangeMax'];
+        constructor(def: ScaleDefinition) {
+            def.updatables = ['domainMin', 'domainMax'];
             super(def);
-            this.update();
+            this.scale = d3.scaleLinear();
+            this.rangeMin = def.rangeMin;
+            this.rangeMax = def.rangeMax;
+            this.update(true);
         }
 
-        scale(value) {
-            const s = this;
-            let percent = (value - s.domainMin)/(s.domainMax - s.domainMin);
-            return (s.rangeMin + percent*(s.rangeMax - s.rangeMin))*s.extent;
-        }
-
-        invert(pixels) {
-            const s = this;
-            let pixelMin = s.rangeMin*s.extent,
-                pixelMax = s.rangeMax*s.extent;
-            let percent = (pixels - pixelMin)/(pixelMax - pixelMin);
-            return s.domainMin + percent*(s.domainMax - s.domainMin);
+        update(force) {
+            let s = super.update(force);
+            if (s.extent != undefined) {
+                const rangeMin = s.rangeMin * s.extent,
+                    rangeMax = s.rangeMax * s.extent;
+                s.scale.domain([s.domainMin, s.domainMax]);
+                s.scale.range([rangeMin, rangeMax]);
+            }
+            return s;
         }
 
     }

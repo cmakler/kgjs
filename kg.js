@@ -1,3 +1,5 @@
+/// <reference path="../../kg.ts" />
+'use strict';
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -106,17 +108,16 @@ var KG;
 var KG;
 (function (KG) {
     var Model = (function () {
-        function Model(modelDef) {
+        function Model(def) {
             var model = this;
             model.updateListeners = [];
             // initialize parameters
             model.params = {};
-            for (var paramName in modelDef.params) {
-                if (modelDef.params.hasOwnProperty(paramName)) {
-                    model.params[paramName] = new KG.Param(modelDef.params[paramName]);
+            for (var paramName in def.params) {
+                if (def.params.hasOwnProperty(paramName)) {
+                    model.params[paramName] = new KG.Param(def.params[paramName]);
                 }
             }
-            model.update();
         }
         Model.prototype.addUpdateListener = function (updateListener) {
             this.updateListeners.push(updateListener);
@@ -181,13 +182,13 @@ var KG;
                 model.params[name].update(newValue);
                 // if param has changed, propagate change to fields and children
                 if (oldValue != model.params[name].value) {
-                    model.update();
+                    model.update(false);
                 }
             }
         };
-        Model.prototype.update = function () {
+        Model.prototype.update = function (force) {
             this.updateListeners.forEach(function (listener) {
-                listener.update();
+                listener.update(force);
             });
         };
         return Model;
@@ -307,9 +308,9 @@ var KG;
             }
             return u;
         };
-        UpdateListener.prototype.update = function () {
+        UpdateListener.prototype.update = function (force) {
             var u = this;
-            u.hasChanged = false;
+            u.hasChanged = !!force;
             u.updatables.forEach(function (name) { u.updateDef(name); });
             return u;
         };
@@ -357,6 +358,12 @@ var KG;
                         new KG.Segment(prepareDef_1(segmentDef, segmentLayer_1));
                     });
                 }
+                if (def.objects.hasOwnProperty('axes')) {
+                    var axisLayer_1 = v.svg.append('g').attr('class', 'axes');
+                    def.objects.axes.forEach(function (axisDef) {
+                        new KG.Axis(prepareDef_1(axisDef, axisLayer_1));
+                    });
+                }
                 if (def.objects.hasOwnProperty('points')) {
                     var pointLayer_1 = v.svg.append('g').attr('class', 'points');
                     def.objects.points.forEach(function (pointDef) {
@@ -385,7 +392,7 @@ var KG;
                     s.extent = (s.axis == 'x') ? vw : vh;
                 }
             }
-            v.container.model.update();
+            v.container.model.update(true);
             return v;
         };
         return View;
@@ -399,21 +406,22 @@ var KG;
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
-            def.updatables = ['domainMin', 'domainMax', 'rangeMin', 'rangeMax'];
+            def.updatables = ['domainMin', 'domainMax'];
             _this = _super.call(this, def) || this;
-            _this.update();
+            _this.scale = d3.scaleLinear();
+            _this.rangeMin = def.rangeMin;
+            _this.rangeMax = def.rangeMax;
+            _this.update(true);
             return _this;
         }
-        Scale.prototype.scale = function (value) {
-            var s = this;
-            var percent = (value - s.domainMin) / (s.domainMax - s.domainMin);
-            return (s.rangeMin + percent * (s.rangeMax - s.rangeMin)) * s.extent;
-        };
-        Scale.prototype.invert = function (pixels) {
-            var s = this;
-            var pixelMin = s.rangeMin * s.extent, pixelMax = s.rangeMax * s.extent;
-            var percent = (pixels - pixelMin) / (pixelMax - pixelMin);
-            return s.domainMin + percent * (s.domainMax - s.domainMin);
+        Scale.prototype.update = function (force) {
+            var s = _super.prototype.update.call(this, force);
+            if (s.extent != undefined) {
+                var rangeMin = s.rangeMin * s.extent, rangeMax = s.rangeMax * s.extent;
+                s.scale.domain([s.domainMin, s.domainMax]);
+                s.scale.range([rangeMin, rangeMax]);
+            }
+            return s;
         };
         return Scale;
     }(KG.UpdateListener));
@@ -435,7 +443,7 @@ var KG;
                 dragUpdates: []
             });
             vo.interactionHandler = new KG.InteractionHandler(def.interaction);
-            vo.draw(def.layer).update();
+            vo.draw(def.layer).update(true);
             return _this;
         }
         ViewObject.prototype.draw = function (layer) {
@@ -478,7 +486,7 @@ var KG;
             var _this = this;
             def.updatables = ['xDrag', 'yDrag'];
             _this = _super.call(this, def) || this;
-            _this.update();
+            _this.update(true);
             _this.dragUpdateListeners = def.dragUpdates.map(function (d) {
                 d.model = def.model;
                 return new DragUpdateListener(d);
@@ -488,13 +496,13 @@ var KG;
         }
         InteractionHandler.prototype.startDrag = function (handler) {
             handler.scope.params = handler.model.currentParamValues();
-            handler.scope.drag.x0 = handler.def.viewObject.xScale.invert(d3.event.x);
-            handler.scope.drag.y0 = handler.def.viewObject.yScale.invert(d3.event.y);
+            handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+            handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
         };
         InteractionHandler.prototype.onDrag = function (handler) {
             var drag = handler.scope.drag;
-            drag.x = handler.def.viewObject.xScale.invert(d3.event.x);
-            drag.y = handler.def.viewObject.yScale.invert(d3.event.y);
+            drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+            drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
             drag.dx = drag.x - drag.x0;
             drag.dy = drag.y - drag.y0;
             handler.dragUpdateListeners.forEach(function (d) {
@@ -524,45 +532,6 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Axis = (function (_super) {
-        __extends(Axis, _super);
-        function Axis(def) {
-            return _super.call(this, def) || this;
-        }
-        Axis.prototype.draw = function (layer) {
-            var axis = this, def = axis.def;
-            axis.line = def.layer.append('line')
-                .attr('class', "axis");
-            if (def.orientation == 'top' || def.orientation == 'bottom') {
-                var intercept = def.intercept || axis.yScale.domainMin;
-                axis.origin = { x: axis.xScale.domainMin, y: intercept };
-                axis.end = { x: axis.xScale.domainMax, y: intercept };
-            }
-            else {
-                var intercept = def.intercept || axis.xScale.domainMin;
-                axis.origin = { x: intercept, y: axis.yScale.domainMin };
-                axis.end = { x: intercept, y: axis.yScale.domainMax };
-            }
-            return axis;
-        };
-        Axis.prototype.update = function () {
-            var axis = _super.prototype.update.call(this);
-            if (axis.hasChanged) {
-                console.log('redrawing axis');
-                axis.line.attr('x1', axis.xScale.scale(axis.origin.x));
-                axis.line.attr('y1', axis.yScale.scale(axis.origin.y));
-                axis.line.attr('x2', axis.xScale.scale(axis.end.x));
-                axis.line.attr('y2', axis.yScale.scale(axis.end.y));
-            }
-            return axis;
-        };
-        return Axis;
-    }(KG.ViewObject));
-    KG.Axis = Axis;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
     var Segment = (function (_super) {
         __extends(Segment, _super);
         function Segment(def) {
@@ -574,13 +543,19 @@ var KG;
         Segment.prototype.draw = function (layer) {
             var segment = this;
             //initialize line
-            segment.line = layer.append('line').attr('class', 'draggable').attr('stroke-width', '5px');
-            segment.interactionHandler.addTrigger(segment.line);
+            segment.g = layer.append('g').attr('class', 'draggable');
+            segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
+            segment.line = segment.g.append('line').attr('stroke-width', '1px');
+            segment.interactionHandler.addTrigger(segment.g);
             return segment;
         };
-        Segment.prototype.update = function () {
-            var segment = _super.prototype.update.call(this);
+        Segment.prototype.update = function (force) {
+            var segment = _super.prototype.update.call(this, force);
             if (segment.hasChanged) {
+                segment.dragLine.attr("x1", segment.xScale.scale(segment.x1));
+                segment.dragLine.attr("y1", segment.yScale.scale(segment.y1));
+                segment.dragLine.attr("x2", segment.xScale.scale(segment.x2));
+                segment.dragLine.attr("y2", segment.yScale.scale(segment.y2));
                 segment.line.attr("x1", segment.xScale.scale(segment.x1));
                 segment.line.attr("y1", segment.yScale.scale(segment.y1));
                 segment.line.attr("x2", segment.xScale.scale(segment.x2));
@@ -592,6 +567,42 @@ var KG;
         return Segment;
     }(KG.ViewObject));
     KG.Segment = Segment;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var Axis = (function (_super) {
+        __extends(Axis, _super);
+        function Axis(def) {
+            var _this = this;
+            def = _.defaults(def, {
+                ticks: 5,
+                intercept: 0
+            });
+            def.updatables = ['ticks', 'intercept'];
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Axis.prototype.draw = function (layer) {
+            var a = this;
+            a.g = layer.append('g').attr('class', 'axis');
+            return a;
+        };
+        Axis.prototype.update = function (force) {
+            var a = _super.prototype.update.call(this, force);
+            switch (a.def.orient) {
+                case 'bottom':
+                    a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.g.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
+                    return a;
+                case 'left':
+                    a.g.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.g.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
+            }
+            return a;
+        };
+        return Axis;
+    }(KG.ViewObject));
+    KG.Axis = Axis;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -618,8 +629,8 @@ var KG;
             p.interactionHandler.addTrigger(p.circle);
             return p;
         };
-        Point.prototype.update = function () {
-            var p = _super.prototype.update.call(this);
+        Point.prototype.update = function (force) {
+            var p = _super.prototype.update.call(this, force);
             if (p.hasChanged) {
                 p.circle.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
             }
@@ -656,8 +667,8 @@ var KG;
             label.interactionHandler.addTrigger(label.element);
             return label;
         };
-        Label.prototype.update = function () {
-            var label = _super.prototype.update.call(this);
+        Label.prototype.update = function (force) {
+            var label = _super.prototype.update.call(this, force);
             if (label.hasChanged) {
                 label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
                 label.element.style('top', label.yScale.scale(label.y) + label.yPixelOffset + 'px');
@@ -682,8 +693,8 @@ var KG;
 /// <reference path="views/scale.ts" />
 /// <reference path="views/viewObjects/viewObject.ts" />
 /// <reference path="views/viewObjects/interactionHandler.ts" />
-/// <reference path="views/compositeObjects/axis.ts" />
 /// <reference path="views/viewObjects/segment.ts" />
+/// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
 /// <reference path="views/viewObjects/label.ts" />
 // this file provides the interface with the overall web page

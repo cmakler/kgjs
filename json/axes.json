@@ -3,19 +3,19 @@
   "params": {
     "yA": {
       "value": 5,
-      "min": 1,
+      "min": 0,
       "max": 9,
       "round": 0.5
     },
     "xB": {
       "value": 12,
-      "min": 1,
+      "min": 0,
       "max": 15,
       "round": 0.25
     },
     "yB": {
       "value": 8,
-      "min": 1,
+      "min": 0,
       "max": 9
     }
   },
@@ -39,7 +39,7 @@
         {
           "name": "y",
           "axis": "y",
-          "domainMin": 0,
+          "domainMin": -10,
           "domainMax": 10,
           "rangeMin": 0.95,
           "rangeMax": 0.05
@@ -67,6 +67,18 @@
                 }
               ]
             }
+          }
+        ],
+        "axes": [
+          {
+            "xScaleName": "x",
+            "yScaleName": "y",
+            "orient": "left"
+          },
+          {
+            "xScaleName": "x",
+            "yScaleName": "y",
+            "orient": "bottom"
           }
         ],
         "points": [

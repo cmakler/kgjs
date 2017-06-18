@@ -15,7 +15,7 @@ module KG {
         public params;
         public updateListeners;
 
-        constructor(modelDef) {
+        constructor(def) {
 
             let model = this;
 
@@ -23,13 +23,11 @@ module KG {
 
             // initialize parameters
             model.params = {};
-            for (const paramName in modelDef.params) {
-                if (modelDef.params.hasOwnProperty(paramName)) {
-                    model.params[paramName] = new Param(modelDef.params[paramName]);
+            for (const paramName in def.params) {
+                if (def.params.hasOwnProperty(paramName)) {
+                    model.params[paramName] = new Param(def.params[paramName]);
                 }
             }
-
-            model.update();
 
         }
 
@@ -114,14 +112,14 @@ module KG {
 
                 // if param has changed, propagate change to fields and children
                 if (oldValue != model.params[name].value) {
-                    model.update();
+                    model.update(false);
                 }
             }
         }
 
-        update() {
+        update(force) {
             this.updateListeners.forEach(function (listener) {
-                listener.update()
+                listener.update(force)
             });
         }
 

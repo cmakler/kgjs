@@ -15,8 +15,8 @@
 
 /// <reference path="views/viewObjects/viewObject.ts" />
 /// <reference path="views/viewObjects/interactionHandler.ts" />
-/// <reference path="views/compositeObjects/axis.ts" />
 /// <reference path="views/viewObjects/segment.ts" />
+/// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
 /// <reference path="views/viewObjects/label.ts" />
 

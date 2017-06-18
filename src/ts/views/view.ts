@@ -13,7 +13,8 @@ module KG {
         dim?: DimensionsDefinition;
         scales: ScaleDefinition[];
         objects: {
-            segments?: SegmentDefinition[]
+            segments?: SegmentDefinition[];
+            axes?: AxisDefinition[];
             points?: PointDefinition[];
             labels?: LabelDefinition[];
         };
@@ -84,6 +85,12 @@ module KG {
                         new Segment(prepareDef(segmentDef, segmentLayer));
                     });
                 }
+                if (def.objects.hasOwnProperty('axes')) {
+                    let axisLayer = v.svg.append('g').attr('class', 'axes');
+                    def.objects.axes.forEach(function (axisDef) {
+                        new Axis(prepareDef(axisDef, axisLayer));
+                    });
+                }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
                     def.objects.points.forEach(function (pointDef) {
@@ -121,7 +128,7 @@ module KG {
                     s.extent = (s.axis == 'x') ? vw : vh;
                 }
             }
-            v.container.model.update();
+            v.container.model.update(true);
             return v;
         }
 

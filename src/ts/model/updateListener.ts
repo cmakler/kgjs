@@ -9,7 +9,7 @@ module KG {
 
     export interface IUpdateListener {
         model: Model;
-        update: () => UpdateListener;
+        update: (force:boolean) => UpdateListener;
         hasChanged: boolean;
     }
 
@@ -42,9 +42,9 @@ module KG {
             return u;
         }
 
-        update() {
+        update(force) {
             let u = this;
-            u.hasChanged = false;
+            u.hasChanged = !!force;
             u.updatables.forEach(function(name) { u.updateDef(name) });
             return u;
         }
