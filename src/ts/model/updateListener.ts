@@ -5,6 +5,7 @@ module KG {
     export interface UpdateListenerDefinition {
         model: Model;
         updatables: string[];
+        constants: any[];
     }
 
     export interface IUpdateListener {
@@ -21,10 +22,14 @@ module KG {
         public hasChanged;
 
         constructor(def: UpdateListenerDefinition) {
-            this.def = def;
-            this.model = def.model;
-            this.model.addUpdateListener(this);
-            this.updatables = def.updatables || [];
+            def = _.defaults(def,{updatables: [],constants: []});
+            def.constants.push('model','updatables');
+            let ul = this;
+            ul.def = def;
+            def.constants.forEach(function(c) {
+                ul[c] = def[c];
+            });
+            ul.model.addUpdateListener(this);
         }
 
         private updateDef(name) {

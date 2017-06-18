@@ -44,12 +44,6 @@ svg {
     overflow: visible;
 }
 
-/* the draggable elements all have data-name= ; I want them to stand out */
-
-.draggable {
-    cursor: move;
-}
-
 /* NOTE: stroke-opacity 0.0 instead of omitting it makes the transitions smoother */
 
 /* {
@@ -89,7 +83,6 @@ g.points circle {
     stroke: hsl(0, 50%, 50%);
     stroke-width: 1px;
     stroke-opacity: 0.0;
-    pointer-events: all;
 }
 
 g.segments line {

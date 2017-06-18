@@ -58,10 +58,12 @@
             "interaction": {
               "dragUpdates": [
                 {
+                  "dragDirections": "y",
                   "dragParam": "yA",
                   "dragUpdateExpression": "params.yA + drag.dy"
                 },
                 {
+                  "dragDirections": "y",
                   "dragParam": "yB",
                   "dragUpdateExpression": "params.yB + drag.dy"
                 }
@@ -90,6 +92,7 @@
             "interaction": {
               "dragUpdates": [
                 {
+                  "dragDirections": "y",
                   "dragParam": "yA",
                   "dragUpdateExpression": "drag.y"
                 }
@@ -128,6 +131,7 @@
             "interaction": {
               "dragUpdates": [
                 {
+                  "dragDirections": "y",
                   "dragParam": "yA",
                   "dragUpdateExpression": "params.yA + drag.dy"
                 }

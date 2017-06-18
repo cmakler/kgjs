@@ -290,10 +290,14 @@ var KG;
 (function (KG) {
     var UpdateListener = (function () {
         function UpdateListener(def) {
-            this.def = def;
-            this.model = def.model;
-            this.model.addUpdateListener(this);
-            this.updatables = def.updatables || [];
+            def = _.defaults(def, { updatables: [], constants: [] });
+            def.constants.push('model', 'updatables');
+            var ul = this;
+            ul.def = def;
+            def.constants.forEach(function (c) {
+                ul[c] = def[c];
+            });
+            ul.model.addUpdateListener(this);
         }
         UpdateListener.prototype.updateDef = function (name) {
             var u = this;
@@ -433,16 +437,22 @@ var KG;
     var ViewObject = (function (_super) {
         __extends(ViewObject, _super);
         function ViewObject(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def = _.defaults(def, { show: true });
+            _this = _super.call(this, def) || this;
             var vo = _this;
+            // the scales determine the coordinate system for this viewObject
             vo.xScale = def.view.scales[def.xScaleName];
             vo.yScale = def.view.scales[def.yScaleName];
+            // the interaction handler manages drag and hover events
             def.interaction = _.defaults(def.interaction || {}, {
                 viewObject: vo,
                 model: vo.model,
                 dragUpdates: []
             });
             vo.interactionHandler = new KG.InteractionHandler(def.interaction);
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
             vo.draw(def.layer).update(true);
             return _this;
         }
@@ -456,44 +466,41 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var DragUpdateListener = (function (_super) {
-        __extends(DragUpdateListener, _super);
-        function DragUpdateListener(def) {
-            var _this = this;
-            def.updatables = ['draggable'];
-            def.draggable = !!def.draggable;
-            _this = _super.call(this, def) || this;
-            var d = _this;
-            d.dragParam = def.dragParam;
-            d.dragUpdateExpression = def.dragUpdateExpression;
-            return _this;
-        }
-        DragUpdateListener.prototype.updateDrag = function (scope) {
-            var d = this;
-            d.draggable = true; //TODO make things draggable or not
-            if (d.draggable) {
-                var compiledMath = math.compile(d.dragUpdateExpression);
-                var parsedMath = compiledMath.eval(scope);
-                d.model.updateParam(d.dragParam, parsedMath);
-            }
-        };
-        return DragUpdateListener;
-    }(KG.UpdateListener));
-    KG.DragUpdateListener = DragUpdateListener;
     var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
-            var _this = this;
-            def.updatables = ['xDrag', 'yDrag'];
-            _this = _super.call(this, def) || this;
-            _this.update(true);
+            var _this = _super.call(this, def) || this;
             _this.dragUpdateListeners = def.dragUpdates.map(function (d) {
                 d.model = def.model;
-                return new DragUpdateListener(d);
+                return new KG.DragUpdateListener(d);
             });
+            _this.update(true);
             _this.scope = { params: {}, drag: {} };
             return _this;
         }
+        InteractionHandler.prototype.update = function (force) {
+            var ih = _super.prototype.update.call(this, force);
+            // first update dragUpdateListeners
+            if (ih.hasChanged && ih.hasOwnProperty('dragUpdateListeners') && (ih.element != undefined)) {
+                var xDrag_1 = false, yDrag_1 = false;
+                ih.dragUpdateListeners.forEach(function (dul) {
+                    dul.update(force);
+                    if (dul.dragDirections == "x") {
+                        xDrag_1 = true;
+                    }
+                    else if (dul.dragDirections == "y") {
+                        yDrag_1 = true;
+                    }
+                    else if (dul.dragDirections == "xy") {
+                        xDrag_1 = true;
+                        yDrag_1 = true;
+                    }
+                });
+                ih.element.style("pointer-events", (xDrag_1 || yDrag_1) ? "all" : "none");
+                ih.element.style("cursor", (xDrag_1 && yDrag_1) ? "move" : xDrag_1 ? "ew-resize" : "ns-resize");
+            }
+            return ih;
+        };
         InteractionHandler.prototype.startDrag = function (handler) {
             handler.scope.params = handler.model.currentParamValues();
             handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
@@ -510,10 +517,11 @@ var KG;
             });
         };
         InteractionHandler.prototype.endDrag = function (handler) {
-            console.log('finished dragging');
+            //console.log('finished dragging');
         };
         InteractionHandler.prototype.addTrigger = function (element) {
             var handler = this;
+            handler.element = element;
             element.call(d3.drag()
                 .on('start', function () {
                 handler.startDrag(handler);
@@ -524,6 +532,7 @@ var KG;
                 .on('end', function () {
                 handler.endDrag(handler);
             }));
+            handler.update(true);
         };
         return InteractionHandler;
     }(KG.UpdateListener));
@@ -707,4 +716,29 @@ for (var i = 0; i < containerDivs.length; i++) {
 window.onresize = function () {
     containers.forEach(function (c) { c.updateDimensions(); });
 };
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var DragUpdateListener = (function (_super) {
+        __extends(DragUpdateListener, _super);
+        function DragUpdateListener(def) {
+            var _this = this;
+            def.updatables = ['draggable', 'dragDirections'];
+            def.constants = ['dragParam', 'dragUpdateExpression'];
+            def = _.defaults(def, { dragDirections: "xy" });
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        DragUpdateListener.prototype.updateDrag = function (scope) {
+            var d = this;
+            if (d.dragDirections.length > 0) {
+                var compiledMath = math.compile(d.dragUpdateExpression);
+                var parsedMath = compiledMath.eval(scope);
+                d.model.updateParam(d.dragParam, parsedMath);
+            }
+        };
+        return DragUpdateListener;
+    }(KG.UpdateListener));
+    KG.DragUpdateListener = DragUpdateListener;
+})(KG || (KG = {}));
 //# sourceMappingURL=kg.js.map
