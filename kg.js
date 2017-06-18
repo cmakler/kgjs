@@ -63,6 +63,20 @@ var _;
     }
     _.defaults = createAssigner(allKeys, true);
 })(_ || (_ = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Generator = (function () {
+        function Generator(def) {
+            this.def = def;
+        }
+        Generator.prototype.addToContainer = function (currentJSON) {
+            return currentJSON;
+        };
+        return Generator;
+    }());
+    KG.Generator = Generator;
+})(KG || (KG = {}));
 /// <reference path="./kg.ts" />
 var KG;
 (function (KG) {
@@ -78,16 +92,20 @@ var KG;
                         data.params[param].value = div.getAttribute(param);
                     }
                 }
+                if (data.hasOwnProperty('generators')) {
+                }
                 container.model = new KG.Model(data);
                 container.aspectRatio = data.aspectRatio || 1;
-                // establish container dimensions
-                container.updateDimensions();
                 // create new view objects from data
                 if (data.hasOwnProperty('views')) {
                     container.views = data.views.map(function (viewDef) {
-                        return new KG.View(container, viewDef);
+                        viewDef.model = container.model;
+                        viewDef.containerDiv = container.div;
+                        return new KG.View(viewDef);
                     });
                 }
+                // establish dimensions of container and views
+                container.updateDimensions();
             });
         }
         Container.prototype.updateDimensions = function () {
@@ -96,8 +114,9 @@ var KG;
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions();
+                v.updateDimensions(container.width, container.height);
             });
+            container.model.update(true);
             return container;
         };
         return Container;
@@ -265,6 +284,7 @@ var KG;
             else {
                 param.value = Math.round(newValue / param.round) * param.round;
             }
+            return param.value;
         };
         // Displays current value of the parameter to desired precision
         // If no precision is given, uses the implied precision given by the rounding parameter
@@ -273,7 +293,7 @@ var KG;
             return d3.format("." + precision + "f")(this.value);
         };
         // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        Param.prototype.positionToValue = function (domain) {
+        Param.prototype.paramScale = function (domain) {
             domain = domain || 100;
             var param = this;
             return d3.scaleLinear()
@@ -325,145 +345,29 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var View = (function () {
-        function View(container, def) {
-            var v = this;
-            v.container = container;
-            v.dimensions = _.defaults(def.dim, { x: 0, y: 0, width: 1, height: 1 });
-            // add div element as a child of the enclosing container
-            v.div = d3.select(container.div).append("div")
-                .style('position', 'relative')
-                .style('background-color', 'white');
-            // add svg element as a child of the div
-            v.svg = v.div.append("svg");
-            // establish scales
-            if (def.hasOwnProperty('scales')) {
-                v.scales = {};
-                for (var i = 0; i < def.scales.length; i++) {
-                    var scaleDef = def.scales[i];
-                    scaleDef.model = container.model;
-                    v.scales[scaleDef.name] = new KG.Scale(scaleDef);
-                }
-            }
-            // set initial dimensions of the div and svg
-            v.updateDimensions();
-            // add child objects
-            if (def.hasOwnProperty('objects')) {
-                //v.viewObjects = [];
-                var prepareDef_1 = function (def, layer) {
-                    def.view = v;
-                    def.model = v.container.model;
-                    def.layer = layer;
-                    return def;
-                };
-                if (def.objects.hasOwnProperty('segments')) {
-                    var segmentLayer_1 = v.svg.append('g').attr('class', 'segments');
-                    def.objects.segments.forEach(function (segmentDef) {
-                        new KG.Segment(prepareDef_1(segmentDef, segmentLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('axes')) {
-                    var axisLayer_1 = v.svg.append('g').attr('class', 'axes');
-                    def.objects.axes.forEach(function (axisDef) {
-                        new KG.Axis(prepareDef_1(axisDef, axisLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('points')) {
-                    var pointLayer_1 = v.svg.append('g').attr('class', 'points');
-                    def.objects.points.forEach(function (pointDef) {
-                        new KG.Point(prepareDef_1(pointDef, pointLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('labels')) {
-                    var labelLayer_1 = v.div.append('div').attr('class', 'labels');
-                    def.objects.labels.forEach(function (labelDef) {
-                        new KG.Label(prepareDef_1(labelDef, labelLayer_1));
-                    });
-                }
-            }
+    var DragUpdateListener = (function (_super) {
+        __extends(DragUpdateListener, _super);
+        function DragUpdateListener(def) {
+            var _this = this;
+            def.updatables = ['draggable', 'dragDirections'];
+            def.constants = ['dragParam', 'dragUpdateExpression'];
+            def = _.defaults(def, { dragDirections: "xy" });
+            _this = _super.call(this, def) || this;
+            return _this;
         }
-        View.prototype.updateDimensions = function () {
-            var v = this, w = v.container.width, h = v.container.height, dim = v.dimensions, vx = dim.x * w, vy = dim.y * h, vw = dim.width * w, vh = dim.height * h;
-            v.div.style('left', vx + 'px');
-            v.div.style('top', vy + 'px');
-            v.div.style('width', vw + 'px');
-            v.div.style('height', vh + 'px');
-            v.svg.style('width', vw);
-            v.svg.style('height', vh);
-            for (var scaleName in v.scales) {
-                if (v.scales.hasOwnProperty(scaleName)) {
-                    var s = v.scales[scaleName];
-                    s.extent = (s.axis == 'x') ? vw : vh;
-                }
+        DragUpdateListener.prototype.updateDrag = function (scope) {
+            var d = this;
+            if (d.dragDirections.length > 0) {
+                var compiledMath = math.compile(d.dragUpdateExpression);
+                var parsedMath = compiledMath.eval(scope);
+                d.model.updateParam(d.dragParam, parsedMath);
             }
-            v.container.model.update(true);
-            return v;
         };
-        return View;
-    }());
-    KG.View = View;
+        return DragUpdateListener;
+    }(KG.UpdateListener));
+    KG.DragUpdateListener = DragUpdateListener;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Scale = (function (_super) {
-        __extends(Scale, _super);
-        function Scale(def) {
-            var _this = this;
-            def.updatables = ['domainMin', 'domainMax'];
-            _this = _super.call(this, def) || this;
-            _this.scale = d3.scaleLinear();
-            _this.rangeMin = def.rangeMin;
-            _this.rangeMax = def.rangeMax;
-            _this.update(true);
-            return _this;
-        }
-        Scale.prototype.update = function (force) {
-            var s = _super.prototype.update.call(this, force);
-            if (s.extent != undefined) {
-                var rangeMin = s.rangeMin * s.extent, rangeMax = s.rangeMax * s.extent;
-                s.scale.domain([s.domainMin, s.domainMax]);
-                s.scale.range([rangeMin, rangeMax]);
-            }
-            return s;
-        };
-        return Scale;
-    }(KG.UpdateListener));
-    KG.Scale = Scale;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ViewObject = (function (_super) {
-        __extends(ViewObject, _super);
-        function ViewObject(def) {
-            var _this = this;
-            def = _.defaults(def, { show: true });
-            _this = _super.call(this, def) || this;
-            var vo = _this;
-            // the scales determine the coordinate system for this viewObject
-            vo.xScale = def.view.scales[def.xScaleName];
-            vo.yScale = def.view.scales[def.yScaleName];
-            // the interaction handler manages drag and hover events
-            def.interaction = _.defaults(def.interaction || {}, {
-                viewObject: vo,
-                model: vo.model,
-                dragUpdates: []
-            });
-            vo.interactionHandler = new KG.InteractionHandler(def.interaction);
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            vo.draw(def.layer).update(true);
-            return _this;
-        }
-        ViewObject.prototype.draw = function (layer) {
-            return this;
-        };
-        return ViewObject;
-    }(KG.UpdateListener));
-    KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
     var InteractionHandler = (function (_super) {
@@ -537,6 +441,142 @@ var KG;
         return InteractionHandler;
     }(KG.UpdateListener));
     KG.InteractionHandler = InteractionHandler;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var View = (function () {
+        function View(def) {
+            var v = this;
+            v.dimensions = _.defaults(def.dim, { x: 0, y: 0, width: 1, height: 1 });
+            // add div element as a child of the enclosing container
+            v.div = d3.select(def.containerDiv).append("div")
+                .style('position', 'relative')
+                .style('background-color', 'white');
+            // add svg element as a child of the div
+            v.svg = v.div.append("svg");
+            // establish scales
+            if (def.hasOwnProperty('scales')) {
+                v.scales = {};
+                for (var i = 0; i < def.scales.length; i++) {
+                    var scaleDef = def.scales[i];
+                    scaleDef.model = def.model;
+                    v.scales[scaleDef.name] = new KG.Scale(scaleDef);
+                }
+            }
+            // add child objects
+            if (def.hasOwnProperty('objects')) {
+                var prepareDef_1 = function (objectDef, layer) {
+                    objectDef.view = v;
+                    objectDef.model = def.model;
+                    objectDef.layer = layer;
+                    return objectDef;
+                };
+                if (def.objects.hasOwnProperty('segments')) {
+                    var segmentLayer_1 = v.svg.append('g').attr('class', 'segments');
+                    def.objects.segments.forEach(function (segmentDef) {
+                        new KG.Segment(prepareDef_1(segmentDef, segmentLayer_1));
+                    });
+                }
+                if (def.objects.hasOwnProperty('axes')) {
+                    var axisLayer_1 = v.svg.append('g').attr('class', 'axes');
+                    def.objects.axes.forEach(function (axisDef) {
+                        new KG.Axis(prepareDef_1(axisDef, axisLayer_1));
+                    });
+                }
+                if (def.objects.hasOwnProperty('points')) {
+                    var pointLayer_1 = v.svg.append('g').attr('class', 'points');
+                    def.objects.points.forEach(function (pointDef) {
+                        new KG.Point(prepareDef_1(pointDef, pointLayer_1));
+                    });
+                }
+                if (def.objects.hasOwnProperty('labels')) {
+                    var labelLayer_1 = v.div.append('div').attr('class', 'labels');
+                    def.objects.labels.forEach(function (labelDef) {
+                        new KG.Label(prepareDef_1(labelDef, labelLayer_1));
+                    });
+                }
+            }
+        }
+        View.prototype.updateDimensions = function (w, h) {
+            var v = this, dim = v.dimensions, vx = dim.x * w, vy = dim.y * h, vw = dim.width * w, vh = dim.height * h;
+            v.div.style('left', vx + 'px');
+            v.div.style('top', vy + 'px');
+            v.div.style('width', vw + 'px');
+            v.div.style('height', vh + 'px');
+            v.svg.style('width', vw);
+            v.svg.style('height', vh);
+            for (var scaleName in v.scales) {
+                if (v.scales.hasOwnProperty(scaleName)) {
+                    var s = v.scales[scaleName];
+                    s.extent = (s.axis == 'x') ? vw : vh;
+                }
+            }
+            return v;
+        };
+        return View;
+    }());
+    KG.View = View;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Scale = (function (_super) {
+        __extends(Scale, _super);
+        function Scale(def) {
+            var _this = this;
+            def.updatables = ['domainMin', 'domainMax'];
+            _this = _super.call(this, def) || this;
+            _this.scale = d3.scaleLinear();
+            _this.rangeMin = def.rangeMin;
+            _this.rangeMax = def.rangeMax;
+            _this.update(true);
+            return _this;
+        }
+        Scale.prototype.update = function (force) {
+            var s = _super.prototype.update.call(this, force);
+            if (s.extent != undefined) {
+                var rangeMin = s.rangeMin * s.extent, rangeMax = s.rangeMax * s.extent;
+                s.scale.domain([s.domainMin, s.domainMax]);
+                s.scale.range([rangeMin, rangeMax]);
+            }
+            return s;
+        };
+        return Scale;
+    }(KG.UpdateListener));
+    KG.Scale = Scale;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ViewObject = (function (_super) {
+        __extends(ViewObject, _super);
+        function ViewObject(def) {
+            var _this = this;
+            def = _.defaults(def, { show: true });
+            _this = _super.call(this, def) || this;
+            var vo = _this;
+            // the scales determine the coordinate system for this viewObject
+            vo.xScale = def.view.scales[def.xScaleName];
+            vo.yScale = def.view.scales[def.yScaleName];
+            // the interaction handler manages drag and hover events
+            def.interaction = _.defaults(def.interaction || {}, {
+                viewObject: vo,
+                model: vo.model,
+                dragUpdates: []
+            });
+            vo.interactionHandler = new KG.InteractionHandler(def.interaction);
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
+            vo.draw(def.layer).update(true);
+            return _this;
+        }
+        ViewObject.prototype.draw = function (layer) {
+            return this;
+        };
+        return ViewObject;
+    }(KG.UpdateListener));
+    KG.ViewObject = ViewObject;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -691,17 +731,19 @@ var KG;
     KG.Label = Label;
 })(KG || (KG = {}));
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
-// / <reference path="../../node_modules/@types/d3/index.d.ts"/>
+/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
+/// <reference path="generators/generator.ts"/>
 /// <reference path="container.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/updateListener.ts" />
+/// <reference path="model/dragUpdateListener.ts" />
+/// <reference path="model/interactionHandler.ts" />
 /// <reference path="views/view.ts" />
 /// <reference path="views/scale.ts" />
 /// <reference path="views/viewObjects/viewObject.ts" />
-/// <reference path="views/viewObjects/interactionHandler.ts" />
 /// <reference path="views/viewObjects/segment.ts" />
 /// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
@@ -716,29 +758,4 @@ for (var i = 0; i < containerDivs.length; i++) {
 window.onresize = function () {
     containers.forEach(function (c) { c.updateDimensions(); });
 };
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var DragUpdateListener = (function (_super) {
-        __extends(DragUpdateListener, _super);
-        function DragUpdateListener(def) {
-            var _this = this;
-            def.updatables = ['draggable', 'dragDirections'];
-            def.constants = ['dragParam', 'dragUpdateExpression'];
-            def = _.defaults(def, { dragDirections: "xy" });
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        DragUpdateListener.prototype.updateDrag = function (scope) {
-            var d = this;
-            if (d.dragDirections.length > 0) {
-                var compiledMath = math.compile(d.dragUpdateExpression);
-                var parsedMath = compiledMath.eval(scope);
-                d.model.updateParam(d.dragParam, parsedMath);
-            }
-        };
-        return DragUpdateListener;
-    }(KG.UpdateListener));
-    KG.DragUpdateListener = DragUpdateListener;
-})(KG || (KG = {}));
 //# sourceMappingURL=kg.js.map

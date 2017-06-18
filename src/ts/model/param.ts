@@ -2,21 +2,28 @@
 
 module KG {
 
-    export interface IParam {
+    export interface ParamDefinition {
         value: any;
         min: any;
         max: any;
-        round: any;
-        precision: any;
+        round?: any;
+        precision?: any;
+    }
+
+    export interface IParam {
+        value: any;
+        update: (newValue: any) => any;
+        formatted: (precision: number) => string;
+        paramScale: (domain?: number) => d3.ScaleLinear<Number, Number>;
     }
 
     export class Param implements IParam {
 
         public value;
-        public min;
-        public max;
-        public round;
-        public precision;
+        private min;
+        private max;
+        private round;
+        private precision;
 
 
         constructor(def) {
@@ -56,6 +63,7 @@ module KG {
             else {
                 param.value = Math.round(newValue / param.round) * param.round;
             }
+            return param.value;
         }
 
         // Displays current value of the parameter to desired precision
@@ -66,7 +74,7 @@ module KG {
         }
 
         // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        positionToValue(domain?: number) {
+        paramScale(domain?: number) {
             domain = domain || 100;
             let param = this;
             return d3.scaleLinear()

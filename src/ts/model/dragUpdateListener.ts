@@ -1,4 +1,4 @@
-/// <reference path="../../kg.ts" />
+/// <reference path="../kg.ts" />
 
 module KG {
 

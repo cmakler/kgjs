@@ -10,7 +10,9 @@ module KG {
     }
 
     export interface ViewDefinition {
+        containerDiv: HTMLDivElement;
         dim?: DimensionsDefinition;
+        model: Model;
         scales: ScaleDefinition[];
         objects: {
             segments?: SegmentDefinition[];
@@ -21,7 +23,6 @@ module KG {
     }
 
     export interface IView {
-        //container: Container;
         dimensions: {
             x: number; // coordinate of left edge, as fraction of container width
             y: number; // coordinate of top edge, as fraction of container height
@@ -33,22 +34,20 @@ module KG {
 
     export class View implements IView {
 
-        private div;         // root div of this view
-        private svg;         // root svg of this view
+        private div;        // root div of this view
+        private svg;        // root svg of this view
 
-        private container;   // container object that contains this view, and also the model
         public dimensions;  // position, height, and width of this view (in pixels)
         public scales;      // scales associated with this view (if there are multiple graphs, could be multiple scales)
 
 
-        constructor(container: Container, def: ViewDefinition) {
+        constructor(def: ViewDefinition) {
 
             let v = this;
-            v.container = container;
             v.dimensions = _.defaults(def.dim, {x: 0, y: 0, width: 1, height: 1});
 
             // add div element as a child of the enclosing container
-            v.div = d3.select(container.div).append("div")
+            v.div = d3.select(def.containerDiv).append("div")
                 .style('position', 'relative')
                 .style('background-color', 'white');
 
@@ -60,46 +59,41 @@ module KG {
                 v.scales = {};
                 for (let i = 0; i < def.scales.length; i++) {
                     let scaleDef = def.scales[i];
-                    scaleDef.model = container.model;
+                    scaleDef.model = def.model;
                     v.scales[scaleDef.name] = new Scale(scaleDef);
                 }
             }
 
-            // set initial dimensions of the div and svg
-            v.updateDimensions();
-
             // add child objects
             if (def.hasOwnProperty('objects')) {
-                //v.viewObjects = [];
-
-                let prepareDef = function (def, layer) {
-                    def.view = v;
-                    def.model = v.container.model;
-                    def.layer = layer;
-                    return def;
+                let prepareDef = function (objectDef, layer) {
+                    objectDef.view = v;
+                    objectDef.model = def.model;
+                    objectDef.layer = layer;
+                    return objectDef;
                 };
 
                 if (def.objects.hasOwnProperty('segments')) {
                     let segmentLayer = v.svg.append('g').attr('class', 'segments');
-                    def.objects.segments.forEach(function (segmentDef) {
+                    def.objects.segments.forEach(function (segmentDef:SegmentDefinition) {
                         new Segment(prepareDef(segmentDef, segmentLayer));
                     });
                 }
                 if (def.objects.hasOwnProperty('axes')) {
                     let axisLayer = v.svg.append('g').attr('class', 'axes');
-                    def.objects.axes.forEach(function (axisDef) {
+                    def.objects.axes.forEach(function (axisDef: AxisDefinition) {
                         new Axis(prepareDef(axisDef, axisLayer));
                     });
                 }
                 if (def.objects.hasOwnProperty('points')) {
                     let pointLayer = v.svg.append('g').attr('class', 'points');
-                    def.objects.points.forEach(function (pointDef) {
+                    def.objects.points.forEach(function (pointDef: PointDefinition) {
                         new Point(prepareDef(pointDef, pointLayer));
                     });
                 }
                 if (def.objects.hasOwnProperty('labels')) {
                     let labelLayer = v.div.append('div').attr('class', 'labels');
-                    def.objects.labels.forEach(function (labelDef) {
+                    def.objects.labels.forEach(function (labelDef: LabelDefinition) {
                         new Label(prepareDef(labelDef, labelLayer));
                     });
                 }
@@ -107,10 +101,8 @@ module KG {
 
         }
 
-        updateDimensions() {
+        updateDimensions(w,h) {
             let v = this,
-                w = v.container.width,
-                h = v.container.height,
                 dim = v.dimensions,
                 vx = dim.x * w,
                 vy = dim.y * h,
@@ -128,7 +120,6 @@ module KG {
                     s.extent = (s.axis == 'x') ? vw : vh;
                 }
             }
-            v.container.model.update(true);
             return v;
         }
 

@@ -2,13 +2,18 @@
 
 module KG {
 
+    export interface ContainerDefinition {
+        aspectRatio: number;
+        generators?: GeneratorDefinition[];
+        params?: ParamDefinition[];
+        views?: ViewDefinition[];
+    }
+
     export interface IContainer {
 
         div: HTMLElement;   // the Container is defined by an HTML element with a src attribute
-        model: Model;       // the Container creates a Model for all objects within it
         views: View[];      // the Container creates a View to display objects
 
-        aspectRatio: number;    // the JSON description of the diagram includes its aspect ratio
         width: number;          // the measured width of the Container
         height: number;         // the height of the Container is determined from its width and the aspect ratio
 
@@ -19,10 +24,10 @@ module KG {
     export class Container implements IContainer {
 
         public div;
-        public model;
         public width;
         public height;
-        public aspectRatio;
+        private aspectRatio: number;
+        private model: Model;
         public views;
 
         constructor(div: any) {
@@ -32,7 +37,7 @@ module KG {
             container.div = div;
             container.views = [];
 
-            d3.json(div.getAttribute('src'), function (data) {
+            d3.json(div.getAttribute('src'), function (data:ContainerDefinition) {
 
                 // override params from JSON if there are attributes on the div with the same name
                 for (let param in data.params) {
@@ -41,18 +46,25 @@ module KG {
                     }
                 }
 
+                
+                if(data.hasOwnProperty('generators')) {
+
+                }
+
                 container.model = new KG.Model(data);
                 container.aspectRatio = data.aspectRatio || 1;
-
-                // establish container dimensions
-                container.updateDimensions();
 
                 // create new view objects from data
                 if (data.hasOwnProperty('views')) {
                     container.views = data.views.map(function (viewDef) {
-                        return new View(container, viewDef)
+                        viewDef.model = container.model;
+                        viewDef.containerDiv = container.div;
+                        return new View(viewDef);
                     });
                 }
+
+                // establish dimensions of container and views
+                container.updateDimensions();
 
             });
         }
@@ -63,8 +75,9 @@ module KG {
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions()
+                v.updateDimensions(container.width,container.height)
             });
+            container.model.update(true);
             return container;
         }
     }
