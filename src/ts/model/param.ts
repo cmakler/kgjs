@@ -3,6 +3,7 @@
 module KG {
 
     export interface ParamDefinition {
+        label: string;
         value: any;
         min: any;
         max: any;
@@ -13,17 +14,18 @@ module KG {
     export interface IParam {
         value: any;
         update: (newValue: any) => any;
-        formatted: (precision: number) => string;
+        formatted: (precision?: number) => string;
         paramScale: (domain?: number) => d3.ScaleLinear<Number, Number>;
     }
 
     export class Param implements IParam {
 
+        public label;
         public value;
-        private min;
-        private max;
-        private round;
-        private precision;
+        public min;
+        public max;
+        public round;
+        public precision;
 
 
         constructor(def) {
@@ -41,6 +43,7 @@ module KG {
                     - (match[2] ? +match[2] : 0));
             }
 
+            this.label = def.label || '';
             this.value = def.value;
             this.min = def.min || 0;
             this.max = def.max || 10;
@@ -68,7 +71,7 @@ module KG {
 
         // Displays current value of the parameter to desired precision
         // If no precision is given, uses the implied precision given by the rounding parameter
-        formatted(precision) {
+        formatted(precision?) {
             precision = precision || this.precision;
             return d3.format(`.${precision}f`)(this.value);
         }

@@ -3,19 +3,21 @@
 module KG {
 
     export interface GeneratorDefinition {
-        def: {};
+
     }
 
     export interface IGenerator {
-        addToContainer: (currentJSON:ContainerDefinition) => ContainerDefinition;
+        addToContainer: (currentJSON:ContainerDefinition, params) => ContainerDefinition;
     }
 
     export class Generator implements IGenerator {
 
-        private def;
+        public def;
+        public params:Param[];
 
-        constructor(def) {
+        constructor(def,params) {
             this.def = def;
+            this.params = params;
         }
 
         addToContainer(currentJSON) {

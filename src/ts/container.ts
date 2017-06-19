@@ -37,7 +37,7 @@ module KG {
             container.div = div;
             container.views = [];
 
-            d3.json(div.getAttribute('src'), function (data:ContainerDefinition) {
+            d3.json(div.getAttribute('src'), function (data: ContainerDefinition) {
 
                 // override params from JSON if there are attributes on the div with the same name
                 for (let param in data.params) {
@@ -46,12 +46,23 @@ module KG {
                     }
                 }
 
-                
-                if(data.hasOwnProperty('generators')) {
+                let params = {};
 
+                for (const paramName in data.params) {
+                    if (data.params.hasOwnProperty(paramName)) {
+                        params[paramName] = new Param(data.params[paramName]);
+                    }
                 }
 
-                container.model = new KG.Model(data);
+
+                if (data.hasOwnProperty('generators')) {
+                    data.generators.forEach(function (generatorDef: { type: string, def: any }) {
+                        const g: Generator = new KG[generatorDef.type](generatorDef.def,params);
+                        data = g.addToContainer(data);
+                    })
+                }
+
+                container.model = new KG.Model(params);
                 container.aspectRatio = data.aspectRatio || 1;
 
                 // create new view objects from data
@@ -75,7 +86,7 @@ module KG {
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions(container.width,container.height)
+                v.updateDimensions(container.div.offsetLeft, container.div.offsetTop, container.width, container.height)
             });
             container.model.update(true);
             return container;

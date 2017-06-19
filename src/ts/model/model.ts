@@ -3,7 +3,7 @@
 module KG {
 
     export interface IModel {
-        params: Param[];
+        params: any;
         eval: (name: string) => any;
         currentParamValues: () => {};
         updateListeners: UpdateListener[];
@@ -15,20 +15,10 @@ module KG {
         public params;
         public updateListeners;
 
-        constructor(def) {
-
+        constructor(params) {
             let model = this;
-
+            model.params = params;
             model.updateListeners = [];
-
-            // initialize parameters
-            model.params = {};
-            for (const paramName in def.params) {
-                if (def.params.hasOwnProperty(paramName)) {
-                    model.params[paramName] = new Param(def.params[paramName]);
-                }
-            }
-
         }
 
         addUpdateListener(updateListener) {
@@ -121,46 +111,10 @@ module KG {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force)
             });
+            return 'updated';
         }
 
 
     }
-
-
-    /*
-
-     //initialize all fields that display this param
-     model.updateParamFields(paramName);
-
-     // set scrubbing behavior on any element that identifies itself as a control for this param
-     model.root.selectAll(`[data-name='${paramName}']`).call(d3.drag()
-     .on('drag', function () {
-     model.updateParam(paramName, param.positionToValue()(d3.event.x));
-     }));
-
-     // update cycle stage 2: all fields displaying the updated parameter show new value
-     updateParamFields(paramName) {
-     let model = this;
-     model.root.selectAll(`[data-name='${paramName}']`).text(() => {
-     return model.params[paramName].formatted();
-     });
-     }
-
-     // update cycle stage 3: coordinates of all objects are updated
-     updateChildren() {
-     this.children.forEach(function (child) {
-     child.update()
-     });
-     }
-
-     // update cycle stage 4: update text fields based on calculations
-     updateCalculations() {
-     let model = this,
-     elements = model.root.selectAll(`[calculation]`);
-     console.log(elements);
-     if(elements.size() > 0) {
-     let precision = elements.attr('precision') || 0;
-     elements.text(() => d3.format(`.${precision}f`)(model.evaluate(elements.attr('calculation'))));}
-     }*/
 
 }

@@ -18,6 +18,7 @@ module KG {
 
     export class Scale extends UpdateListener implements IScale {
 
+        public axis;
         public scale;
         public domainMin;
         public domainMax;
@@ -27,11 +28,11 @@ module KG {
 
 
         constructor(def: ScaleDefinition) {
+            def.constants = ['rangeMin','rangeMax','axis','name'];
             def.updatables = ['domainMin', 'domainMax'];
+            def.name = def.name || def.axis;
             super(def);
             this.scale = d3.scaleLinear();
-            this.rangeMin = def.rangeMin;
-            this.rangeMax = def.rangeMax;
             this.update(true);
         }
 

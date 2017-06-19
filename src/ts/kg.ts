@@ -5,6 +5,7 @@
 /// <reference path="lib/underscore.ts"/>
 
 /// <reference path="generators/generator.ts"/>
+/// <reference path="generators/sliders.ts"/>
 
 /// <reference path="container.ts"/>
 

@@ -48,7 +48,7 @@ module KG {
 
             // add div element as a child of the enclosing container
             v.div = d3.select(def.containerDiv).append("div")
-                .style('position', 'relative')
+                .style('position', 'absolute')
                 .style('background-color', 'white');
 
             // add svg element as a child of the div
@@ -101,15 +101,15 @@ module KG {
 
         }
 
-        updateDimensions(w,h) {
+        updateDimensions(left, top, width, height) {
             let v = this,
                 dim = v.dimensions,
-                vx = dim.x * w,
-                vy = dim.y * h,
-                vw = dim.width * w,
-                vh = dim.height * h;
-            v.div.style('left', vx + 'px');
-            v.div.style('top', vy + 'px');
+                vx = dim.x * width,
+                vy = dim.y * height,
+                vw = dim.width * width,
+                vh = dim.height * height;
+            v.div.style('left', left + vx + 'px');
+            v.div.style('top', top + vy + 'px');
             v.div.style('width', vw + 'px');
             v.div.style('height', vh + 'px');
             v.svg.style('width', vw);

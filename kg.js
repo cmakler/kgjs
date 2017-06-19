@@ -67,8 +67,9 @@ var _;
 var KG;
 (function (KG) {
     var Generator = (function () {
-        function Generator(def) {
+        function Generator(def, params) {
             this.def = def;
+            this.params = params;
         }
         Generator.prototype.addToContainer = function (currentJSON) {
             return currentJSON;
@@ -76,6 +77,99 @@ var KG;
         return Generator;
     }());
     KG.Generator = Generator;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Sliders = (function (_super) {
+        __extends(Sliders, _super);
+        function Sliders() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Sliders.prototype.addToContainer = function (currentJSON) {
+            var sliders = this, paramNames = sliders.def.paramNames;
+            var scales = [{
+                    name: "y",
+                    axis: "y",
+                    domainMin: 0,
+                    domainMax: 1,
+                    rangeMin: 0,
+                    rangeMax: 1
+                }], segments = [], axes = [], points = [], labels = [];
+            paramNames.forEach(function (paramName, index) {
+                var param = sliders.params[paramName], y = (index + 0.5) / paramNames.length;
+                scales.push({
+                    name: paramName,
+                    axis: "x",
+                    domainMin: param.min,
+                    domainMax: param.max,
+                    rangeMin: 0.1,
+                    rangeMax: 0.9
+                });
+                segments.push({
+                    x1: param.min,
+                    y1: 0,
+                    x2: param.max,
+                    y2: 0,
+                    xScaleName: paramName,
+                    yScaleName: "y"
+                });
+                axes.push({
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    orient: "bottom",
+                    intercept: y
+                });
+                points.push({
+                    x: paramName,
+                    y: y,
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    interaction: {
+                        dragUpdates: [
+                            {
+                                dragDirections: "x",
+                                dragParam: paramName,
+                                dragUpdateExpression: "params." + paramName + " + drag.dx"
+                            }
+                        ]
+                    }
+                });
+                labels.push({
+                    x: paramName,
+                    y: y,
+                    text: "`${params." + paramName + "}`",
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    xPixelOffset: 0,
+                    yPixelOffset: 20,
+                    fontSize: 8,
+                    interaction: {
+                        dragUpdates: [
+                            {
+                                dragDirections: "x",
+                                dragParam: paramName,
+                                dragUpdateExpression: "params." + paramName + " + drag.dx"
+                            }
+                        ]
+                    }
+                });
+            });
+            currentJSON.views.push({
+                dim: sliders.def.dim,
+                scales: scales,
+                objects: {
+                    segments: segments,
+                    axes: axes,
+                    points: points,
+                    labels: labels
+                }
+            });
+            return currentJSON;
+        };
+        return Sliders;
+    }(KG.Generator));
+    KG.Sliders = Sliders;
 })(KG || (KG = {}));
 /// <reference path="./kg.ts" />
 var KG;
@@ -92,9 +186,19 @@ var KG;
                         data.params[param].value = div.getAttribute(param);
                     }
                 }
-                if (data.hasOwnProperty('generators')) {
+                var params = {};
+                for (var paramName in data.params) {
+                    if (data.params.hasOwnProperty(paramName)) {
+                        params[paramName] = new KG.Param(data.params[paramName]);
+                    }
                 }
-                container.model = new KG.Model(data);
+                if (data.hasOwnProperty('generators')) {
+                    data.generators.forEach(function (generatorDef) {
+                        var g = new KG[generatorDef.type](generatorDef.def, params);
+                        data = g.addToContainer(data);
+                    });
+                }
+                container.model = new KG.Model(params);
                 container.aspectRatio = data.aspectRatio || 1;
                 // create new view objects from data
                 if (data.hasOwnProperty('views')) {
@@ -114,7 +218,7 @@ var KG;
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions(container.width, container.height);
+                v.updateDimensions(container.div.offsetLeft, container.div.offsetTop, container.width, container.height);
             });
             container.model.update(true);
             return container;
@@ -127,16 +231,10 @@ var KG;
 var KG;
 (function (KG) {
     var Model = (function () {
-        function Model(def) {
+        function Model(params) {
             var model = this;
+            model.params = params;
             model.updateListeners = [];
-            // initialize parameters
-            model.params = {};
-            for (var paramName in def.params) {
-                if (def.params.hasOwnProperty(paramName)) {
-                    model.params[paramName] = new KG.Param(def.params[paramName]);
-                }
-            }
         }
         Model.prototype.addUpdateListener = function (updateListener) {
             this.updateListeners.push(updateListener);
@@ -209,45 +307,11 @@ var KG;
             this.updateListeners.forEach(function (listener) {
                 listener.update(force);
             });
+            return 'updated';
         };
         return Model;
     }());
     KG.Model = Model;
-    /*
-
-     //initialize all fields that display this param
-     model.updateParamFields(paramName);
-
-     // set scrubbing behavior on any element that identifies itself as a control for this param
-     model.root.selectAll(`[data-name='${paramName}']`).call(d3.drag()
-     .on('drag', function () {
-     model.updateParam(paramName, param.positionToValue()(d3.event.x));
-     }));
-
-     // update cycle stage 2: all fields displaying the updated parameter show new value
-     updateParamFields(paramName) {
-     let model = this;
-     model.root.selectAll(`[data-name='${paramName}']`).text(() => {
-     return model.params[paramName].formatted();
-     });
-     }
-
-     // update cycle stage 3: coordinates of all objects are updated
-     updateChildren() {
-     this.children.forEach(function (child) {
-     child.update()
-     });
-     }
-
-     // update cycle stage 4: update text fields based on calculations
-     updateCalculations() {
-     let model = this,
-     elements = model.root.selectAll(`[calculation]`);
-     console.log(elements);
-     if(elements.size() > 0) {
-     let precision = elements.attr('precision') || 0;
-     elements.text(() => d3.format(`.${precision}f`)(model.evaluate(elements.attr('calculation'))));}
-     }*/
 })(KG || (KG = {}));
 /// <reference path="model.ts" />
 var KG;
@@ -264,6 +328,7 @@ var KG;
                 (match[1] ? match[1].length : 0)
                     - (match[2] ? +match[2] : 0));
             }
+            this.label = def.label || '';
             this.value = def.value;
             this.min = def.min || 0;
             this.max = def.max || 10;
@@ -451,7 +516,7 @@ var KG;
             v.dimensions = _.defaults(def.dim, { x: 0, y: 0, width: 1, height: 1 });
             // add div element as a child of the enclosing container
             v.div = d3.select(def.containerDiv).append("div")
-                .style('position', 'relative')
+                .style('position', 'absolute')
                 .style('background-color', 'white');
             // add svg element as a child of the div
             v.svg = v.div.append("svg");
@@ -498,10 +563,10 @@ var KG;
                 }
             }
         }
-        View.prototype.updateDimensions = function (w, h) {
-            var v = this, dim = v.dimensions, vx = dim.x * w, vy = dim.y * h, vw = dim.width * w, vh = dim.height * h;
-            v.div.style('left', vx + 'px');
-            v.div.style('top', vy + 'px');
+        View.prototype.updateDimensions = function (left, top, width, height) {
+            var v = this, dim = v.dimensions, vx = dim.x * width, vy = dim.y * height, vw = dim.width * width, vh = dim.height * height;
+            v.div.style('left', left + vx + 'px');
+            v.div.style('top', top + vy + 'px');
             v.div.style('width', vw + 'px');
             v.div.style('height', vh + 'px');
             v.svg.style('width', vw);
@@ -525,11 +590,11 @@ var KG;
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
+            def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
             def.updatables = ['domainMin', 'domainMax'];
+            def.name = def.name || def.axis;
             _this = _super.call(this, def) || this;
             _this.scale = d3.scaleLinear();
-            _this.rangeMin = def.rangeMin;
-            _this.rangeMax = def.rangeMax;
             _this.update(true);
             return _this;
         }
@@ -735,6 +800,7 @@ var KG;
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
 /// <reference path="generators/generator.ts"/>
+/// <reference path="generators/sliders.ts"/>
 /// <reference path="container.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />

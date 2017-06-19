@@ -1,19 +1,36 @@
 {
   "aspectRatio": 1,
+  "generators": [
+    {
+      "type": "Sliders",
+      "def": {
+        "dim": {
+          "x": 0.6,
+          "y": 0.1,
+          "width": 0.4,
+          "height": 0.5
+        },
+        "paramNames": ["yA","xB","yB"]
+      }
+    }
+  ],
   "params": {
     "yA": {
+      "label": "y_A",
       "value": 5,
       "min": 0,
       "max": 9,
       "round": 0.5
     },
     "xB": {
+      "label": "x_B",
       "value": 12,
       "min": 0,
       "max": 15,
       "round": 0.25
     },
     "yB": {
+      "label": "y_B",
       "value": 8,
       "min": 0,
       "max": 9
@@ -22,9 +39,9 @@
   "views": [
     {
       "dim": {
-        "x": 0.1,
+        "x": 0,
         "y": 0.1,
-        "width": 0.8,
+        "width": 0.6,
         "height": 0.8
       },
       "scales": [
