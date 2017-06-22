@@ -2,18 +2,23 @@
 
 module KG {
 
-    export interface SlidersDefinition extends ViewGeneratorDefinition {
-        paramNames: string[];
+    export interface GraphDefinition {
+        xAxis: {
+
+        };
+        yAxis: {
+
+        };
     }
 
-    export class Sliders extends ViewGenerator {
+    export class Graph extends Generator {
 
         addToContainer(currentJSON) {
-            const sliders = this,
-                paramNames: string[] = sliders.def.paramNames;
+            const Graph = this,
+                paramNames: string[] = Graph.def.paramNames;
             let scales = [{
-                    name: "y",
-                    axis: "y",
+                    name: "x",
+                    axis: "x",
                     domainMin: 0,
                     domainMax: 1,
                     rangeMin: 0,
@@ -25,7 +30,7 @@ module KG {
                 labels = [];
 
             paramNames.forEach(function (paramName, index) {
-                const param = sliders.params[paramName],
+                const param = Graph.params[paramName],
                     y = (index + 0.5) / paramNames.length
                 scales.push({
                     name: paramName,
@@ -87,7 +92,7 @@ module KG {
             });
 
             currentJSON.views.push({
-                dim: sliders.def.dim,
+                dim: Graph.def.dim,
                 scales: scales,
                 objects: {
                     segments: segments,

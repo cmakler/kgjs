@@ -81,6 +81,21 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
+    var ViewGenerator = (function () {
+        function ViewGenerator(def, params) {
+            this.def = def;
+            this.params = params;
+        }
+        ViewGenerator.prototype.addToContainer = function (currentJSON) {
+            return currentJSON;
+        };
+        return ViewGenerator;
+    }());
+    KG.ViewGenerator = ViewGenerator;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
     var Sliders = (function (_super) {
         __extends(Sliders, _super);
         function Sliders() {
@@ -168,8 +183,101 @@ var KG;
             return currentJSON;
         };
         return Sliders;
-    }(KG.Generator));
+    }(KG.ViewGenerator));
     KG.Sliders = Sliders;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Graph = (function (_super) {
+        __extends(Graph, _super);
+        function Graph() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Graph.prototype.addToContainer = function (currentJSON) {
+            var Graph = this, paramNames = Graph.def.paramNames;
+            var scales = [{
+                    name: "x",
+                    axis: "x",
+                    domainMin: 0,
+                    domainMax: 1,
+                    rangeMin: 0,
+                    rangeMax: 1
+                }], segments = [], axes = [], points = [], labels = [];
+            paramNames.forEach(function (paramName, index) {
+                var param = Graph.params[paramName], y = (index + 0.5) / paramNames.length;
+                scales.push({
+                    name: paramName,
+                    axis: "x",
+                    domainMin: param.min,
+                    domainMax: param.max,
+                    rangeMin: 0.1,
+                    rangeMax: 0.9
+                });
+                segments.push({
+                    x1: param.min,
+                    y1: 0,
+                    x2: param.max,
+                    y2: 0,
+                    xScaleName: paramName,
+                    yScaleName: "y"
+                });
+                axes.push({
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    orient: "bottom",
+                    intercept: y
+                });
+                points.push({
+                    x: paramName,
+                    y: y,
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    interaction: {
+                        dragUpdates: [
+                            {
+                                dragDirections: "x",
+                                dragParam: paramName,
+                                dragUpdateExpression: "params." + paramName + " + drag.dx"
+                            }
+                        ]
+                    }
+                });
+                labels.push({
+                    x: paramName,
+                    y: y,
+                    text: "`${params." + paramName + "}`",
+                    xScaleName: paramName,
+                    yScaleName: "y",
+                    xPixelOffset: 0,
+                    yPixelOffset: 20,
+                    fontSize: 8,
+                    interaction: {
+                        dragUpdates: [
+                            {
+                                dragDirections: "x",
+                                dragParam: paramName,
+                                dragUpdateExpression: "params." + paramName + " + drag.dx"
+                            }
+                        ]
+                    }
+                });
+            });
+            currentJSON.views.push({
+                dim: Graph.def.dim,
+                scales: scales,
+                objects: {
+                    segments: segments,
+                    axes: axes,
+                    points: points,
+                    labels: labels
+                }
+            });
+            return currentJSON;
+        };
+        return Graph;
+    }(KG.Generator));
+    KG.Graph = Graph;
 })(KG || (KG = {}));
 /// <reference path="./kg.ts" />
 var KG;
@@ -177,6 +285,7 @@ var KG;
     var Container = (function () {
         function Container(div) {
             var container = this;
+            div.style.position = 'relative';
             container.div = div;
             container.views = [];
             d3.json(div.getAttribute('src'), function (data) {
@@ -218,7 +327,7 @@ var KG;
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions(container.div.offsetLeft, container.div.offsetTop, container.width, container.height);
+                v.updateDimensions(container.width, container.height);
             });
             container.model.update(true);
             return container;
@@ -537,6 +646,7 @@ var KG;
                     objectDef.layer = layer;
                     return objectDef;
                 };
+                var defLayer = v.svg.append('defs');
                 if (def.objects.hasOwnProperty('segments')) {
                     var segmentLayer_1 = v.svg.append('g').attr('class', 'segments');
                     def.objects.segments.forEach(function (segmentDef) {
@@ -563,10 +673,10 @@ var KG;
                 }
             }
         }
-        View.prototype.updateDimensions = function (left, top, width, height) {
-            var v = this, dim = v.dimensions, vx = dim.x * width, vy = dim.y * height, vw = dim.width * width, vh = dim.height * height;
-            v.div.style('left', left + vx + 'px');
-            v.div.style('top', top + vy + 'px');
+        View.prototype.updateDimensions = function (width, height) {
+            var v = this, dim = v.dimensions, vx = (dim.x <= 1) ? dim.x * width : dim.x, vy = (dim.y <= 1) ? dim.y * height : dim.y, vw = (dim.width <= 1) ? dim.width * width : dim.width, vh = (dim.height <= 1) ? dim.height * height : dim.height;
+            v.div.style('left', vx + 'px');
+            v.div.style('top', vy + 'px');
             v.div.style('width', vw + 'px');
             v.div.style('height', vh + 'px');
             v.svg.style('width', vw);
@@ -624,6 +734,10 @@ var KG;
             // the scales determine the coordinate system for this viewObject
             vo.xScale = def.view.scales[def.xScaleName];
             vo.yScale = def.view.scales[def.yScaleName];
+            // the clip path clips the viewObject
+            if (vo.hasOwnProperty('clipPath')) {
+                vo.clipPath = def.view.clipPaths[def.clipPath];
+            }
             // the interaction handler manages drag and hover events
             def.interaction = _.defaults(def.interaction || {}, {
                 viewObject: vo,
@@ -642,6 +756,27 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ClipPath = (function (_super) {
+        __extends(ClipPath, _super);
+        function ClipPath() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ClipPath.prototype.draw = function (layer) {
+            var cp = this;
+            layer.append("clipPath").attr("id", cp.name);
+            return cp;
+        };
+        ClipPath.prototype.update = function (force) {
+            var cp = _super.prototype.update.call(this, force);
+            return cp;
+        };
+        return ClipPath;
+    }(KG.ViewObject));
+    KG.ClipPath = ClipPath;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -800,7 +935,9 @@ var KG;
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
 /// <reference path="generators/generator.ts"/>
+/// <reference path="generators/viewGenerator.ts"/>
 /// <reference path="generators/sliders.ts"/>
+/// <reference path="generators/graph.ts"/>
 /// <reference path="container.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
@@ -810,6 +947,7 @@ var KG;
 /// <reference path="views/view.ts" />
 /// <reference path="views/scale.ts" />
 /// <reference path="views/viewObjects/viewObject.ts" />
+/// <reference path="views/viewObjects/clipPath.ts" />
 /// <reference path="views/viewObjects/segment.ts" />
 /// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />

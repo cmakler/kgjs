@@ -11,7 +11,7 @@ module KG {
 
     export interface IContainer {
 
-        div: HTMLElement;   // the Container is defined by an HTML element with a src attribute
+        div: any;   // the Container is defined by an HTML element with a src attribute
         views: View[];      // the Container creates a View to display objects
 
         width: number;          // the measured width of the Container
@@ -33,6 +33,8 @@ module KG {
         constructor(div: any) {
 
             let container = this;
+
+            div.style.position = 'relative';
 
             container.div = div;
             container.views = [];
@@ -86,7 +88,7 @@ module KG {
             container.height = container.width / container.aspectRatio;
             container.div.style.height = container.height + 'px';
             container.views.forEach(function (v) {
-                v.updateDimensions(container.div.offsetLeft, container.div.offsetTop, container.width, container.height)
+                v.updateDimensions(container.width, container.height)
             });
             container.model.update(true);
             return container;

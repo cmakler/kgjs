@@ -10,11 +10,12 @@ module KG {
     }
 
     export interface ViewDefinition {
-        containerDiv: HTMLDivElement;
+        containerDiv: any; // d3 div object
         dim?: DimensionsDefinition;
         model: Model;
         scales: ScaleDefinition[];
         objects: {
+            clipPaths?: ClipPathDefinition[];
             segments?: SegmentDefinition[];
             axes?: AxisDefinition[];
             points?: PointDefinition[];
@@ -30,6 +31,7 @@ module KG {
             height: number; // height of view, as fraction of container height
         }
         scales: any;
+        clipPaths: ClipPath[];
     }
 
     export class View implements IView {
@@ -39,7 +41,7 @@ module KG {
 
         public dimensions;  // position, height, and width of this view (in pixels)
         public scales;      // scales associated with this view (if there are multiple graphs, could be multiple scales)
-
+        public clipPaths;    //
 
         constructor(def: ViewDefinition) {
 
@@ -73,6 +75,8 @@ module KG {
                     return objectDef;
                 };
 
+                const defLayer = v.svg.append('defs');
+
                 if (def.objects.hasOwnProperty('segments')) {
                     let segmentLayer = v.svg.append('g').attr('class', 'segments');
                     def.objects.segments.forEach(function (segmentDef:SegmentDefinition) {
@@ -101,15 +105,15 @@ module KG {
 
         }
 
-        updateDimensions(left, top, width, height) {
+        updateDimensions(width, height) {
             let v = this,
                 dim = v.dimensions,
-                vx = dim.x * width,
-                vy = dim.y * height,
-                vw = dim.width * width,
-                vh = dim.height * height;
-            v.div.style('left', left + vx + 'px');
-            v.div.style('top', top + vy + 'px');
+                vx = (dim.x <= 1) ? dim.x * width : dim.x,
+                vy = (dim.y <= 1) ? dim.y * height : dim.y,
+                vw = (dim.width <= 1) ? dim.width * width : dim.width,
+                vh = (dim.height <= 1) ? dim.height * height : dim.height;
+            v.div.style('left', vx + 'px');
+            v.div.style('top', vy + 'px');
             v.div.style('width', vw + 'px');
             v.div.style('height', vh + 'px');
             v.svg.style('width', vw);

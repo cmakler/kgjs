@@ -5,8 +5,10 @@ module KG {
     export interface ViewObjectDefinition extends UpdateListenerDefinition {
         view: View;
         layer: any;
+        name?: string;
         xScaleName?: string;
         yScaleName?: string;
+        clipPath?: string;
         show?: any;
         interaction?: InteractionHandlerDefinition;
     }
@@ -14,14 +16,17 @@ module KG {
     export interface IViewObject extends IUpdateListener {
         xScale: Scale;
         yScale: Scale;
+        clipPath: ClipPath;
         interactionHandler: InteractionHandler;
         draw: (layer: any) => ViewObject;
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
 
+        public name;
         public xScale;
         public yScale;
+        public clipPath;
         public interactionHandler: InteractionHandler;
 
         constructor(def: ViewObjectDefinition) {
@@ -33,6 +38,11 @@ module KG {
             // the scales determine the coordinate system for this viewObject
             vo.xScale = def.view.scales[def.xScaleName];
             vo.yScale = def.view.scales[def.yScaleName];
+
+            // the clip path clips the viewObject
+            if(vo.hasOwnProperty('clipPath')) {
+                vo.clipPath = def.view.clipPaths[def.clipPath];
+            }
 
             // the interaction handler manages drag and hover events
             def.interaction = _.defaults(def.interaction || {}, {

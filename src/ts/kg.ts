@@ -5,7 +5,9 @@
 /// <reference path="lib/underscore.ts"/>
 
 /// <reference path="generators/generator.ts"/>
+/// <reference path="generators/viewGenerator.ts"/>
 /// <reference path="generators/sliders.ts"/>
+/// <reference path="generators/graph.ts"/>
 
 /// <reference path="container.ts"/>
 
@@ -19,7 +21,7 @@
 /// <reference path="views/scale.ts" />
 
 /// <reference path="views/viewObjects/viewObject.ts" />
-
+/// <reference path="views/viewObjects/clipPath.ts" />
 /// <reference path="views/viewObjects/segment.ts" />
 /// <reference path="views/viewObjects/axis.ts" />
 /// <reference path="views/viewObjects/point.ts" />
