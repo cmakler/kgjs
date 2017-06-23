@@ -12,7 +12,7 @@ module KG {
 
     export class Model implements IModel {
 
-        private params;
+        private params: Param[];
         private updateListeners;
 
         constructor(params) {
@@ -29,6 +29,9 @@ module KG {
         currentParamValues() {
             let params = this.params;
             let p = {};
+            params.forEach(function(param) {
+
+            });
             for (const paramName in params) {
                 if (params.hasOwnProperty(paramName)) {
                     p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
@@ -47,13 +50,7 @@ module KG {
                 return +name;
             }
 
-            // check to see if name is a param
-            else if (p.hasOwnProperty(name)) {
-                //console.log('parsed', name, 'as a parameter');
-                return p[name].value
-            }
-
-            // collect current parameter values in a p object
+            // collect current parameter values in a params object
             let params = this.currentParamValues();
 
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p

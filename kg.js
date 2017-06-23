@@ -289,25 +289,20 @@ var KG;
             container.div = div;
             container.views = [];
             d3.json(div.getAttribute('src'), function (data) {
+                data.params = data.params || [];
+                data.params = data.params.map(function (paramDef) {
+                    if (div.hasAttribute(paramDef.name)) {
+                        paramDef.value = div.getAttribute(paramDef.name);
+                    }
+                    return paramDef;
+                });
                 // override params from JSON if there are attributes on the div with the same name
                 for (var param in data.params) {
                     if (data.params.hasOwnProperty(param) && div.hasAttribute(param)) {
                         data.params[param].value = div.getAttribute(param);
                     }
                 }
-                var params = {};
-                for (var paramName in data.params) {
-                    if (data.params.hasOwnProperty(paramName)) {
-                        params[paramName] = new KG.Param(data.params[paramName]);
-                    }
-                }
-                if (data.hasOwnProperty('generators')) {
-                    data.generators.forEach(function (generatorDef) {
-                        var g = new KG[generatorDef.type](generatorDef.def, params);
-                        data = g.addToContainer(data);
-                    });
-                }
-                container.model = new KG.Model(params);
+                container.model = new KG.Model(data.params.map(function (paramDef) { return new KG.Param(paramDef); }));
                 container.aspectRatio = data.aspectRatio || 1;
                 // create new view objects from data
                 if (data.hasOwnProperty('views')) {
@@ -352,6 +347,8 @@ var KG;
         Model.prototype.currentParamValues = function () {
             var params = this.params;
             var p = {};
+            params.forEach(function (param) {
+            });
             for (var paramName in params) {
                 if (params.hasOwnProperty(paramName)) {
                     p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
@@ -367,11 +364,7 @@ var KG;
                 //console.log('interpreted ', name, 'as a number.');
                 return +name;
             }
-            else if (p.hasOwnProperty(name)) {
-                //console.log('parsed', name, 'as a parameter');
-                return p[name].value;
-            }
-            // collect current parameter values in a p object
+            // collect current parameter values in a params object
             var params = this.currentParamValues();
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             var v = function (s) {

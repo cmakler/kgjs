@@ -1,181 +1,158 @@
 {
   "aspectRatio": 1,
-  "generators": [
+  "params": [
     {
-      "type": "Sliders",
-      "def": {
-        "dim": {
-          "x": "0.6",
-          "y": "0.1",
-          "width": "0.4",
-          "height": "0.5"
-        },
-        "paramNames": ["yA","xB","yB"]
-      }
-    }
-  ],
-  "params": {
-    "yA": {
+      "name": "yA",
       "label": "y_A",
       "value": "6",
       "min": "0",
       "max": "9",
       "round": "0.5"
     },
-    "xB": {
+    {
+      "name": "xB",
       "label": "x_B",
       "value": "12",
       "min": "0",
       "max": "15",
       "round": "0.25"
     },
-    "yB": {
+    {
+      "name": "yB",
       "label": "y_B",
       "value": "8",
       "min": "0",
       "max": "9"
     }
-  },
-  "views": [
+  ],
+  "scales": [
     {
-      "dim": {
-        "x": "0",
-        "y": "0",
-        "width": "0.6",
-        "height": "0.8"
-      },
-      "scales": [
-        {
-          "name": "x",
-          "axis": "x",
-          "domainMin": "0",
-          "domainMax": "20",
-          "rangeMin": "0.05",
-          "rangeMax": "0.95"
-        },
-        {
-          "name": "y",
-          "axis": "y",
-          "domainMin": "0",
-          "domainMax": "10",
-          "rangeMin": "0.95",
-          "rangeMax": "0.05"
-        }
-      ],
-      "objects": {
-        "segments": [
+      "name": "x",
+      "axis": "x",
+      "domainMin": "0",
+      "domainMax": "20",
+      "rangeMin": "0.05",
+      "rangeMax": "0.95"
+    },
+    {
+      "name": "y",
+      "axis": "y",
+      "domainMin": "0",
+      "domainMax": "10",
+      "rangeMin": "0.95",
+      "rangeMax": "0.05"
+    }
+  ],
+  "segments": [
+    {
+      "x1": "2",
+      "y1": "yA",
+      "x2": "xB",
+      "y2": "yB",
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "color": "(params.xB > 10) ? 'green' : 'blue'",
+      "interaction": {
+        "dragUpdates": [
           {
-            "x1": "2",
-            "y1": "yA",
-            "x2": "xB",
-            "y2": "yB",
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "color": "(params.xB > 10) ? 'green' : 'blue'",
-            "interaction": {
-              "dragUpdates": [
-                {
-                  "dragDirections": "y",
-                  "dragParam": "yA",
-                  "dragUpdateExpression": "params.yA + drag.dy"
-                },
-                {
-                  "dragDirections": "y",
-                  "dragParam": "yB",
-                  "dragUpdateExpression": "params.yB + drag.dy"
-                }
-              ]
-            }
-          }
-        ],
-        "axes": [
-          {
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "orient": "left"
+            "dragDirections": "y",
+            "dragParam": "yA",
+            "dragUpdateExpression": "params.yA + drag.dy"
           },
           {
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "orient": "bottom"
+            "dragDirections": "y",
+            "dragParam": "yB",
+            "dragUpdateExpression": "params.yB + drag.dy"
           }
-        ],
-        "points": [
+        ]
+      }
+    }
+  ],
+  "axes": [
+    {
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "orient": "left"
+    },
+    {
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "orient": "bottom"
+    }
+  ],
+  "points": [
+    {
+      "x": "2",
+      "y": "yA",
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "interaction": {
+        "dragUpdates": [
           {
-            "x": "2",
-            "y": "yA",
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "interaction": {
-              "dragUpdates": [
-                {
-                  "dragDirections": "y",
-                  "dragParam": "yA",
-                  "dragUpdateExpression": "drag.y"
-                }
-              ]
-            }
+            "dragDirections": "y",
+            "dragParam": "yA",
+            "dragUpdateExpression": "drag.y"
+          }
+        ]
+      }
+    },
+    {
+      "x": "xB",
+      "y": "yB",
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "interaction": {
+        "dragUpdates": [
+          {
+            "dragParam": "xB",
+            "dragUpdateExpression": "params.xB + drag.dx"
           },
           {
-            "x": "xB",
-            "y": "yB",
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "interaction": {
-              "dragUpdates": [
-                {
-                  "dragParam": "xB",
-                  "dragUpdateExpression": "params.xB + drag.dx"
-                },
-                {
-                  "dragParam": "yB",
-                  "dragUpdateExpression": "params.yB + drag.dy"
-                }
-              ]
-            }
+            "dragParam": "yB",
+            "dragUpdateExpression": "params.yB + drag.dy"
           }
-        ],
-        "labels": [
+        ]
+      }
+    }
+  ],
+  "labels": [
+    {
+      "x": "2",
+      "y": "params.yA",
+      "text": "`A = (2, ${params.yA.toFixed(1)})`",
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8",
+      "interaction": {
+        "dragUpdates": [
           {
-            "x": "2",
-            "y": "params.yA",
-            "text": "`A = (2, ${params.yA.toFixed(1)})`",
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "xPixelOffset": "5",
-            "yPixelOffset": "-15",
-            "fontSize": "8",
-            "interaction": {
-              "dragUpdates": [
-                {
-                  "dragDirections": "y",
-                  "dragParam": "yA",
-                  "dragUpdateExpression": "params.yA + drag.dy"
-                }
-              ]
-            }
+            "dragDirections": "y",
+            "dragParam": "yA",
+            "dragUpdateExpression": "params.yA + drag.dy"
+          }
+        ]
+      }
+    },
+    {
+      "x": "params.xB",
+      "y": "params.yB",
+      "text": "`B = (${params.xB.toFixed(2)}, ${params.yB})`",
+      "xScaleName": "x",
+      "yScaleName": "y",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8",
+      "interaction": {
+        "dragUpdates": [
+          {
+            "dragParam": "xB",
+            "dragUpdateExpression": "params.xB + drag.dx"
           },
           {
-            "x": "params.xB",
-            "y": "params.yB",
-            "text": "`B = (${params.xB.toFixed(2)}, ${params.yB})`",
-            "xScaleName": "x",
-            "yScaleName": "y",
-            "xPixelOffset": "5",
-            "yPixelOffset": "-15",
-            "fontSize": "8",
-            "interaction": {
-              "dragUpdates": [
-                {
-                  "dragParam": "xB",
-                  "dragUpdateExpression": "params.xB + drag.dx"
-                },
-                {
-                  "dragParam": "yB",
-                  "dragUpdateExpression": "params.yB + drag.dy"
-                }
-              ]
-            }
+            "dragParam": "yB",
+            "dragUpdateExpression": "params.yB + drag.dy"
           }
         ]
       }

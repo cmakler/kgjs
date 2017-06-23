@@ -3,6 +3,7 @@
 module KG {
 
     export interface ParamDefinition {
+        name: string;
         label: string;
         value: any;
         min: any;
@@ -12,6 +13,8 @@ module KG {
     }
 
     export interface IParam {
+        name: string;
+        label: string;
         value: any;
         update: (newValue: any) => any;
         formatted: (precision?: number) => string;
@@ -20,6 +23,7 @@ module KG {
 
     export class Param implements IParam {
 
+        public name;
         public label;
         public value;
         public min;
