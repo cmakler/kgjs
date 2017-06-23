@@ -345,15 +345,10 @@ var KG;
             return this;
         };
         Model.prototype.currentParamValues = function () {
-            var params = this.params;
             var p = {};
-            params.forEach(function (param) {
+            this.params.forEach(function (param) {
+                p[param.name] = param.value;
             });
-            for (var paramName in params) {
-                if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
-                }
-            }
             return p;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model

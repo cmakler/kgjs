@@ -46,9 +46,9 @@
   "segments": [
     {
       "x1": "2",
-      "y1": "yA",
-      "x2": "xB",
-      "y2": "yB",
+      "y1": "params.yA",
+      "x2": "params.xB",
+      "y2": "params.yB",
       "xScaleName": "x",
       "yScaleName": "y",
       "color": "(params.xB > 10) ? 'green' : 'blue'",
@@ -83,7 +83,7 @@
   "points": [
     {
       "x": "2",
-      "y": "yA",
+      "y": "params.yA",
       "xScaleName": "x",
       "yScaleName": "y",
       "interaction": {
@@ -91,14 +91,14 @@
           {
             "dragDirections": "y",
             "dragParam": "yA",
-            "dragUpdateExpression": "drag.y"
+            "dragUpdateExpression": "params.yA + drag.dy"
           }
         ]
       }
     },
     {
-      "x": "xB",
-      "y": "yB",
+      "x": "params.xB",
+      "y": "params.yB",
       "xScaleName": "x",
       "yScaleName": "y",
       "interaction": {

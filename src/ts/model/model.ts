@@ -27,16 +27,10 @@ module KG {
         }
 
         currentParamValues() {
-            let params = this.params;
             let p = {};
-            params.forEach(function(param) {
-
+            this.params.forEach(function(param) {
+                p[param.name] = param.value;
             });
-            for (const paramName in params) {
-                if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
-                }
-            }
             return p;
         }
 
