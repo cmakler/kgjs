@@ -3,17 +3,17 @@
 module KG {
 
     export interface IModel {
-        params: any;
+        //params: any; // object with string names and Param values; e.g., "yA" : (Param object)
+        //updateListeners: UpdateListener[];
         eval: (name: string) => any;
         currentParamValues: () => {};
-        updateListeners: UpdateListener[];
         addUpdateListener: (updateListener: UpdateListener) => Model;
     }
 
     export class Model implements IModel {
 
-        public params;
-        public updateListeners;
+        private params;
+        private updateListeners;
 
         constructor(params) {
             let model = this;
@@ -31,7 +31,7 @@ module KG {
             let p = {};
             for (const paramName in params) {
                 if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = params[paramName].value;
+                    p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
                 }
             }
             return p;
@@ -42,9 +42,9 @@ module KG {
             let p = this.params;
 
             // don't just evaluate numbers
-            if (typeof name == 'number') {
-                //console.log('parsed', name, 'as a number');
-                return name;
+            if (!isNaN(+name)) {
+                //console.log('interpreted ', name, 'as a number.');
+                return +name;
             }
 
             // check to see if name is a param
@@ -55,8 +55,6 @@ module KG {
 
             // collect current parameter values in a p object
             let params = this.currentParamValues();
-
-
 
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             let v = function (s) {
@@ -111,7 +109,6 @@ module KG {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force)
             });
-            return 'updated';
         }
 
 

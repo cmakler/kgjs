@@ -26,7 +26,6 @@ module KG {
         public rangeMax;
         public extent;
 
-
         constructor(def: ScaleDefinition) {
             def.constants = ['rangeMin','rangeMax','axis','name'];
             def.updatables = ['domainMin', 'domainMax'];

@@ -354,7 +354,7 @@ var KG;
             var p = {};
             for (var paramName in params) {
                 if (params.hasOwnProperty(paramName)) {
-                    p[paramName] = params[paramName].value;
+                    p[paramName] = isNaN(+params[paramName].value) ? params[paramName].value : +params[paramName].value;
                 }
             }
             return p;
@@ -363,9 +363,9 @@ var KG;
         Model.prototype.eval = function (name) {
             var p = this.params;
             // don't just evaluate numbers
-            if (typeof name == 'number') {
-                //console.log('parsed', name, 'as a number');
-                return name;
+            if (!isNaN(+name)) {
+                //console.log('interpreted ', name, 'as a number.');
+                return +name;
             }
             else if (p.hasOwnProperty(name)) {
                 //console.log('parsed', name, 'as a parameter');
@@ -416,7 +416,6 @@ var KG;
             this.updateListeners.forEach(function (listener) {
                 listener.update(force);
             });
-            return 'updated';
         };
         return Model;
     }());
@@ -919,8 +918,8 @@ var KG;
         Label.prototype.update = function (force) {
             var label = _super.prototype.update.call(this, force);
             if (label.hasChanged) {
-                label.element.style('left', label.xScale.scale(label.x) + label.xPixelOffset + 'px');
-                label.element.style('top', label.yScale.scale(label.y) + label.yPixelOffset + 'px');
+                var labelX = label.element.style('left', label.xScale.scale(label.x) + (+label.xPixelOffset) + 'px');
+                label.element.style('top', label.yScale.scale(label.y) + (+label.yPixelOffset) + 'px');
                 console.log('redrawing katex');
                 katex.render(label.text, label.element.node());
             }

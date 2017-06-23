@@ -5,10 +5,10 @@
       "type": "Sliders",
       "def": {
         "dim": {
-          "x": 0.6,
-          "y": 0.1,
-          "width": 0.4,
-          "height": 0.5
+          "x": "0.6",
+          "y": "0.1",
+          "width": "0.4",
+          "height": "0.5"
         },
         "paramNames": ["yA","xB","yB"]
       }
@@ -17,55 +17,55 @@
   "params": {
     "yA": {
       "label": "y_A",
-      "value": 5,
-      "min": 0,
-      "max": 9,
-      "round": 0.5
+      "value": "6",
+      "min": "0",
+      "max": "9",
+      "round": "0.5"
     },
     "xB": {
       "label": "x_B",
-      "value": 12,
-      "min": 0,
-      "max": 15,
-      "round": 0.25
+      "value": "12",
+      "min": "0",
+      "max": "15",
+      "round": "0.25"
     },
     "yB": {
       "label": "y_B",
-      "value": 8,
-      "min": 0,
-      "max": 9
+      "value": "8",
+      "min": "0",
+      "max": "9"
     }
   },
   "views": [
     {
       "dim": {
-        "x": 0,
-        "y": 0.1,
-        "width": 0.6,
-        "height": 0.8
+        "x": "0",
+        "y": "0",
+        "width": "0.6",
+        "height": "0.8"
       },
       "scales": [
         {
           "name": "x",
           "axis": "x",
-          "domainMin": 0,
-          "domainMax": 20,
-          "rangeMin": 0.05,
-          "rangeMax": 0.95
+          "domainMin": "0",
+          "domainMax": "20",
+          "rangeMin": "0.05",
+          "rangeMax": "0.95"
         },
         {
           "name": "y",
           "axis": "y",
-          "domainMin": -10,
-          "domainMax": 10,
-          "rangeMin": 0.95,
-          "rangeMax": 0.05
+          "domainMin": "0",
+          "domainMax": "10",
+          "rangeMin": "0.95",
+          "rangeMax": "0.05"
         }
       ],
       "objects": {
         "segments": [
           {
-            "x1": 2,
+            "x1": "2",
             "y1": "yA",
             "x2": "xB",
             "y2": "yB",
@@ -102,7 +102,7 @@
         ],
         "points": [
           {
-            "x": 2,
+            "x": "2",
             "y": "yA",
             "xScaleName": "x",
             "yScaleName": "y",
@@ -125,11 +125,11 @@
               "dragUpdates": [
                 {
                   "dragParam": "xB",
-                  "dragUpdateExpression": "drag.x"
+                  "dragUpdateExpression": "params.xB + drag.dx"
                 },
                 {
                   "dragParam": "yB",
-                  "dragUpdateExpression": "drag.y"
+                  "dragUpdateExpression": "params.yB + drag.dy"
                 }
               ]
             }
@@ -137,14 +137,14 @@
         ],
         "labels": [
           {
-            "x": 2,
-            "y": "yA",
+            "x": "2",
+            "y": "params.yA",
             "text": "`A = (2, ${params.yA.toFixed(1)})`",
             "xScaleName": "x",
             "yScaleName": "y",
-            "xPixelOffset": 5,
-            "yPixelOffset": -15,
-            "fontSize": 8,
+            "xPixelOffset": "5",
+            "yPixelOffset": "-15",
+            "fontSize": "8",
             "interaction": {
               "dragUpdates": [
                 {
@@ -156,14 +156,14 @@
             }
           },
           {
-            "x": "xB",
-            "y": "yB",
+            "x": "params.xB",
+            "y": "params.yB",
             "text": "`B = (${params.xB.toFixed(2)}, ${params.yB})`",
             "xScaleName": "x",
             "yScaleName": "y",
-            "xPixelOffset": 5,
-            "yPixelOffset": -15,
-            "fontSize": 8,
+            "xPixelOffset": "5",
+            "yPixelOffset": "-15",
+            "fontSize": "8",
             "interaction": {
               "dragUpdates": [
                 {

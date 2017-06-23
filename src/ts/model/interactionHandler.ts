@@ -46,7 +46,6 @@ module KG {
                 });
                 ih.element.style("pointer-events", (xDrag || yDrag) ? "all" : "none");
                 ih.element.style("cursor", (xDrag && yDrag) ? "move" : xDrag ? "ew-resize" : "ns-resize");
-                
             }
             return ih;
         }
