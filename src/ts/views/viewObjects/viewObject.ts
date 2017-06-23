@@ -30,14 +30,11 @@ module KG {
         public interactionHandler: InteractionHandler;
 
         constructor(def: ViewObjectDefinition) {
+            def.constants = ['xScale','yScale'];
             def = _.defaults(def,{show: true});
             super(def);
 
             let vo = this;
-
-            // the scales determine the coordinate system for this viewObject
-            vo.xScale = def.view.scales[def.xScaleName];
-            vo.yScale = def.view.scales[def.yScaleName];
 
             // the clip path clips the viewObject
             if(vo.hasOwnProperty('clipPath')) {

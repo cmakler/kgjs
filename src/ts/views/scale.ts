@@ -18,6 +18,7 @@ module KG {
 
     export class Scale extends UpdateListener implements IScale {
 
+        public name;
         public axis;
         public scale;
         public domainMin;

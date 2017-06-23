@@ -63,238 +63,21 @@ var _;
     }
     _.defaults = createAssigner(allKeys, true);
 })(_ || (_ = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Generator = (function () {
-        function Generator(def, params) {
-            this.def = def;
-            this.params = params;
-        }
-        Generator.prototype.addToContainer = function (currentJSON) {
-            return currentJSON;
-        };
-        return Generator;
-    }());
-    KG.Generator = Generator;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var ViewGenerator = (function () {
-        function ViewGenerator(def, params) {
-            this.def = def;
-            this.params = params;
-        }
-        ViewGenerator.prototype.addToContainer = function (currentJSON) {
-            return currentJSON;
-        };
-        return ViewGenerator;
-    }());
-    KG.ViewGenerator = ViewGenerator;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Sliders = (function (_super) {
-        __extends(Sliders, _super);
-        function Sliders() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Sliders.prototype.addToContainer = function (currentJSON) {
-            var sliders = this, paramNames = sliders.def.paramNames;
-            var scales = [{
-                    name: "y",
-                    axis: "y",
-                    domainMin: 0,
-                    domainMax: 1,
-                    rangeMin: 0,
-                    rangeMax: 1
-                }], segments = [], axes = [], points = [], labels = [];
-            paramNames.forEach(function (paramName, index) {
-                var param = sliders.params[paramName], y = (index + 0.5) / paramNames.length;
-                scales.push({
-                    name: paramName,
-                    axis: "x",
-                    domainMin: param.min,
-                    domainMax: param.max,
-                    rangeMin: 0.1,
-                    rangeMax: 0.9
-                });
-                segments.push({
-                    x1: param.min,
-                    y1: 0,
-                    x2: param.max,
-                    y2: 0,
-                    xScaleName: paramName,
-                    yScaleName: "y"
-                });
-                axes.push({
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    orient: "bottom",
-                    intercept: y
-                });
-                points.push({
-                    x: paramName,
-                    y: y,
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    interaction: {
-                        dragUpdates: [
-                            {
-                                dragDirections: "x",
-                                dragParam: paramName,
-                                dragUpdateExpression: "params." + paramName + " + drag.dx"
-                            }
-                        ]
-                    }
-                });
-                labels.push({
-                    x: paramName,
-                    y: y,
-                    text: "`${params." + paramName + "}`",
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    xPixelOffset: 0,
-                    yPixelOffset: 20,
-                    fontSize: 8,
-                    interaction: {
-                        dragUpdates: [
-                            {
-                                dragDirections: "x",
-                                dragParam: paramName,
-                                dragUpdateExpression: "params." + paramName + " + drag.dx"
-                            }
-                        ]
-                    }
-                });
-            });
-            currentJSON.views.push({
-                dim: sliders.def.dim,
-                scales: scales,
-                objects: {
-                    segments: segments,
-                    axes: axes,
-                    points: points,
-                    labels: labels
-                }
-            });
-            return currentJSON;
-        };
-        return Sliders;
-    }(KG.ViewGenerator));
-    KG.Sliders = Sliders;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Graph = (function (_super) {
-        __extends(Graph, _super);
-        function Graph() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Graph.prototype.addToContainer = function (currentJSON) {
-            var Graph = this, paramNames = Graph.def.paramNames;
-            var scales = [{
-                    name: "x",
-                    axis: "x",
-                    domainMin: 0,
-                    domainMax: 1,
-                    rangeMin: 0,
-                    rangeMax: 1
-                }], segments = [], axes = [], points = [], labels = [];
-            paramNames.forEach(function (paramName, index) {
-                var param = Graph.params[paramName], y = (index + 0.5) / paramNames.length;
-                scales.push({
-                    name: paramName,
-                    axis: "x",
-                    domainMin: param.min,
-                    domainMax: param.max,
-                    rangeMin: 0.1,
-                    rangeMax: 0.9
-                });
-                segments.push({
-                    x1: param.min,
-                    y1: 0,
-                    x2: param.max,
-                    y2: 0,
-                    xScaleName: paramName,
-                    yScaleName: "y"
-                });
-                axes.push({
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    orient: "bottom",
-                    intercept: y
-                });
-                points.push({
-                    x: paramName,
-                    y: y,
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    interaction: {
-                        dragUpdates: [
-                            {
-                                dragDirections: "x",
-                                dragParam: paramName,
-                                dragUpdateExpression: "params." + paramName + " + drag.dx"
-                            }
-                        ]
-                    }
-                });
-                labels.push({
-                    x: paramName,
-                    y: y,
-                    text: "`${params." + paramName + "}`",
-                    xScaleName: paramName,
-                    yScaleName: "y",
-                    xPixelOffset: 0,
-                    yPixelOffset: 20,
-                    fontSize: 8,
-                    interaction: {
-                        dragUpdates: [
-                            {
-                                dragDirections: "x",
-                                dragParam: paramName,
-                                dragUpdateExpression: "params." + paramName + " + drag.dx"
-                            }
-                        ]
-                    }
-                });
-            });
-            currentJSON.views.push({
-                dim: Graph.def.dim,
-                scales: scales,
-                objects: {
-                    segments: segments,
-                    axes: axes,
-                    points: points,
-                    labels: labels
-                }
-            });
-            return currentJSON;
-        };
-        return Graph;
-    }(KG.Generator));
-    KG.Graph = Graph;
-})(KG || (KG = {}));
 /// <reference path="./kg.ts" />
 var KG;
 (function (KG) {
-    var Container = (function () {
-        function Container(div) {
-            var container = this;
+    var View = (function () {
+        function View(div) {
+            var view = this;
             div.style.position = 'relative';
-            container.div = div;
-            container.views = [];
+            view.div = d3.select(div);
             d3.json(div.getAttribute('src'), function (data) {
                 data.params = data.params || [];
-                data.params = data.params.map(function (paramDef) {
-                    if (div.hasAttribute(paramDef.name)) {
-                        paramDef.value = div.getAttribute(paramDef.name);
+                data.params = data.params.map(function (paramdata) {
+                    if (div.hasAttribute(paramdata.name)) {
+                        paramdata.value = div.getAttribute(paramdata.name);
                     }
-                    return paramDef;
+                    return paramdata;
                 });
                 // override params from JSON if there are attributes on the div with the same name
                 for (var param in data.params) {
@@ -302,34 +85,78 @@ var KG;
                         data.params[param].value = div.getAttribute(param);
                     }
                 }
-                container.model = new KG.Model(data.params.map(function (paramDef) { return new KG.Param(paramDef); }));
-                container.aspectRatio = data.aspectRatio || 1;
-                // create new view objects from data
-                if (data.hasOwnProperty('views')) {
-                    container.views = data.views.map(function (viewDef) {
-                        viewDef.model = container.model;
-                        viewDef.containerDiv = container.div;
-                        return new KG.View(viewDef);
+                view.model = new KG.Model(data.params.map(function (paramdata) {
+                    return new KG.Param(paramdata);
+                }));
+                view.aspectRatio = data.aspectRatio || 1;
+                // add svg element as a child of the div
+                view.svg = view.div.append("svg");
+                // establish scales
+                if (data.hasOwnProperty('scales')) {
+                    view.scales = data.scales.map(function (scaleDef) {
+                        scaleDef.model = view.model;
+                        return new KG.Scale(scaleDef);
                     });
                 }
-                // establish dimensions of container and views
-                container.updateDimensions();
+                var prepareObject = function (objectdata, layer) {
+                    objectdata.model = view.model;
+                    objectdata.layer = layer;
+                    objectdata.xScale = view.getScale(objectdata.xScaleName);
+                    objectdata.yScale = view.getScale(objectdata.yScaleName);
+                    return objectdata;
+                };
+                var defLayer = view.svg.append('defs');
+                if (data.hasOwnProperty('segments')) {
+                    var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
+                    data.segments.forEach(function (segmentdata) {
+                        new KG.Segment(prepareObject(segmentdata, segmentLayer_1));
+                    });
+                }
+                if (data.hasOwnProperty('axes')) {
+                    var axisLayer_1 = view.svg.append('g').attr('class', 'axes');
+                    data.axes.forEach(function (axisdata) {
+                        new KG.Axis(prepareObject(axisdata, axisLayer_1));
+                    });
+                }
+                if (data.hasOwnProperty('points')) {
+                    var pointLayer_1 = view.svg.append('g').attr('class', 'points');
+                    data.points.forEach(function (pointdata) {
+                        new KG.Point(prepareObject(pointdata, pointLayer_1));
+                    });
+                }
+                if (data.hasOwnProperty('labels')) {
+                    var labelLayer_1 = view.div.append('div').attr('class', 'labels');
+                    data.labels.forEach(function (labeldata) {
+                        new KG.Label(prepareObject(labeldata, labelLayer_1));
+                    });
+                }
+                // establish dimensions of view and views
+                view.updateDimensions();
             });
         }
-        Container.prototype.updateDimensions = function () {
-            var container = this;
-            container.width = container.div.clientWidth;
-            container.height = container.width / container.aspectRatio;
-            container.div.style.height = container.height + 'px';
-            container.views.forEach(function (v) {
-                v.updateDimensions(container.width, container.height);
-            });
-            container.model.update(true);
-            return container;
+        View.prototype.getScale = function (scaleName) {
+            var scales = this.scales;
+            for (var i = 0; i < scales.length; i++) {
+                if (scales[i].name == scaleName) {
+                    return scales[i];
+                }
+            }
         };
-        return Container;
+        View.prototype.updateDimensions = function () {
+            var view = this;
+            var width = view.div.node().clientWidth, height = width / view.aspectRatio;
+            view.div.style.height = height + 'px';
+            view.svg.style('width', width);
+            view.svg.style('height', height);
+            view.scales.forEach(function (scale) {
+                scale.extent = (scale.axis == 'x') ? width : height;
+            });
+            view.model.update(true);
+            return view;
+        };
+        return View;
     }());
-    KG.Container = Container;
+    KG.View = View;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -606,83 +433,6 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var View = (function () {
-        function View(def) {
-            var v = this;
-            v.dimensions = _.defaults(def.dim, { x: 0, y: 0, width: 1, height: 1 });
-            // add div element as a child of the enclosing container
-            v.div = d3.select(def.containerDiv).append("div")
-                .style('position', 'absolute')
-                .style('background-color', 'white');
-            // add svg element as a child of the div
-            v.svg = v.div.append("svg");
-            // establish scales
-            if (def.hasOwnProperty('scales')) {
-                v.scales = {};
-                for (var i = 0; i < def.scales.length; i++) {
-                    var scaleDef = def.scales[i];
-                    scaleDef.model = def.model;
-                    v.scales[scaleDef.name] = new KG.Scale(scaleDef);
-                }
-            }
-            // add child objects
-            if (def.hasOwnProperty('objects')) {
-                var prepareDef_1 = function (objectDef, layer) {
-                    objectDef.view = v;
-                    objectDef.model = def.model;
-                    objectDef.layer = layer;
-                    return objectDef;
-                };
-                var defLayer = v.svg.append('defs');
-                if (def.objects.hasOwnProperty('segments')) {
-                    var segmentLayer_1 = v.svg.append('g').attr('class', 'segments');
-                    def.objects.segments.forEach(function (segmentDef) {
-                        new KG.Segment(prepareDef_1(segmentDef, segmentLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('axes')) {
-                    var axisLayer_1 = v.svg.append('g').attr('class', 'axes');
-                    def.objects.axes.forEach(function (axisDef) {
-                        new KG.Axis(prepareDef_1(axisDef, axisLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('points')) {
-                    var pointLayer_1 = v.svg.append('g').attr('class', 'points');
-                    def.objects.points.forEach(function (pointDef) {
-                        new KG.Point(prepareDef_1(pointDef, pointLayer_1));
-                    });
-                }
-                if (def.objects.hasOwnProperty('labels')) {
-                    var labelLayer_1 = v.div.append('div').attr('class', 'labels');
-                    def.objects.labels.forEach(function (labelDef) {
-                        new KG.Label(prepareDef_1(labelDef, labelLayer_1));
-                    });
-                }
-            }
-        }
-        View.prototype.updateDimensions = function (width, height) {
-            var v = this, dim = v.dimensions, vx = (dim.x <= 1) ? dim.x * width : dim.x, vy = (dim.y <= 1) ? dim.y * height : dim.y, vw = (dim.width <= 1) ? dim.width * width : dim.width, vh = (dim.height <= 1) ? dim.height * height : dim.height;
-            v.div.style('left', vx + 'px');
-            v.div.style('top', vy + 'px');
-            v.div.style('width', vw + 'px');
-            v.div.style('height', vh + 'px');
-            v.svg.style('width', vw);
-            v.svg.style('height', vh);
-            for (var scaleName in v.scales) {
-                if (v.scales.hasOwnProperty(scaleName)) {
-                    var s = v.scales[scaleName];
-                    s.extent = (s.axis == 'x') ? vw : vh;
-                }
-            }
-            return v;
-        };
-        return View;
-    }());
-    KG.View = View;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
     var Scale = (function (_super) {
         __extends(Scale, _super);
         function Scale(def) {
@@ -715,12 +465,10 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
+            def.constants = ['xScale', 'yScale'];
             def = _.defaults(def, { show: true });
             _this = _super.call(this, def) || this;
             var vo = _this;
-            // the scales determine the coordinate system for this viewObject
-            vo.xScale = def.view.scales[def.xScaleName];
-            vo.yScale = def.view.scales[def.yScaleName];
             // the clip path clips the viewObject
             if (vo.hasOwnProperty('clipPath')) {
                 vo.clipPath = def.view.clipPaths[def.clipPath];
@@ -921,17 +669,12 @@ var KG;
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
-/// <reference path="generators/generator.ts"/>
-/// <reference path="generators/viewGenerator.ts"/>
-/// <reference path="generators/sliders.ts"/>
-/// <reference path="generators/graph.ts"/>
-/// <reference path="container.ts"/>
+/// <reference path="view.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/updateListener.ts" />
 /// <reference path="model/dragUpdateListener.ts" />
 /// <reference path="model/interactionHandler.ts" />
-/// <reference path="views/view.ts" />
 /// <reference path="views/scale.ts" />
 /// <reference path="views/viewObjects/viewObject.ts" />
 /// <reference path="views/viewObjects/clipPath.ts" />
@@ -941,12 +684,12 @@ var KG;
 /// <reference path="views/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
 // initialize the diagram from divs with class kg-container
-var containerDivs = document.getElementsByClassName('kg-container'), containers = [];
-for (var i = 0; i < containerDivs.length; i++) {
-    containers.push(new KG.Container(containerDivs[i]));
+var viewDivs = document.getElementsByClassName('kg-container'), views = [];
+for (var i = 0; i < viewDivs.length; i++) {
+    views.push(new KG.View(viewDivs[i]));
 }
 // if the window changes size, update the dimensions of the containers
 window.onresize = function () {
-    containers.forEach(function (c) { c.updateDimensions(); });
+    views.forEach(function (c) { c.updateDimensions(); });
 };
 //# sourceMappingURL=kg.js.map

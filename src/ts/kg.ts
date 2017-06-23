@@ -4,12 +4,7 @@
 
 /// <reference path="lib/underscore.ts"/>
 
-/// <reference path="generators/generator.ts"/>
-/// <reference path="generators/viewGenerator.ts"/>
-/// <reference path="generators/sliders.ts"/>
-/// <reference path="generators/graph.ts"/>
-
-/// <reference path="container.ts"/>
+/// <reference path="view.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
@@ -17,7 +12,6 @@
 /// <reference path="model/dragUpdateListener.ts" />
 /// <reference path="model/interactionHandler.ts" />
 
-/// <reference path="views/view.ts" />
 /// <reference path="views/scale.ts" />
 
 /// <reference path="views/viewObjects/viewObject.ts" />
@@ -32,17 +26,17 @@
 
 // initialize the diagram from divs with class kg-container
 
-let containerDivs = document.getElementsByClassName('kg-container'),
-    containers = [];
+let viewDivs = document.getElementsByClassName('kg-container'),
+    views = [];
 
-for(let i = 0; i< containerDivs.length; i++) {
-    containers.push(new KG.Container(containerDivs[i]));
+for(let i = 0; i< viewDivs.length; i++) {
+    views.push(new KG.View(viewDivs[i]));
 }
 
 // if the window changes size, update the dimensions of the containers
 
 window.onresize = function() {
-    containers.forEach(function(c) {c.updateDimensions()} )
+    views.forEach(function(c) {c.updateDimensions()} )
 };
 
 
