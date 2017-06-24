@@ -3,7 +3,6 @@
 module KG {
 
     export interface ViewObjectDefinition extends UpdateListenerDefinition {
-        view: View;
         layer: any;
         name?: string;
         xScaleName?: string;
@@ -30,16 +29,11 @@ module KG {
         public interactionHandler: InteractionHandler;
 
         constructor(def: ViewObjectDefinition) {
-            def.constants = ['xScale','yScale'];
+            def.constants = ['xScale','yScale','clipPath'];
             def = _.defaults(def,{show: true});
             super(def);
 
             let vo = this;
-
-            // the clip path clips the viewObject
-            if(vo.hasOwnProperty('clipPath')) {
-                vo.clipPath = def.view.clipPaths[def.clipPath];
-            }
 
             // the interaction handler manages drag and hover events
             def.interaction = _.defaults(def.interaction || {}, {

@@ -47,12 +47,13 @@ module KG {
                     - (match[2] ? +match[2] : 0));
             }
 
+            this.name = def.name;
             this.label = def.label || '';
             this.value = def.value;
-            this.min = def.min || 0;
-            this.max = def.max || 10;
-            this.round = def.round || 1;
-            this.precision = def.precision || decimalPlaces(this.round.toString());
+            this.min = parseFloat(def.min) || 0;
+            this.max = parseFloat(def.max) || 10;
+            this.round = parseFloat(def.round) || 1;
+            this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
 
             console.log('initialized param object: ', this);
         }

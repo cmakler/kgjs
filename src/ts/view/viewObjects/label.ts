@@ -49,9 +49,13 @@ module KG {
         update(force) {
             let label = super.update(force);
             if (label.hasChanged) {
-                const labelX =
-                label.element.style('left', label.xScale.scale(label.x) + (+label.xPixelOffset) + 'px');
-                label.element.style('top', label.yScale.scale(label.y) + (+label.yPixelOffset) + 'px');
+                const labelX = label.xScale.scale(label.x) + (+label.xPixelOffset),
+                    labelY = label.yScale.scale(label.y) + (+label.yPixelOffset);
+                console.log('labelX = ',labelX);
+                console.log('labelY = ',labelY);
+                console.log('text = ',label.text);
+                label.element.style('left', labelX + 'px');
+                label.element.style('top', labelY + 'px');
                 console.log('redrawing katex');
                 katex.render(label.text, label.element.node());
             }

@@ -98,6 +98,7 @@
     },
     {
       "x": "params.xB",
+      "y": "params.yB",
       "xScaleName": "x",
       "yScaleName": "y",
       "interaction": {

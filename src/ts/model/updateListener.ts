@@ -27,7 +27,7 @@ module KG {
             let ul = this;
             ul.def = def;
             def.constants.forEach(function(c) {
-                ul[c] = def[c];
+                ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
             });
             ul.model.addUpdateListener(this);
         }

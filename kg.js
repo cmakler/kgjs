@@ -63,76 +63,68 @@ var _;
     }
     _.defaults = createAssigner(allKeys, true);
 })(_ || (_ = {}));
-/// <reference path="./kg.ts" />
+/// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
     var View = (function () {
-        function View(div) {
+        function View(div, data) {
             var view = this;
-            div.style.position = 'relative';
-            view.div = d3.select(div);
-            d3.json(div.getAttribute('src'), function (data) {
-                data.params = data.params || [];
-                data.params = data.params.map(function (paramdata) {
-                    if (div.hasAttribute(paramdata.name)) {
-                        paramdata.value = div.getAttribute(paramdata.name);
-                    }
-                    return paramdata;
-                });
-                // override params from JSON if there are attributes on the div with the same name
-                for (var param in data.params) {
-                    if (data.params.hasOwnProperty(param) && div.hasAttribute(param)) {
-                        data.params[param].value = div.getAttribute(param);
-                    }
+            view.div = d3.select(div).style('position', 'relative');
+            data.params = data.params || [];
+            data.params = data.params.map(function (paramData) {
+                if (div.hasAttribute(paramData.name)) {
+                    paramData.value = div.getAttribute(paramData.name);
                 }
-                view.model = new KG.Model(data.params.map(function (paramdata) {
-                    return new KG.Param(paramdata);
-                }));
-                view.aspectRatio = data.aspectRatio || 1;
-                // add svg element as a child of the div
-                view.svg = view.div.append("svg");
-                // establish scales
-                if (data.hasOwnProperty('scales')) {
-                    view.scales = data.scales.map(function (scaleDef) {
-                        scaleDef.model = view.model;
-                        return new KG.Scale(scaleDef);
-                    });
-                }
-                var prepareObject = function (objectdata, layer) {
-                    objectdata.model = view.model;
-                    objectdata.layer = layer;
-                    objectdata.xScale = view.getScale(objectdata.xScaleName);
-                    objectdata.yScale = view.getScale(objectdata.yScaleName);
-                    return objectdata;
-                };
-                var defLayer = view.svg.append('defs');
-                if (data.hasOwnProperty('segments')) {
-                    var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
-                    data.segments.forEach(function (segmentdata) {
-                        new KG.Segment(prepareObject(segmentdata, segmentLayer_1));
-                    });
-                }
-                if (data.hasOwnProperty('axes')) {
-                    var axisLayer_1 = view.svg.append('g').attr('class', 'axes');
-                    data.axes.forEach(function (axisdata) {
-                        new KG.Axis(prepareObject(axisdata, axisLayer_1));
-                    });
-                }
-                if (data.hasOwnProperty('points')) {
-                    var pointLayer_1 = view.svg.append('g').attr('class', 'points');
-                    data.points.forEach(function (pointdata) {
-                        new KG.Point(prepareObject(pointdata, pointLayer_1));
-                    });
-                }
-                if (data.hasOwnProperty('labels')) {
-                    var labelLayer_1 = view.div.append('div').attr('class', 'labels');
-                    data.labels.forEach(function (labeldata) {
-                        new KG.Label(prepareObject(labeldata, labelLayer_1));
-                    });
-                }
-                // establish dimensions of view and views
-                view.updateDimensions();
+                paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
+                return paramData;
             });
+            view.model = new KG.Model(data.params.map(function (paramData) {
+                return new KG.Param(paramData);
+            }));
+            view.aspectRatio = data.aspectRatio || 1;
+            // add svg element as a child of the div
+            view.svg = view.div.append("svg");
+            // establish scales
+            if (data.hasOwnProperty('scales')) {
+                view.scales = data.scales.map(function (scaleDef) {
+                    scaleDef.model = view.model;
+                    return new KG.Scale(scaleDef);
+                });
+            }
+            var prepareObject = function (objectdata, layer) {
+                objectdata.model = view.model;
+                objectdata.layer = layer;
+                objectdata.xScale = view.getScale(objectdata.xScaleName);
+                objectdata.yScale = view.getScale(objectdata.yScaleName);
+                return objectdata;
+            };
+            var defLayer = view.svg.append('defs');
+            if (data.hasOwnProperty('segments')) {
+                var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
+                data.segments.forEach(function (segmentdata) {
+                    new KG.Segment(prepareObject(segmentdata, segmentLayer_1));
+                });
+            }
+            if (data.hasOwnProperty('axes')) {
+                var axisLayer_1 = view.svg.append('g').attr('class', 'axes');
+                data.axes.forEach(function (axisdata) {
+                    new KG.Axis(prepareObject(axisdata, axisLayer_1));
+                });
+            }
+            if (data.hasOwnProperty('points')) {
+                var pointLayer_1 = view.svg.append('g').attr('class', 'points');
+                data.points.forEach(function (pointdata) {
+                    new KG.Point(prepareObject(pointdata, pointLayer_1));
+                });
+            }
+            if (data.hasOwnProperty('labels')) {
+                var labelLayer_1 = view.div.append('div').attr('class', 'labels');
+                data.labels.forEach(function (labeldata) {
+                    new KG.Label(prepareObject(labeldata, labelLayer_1));
+                });
+            }
+            // establish dimensions of view and views
+            view.updateDimensions();
         }
         View.prototype.getScale = function (scaleName) {
             var scales = this.scales;
@@ -182,9 +174,9 @@ var KG;
         Model.prototype.eval = function (name) {
             var p = this.params;
             // don't just evaluate numbers
-            if (!isNaN(+name)) {
+            if (!isNaN(parseFloat(name))) {
                 //console.log('interpreted ', name, 'as a number.');
-                return +name;
+                return parseFloat(name);
             }
             // collect current parameter values in a params object
             var params = this.currentParamValues();
@@ -215,16 +207,22 @@ var KG;
                 }
             }
         };
+        Model.prototype.getParam = function (paramName) {
+            var params = this.params;
+            for (var i = 0; i < params.length; i++) {
+                if (params[i].name == paramName) {
+                    return params[i];
+                }
+            }
+        };
         // method exposed to viewObjects to allow them to try to change a parameter
         Model.prototype.updateParam = function (name, newValue) {
-            var model = this;
-            if (model.params.hasOwnProperty(name)) {
-                var oldValue = model.params[name].value;
-                model.params[name].update(newValue);
-                // if param has changed, propagate change to fields and children
-                if (oldValue != model.params[name].value) {
-                    model.update(false);
-                }
+            var model = this, param = model.getParam(name);
+            var oldValue = param.value;
+            param.update(newValue);
+            // if param has changed, propagate change to fields and children
+            if (oldValue != param.value) {
+                model.update(false);
             }
         };
         Model.prototype.update = function (force) {
@@ -251,12 +249,13 @@ var KG;
                 (match[1] ? match[1].length : 0)
                     - (match[2] ? +match[2] : 0));
             }
+            this.name = def.name;
             this.label = def.label || '';
             this.value = def.value;
-            this.min = def.min || 0;
-            this.max = def.max || 10;
-            this.round = def.round || 1;
-            this.precision = def.precision || decimalPlaces(this.round.toString());
+            this.min = parseFloat(def.min) || 0;
+            this.max = parseFloat(def.max) || 10;
+            this.round = parseFloat(def.round) || 1;
+            this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
             console.log('initialized param object: ', this);
         }
         // Receives an instruction to update the parameter to a new value
@@ -303,7 +302,7 @@ var KG;
             var ul = this;
             ul.def = def;
             def.constants.forEach(function (c) {
-                ul[c] = def[c];
+                ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
             });
             ul.model.addUpdateListener(this);
         }
@@ -465,14 +464,10 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def.constants = ['xScale', 'yScale'];
+            def.constants = ['xScale', 'yScale', 'clipPath'];
             def = _.defaults(def, { show: true });
             _this = _super.call(this, def) || this;
             var vo = _this;
-            // the clip path clips the viewObject
-            if (vo.hasOwnProperty('clipPath')) {
-                vo.clipPath = def.view.clipPaths[def.clipPath];
-            }
             // the interaction handler manages drag and hover events
             def.interaction = _.defaults(def.interaction || {}, {
                 viewObject: vo,
@@ -654,8 +649,12 @@ var KG;
         Label.prototype.update = function (force) {
             var label = _super.prototype.update.call(this, force);
             if (label.hasChanged) {
-                var labelX = label.element.style('left', label.xScale.scale(label.x) + (+label.xPixelOffset) + 'px');
-                label.element.style('top', label.yScale.scale(label.y) + (+label.yPixelOffset) + 'px');
+                var labelX = label.xScale.scale(label.x) + (+label.xPixelOffset), labelY = label.yScale.scale(label.y) + (+label.yPixelOffset);
+                console.log('labelX = ', labelX);
+                console.log('labelY = ', labelY);
+                console.log('text = ', label.text);
+                label.element.style('left', labelX + 'px');
+                label.element.style('top', labelY + 'px');
                 console.log('redrawing katex');
                 katex.render(label.text, label.element.node());
             }
@@ -669,24 +668,29 @@ var KG;
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
-/// <reference path="view.ts"/>
+/// <reference path="view/view.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/updateListener.ts" />
 /// <reference path="model/dragUpdateListener.ts" />
 /// <reference path="model/interactionHandler.ts" />
-/// <reference path="views/scale.ts" />
-/// <reference path="views/viewObjects/viewObject.ts" />
-/// <reference path="views/viewObjects/clipPath.ts" />
-/// <reference path="views/viewObjects/segment.ts" />
-/// <reference path="views/viewObjects/axis.ts" />
-/// <reference path="views/viewObjects/point.ts" />
-/// <reference path="views/viewObjects/label.ts" />
+/// <reference path="view/scale.ts" />
+/// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/clipPath.ts" />
+/// <reference path="view/viewObjects/segment.ts" />
+/// <reference path="view/viewObjects/axis.ts" />
+/// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
 // initialize the diagram from divs with class kg-container
 var viewDivs = document.getElementsByClassName('kg-container'), views = [];
+var _loop_1 = function (i) {
+    d3.json(viewDivs[i].getAttribute('src'), function (data) {
+        views.push(new KG.View(viewDivs[i], data));
+    });
+};
 for (var i = 0; i < viewDivs.length; i++) {
-    views.push(new KG.View(viewDivs[i]));
+    _loop_1(i);
 }
 // if the window changes size, update the dimensions of the containers
 window.onresize = function () {

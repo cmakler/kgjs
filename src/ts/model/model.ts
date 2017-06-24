@@ -28,7 +28,7 @@ module KG {
 
         currentParamValues() {
             let p = {};
-            this.params.forEach(function(param) {
+            this.params.forEach(function (param) {
                 p[param.name] = param.value;
             });
             return p;
@@ -39,9 +39,9 @@ module KG {
             let p = this.params;
 
             // don't just evaluate numbers
-            if (!isNaN(+name)) {
+            if (!isNaN(parseFloat(name))) {
                 //console.log('interpreted ', name, 'as a number.');
-                return +name;
+                return parseFloat(name);
             }
 
             // collect current parameter values in a params object
@@ -81,18 +81,25 @@ module KG {
 
         }
 
+        getParam(paramName) {
+            const params = this.params;
+            for (let i = 0; i < params.length; i++) {
+                if (params[i].name == paramName) {
+                    return params[i];
+                }
+            }
+        }
+
 
         // method exposed to viewObjects to allow them to try to change a parameter
         updateParam(name, newValue) {
-            let model = this;
-            if (model.params.hasOwnProperty(name)) {
-                const oldValue = model.params[name].value;
-                model.params[name].update(newValue);
-
-                // if param has changed, propagate change to fields and children
-                if (oldValue != model.params[name].value) {
-                    model.update(false);
-                }
+            let model = this,
+                param = model.getParam(name);
+            const oldValue = param.value;
+            param.update(newValue);
+            // if param has changed, propagate change to fields and children
+            if (oldValue != param.value) {
+                model.update(false);
             }
         }
 
