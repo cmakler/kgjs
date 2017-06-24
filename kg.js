@@ -249,12 +249,13 @@ var KG;
                 (match[1] ? match[1].length : 0)
                     - (match[2] ? +match[2] : 0));
             }
+            def = _.defaults(def, { min: 0, max: 10, round: 1 });
             this.name = def.name;
             this.label = def.label || '';
-            this.value = def.value;
-            this.min = parseFloat(def.min) || 0;
-            this.max = parseFloat(def.max) || 10;
-            this.round = parseFloat(def.round) || 1;
+            this.value = parseFloat(def.value);
+            this.min = parseFloat(def.min);
+            this.max = parseFloat(def.max);
+            this.round = parseFloat(def.round);
             this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
             console.log('initialized param object: ', this);
         }

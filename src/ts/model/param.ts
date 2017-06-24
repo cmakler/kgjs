@@ -6,8 +6,8 @@ module KG {
         name: string;
         label: string;
         value: any;
-        min: any;
-        max: any;
+        min?: any;
+        max?: any;
         round?: any;
         precision?: any;
     }
@@ -15,7 +15,7 @@ module KG {
     export interface IParam {
         name: string;
         label: string;
-        value: any;
+        value: number;
         update: (newValue: any) => any;
         formatted: (precision?: number) => string;
         paramScale: (domain?: number) => d3.ScaleLinear<Number, Number>;
@@ -26,11 +26,10 @@ module KG {
         public name;
         public label;
         public value;
-        public min;
-        public max;
-        public round;
-        public precision;
-
+        private min;
+        private max;
+        private round;
+        private precision;
 
         constructor(def) {
 
@@ -47,12 +46,14 @@ module KG {
                     - (match[2] ? +match[2] : 0));
             }
 
+            def = _.defaults(def,{min: 0, max: 10, round: 1});
+
             this.name = def.name;
             this.label = def.label || '';
-            this.value = def.value;
-            this.min = parseFloat(def.min) || 0;
-            this.max = parseFloat(def.max) || 10;
-            this.round = parseFloat(def.round) || 1;
+            this.value = parseFloat(def.value);
+            this.min = parseFloat(def.min);
+            this.max = parseFloat(def.max);
+            this.round = parseFloat(def.round);
             this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
 
             console.log('initialized param object: ', this);
