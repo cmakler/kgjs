@@ -6,6 +6,7 @@ module KG {
         aspectRatio: number;
         params?: ParamDefinition[];
         scales?: ScaleDefinition[];
+        dragUpdates?: DragUpdateListenerDefinition[];
         segments?: SegmentDefinition[];
         points?: PointDefinition[];
         labels?: LabelDefinition[];
@@ -24,6 +25,7 @@ module KG {
         private model;
         private aspectRatio: number;
         private scales: Scale[];
+        private dragUpdates: DragUpdateListener[];
 
         constructor(div: Element, data: ViewDefinition) {
 
@@ -51,17 +53,31 @@ module KG {
 
             // establish scales
             if (data.hasOwnProperty('scales')) {
-                view.scales = data.scales.map(function (scaleDef) {
-                    scaleDef.model = view.model;
-                    return new Scale(scaleDef);
+                view.scales = data.scales.map(function (def) {
+                    def.model = view.model;
+                    return new Scale(def);
                 })
+            } else {
+                view.scales = [];
+            }
+
+            // establish drag update listeners
+            if (data.hasOwnProperty('dragUpdates')) {
+                view.dragUpdates = data.dragUpdates.map(function (def) {
+                    def.model = view.model;
+                    return new DragUpdateListener(def);
+                })
+            } else {
+                view.dragUpdates = [];
             }
 
             let prepareObject = function (objectdata, layer) {
                 objectdata.model = view.model;
                 objectdata.layer = layer;
-                objectdata.xScale = view.getScale(objectdata.xScaleName);
-                objectdata.yScale = view.getScale(objectdata.yScaleName);
+                objectdata.dragUpdateNames = objectdata.dragUpdateNames || [];
+                objectdata.xScale = view.getByName("scales",objectdata.xScaleName);
+                objectdata.yScale = view.getByName("scales",objectdata.yScaleName);
+                objectdata.dragUpdates = objectdata.dragUpdateNames.map(function(name) {return view.getByName("dragUpdates",name)});
                 return objectdata;
             };
 
@@ -97,11 +113,11 @@ module KG {
 
         }
 
-        getScale(scaleName) {
-            const scales = this.scales;
-            for (let i = 0; i < scales.length; i++) {
-                if (scales[i].name == scaleName) {
-                    return scales[i];
+        getByName(category,name) {
+            const objs = this[category];
+            for (let i = 0; i < objs.length; i++) {
+                if (objs[i].name == name) {
+                    return objs[i];
                 }
             }
         }

@@ -43,6 +43,26 @@
       "rangeMax": "0.05"
     }
   ],
+  "dragUpdates": [
+    {
+      "name": "yA",
+      "dragDirections": "y",
+      "dragParam": "yA",
+      "dragUpdateExpression": "params.yA + drag.dy"
+    },
+    {
+      "name": "yB",
+      "dragDirections": "y",
+      "dragParam": "yB",
+      "dragUpdateExpression": "params.yB + drag.dy"
+    },
+    {
+      "name": "xB",
+      "dragDirections": "x",
+      "dragParam": "xB",
+      "dragUpdateExpression": "params.xB + drag.dx"
+    }
+  ],
   "segments": [
     {
       "x1": "2",
@@ -52,20 +72,10 @@
       "xScaleName": "x",
       "yScaleName": "y",
       "color": "(params.xB > 10) ? 'green' : 'blue'",
-      "interaction": {
-        "dragUpdates": [
-          {
-            "dragDirections": "y",
-            "dragParam": "yA",
-            "dragUpdateExpression": "params.yA + drag.dy"
-          },
-          {
-            "dragDirections": "y",
-            "dragParam": "yB",
-            "dragUpdateExpression": "params.yB + drag.dy"
-          }
-        ]
-      }
+      "dragUpdateNames": [
+        "yA",
+        "yB"
+      ]
     }
   ],
   "axes": [
@@ -86,33 +96,19 @@
       "y": "params.yA",
       "xScaleName": "x",
       "yScaleName": "y",
-      "interaction": {
-        "dragUpdates": [
-          {
-            "dragDirections": "y",
-            "dragParam": "yA",
-            "dragUpdateExpression": "params.yA + drag.dy"
-          }
-        ]
-      }
+      "dragUpdateNames": [
+        "yA"
+      ]
     },
     {
       "x": "params.xB",
       "y": "params.yB",
       "xScaleName": "x",
       "yScaleName": "y",
-      "interaction": {
-        "dragUpdates": [
-          {
-            "dragParam": "xB",
-            "dragUpdateExpression": "params.xB + drag.dx"
-          },
-          {
-            "dragParam": "yB",
-            "dragUpdateExpression": "params.yB + drag.dy"
-          }
-        ]
-      }
+      "dragUpdateNames": [
+        "xB",
+        "yB"
+      ]
     }
   ],
   "labels": [
@@ -125,15 +121,9 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "interaction": {
-        "dragUpdates": [
-          {
-            "dragDirections": "y",
-            "dragParam": "yA",
-            "dragUpdateExpression": "params.yA + drag.dy"
-          }
-        ]
-      }
+      "dragUpdateNames": [
+        "yA"
+      ]
     },
     {
       "x": "params.xB",
@@ -144,18 +134,10 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "interaction": {
-        "dragUpdates": [
-          {
-            "dragParam": "xB",
-            "dragUpdateExpression": "params.xB + drag.dx"
-          },
-          {
-            "dragParam": "yB",
-            "dragUpdateExpression": "params.yB + drag.dy"
-          }
-        ]
-      }
+      "dragUpdateNames": [
+        "xB",
+        "yB"
+      ]
     }
   ]
 }

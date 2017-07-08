@@ -5,11 +5,11 @@ module KG {
     export interface ViewObjectDefinition extends UpdateListenerDefinition {
         layer: any;
         name?: string;
-        xScaleName?: string;
-        yScaleName?: string;
-        clipPath?: string;
         show?: any;
-        interaction?: InteractionHandlerDefinition;
+        xScale: Scale;
+        yScale: Scale;
+        clipPath: ClipPath;
+        dragUpdates?: DragUpdateListener[];
     }
 
     export interface IViewObject extends IUpdateListener {
@@ -29,19 +29,17 @@ module KG {
         public interactionHandler: InteractionHandler;
 
         constructor(def: ViewObjectDefinition) {
-            def.constants = ['xScale','yScale','clipPath'];
+            def.constants = ['xScale','yScale','clipPath','name'];
             def = _.defaults(def,{show: true});
             super(def);
 
             let vo = this;
-
             // the interaction handler manages drag and hover events
-            def.interaction = _.defaults(def.interaction || {}, {
+            vo.interactionHandler = new InteractionHandler({
                 viewObject: vo,
                 model: vo.model,
-                dragUpdates: []
+                dragUpdateListeners: def.dragUpdates || []
             });
-            vo.interactionHandler = new InteractionHandler(def.interaction);
 
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes

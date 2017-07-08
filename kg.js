@@ -86,16 +86,31 @@ var KG;
             view.svg = view.div.append("svg");
             // establish scales
             if (data.hasOwnProperty('scales')) {
-                view.scales = data.scales.map(function (scaleDef) {
-                    scaleDef.model = view.model;
-                    return new KG.Scale(scaleDef);
+                view.scales = data.scales.map(function (def) {
+                    def.model = view.model;
+                    return new KG.Scale(def);
                 });
+            }
+            else {
+                view.scales = [];
+            }
+            // establish drag update listeners
+            if (data.hasOwnProperty('dragUpdates')) {
+                view.dragUpdates = data.dragUpdates.map(function (def) {
+                    def.model = view.model;
+                    return new KG.DragUpdateListener(def);
+                });
+            }
+            else {
+                view.dragUpdates = [];
             }
             var prepareObject = function (objectdata, layer) {
                 objectdata.model = view.model;
                 objectdata.layer = layer;
-                objectdata.xScale = view.getScale(objectdata.xScaleName);
-                objectdata.yScale = view.getScale(objectdata.yScaleName);
+                objectdata.dragUpdateNames = objectdata.dragUpdateNames || [];
+                objectdata.xScale = view.getByName("scales", objectdata.xScaleName);
+                objectdata.yScale = view.getByName("scales", objectdata.yScaleName);
+                objectdata.dragUpdates = objectdata.dragUpdateNames.map(function (name) { return view.getByName("dragUpdates", name); });
                 return objectdata;
             };
             var defLayer = view.svg.append('defs');
@@ -126,11 +141,11 @@ var KG;
             // establish dimensions of view and views
             view.updateDimensions();
         }
-        View.prototype.getScale = function (scaleName) {
-            var scales = this.scales;
-            for (var i = 0; i < scales.length; i++) {
-                if (scales[i].name == scaleName) {
-                    return scales[i];
+        View.prototype.getByName = function (category, name) {
+            var objs = this[category];
+            for (var i = 0; i < objs.length; i++) {
+                if (objs[i].name == name) {
+                    return objs[i];
                 }
             }
         };
@@ -338,7 +353,7 @@ var KG;
         function DragUpdateListener(def) {
             var _this = this;
             def.updatables = ['draggable', 'dragDirections'];
-            def.constants = ['dragParam', 'dragUpdateExpression'];
+            def.constants = ['dragParam', 'dragUpdateExpression', 'name'];
             def = _.defaults(def, { dragDirections: "xy" });
             _this = _super.call(this, def) || this;
             return _this;
@@ -361,11 +376,9 @@ var KG;
     var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
-            var _this = _super.call(this, def) || this;
-            _this.dragUpdateListeners = def.dragUpdates.map(function (d) {
-                d.model = def.model;
-                return new KG.DragUpdateListener(d);
-            });
+            var _this = this;
+            def.constants = ["dragUpdateListeners"];
+            _this = _super.call(this, def) || this;
             _this.update(true);
             _this.scope = { params: {}, drag: {} };
             return _this;
@@ -465,17 +478,16 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def.constants = ['xScale', 'yScale', 'clipPath'];
+            def.constants = ['xScale', 'yScale', 'clipPath', 'name'];
             def = _.defaults(def, { show: true });
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
-            def.interaction = _.defaults(def.interaction || {}, {
+            vo.interactionHandler = new KG.InteractionHandler({
                 viewObject: vo,
                 model: vo.model,
-                dragUpdates: []
+                dragUpdateListeners: def.dragUpdates || []
             });
-            vo.interactionHandler = new KG.InteractionHandler(def.interaction);
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
             vo.draw(def.layer).update(true);

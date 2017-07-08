@@ -21,7 +21,7 @@ module KG {
 
         constructor(def: DragUpdateListenerDefinition) {
             def.updatables = ['draggable','dragDirections'];
-            def.constants = ['dragParam','dragUpdateExpression'];
+            def.constants = ['dragParam','dragUpdateExpression','name'];
             def = _.defaults(def, {dragDirections: "xy"});
             super(def);
         }

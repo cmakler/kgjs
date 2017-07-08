@@ -3,7 +3,8 @@
 module KG {
 
     export interface InteractionHandlerDefinition extends UpdateListenerDefinition {
-        dragUpdates: DragUpdateListenerDefinition[];
+        viewObject: ViewObject;
+        dragUpdateListeners: DragUpdateListener[];
     }
 
     export interface IInteractionHandler extends IUpdateListener {
@@ -17,11 +18,8 @@ module KG {
         private element;
 
         constructor(def: InteractionHandlerDefinition) {
+            def.constants = ["dragUpdateListeners"];
             super(def);
-            this.dragUpdateListeners = def.dragUpdates.map(function (d) {
-                d.model = def.model;
-                return new DragUpdateListener(d);
-            });
             this.update(true);
             this.scope = {params: {}, drag: {}}
         }

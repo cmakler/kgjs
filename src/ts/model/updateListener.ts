@@ -4,8 +4,8 @@ module KG {
 
     export interface UpdateListenerDefinition {
         model: Model;
-        updatables: string[];
-        constants: any[];
+        updatables?: string[];
+        constants?: any[];
     }
 
     export interface IUpdateListener {
