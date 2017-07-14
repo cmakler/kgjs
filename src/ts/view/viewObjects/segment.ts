@@ -18,6 +18,7 @@ module KG {
         private x2;
         private y2;
         private color;
+
         private g;
         private dragLine;
         private line;
@@ -41,9 +42,12 @@ module KG {
         // create SVG elements
         draw(layer) {
             let segment = this;
-            segment.g = layer.append('g').attr('class', 'draggable');
+            segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
             segment.line = segment.g.append('line');
+            if(segment.hasOwnProperty('clipPath')) {
+                segment.g.attr('clip-path',`url(#${segment.clipPath.id})`);
+            }
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         }

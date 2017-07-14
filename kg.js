@@ -110,10 +110,18 @@ var KG;
                 def.dragUpdateNames = def.dragUpdateNames || [];
                 def.xScale = view.getByName("scales", def.xScaleName);
                 def.yScale = view.getByName("scales", def.yScaleName);
+                if (def.hasOwnProperty('clipPathName')) {
+                    def.clipPath = view.getByName("clipPaths", def.clipPathName);
+                }
                 def.dragUpdates = def.dragUpdateNames.map(function (name) { return view.getByName("dragUpdates", name); });
                 return def;
             };
             var defLayer = view.svg.append('defs');
+            if (data.hasOwnProperty('clipPaths')) {
+                view.clipPaths = data.clipPaths.map(function (def) {
+                    return new KG.ClipPath(prepareDef(def, defLayer));
+                });
+            }
             if (data.hasOwnProperty('segments')) {
                 var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
                 data.segments.forEach(function (def) {
@@ -313,6 +321,14 @@ var KG;
 (function (KG) {
     var UpdateListener = (function () {
         function UpdateListener(def) {
+            function randomString(length) {
+                var text = "";
+                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                for (var i = 0; i < length; i++) {
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                return text;
+            }
             def.updatables = def.updatables || [];
             def.constants = (def.constants || []).concat(['model', 'updatables']);
             var ul = this;
@@ -320,6 +336,7 @@ var KG;
             def.constants.forEach(function (c) {
                 ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
             });
+            ul.id = randomString(5);
             ul.model.addUpdateListener(this);
         }
         UpdateListener.prototype.updateDef = function (name) {
@@ -505,16 +522,27 @@ var KG;
 (function (KG) {
     var ClipPath = (function (_super) {
         __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function ClipPath(def) {
+            return _super.call(this, def) || this;
         }
+        // create SVG elements
         ClipPath.prototype.draw = function (layer) {
             var cp = this;
-            layer.append("clipPath").attr("id", cp.name);
+            console.log('drawing clipPath with id', cp.id);
+            cp.clipPath = layer.append('clipPath').attr('id', cp.id);
+            cp.rect = cp.clipPath.append('rect');
             return cp;
         };
+        // update properties
         ClipPath.prototype.update = function (force) {
             var cp = _super.prototype.update.call(this, force);
+            if (cp.hasChanged) {
+                var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
+                cp.rect.attr('x', Math.min(x1, x2));
+                cp.rect.attr('y', Math.min(y1, y2));
+                cp.rect.attr('width', Math.abs(x2 - x1));
+                cp.rect.attr('height', Math.abs(y2 - y1));
+            }
             return cp;
         };
         return ClipPath;
@@ -542,9 +570,12 @@ var KG;
         // create SVG elements
         Segment.prototype.draw = function (layer) {
             var segment = this;
-            segment.g = layer.append('g').attr('class', 'draggable');
+            segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
             segment.line = segment.g.append('line');
+            if (segment.hasOwnProperty('clipPath')) {
+                segment.g.attr('clip-path', "url(#" + segment.clipPath.id + ")");
+            }
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         };

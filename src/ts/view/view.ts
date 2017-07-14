@@ -26,6 +26,7 @@ module KG {
         private aspectRatio: number;
         private scales: Scale[];
         private dragUpdates: DragUpdateListener[];
+        private clipPaths: ClipPath[];
 
         constructor(div: Element, data: ViewDefinition) {
 
@@ -77,12 +78,20 @@ module KG {
                 def.dragUpdateNames = def.dragUpdateNames || [];
                 def.xScale = view.getByName("scales",def.xScaleName);
                 def.yScale = view.getByName("scales",def.yScaleName);
+                if(def.hasOwnProperty('clipPathName')) {
+                    def.clipPath = view.getByName("clipPaths",def.clipPathName);
+                }
                 def.dragUpdates = def.dragUpdateNames.map(function(name) {return view.getByName("dragUpdates",name)});
                 return def;
             };
 
             const defLayer = view.svg.append('defs');
 
+            if (data.hasOwnProperty('clipPaths')) {
+                view.clipPaths = data.clipPaths.map(function (def: ClipPathDefinition) {
+                    return new ClipPath(prepareDef(def, defLayer));
+                });
+            }
             if (data.hasOwnProperty('segments')) {
                 let segmentLayer = view.svg.append('g').attr('class', 'segments');
                 data.segments.forEach(function (def: SegmentDefinition) {

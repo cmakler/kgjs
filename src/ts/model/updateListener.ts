@@ -17,11 +17,22 @@ module KG {
     export class UpdateListener implements IUpdateListener {
 
         private updatables;
+        public id;
         public def;
         public model;
         public hasChanged;
 
         constructor(def: UpdateListenerDefinition) {
+
+            function randomString(length) {
+                let text = "";
+                const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                for (let i = 0; i < length; i++) {
+                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+                }
+                return text;
+            }
+
             def.updatables = def.updatables || [];
             def.constants = (def.constants || []).concat(['model','updatables']);
             let ul = this;
@@ -29,6 +40,7 @@ module KG {
             def.constants.forEach(function(c) {
                 ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
             });
+            ul.id = randomString(5);
             ul.model.addUpdateListener(this);
         }
 

@@ -43,6 +43,13 @@
       "rangeMax": "0.05"
     }
   ],
+  "clipPaths": [
+    {
+      "name": "graph1",
+      "xScaleName": "x",
+      "yScaleName": "y"
+    }
+  ],
   "dragUpdates": [
     {
       "name": "yA",
@@ -72,6 +79,7 @@
       "xScaleName": "x",
       "yScaleName": "y",
       "color": "(params.xB > 10) ? 'green' : 'blue'",
+      "clipPathName": "graph1",
       "dragUpdateNames": [
         "yA",
         "yB"
