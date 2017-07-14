@@ -104,38 +104,38 @@ var KG;
             else {
                 view.dragUpdates = [];
             }
-            var prepareObject = function (objectdata, layer) {
-                objectdata.model = view.model;
-                objectdata.layer = layer;
-                objectdata.dragUpdateNames = objectdata.dragUpdateNames || [];
-                objectdata.xScale = view.getByName("scales", objectdata.xScaleName);
-                objectdata.yScale = view.getByName("scales", objectdata.yScaleName);
-                objectdata.dragUpdates = objectdata.dragUpdateNames.map(function (name) { return view.getByName("dragUpdates", name); });
-                return objectdata;
+            var prepareDef = function (def, layer) {
+                def.model = view.model;
+                def.layer = layer;
+                def.dragUpdateNames = def.dragUpdateNames || [];
+                def.xScale = view.getByName("scales", def.xScaleName);
+                def.yScale = view.getByName("scales", def.yScaleName);
+                def.dragUpdates = def.dragUpdateNames.map(function (name) { return view.getByName("dragUpdates", name); });
+                return def;
             };
             var defLayer = view.svg.append('defs');
             if (data.hasOwnProperty('segments')) {
                 var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
-                data.segments.forEach(function (segmentdata) {
-                    new KG.Segment(prepareObject(segmentdata, segmentLayer_1));
+                data.segments.forEach(function (def) {
+                    new KG.Segment(prepareDef(def, segmentLayer_1));
                 });
             }
             if (data.hasOwnProperty('axes')) {
                 var axisLayer_1 = view.svg.append('g').attr('class', 'axes');
-                data.axes.forEach(function (axisdata) {
-                    new KG.Axis(prepareObject(axisdata, axisLayer_1));
+                data.axes.forEach(function (def) {
+                    new KG.Axis(prepareDef(def, axisLayer_1));
                 });
             }
             if (data.hasOwnProperty('points')) {
                 var pointLayer_1 = view.svg.append('g').attr('class', 'points');
-                data.points.forEach(function (pointdata) {
-                    new KG.Point(prepareObject(pointdata, pointLayer_1));
+                data.points.forEach(function (def) {
+                    new KG.Point(prepareDef(def, pointLayer_1));
                 });
             }
             if (data.hasOwnProperty('labels')) {
                 var labelLayer_1 = view.div.append('div').attr('class', 'labels');
-                data.labels.forEach(function (labeldata) {
-                    new KG.Label(prepareObject(labeldata, labelLayer_1));
+                data.labels.forEach(function (def) {
+                    new KG.Label(prepareDef(def, labelLayer_1));
                 });
             }
             // establish dimensions of view and views
@@ -313,8 +313,8 @@ var KG;
 (function (KG) {
     var UpdateListener = (function () {
         function UpdateListener(def) {
-            def = _.defaults(def, { updatables: [], constants: [] });
-            def.constants.push('model', 'updatables');
+            def.updatables = def.updatables || [];
+            def.constants = (def.constants || []).concat(['model', 'updatables']);
             var ul = this;
             ul.def = def;
             def.constants.forEach(function (c) {
@@ -422,7 +422,7 @@ var KG;
             });
         };
         InteractionHandler.prototype.endDrag = function (handler) {
-            //console.log('finished dragging');
+            //handler.element.style("cursor","default");
         };
         InteractionHandler.prototype.addTrigger = function (element) {
             var handler = this;
@@ -452,7 +452,6 @@ var KG;
             var _this = this;
             def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
             def.updatables = ['domainMin', 'domainMax'];
-            def.name = def.name || def.axis;
             _this = _super.call(this, def) || this;
             _this.scale = d3.scaleLinear();
             _this.update(true);
@@ -478,7 +477,8 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def.constants = ['xScale', 'yScale', 'clipPath', 'name'];
+            def.updatables = (def.updatables || []).concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
+            def.constants = (def.constants || []).concat(['xScale', 'yScale', 'clipPath', 'name']);
             def = _.defaults(def, { show: true });
             _this = _super.call(this, def) || this;
             var vo = _this;
@@ -528,31 +528,41 @@ var KG;
         __extends(Segment, _super);
         function Segment(def) {
             var _this = this;
-            def.updatables = ['x1', 'y1', 'x2', 'y2', 'color'];
+            // establish property defaults
+            def = _.defaults(def, {
+                color: 'black',
+                width: '1pt',
+                updatables: []
+            });
+            // define updatable properties
+            def.updatables = def.updatables.concat(['x1', 'y1', 'x2', 'y2', 'color', 'width']);
             _this = _super.call(this, def) || this;
             return _this;
         }
+        // create SVG elements
         Segment.prototype.draw = function (layer) {
             var segment = this;
-            //initialize line
             segment.g = layer.append('g').attr('class', 'draggable');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
-            segment.line = segment.g.append('line').attr('stroke-width', '1px');
+            segment.line = segment.g.append('line');
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         };
+        // update properties
         Segment.prototype.update = function (force) {
             var segment = _super.prototype.update.call(this, force);
             if (segment.hasChanged) {
-                segment.dragLine.attr("x1", segment.xScale.scale(segment.x1));
-                segment.dragLine.attr("y1", segment.yScale.scale(segment.y1));
-                segment.dragLine.attr("x2", segment.xScale.scale(segment.x2));
-                segment.dragLine.attr("y2", segment.yScale.scale(segment.y2));
-                segment.line.attr("x1", segment.xScale.scale(segment.x1));
-                segment.line.attr("y1", segment.yScale.scale(segment.y1));
-                segment.line.attr("x2", segment.xScale.scale(segment.x2));
-                segment.line.attr("y2", segment.yScale.scale(segment.y2));
-                segment.line.attr("stroke", segment.color);
+                var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale.scale(segment.y1), y2 = segment.yScale.scale(segment.y2), color = segment.color, width = segment.width;
+                segment.dragLine.attr("x1", x1);
+                segment.dragLine.attr("y1", y1);
+                segment.dragLine.attr("x2", x2);
+                segment.dragLine.attr("y2", y2);
+                segment.line.attr("x1", x1);
+                segment.line.attr("y1", y1);
+                segment.line.attr("x2", x2);
+                segment.line.attr("y2", y2);
+                segment.line.attr("stroke", color);
+                segment.line.attr('stroke-width', width);
             }
             return segment;
         };
@@ -568,9 +578,10 @@ var KG;
             var _this = this;
             def = _.defaults(def, {
                 ticks: 5,
-                intercept: 0
+                intercept: 0,
+                updatables: []
             });
-            def.updatables = ['ticks', 'intercept'];
+            def.updatables = def.updatables.concat(['ticks', 'intercept']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -603,28 +614,44 @@ var KG;
         __extends(Point, _super);
         function Point(def) {
             var _this = this;
-            def.updatables = ['x', 'y'];
+            // establish property defaults
+            def = _.defaults(def, {
+                fill: 'blue',
+                opacity: 1,
+                stroke: 'white',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 6.5,
+                updatables: []
+            });
+            // define updatable properties
+            def.updatables = def.updatables.concat(['x', 'y', 'r']);
             _this = _super.call(this, def) || this;
             return _this;
         }
+        // create SVG elements
         Point.prototype.draw = function (layer) {
             var p = this;
-            //initialize circle
-            p.circle = layer.append('g')
-                .attr('class', "draggable");
-            p.circle.append('circle')
-                .attr('class', "invisible")
-                .attr('r', 20);
-            p.circle.append('circle')
-                .attr('class', "visible")
-                .attr('r', 6.5);
-            p.interactionHandler.addTrigger(p.circle);
+            p.g = layer.append('g').attr('class', "draggable"); // SVG group
+            p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.g.append('circle');
+            p.interactionHandler.addTrigger(p.g);
             return p;
         };
+        // update properties
         Point.prototype.update = function (force) {
             var p = _super.prototype.update.call(this, force);
             if (p.hasChanged) {
-                p.circle.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
+                //updated property values
+                var x = p.xScale.scale(p.x), y = p.yScale.scale(p.y), r = p.r;
+                //assign property values to SVG attributes
+                p.g.attr('transform', "translate(" + x + " " + y + ")");
+                p.circle.attr('r', p.r);
+                p.circle.style('fill', p.fill);
+                p.circle.style('opacity', p.opacity);
+                p.circle.style('stroke', p.stroke);
+                p.circle.style('stroke-width', p.strokeWidth + "px");
+                p.circle.style('stroke-opacity', p.strokeOpacity);
             }
             return p;
         };
@@ -639,36 +666,37 @@ var KG;
         __extends(Label, _super);
         function Label(def) {
             var _this = this;
-            def.updatables = ['x', 'y', 'text'];
+            //establish property defaults
             def = _.defaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12
+                fontSize: 12,
+                updatables: [],
+                constants: []
             });
+            // define constant and updatable properties
+            def.constants = def.constants.concat(['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            def.updatables = def.updatables.concat(['x', 'y', 'text']);
             _this = _super.call(this, def) || this;
             return _this;
         }
+        // create div for text
         Label.prototype.draw = function (layer) {
-            var label = this, def = label.def;
-            label.xPixelOffset = def.xPixelOffset;
-            label.yPixelOffset = def.yPixelOffset;
+            var label = this;
             label.element = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
-                .style('font-size', def.fontSize + 'pt');
+                .style('font-size', label.fontSize + 'pt');
             label.interactionHandler.addTrigger(label.element);
             return label;
         };
+        // update properties
         Label.prototype.update = function (force) {
             var label = _super.prototype.update.call(this, force);
             if (label.hasChanged) {
-                var labelX = label.xScale.scale(label.x) + (+label.xPixelOffset), labelY = label.yScale.scale(label.y) + (+label.yPixelOffset);
-                console.log('labelX = ', labelX);
-                console.log('labelY = ', labelY);
-                console.log('text = ', label.text);
-                label.element.style('left', labelX + 'px');
-                label.element.style('top', labelY + 'px');
-                console.log('redrawing katex');
+                var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+                label.element.style('left', x + 'px');
+                label.element.style('top', y + 'px');
                 katex.render(label.text, label.element.node());
             }
             return label;
@@ -685,8 +713,8 @@ var KG;
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/updateListener.ts" />
-/// <reference path="model/dragUpdateListener.ts" />
-/// <reference path="model/interactionHandler.ts" />
+/// <reference path="controller/dragUpdateListener.ts" />
+/// <reference path="controller/interactionHandler.ts" />
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
 /// <reference path="view/viewObjects/clipPath.ts" />

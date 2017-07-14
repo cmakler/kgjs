@@ -9,8 +9,9 @@
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/updateListener.ts" />
-/// <reference path="model/dragUpdateListener.ts" />
-/// <reference path="model/interactionHandler.ts" />
+
+/// <reference path="controller/dragUpdateListener.ts" />
+/// <reference path="controller/interactionHandler.ts" />
 
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />

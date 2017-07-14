@@ -9,40 +9,63 @@ module KG {
 
     export class Point extends ViewObject {
 
-        private x;
-        private y;
+        // SVG elements
+        private g;
+        private dragCircle;
         private circle;
 
+        // properties
+        private x;
+        private y;
+        private r;
+
         constructor(def: PointDefinition) {
-            def.updatables = ['x', 'y'];
+
+            // establish property defaults
+            def = _.defaults(def, {
+                fill: 'blue',
+                opacity: 1,
+                stroke: 'white',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 6.5,
+                updatables: []
+            });
+
+            // define updatable properties
+            def.updatables = def.updatables.concat(['x','y','r']);
+
             super(def);
         }
 
+        // create SVG elements
         draw(layer) {
-
             let p = this;
-
-            //initialize circle
-            p.circle = layer.append('g')
-                .attr('class', "draggable");
-
-            p.circle.append('circle')
-                .attr('class', "invisible")
-                .attr('r', 20);
-
-            p.circle.append('circle')
-                .attr('class', "visible")
-                .attr('r', 6.5);
-
-            p.interactionHandler.addTrigger(p.circle);
-
+            p.g = layer.append('g').attr('class', "draggable"); // SVG group
+            p.dragCircle = p.g.append('circle').style('fill-opacity',0).attr('r', 20);
+            p.circle = p.g.append('circle');
+            p.interactionHandler.addTrigger(p.g);
             return p;
         }
 
+        // update properties
         update(force) {
             let p = super.update(force);
             if (p.hasChanged) {
-                p.circle.attr('transform',`translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
+
+                //updated property values
+                let x = p.xScale.scale(p.x),
+                    y = p.yScale.scale(p.y),
+                    r = p.r;
+
+                //assign property values to SVG attributes
+                p.g.attr('transform',`translate(${x} ${y})`);
+                p.circle.attr('r',p.r);
+                p.circle.style('fill',p.fill);
+                p.circle.style('opacity',p.opacity);
+                p.circle.style('stroke',p.stroke);
+                p.circle.style('stroke-width',`${p.strokeWidth}px`);
+                p.circle.style('stroke-opacity',p.strokeOpacity);
             }
             return p;
         }

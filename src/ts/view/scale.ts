@@ -30,7 +30,6 @@ module KG {
         constructor(def: ScaleDefinition) {
             def.constants = ['rangeMin','rangeMax','axis','name'];
             def.updatables = ['domainMin', 'domainMax'];
-            def.name = def.name || def.axis;
             super(def);
             this.scale = d3.scaleLinear();
             this.update(true);

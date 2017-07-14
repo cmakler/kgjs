@@ -71,40 +71,40 @@ module KG {
                 view.dragUpdates = [];
             }
 
-            let prepareObject = function (objectdata, layer) {
-                objectdata.model = view.model;
-                objectdata.layer = layer;
-                objectdata.dragUpdateNames = objectdata.dragUpdateNames || [];
-                objectdata.xScale = view.getByName("scales",objectdata.xScaleName);
-                objectdata.yScale = view.getByName("scales",objectdata.yScaleName);
-                objectdata.dragUpdates = objectdata.dragUpdateNames.map(function(name) {return view.getByName("dragUpdates",name)});
-                return objectdata;
+            let prepareDef = function (def, layer) {
+                def.model = view.model;
+                def.layer = layer;
+                def.dragUpdateNames = def.dragUpdateNames || [];
+                def.xScale = view.getByName("scales",def.xScaleName);
+                def.yScale = view.getByName("scales",def.yScaleName);
+                def.dragUpdates = def.dragUpdateNames.map(function(name) {return view.getByName("dragUpdates",name)});
+                return def;
             };
 
             const defLayer = view.svg.append('defs');
 
             if (data.hasOwnProperty('segments')) {
                 let segmentLayer = view.svg.append('g').attr('class', 'segments');
-                data.segments.forEach(function (segmentdata: SegmentDefinition) {
-                    new Segment(prepareObject(segmentdata, segmentLayer));
+                data.segments.forEach(function (def: SegmentDefinition) {
+                    new Segment(prepareDef(def, segmentLayer));
                 });
             }
             if (data.hasOwnProperty('axes')) {
                 let axisLayer = view.svg.append('g').attr('class', 'axes');
-                data.axes.forEach(function (axisdata: AxisDefinition) {
-                    new Axis(prepareObject(axisdata, axisLayer));
+                data.axes.forEach(function (def: AxisDefinition) {
+                    new Axis(prepareDef(def, axisLayer));
                 });
             }
             if (data.hasOwnProperty('points')) {
                 let pointLayer = view.svg.append('g').attr('class', 'points');
-                data.points.forEach(function (pointdata: PointDefinition) {
-                    new Point(prepareObject(pointdata, pointLayer));
+                data.points.forEach(function (def: PointDefinition) {
+                    new Point(prepareDef(def, pointLayer));
                 });
             }
             if (data.hasOwnProperty('labels')) {
                 let labelLayer = view.div.append('div').attr('class', 'labels');
-                data.labels.forEach(function (labeldata: LabelDefinition) {
-                    new Label(prepareObject(labeldata, labelLayer));
+                data.labels.forEach(function (def: LabelDefinition) {
+                    new Label(prepareDef(def, labelLayer));
                 });
             }
 

@@ -21,10 +21,11 @@ module KG {
 
             def = _.defaults(def, {
                 ticks: 5,
-                intercept: 0
+                intercept: 0,
+                updatables: []
             });
 
-            def.updatables = ['ticks','intercept'];
+            def.updatables = def.updatables.concat(['ticks','intercept']);
 
             super(def);
 

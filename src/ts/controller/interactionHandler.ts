@@ -67,7 +67,7 @@ module KG {
         }
 
         private endDrag(handler) {
-            //console.log('finished dragging');
+            //handler.element.style("cursor","default");
         }
 
         addTrigger(element) {

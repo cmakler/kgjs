@@ -22,8 +22,8 @@ module KG {
         public hasChanged;
 
         constructor(def: UpdateListenerDefinition) {
-            def = _.defaults(def,{updatables: [],constants: []});
-            def.constants.push('model','updatables');
+            def.updatables = def.updatables || [];
+            def.constants = (def.constants || []).concat(['model','updatables']);
             let ul = this;
             ul.def = def;
             def.constants.forEach(function(c) {

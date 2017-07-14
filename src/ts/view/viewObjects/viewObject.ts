@@ -28,12 +28,20 @@ module KG {
         public clipPath;
         public interactionHandler: InteractionHandler;
 
+        public fill;
+        public opacity;
+        public stroke;
+        public strokeWidth;
+        public strokeOpacity;
+
         constructor(def: ViewObjectDefinition) {
-            def.constants = ['xScale','yScale','clipPath','name'];
+            def.updatables = (def.updatables || []).concat('fill','stroke','strokeWidth','opacity','strokeOpacity');
+            def.constants = (def.constants || []).concat(['xScale','yScale','clipPath','name']);
             def = _.defaults(def,{show: true});
             super(def);
 
             let vo = this;
+
             // the interaction handler manages drag and hover events
             vo.interactionHandler = new InteractionHandler({
                 viewObject: vo,
