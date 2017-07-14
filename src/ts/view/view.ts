@@ -5,6 +5,7 @@ module KG {
     export interface ViewDefinition {
         aspectRatio: number;
         params?: ParamDefinition[];
+        restrictions?: RestrictionDefinition[];
         scales?: ScaleDefinition[];
         dragUpdates?: DragUpdateListenerDefinition[];
         segments?: SegmentDefinition[];
@@ -35,6 +36,7 @@ module KG {
             view.div = d3.select(div).style('position', 'relative');
 
             data.params = data.params || [];
+            data.restrictions = data.restrictions || [];
 
             data.params = data.params.map(function (paramData) {
                 if (div.hasAttribute(paramData.name)) {
@@ -44,9 +46,15 @@ module KG {
                 return paramData;
             });
 
-            view.model = new KG.Model(data.params.map(function (paramData) {
-                return new Param(paramData)
-            }));
+            const params = data.params.map(function (def) {
+                return new Param(def)
+            });
+
+            const restrictions = data.restrictions.map(function (def) {
+                return new Restriction(def)
+            });
+
+            view.model = new KG.Model(params,restrictions);
             view.aspectRatio = data.aspectRatio || 1;
 
             // add svg element as a child of the div

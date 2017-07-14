@@ -1,0 +1,262 @@
+{
+  "aspectRatio": 1,
+  "params": [
+    {
+      "name": "p1",
+      "label": "p_1",
+      "value": "3",
+      "min": "0.1",
+      "max": "10",
+      "round": "0.1"
+    },
+    {
+      "name": "p2",
+      "label": "p_2",
+      "value": "4",
+      "min": "0.1",
+      "max": "10",
+      "round": "0.1"
+    },
+    {
+      "name": "m",
+      "label": "m",
+      "value": "120",
+      "min": "0",
+      "max": "200",
+      "round": "10"
+    }
+  ],
+  "restrictions": [
+    {
+      "expression": "params.m/params.p1",
+      "min": 0,
+      "max": 100
+    },
+    {
+      "expression": "params.m/params.p2",
+      "min": 0,
+      "max": 100
+    }
+  ],
+  "scales": [
+    {
+      "name": "good1",
+      "axis": "x",
+      "domainMin": "0",
+      "domainMax": "100",
+      "rangeMin": "0",
+      "rangeMax": "0.95"
+    },
+    {
+      "name": "good2",
+      "axis": "y",
+      "domainMin": "0",
+      "domainMax": "100",
+      "rangeMin": "1",
+      "rangeMax": "0.05"
+    },
+    {
+      "name": "p1",
+      "axis": "x",
+      "domainMin": "0",
+      "domainMax": "10",
+      "rangeMin": "0.8",
+      "rangeMax": "1"
+    },
+    {
+      "name": "p2",
+      "axis": "x",
+      "domainMin": "0",
+      "domainMax": "10",
+      "rangeMin": "0.8",
+      "rangeMax": "1"
+    },
+    {
+      "name": "m",
+      "axis": "x",
+      "domainMin": "0",
+      "domainMax": "200",
+      "rangeMin": "0.8",
+      "rangeMax": "1"
+    },
+    {
+      "name": "sliders",
+      "axis": "y",
+      "domainMin": "0",
+      "domainMax": "1",
+      "rangeMin": "0",
+      "rangeMax": "1"
+    }
+  ],
+  "clipPaths": [
+    {
+      "name": "graph1",
+      "xScaleName": "good1",
+      "yScaleName": "good2"
+    }
+  ],
+  "dragUpdates": [
+    {
+      "name": "p1",
+      "dragDirections": "x",
+      "dragParam": "p1",
+      "dragUpdateExpression": "params.p1 + drag.dx"
+    },
+    {
+      "name": "p2",
+      "dragDirections": "x",
+      "dragParam": "p2",
+      "dragUpdateExpression": "params.p2 + drag.dx"
+    },
+    {
+      "name": "m",
+      "dragDirections": "x",
+      "dragParam": "m",
+      "dragUpdateExpression": "params.m + drag.dx"
+    },
+    {
+      "name": "xIntercept",
+      "dragDirections": "x",
+      "dragParam": "p1",
+      "dragUpdateExpression": "params.m/drag.x"
+    },
+    {
+      "name": "yIntercept",
+      "dragDirections": "y",
+      "dragParam": "p2",
+      "dragUpdateExpression": "params.m/drag.y"
+    },
+    {
+      "name": "budget",
+      "dragDirections": "xy",
+      "dragParam": "m",
+      "dragUpdateExpression": "drag.x*params.p1 + drag.y*params.p2"
+    }
+  ],
+  "segments": [
+    {
+      "x1": "params.m/params.p1",
+      "y1": "0",
+      "x2": "0",
+      "y2": "params.m/params.p2",
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "color": "blue",
+      "clipPathName": "graph1",
+      "dragUpdateNames": [
+        "budget"
+      ]
+    }
+  ],
+  "axes": [
+    {
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "orient": "left"
+    },
+    {
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "orient": "bottom"
+    },
+    {
+      "xScaleName": "p1",
+      "yScaleName": "sliders",
+      "intercept": "0.1",
+      "orient": "bottom"
+    },
+    {
+      "xScaleName": "p2",
+      "yScaleName": "sliders",
+      "intercept": "0.2",
+      "orient": "bottom"
+    },
+    {
+      "xScaleName": "m",
+      "yScaleName": "sliders",
+      "intercept": "0.3",
+      "orient": "bottom"
+    }
+  ],
+  "points": [
+    {
+      "x": "params.m/params.p1",
+      "y": "0",
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "clipPathName": "graph1",
+      "dragUpdateNames": [
+        "xIntercept"
+      ]
+    },
+    {
+      "x": 0,
+      "y": "params.m/params.p2",
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "clipPathName": "graph1",
+      "dragUpdateNames": [
+        "yIntercept"
+      ]
+    },
+    {
+      "x": "params.p1",
+      "y": "0.1",
+      "xScaleName": "p1",
+      "yScaleName": "sliders",
+      "dragUpdateNames": [
+        "p1"
+      ]
+    },
+    {
+      "x": "params.p2",
+      "y": "0.2",
+      "xScaleName": "p1",
+      "yScaleName": "sliders",
+      "dragUpdateNames": [
+        "p2"
+      ]
+    },
+    {
+      "x": "params.m",
+      "y": "0.3",
+      "xScaleName": "m",
+      "yScaleName": "sliders",
+      "dragUpdateNames": [
+        "m"
+      ]
+    }
+  ],
+  "labels": [
+    {
+      "x": "-2",
+      "y": "0.1",
+      "text": "`p_1 = ${params.p1.toFixed(1)}`",
+      "xScaleName": "p1",
+      "yScaleName": "sliders",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8"
+    },
+    {
+      "x": "-2",
+      "y": "0.2",
+      "text": "`p_2 = ${params.p2.toFixed(1)}`",
+      "xScaleName": "p2",
+      "yScaleName": "sliders",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8"
+    },
+    {
+      "x": "-2",
+      "y": "0.3",
+      "text": "`m = ${params.m}`",
+      "xScaleName": "p1",
+      "yScaleName": "sliders",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8"
+    }
+  ]
+}

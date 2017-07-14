@@ -13,11 +13,13 @@ module KG {
     export class Model implements IModel {
 
         private params: Param[];
+        private restrictions: Restriction[];
         private updateListeners;
 
-        constructor(params) {
+        constructor(params:Param[],restrictions:Restriction[]) {
             let model = this;
             model.params = params;
+            model.restrictions = restrictions;
             model.updateListeners = [];
         }
 
@@ -97,9 +99,17 @@ module KG {
                 param = model.getParam(name);
             const oldValue = param.value;
             param.update(newValue);
-            // if param has changed, propagate change to fields and children
+            // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
-                model.update(false);
+                let valid = true;
+                model.restrictions.forEach(function(r) {
+                    if(!r.valid(model)) {valid = false};
+                });
+                if(valid) {
+                    model.update(false);
+                } else {
+                    param.update(oldValue);
+                }
             }
         }
 

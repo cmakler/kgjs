@@ -71,6 +71,7 @@ var KG;
             var view = this;
             view.div = d3.select(div).style('position', 'relative');
             data.params = data.params || [];
+            data.restrictions = data.restrictions || [];
             data.params = data.params.map(function (paramData) {
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name);
@@ -78,9 +79,13 @@ var KG;
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
-            view.model = new KG.Model(data.params.map(function (paramData) {
-                return new KG.Param(paramData);
-            }));
+            var params = data.params.map(function (def) {
+                return new KG.Param(def);
+            });
+            var restrictions = data.restrictions.map(function (def) {
+                return new KG.Restriction(def);
+            });
+            view.model = new KG.Model(params, restrictions);
             view.aspectRatio = data.aspectRatio || 1;
             // add svg element as a child of the div
             view.svg = view.div.append("svg");
@@ -177,9 +182,10 @@ var KG;
 var KG;
 (function (KG) {
     var Model = (function () {
-        function Model(params) {
+        function Model(params, restrictions) {
             var model = this;
             model.params = params;
+            model.restrictions = restrictions;
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -243,9 +249,21 @@ var KG;
             var model = this, param = model.getParam(name);
             var oldValue = param.value;
             param.update(newValue);
-            // if param has changed, propagate change to fields and children
+            // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
-                model.update(false);
+                var valid_1 = true;
+                model.restrictions.forEach(function (r) {
+                    if (!r.valid(model)) {
+                        valid_1 = false;
+                    }
+                    ;
+                });
+                if (valid_1) {
+                    model.update(false);
+                }
+                else {
+                    param.update(oldValue);
+                }
             }
         };
         Model.prototype.update = function (force) {
@@ -315,6 +333,24 @@ var KG;
         return Param;
     }());
     KG.Param = Param;
+})(KG || (KG = {}));
+/// <reference path="model.ts" />
+var KG;
+(function (KG) {
+    var Restriction = (function () {
+        function Restriction(def) {
+            this.expression = def.expression;
+            this.type = def.type;
+            this.min = def.min;
+            this.max = def.max;
+        }
+        Restriction.prototype.valid = function (model) {
+            var r = this, value = model.eval(r.expression);
+            return (value >= r.min && value <= r.max);
+        };
+        return Restriction;
+    }());
+    KG.Restriction = Restriction;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -573,7 +609,7 @@ var KG;
             segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
             segment.line = segment.g.append('line');
-            if (segment.hasOwnProperty('clipPath')) {
+            if (segment.hasOwnProperty('clipPath') && segment.clipPath != undefined) {
                 segment.g.attr('clip-path', "url(#" + segment.clipPath.id + ")");
             }
             segment.interactionHandler.addTrigger(segment.g);
@@ -666,6 +702,9 @@ var KG;
             p.g = layer.append('g').attr('class', "draggable"); // SVG group
             p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.g.append('circle');
+            if (p.hasOwnProperty('clipPath') && p.clipPath != undefined) {
+                //p.g.attr('clip-path',`url(#${p.clipPath.id})`);
+            }
             p.interactionHandler.addTrigger(p.g);
             return p;
         };
@@ -743,6 +782,7 @@ var KG;
 /// <reference path="view/view.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
+/// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 /// <reference path="controller/dragUpdateListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />

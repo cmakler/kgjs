@@ -8,6 +8,7 @@
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
+/// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 
 /// <reference path="controller/dragUpdateListener.ts" />
