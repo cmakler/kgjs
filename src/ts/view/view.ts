@@ -8,6 +8,8 @@ module KG {
         restrictions?: RestrictionDefinition[];
         scales?: ScaleDefinition[];
         dragUpdates?: DragUpdateListenerDefinition[];
+        functions?: UnivariateFunctionDefinition[];
+        curves?: CurveDefinition[];
         segments?: SegmentDefinition[];
         points?: PointDefinition[];
         labels?: LabelDefinition[];
@@ -24,6 +26,7 @@ module KG {
         private div;
         private svg;
         private model;
+        private univariateFunctions: UnivariateFunction[];
         private aspectRatio: number;
         private scales: Scale[];
         private dragUpdates: DragUpdateListener[];
@@ -54,7 +57,7 @@ module KG {
                 return new Restriction(def)
             });
 
-            view.model = new KG.Model(params,restrictions);
+            view.model = new KG.Model(params, restrictions);
             view.aspectRatio = data.aspectRatio || 1;
 
             // add svg element as a child of the div
@@ -72,7 +75,7 @@ module KG {
 
             // establish drag update listeners
             if (data.hasOwnProperty('dragUpdates')) {
-                view.dragUpdates = data.dragUpdates.map(function (def) {
+                view.dragUpdates = data.dragUpdates.map(function (def: DragUpdateListenerDefinition) {
                     def.model = view.model;
                     return new DragUpdateListener(def);
                 })
@@ -80,16 +83,30 @@ module KG {
                 view.dragUpdates = [];
             }
 
+            // establish functions
+            if (data.hasOwnProperty('functions')) {
+                view.univariateFunctions = data.functions.map(function (def: UnivariateFunctionDefinition) {
+                    def.model = view.model;
+                    return new UnivariateFunction(def);
+                })
+            }
+
             let prepareDef = function (def, layer) {
                 def.model = view.model;
                 def.layer = layer;
-                def.dragUpdateNames = def.dragUpdateNames || [];
-                def.xScale = view.getByName("scales",def.xScaleName);
-                def.yScale = view.getByName("scales",def.yScaleName);
-                if(def.hasOwnProperty('clipPathName')) {
-                    def.clipPath = view.getByName("clipPaths",def.clipPathName);
+                def.xScale = view.getByName("scales", def.xScaleName);
+                def.yScale = view.getByName("scales", def.yScaleName);
+                if (def.hasOwnProperty('clipPathName')) {
+                    def.clipPath = view.getByName("clipPaths", def.clipPathName);
                 }
-                def.dragUpdates = def.dragUpdateNames.map(function(name) {return view.getByName("dragUpdates",name)});
+                def.dragUpdateNames = def.dragUpdateNames || [];
+                def.dragUpdates = def.dragUpdateNames.map(function (name) {
+                    return view.getByName("dragUpdates", name)
+                });
+                def.functionNames = def.functionNames || [];
+                def.univariateFunctions = def.functionNames.map(function (name) {
+                    return view.getByName("univariateFunctions", name)
+                });
                 return def;
             };
 
@@ -104,6 +121,12 @@ module KG {
                 let segmentLayer = view.svg.append('g').attr('class', 'segments');
                 data.segments.forEach(function (def: SegmentDefinition) {
                     new Segment(prepareDef(def, segmentLayer));
+                });
+            }
+            if (data.hasOwnProperty('curves')) {
+                let curveLayer = view.svg.append('g').attr('class', 'curves');
+                data.curves.forEach(function (def: CurveDefinition) {
+                    new Curve(prepareDef(def, curveLayer));
                 });
             }
             if (data.hasOwnProperty('axes')) {
@@ -130,12 +153,17 @@ module KG {
 
         }
 
-        getByName(category,name) {
+        getByName(category, name) {
             const objs = this[category];
-            for (let i = 0; i < objs.length; i++) {
-                if (objs[i].name == name) {
-                    return objs[i];
+            if (objs != undefined) {
+                for (let i = 0; i < objs.length; i++) {
+                    if (objs[i].name == name) {
+                        return objs[i];
+                    }
+                    console.log('tried to find ',name,' in category ', category,' but no entry with that name exists.')
                 }
+            } else {
+                console.log ('tried to find ',name,' in category ', category,' but that category does not exist');
             }
         }
 

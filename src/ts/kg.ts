@@ -11,6 +11,8 @@
 /// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 
+/// <reference path="math/fn.ts" />
+
 /// <reference path="controller/dragUpdateListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 
@@ -18,6 +20,7 @@
 /// <reference path="view/viewObjects/viewObject.ts" />
 /// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
+/// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
 /// <reference path="view/viewObjects/label.ts" />

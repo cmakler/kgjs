@@ -17,6 +17,7 @@ module KG {
     export class UpdateListener implements IUpdateListener {
 
         private updatables;
+        public name;
         public id;
         public def;
         public model;
@@ -33,8 +34,7 @@ module KG {
                 return text;
             }
 
-            def.updatables = def.updatables || [];
-            def.constants = (def.constants || []).concat(['model','updatables']);
+            def.constants = (def.constants || []).concat(['model','updatables','name']);
             let ul = this;
             ul.def = def;
             def.constants.forEach(function(c) {
@@ -62,7 +62,9 @@ module KG {
         update(force) {
             let u = this;
             u.hasChanged = !!force;
-            u.updatables.forEach(function(name) { u.updateDef(name) });
+            if(u.hasOwnProperty('updatables') && u.updatables != undefined){
+               u.updatables.forEach(function(name) { u.updateDef(name) });
+            }
             return u;
         }
 

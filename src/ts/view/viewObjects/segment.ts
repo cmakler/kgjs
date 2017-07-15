@@ -28,13 +28,11 @@ module KG {
 
             // establish property defaults
             def = _.defaults(def, {
-                color: 'black',
-                width: '1pt',
                 updatables: []
             });
 
             // define updatable properties
-            def.updatables = def.updatables.concat(['x1', 'y1', 'x2', 'y2', 'color', 'width']);
+            def.updatables = def.updatables.concat(['x1', 'y1', 'x2', 'y2']);
 
             super(def);
         }
@@ -43,7 +41,7 @@ module KG {
         draw(layer) {
             let segment = this;
             segment.g = layer.append('g');
-            segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').attr("class", "invisible");
+            segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity',0);
             segment.line = segment.g.append('line');
             if(segment.hasOwnProperty('clipPath') && segment.clipPath != undefined) {
                 segment.g.attr('clip-path',`url(#${segment.clipPath.id})`);
@@ -60,8 +58,8 @@ module KG {
                     x2 = segment.xScale.scale(segment.x2),
                     y1 = segment.yScale.scale(segment.y1),
                     y2 = segment.yScale.scale(segment.y2),
-                    color = segment.color,
-                    width = segment.width;
+                    stroke = segment.stroke,
+                    strokeWidth = segment.strokeWidth;
                 segment.dragLine.attr("x1", x1);
                 segment.dragLine.attr("y1", y1);
                 segment.dragLine.attr("x2", x2);
@@ -70,8 +68,8 @@ module KG {
                 segment.line.attr("y1", y1);
                 segment.line.attr("x2", x2);
                 segment.line.attr("y2", y2);
-                segment.line.attr("stroke", color);
-                segment.line.attr('stroke-width', width);
+                segment.line.attr("stroke", stroke);
+                segment.line.attr('stroke-width', strokeWidth);
             }
             return segment;
         }

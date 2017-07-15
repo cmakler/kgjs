@@ -22,7 +22,6 @@ module KG {
 
     export class ViewObject extends UpdateListener implements IViewObject {
 
-        public name;
         public xScale;
         public yScale;
         public clipPath;
@@ -36,8 +35,12 @@ module KG {
 
         constructor(def: ViewObjectDefinition) {
             def.updatables = (def.updatables || []).concat('fill','stroke','strokeWidth','opacity','strokeOpacity');
-            def.constants = (def.constants || []).concat(['xScale','yScale','clipPath','name']);
-            def = _.defaults(def,{show: true});
+            def.constants = (def.constants || []).concat(['xScale','yScale','clipPath']);
+            def = _.defaults(def,{
+                stroke: 'black',
+                strokeWidth: 1,
+                show: true
+            });
             super(def);
 
             let vo = this;

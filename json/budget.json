@@ -10,6 +10,14 @@
       "round": "0.1"
     },
     {
+      "name": "x1",
+      "label": "x_1",
+      "value": "10",
+      "min": "0.1",
+      "max": "100",
+      "round": "0.1"
+    },
+    {
       "name": "p2",
       "label": "p_2",
       "value": "4",
@@ -29,7 +37,7 @@
   "restrictions": [
     {
       "expression": "params.m/params.p1",
-      "min": 0,
+      "min": "params.x1",
       "max": 100
     },
     {
@@ -97,6 +105,12 @@
   ],
   "dragUpdates": [
     {
+      "name": "bundle",
+      "dragDirections": "x",
+      "dragParam": "x1",
+      "dragUpdateExpression": "params.x1 + drag.dx"
+    },
+    {
       "name": "p1",
       "dragDirections": "x",
       "dragParam": "p1",
@@ -133,6 +147,17 @@
       "dragUpdateExpression": "drag.x*params.p1 + drag.y*params.p2"
     }
   ],
+  "functions": [
+    {
+      "name": "indifferenceCurveX",
+      "fn": "(params.x1*(params.m - params.p1*params.x1)/params.p2)/x"
+    },
+    {
+      "name": "indifferenceCurveY",
+      "fn": "(params.x1*(params.m - params.p1*params.x1)/params.p2)/y",
+      "ind": "y"
+    }
+  ],
   "segments": [
     {
       "x1": "params.m/params.p1",
@@ -146,6 +171,16 @@
       "dragUpdateNames": [
         "budget"
       ]
+    }
+  ],
+  "curves": [
+    {
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "functionNames": ["indifferenceCurveX","indifferenceCurveY"],
+      "clipPathName": "graph1",
+      "strokeWidth": 2,
+      "stroke": "purple"
     }
   ],
   "axes": [
@@ -179,6 +214,16 @@
     }
   ],
   "points": [
+    {
+      "x": "params.x1",
+      "y": "(params.m - params.p1*params.x1)/params.p2",
+      "xScaleName": "good1",
+      "yScaleName": "good2",
+      "clipPathName": "graph1",
+      "dragUpdateNames": [
+        "bundle"
+      ]
+    },
     {
       "x": "params.m/params.p1",
       "y": "0",

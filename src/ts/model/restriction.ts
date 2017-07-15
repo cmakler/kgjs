@@ -3,10 +3,10 @@
 module KG {
 
     export interface RestrictionDefinition {
-        expression: any;
-        type: any;
-        min?: any;
-        max?: any;
+        expression: string;
+        type: string;
+        min?: string;
+        max?: string;
     }
 
     export interface IRestriction {
@@ -29,8 +29,11 @@ module KG {
         }
 
         valid(model) {
-            const r = this, value = model.eval(r.expression);
-            return (value >= r.min && value <= r.max);
+            const r = this,
+                value = model.eval(r.expression),
+                min = model.eval(r.min),
+                max = model.eval(r.max);
+            return (value >= min && value <= max);
         }
 
     }
