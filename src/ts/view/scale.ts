@@ -4,7 +4,6 @@ module KG {
 
     export interface ScaleDefinition extends UpdateListenerDefinition {
         name: string;
-        axis: string; //x or y
         domainMin: any;
         domainMax: any;
         rangeMin: any;
@@ -19,7 +18,6 @@ module KG {
     export class Scale extends UpdateListener implements IScale {
 
         public name;
-        public axis;
         public scale;
         public domainMin;
         public domainMax;

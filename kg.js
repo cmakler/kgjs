@@ -68,19 +68,34 @@ var KG;
 (function (KG) {
     KG.REFS = [
         {
+            category: 'xScales',
+            className: 'Scale',
+            propName: 'xScale',
+            refName: 'xScaleName'
+        },
+        {
+            category: 'yScales',
+            className: 'Scale',
+            propName: 'yScale',
+            refName: 'yScaleName'
+        },
+        {
             category: 'clickListeners',
             className: 'ClickListener',
-            refListName: 'clickListenerNames'
+            propName: 'clickListeners',
+            refName: 'clickListenerNames'
         },
         {
             category: 'dragListeners',
             className: 'DragListener',
-            refListName: 'dragListenerNames'
+            propName: 'dragListeners',
+            refName: 'dragListenerNames'
         },
         {
             category: 'univariateFunctions',
             className: 'UnivariateFunction',
-            refListName: 'univariateFunctionNames'
+            propName: 'univariateFunctions',
+            refName: 'univariateFunctionNames'
         }
     ];
     KG.LAYERS = [
@@ -128,7 +143,6 @@ var KG;
             view.aspectRatio = data.aspectRatio || 1;
             data.params = data.params || [];
             data.restrictions = data.restrictions || [];
-            data.scales = data.scales || [];
             data.params = data.params.map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -145,16 +159,21 @@ var KG;
                 return new KG.Restriction(def);
             });
             view.model = new KG.Model(params, restrictions);
-            view.scales = data.scales.map(function (def) {
-                def.model = view.model;
-                return new KG.Scale(def);
-            });
             view.refs = {};
+            view.xScales = [];
+            view.yScales = [];
             var createRef = function (refDef) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
                         def.model = view.model;
-                        view.refs[refDef.category + '_' + def.name] = new KG[refDef.className](def);
+                        var newRef = new KG[refDef.className](def);
+                        view.refs[refDef.category + '_' + def.name] = newRef;
+                        if (refDef.category == 'xScales') {
+                            view.xScales.push(newRef);
+                        }
+                        if (refDef.category == 'yScales') {
+                            view.yScales.push(newRef);
+                        }
                     });
                 }
             };
@@ -168,23 +187,21 @@ var KG;
                     data[layerDef.name].forEach(function (def) {
                         def = _.defaults(def, {
                             model: view.model,
-                            layer: layer_1,
-                            xScale: view.getByName("scales", def.xScaleName),
-                            yScale: view.getByName("scales", def.yScaleName)
+                            layer: layer_1
                         });
                         if (def.hasOwnProperty('clipPathName')) {
                             def.clipPath = view.getByName("clipPaths", def.clipPathName);
                         }
                         KG.REFS.forEach(function (ref) {
-                            if (!def.hasOwnProperty(ref.refListName))
+                            if (!def.hasOwnProperty(ref.refName))
                                 return;
-                            if (def[ref.refListName] instanceof Array) {
-                                def[ref.category] = def[ref.refListName].map(function (name) {
+                            if (def[ref.refName] instanceof Array) {
+                                def[ref.propName] = def[ref.refName].map(function (name) {
                                     return view.refs[ref.category + '_' + name];
                                 });
                             }
                             else {
-                                def[ref.category] = view.refs[ref.category + '_' + def.refListName];
+                                def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
                             }
                         });
                         view[layerDef.name].push(new KG[layerDef.className](def));
@@ -215,8 +232,11 @@ var KG;
             view.div.style.height = height + 'px';
             view.svg.style('width', width);
             view.svg.style('height', height);
-            view.scales.forEach(function (scale) {
-                scale.extent = (scale.axis == 'x') ? width : height;
+            view.xScales.forEach(function (scale) {
+                scale.extent = width;
+            });
+            view.yScales.forEach(function (scale) {
+                scale.extent = height;
             });
             view.model.update(true);
             return view;

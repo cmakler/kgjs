@@ -3,14 +3,10 @@
 module KG {
 
     export interface RefDef {
-        category: string; // name of key in JSON object
-        className: string; // class to generate object of
-        refListName: string; // name of reference property
-    }
-
-    export interface PointerDef {
-        singular?: boolean // single reference or list
-
+        category: string;
+        className: string;
+        refName: string;
+        propName: string;
     }
 
     export interface ViewDefinition {
@@ -34,69 +30,85 @@ module KG {
     }
 
     export const REFS: RefDef[] = [
-                {
-                    category: 'clickListeners',
-                    className: 'ClickListener',
-                    refListName: 'clickListenerNames'
-                },
-                {
-                    category: 'dragListeners',
-                    className: 'DragListener',
-                    refListName: 'dragListenerNames'
-                },
-                {
-                    category: 'univariateFunctions',
-                    className: 'UnivariateFunction',
-                    refListName: 'univariateFunctionNames'
-                }
-            ];
+        {
+            category: 'xScales',
+            className: 'Scale',
+            propName: 'xScale',
+            refName: 'xScaleName'
+        },
+        {
+            category: 'yScales',
+            className: 'Scale',
+            propName: 'yScale',
+            refName: 'yScaleName'
+        },
+        {
+            category: 'clickListeners',
+            className: 'ClickListener',
+            propName: 'clickListeners',
+            refName: 'clickListenerNames'
+        },
+        {
+            category: 'dragListeners',
+            className: 'DragListener',
+            propName: 'dragListeners',
+            refName: 'dragListenerNames'
+        },
+        {
+            category: 'univariateFunctions',
+            className: 'UnivariateFunction',
+            propName: 'univariateFunctions',
+            refName: 'univariateFunctionNames'
+        }
+    ];
 
     export const LAYERS = [
-                {
-                    name: 'clipPaths',
-                    parent: 'svg',
-                    element: 'defs',
-                    className: 'ClipPath'
-                },
-                {
-                    name: 'segments',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Segment'
-                },
-                {
-                    name: 'curves',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Curve'
-                },
-                {
-                    name: 'axes',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Axis'
-                },
-                {
-                    name: 'points',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Point'
-                },
-                {
-                    name: 'labels',
-                    parent: 'div',
-                    element: 'div',
-                    className: 'Label'
-                },
+        {
+            name: 'clipPaths',
+            parent: 'svg',
+            element: 'defs',
+            className: 'ClipPath'
+        },
+        {
+            name: 'segments',
+            parent: 'svg',
+            element: 'g',
+            className: 'Segment'
+        },
+        {
+            name: 'curves',
+            parent: 'svg',
+            element: 'g',
+            className: 'Curve'
+        },
+        {
+            name: 'axes',
+            parent: 'svg',
+            element: 'g',
+            className: 'Axis'
+        },
+        {
+            name: 'points',
+            parent: 'svg',
+            element: 'g',
+            className: 'Point'
+        },
+        {
+            name: 'labels',
+            parent: 'div',
+            element: 'div',
+            className: 'Label'
+        },
 
-            ];
+    ];
 
     export class View implements IView {
 
         private div;
         private svg;
         private model;
-        private scales;
+        private xScales;
+        private yScales;
         private aspectRatio: number;
         private refs: any;
 
@@ -109,7 +121,6 @@ module KG {
 
             data.params = data.params || [];
             data.restrictions = data.restrictions || [];
-            data.scales = data.scales || [];
 
             data.params = data.params.map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
@@ -131,18 +142,22 @@ module KG {
 
             view.model = new KG.Model(params, restrictions);
 
-            view.scales = data.scales.map(function (def) {
-                def.model = view.model;
-                return new Scale(def);
-            });
-
             view.refs = {};
+            view.xScales = [];
+            view.yScales = [];
 
             let createRef = function (refDef: { category: string, className: string }) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
                         def.model = view.model;
-                        view.refs[refDef.category + '_' + def.name] = new KG[refDef.className](def);
+                        const newRef = new KG[refDef.className](def);
+                        view.refs[refDef.category + '_' + def.name] = newRef;
+                        if(refDef.category == 'xScales') {
+                            view.xScales.push(newRef);
+                        }
+                        if(refDef.category == 'yScales') {
+                            view.yScales.push(newRef);
+                        }
                     })
                 }
             };
@@ -159,29 +174,26 @@ module KG {
                     data[layerDef.name].forEach(function (def) {
                         def = _.defaults(def, {
                             model: view.model,
-                            layer: layer,
-                            xScale: view.getByName("scales", def.xScaleName),
-                            yScale: view.getByName("scales", def.yScaleName)
+                            layer: layer
                         });
                         if (def.hasOwnProperty('clipPathName')) {
                             def.clipPath = view.getByName("clipPaths", def.clipPathName)
                         }
-                        REFS.forEach(function (ref) {
-                            if(!def.hasOwnProperty(ref.refListName)) return;
-                            if(def[ref.refListName] instanceof Array) {
-                                def[ref.category] = def[ref.refListName].map(function(name){
-                                    return view.refs[ref.category + '_' + name]
-                                })
+                        REFS.forEach(function(ref) {
+                            if(!def.hasOwnProperty(ref.refName)) return;
+                            if(def[ref.refName] instanceof Array) {
+                                def[ref.propName] = def[ref.refName].map(function (name) {
+                                return view.refs[ref.category + '_' + name]
+                            })
                             } else {
-                                def[ref.category] = view.refs[ref.category + '_' + def.refListName]
+                                def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
                             }
+
                         });
                         view[layerDef.name].push(new KG[layerDef.className](def));
                     });
                 }
             };
-
-
 
             LAYERS.forEach(addLayer);
 
@@ -211,8 +223,11 @@ module KG {
             view.div.style.height = height + 'px';
             view.svg.style('width', width);
             view.svg.style('height', height);
-            view.scales.forEach(function (scale) {
-                scale.extent = (scale.axis == 'x') ? width : height;
+            view.xScales.forEach(function (scale) {
+                scale.extent = width;
+            });
+            view.yScales.forEach(function (scale) {
+                scale.extent = height;
             });
             view.model.update(true);
             return view;

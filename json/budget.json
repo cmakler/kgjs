@@ -42,26 +42,16 @@
       "max": 100
     }
   ],
-  "scales": [
+  "xScales": [
     {
       "name": "good1",
-      "axis": "x",
       "domainMin": "0",
       "domainMax": "100",
       "rangeMin": "0",
       "rangeMax": "0.95"
     },
     {
-      "name": "good2",
-      "axis": "y",
-      "domainMin": "0",
-      "domainMax": "100",
-      "rangeMin": "1",
-      "rangeMax": "0.05"
-    },
-    {
       "name": "p1",
-      "axis": "x",
       "domainMin": "0",
       "domainMax": "10",
       "rangeMin": "0.8",
@@ -69,7 +59,6 @@
     },
     {
       "name": "p2",
-      "axis": "x",
       "domainMin": "0",
       "domainMax": "10",
       "rangeMin": "0.8",
@@ -77,15 +66,22 @@
     },
     {
       "name": "m",
-      "axis": "x",
       "domainMin": "0",
       "domainMax": "200",
       "rangeMin": "0.8",
       "rangeMax": "1"
+    }
+  ],
+  "yScales": [
+    {
+      "name": "good2",
+      "domainMin": "0",
+      "domainMax": "100",
+      "rangeMin": "1",
+      "rangeMax": "0.05"
     },
     {
       "name": "sliders",
-      "axis": "y",
       "domainMin": "0",
       "domainMax": "1",
       "rangeMin": "0",
