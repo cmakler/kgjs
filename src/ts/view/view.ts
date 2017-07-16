@@ -7,8 +7,9 @@ module KG {
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
         scales?: ScaleDefinition[];
-        dragUpdates?: DragUpdateListenerDefinition[];
-        functions?: UnivariateFunctionDefinition[];
+        dragListeners?: DragListenerDefinition[];
+        clickListeners?: ClickListenerDefinition[];
+        univariateFunctions?: UnivariateFunctionDefinition[];
         curves?: CurveDefinition[];
         segments?: SegmentDefinition[];
         points?: PointDefinition[];
@@ -29,7 +30,8 @@ module KG {
         private univariateFunctions: UnivariateFunction[];
         private aspectRatio: number;
         private scales: Scale[];
-        private dragUpdates: DragUpdateListener[];
+        private dragListeners: DragListener[];
+        private clickListeners: ClickListener[];
         private clipPaths: ClipPath[];
 
         constructor(div: Element, data: ViewDefinition) {
@@ -73,19 +75,29 @@ module KG {
                 view.scales = [];
             }
 
-            // establish drag update listeners
-            if (data.hasOwnProperty('dragUpdates')) {
-                view.dragUpdates = data.dragUpdates.map(function (def: DragUpdateListenerDefinition) {
+            // establish click listeners
+            if (data.hasOwnProperty('clickListeners')) {
+                view.clickListeners = data.clickListeners.map(function (def: ClickListenerDefinition) {
                     def.model = view.model;
-                    return new DragUpdateListener(def);
+                    return new ClickListener(def);
                 })
             } else {
-                view.dragUpdates = [];
+                view.dragListeners = [];
+            }
+
+            // establish drag listeners
+            if (data.hasOwnProperty('dragListeners')) {
+                view.dragListeners = data.dragListeners.map(function (def: DragListenerDefinition) {
+                    def.model = view.model;
+                    return new DragListener(def);
+                })
+            } else {
+                view.dragListeners = [];
             }
 
             // establish functions
-            if (data.hasOwnProperty('functions')) {
-                view.univariateFunctions = data.functions.map(function (def: UnivariateFunctionDefinition) {
+            if (data.hasOwnProperty('univariateFunctions')) {
+                view.univariateFunctions = data.univariateFunctions.map(function (def: UnivariateFunctionDefinition) {
                     def.model = view.model;
                     return new UnivariateFunction(def);
                 })
@@ -94,17 +106,24 @@ module KG {
             let prepareDef = function (def, layer) {
                 def.model = view.model;
                 def.layer = layer;
+
                 def.xScale = view.getByName("scales", def.xScaleName);
                 def.yScale = view.getByName("scales", def.yScaleName);
+
                 if (def.hasOwnProperty('clipPathName')) {
                     def.clipPath = view.getByName("clipPaths", def.clipPathName);
                 }
-                def.dragUpdateNames = def.dragUpdateNames || [];
-                def.dragUpdates = def.dragUpdateNames.map(function (name) {
-                    return view.getByName("dragUpdates", name)
+
+                def.clickListenerNames = def.clickListenerNames || [];
+                def.clickListeners = def.clickListenerNames.map(function (name) {
+                    return view.getByName("clickListeners", name)
                 });
-                def.functionNames = def.functionNames || [];
-                def.univariateFunctions = def.functionNames.map(function (name) {
+                def.dragListenerNames = def.dragListenerNames || [];
+                def.dragListeners = def.dragListenerNames.map(function (name) {
+                    return view.getByName("dragListeners", name)
+                });
+                def.univariateFunctionNames = def.univariateFunctionNames || [];
+                def.univariateFunctions = def.univariateFunctionNames.map(function (name) {
                     return view.getByName("univariateFunctions", name)
                 });
                 return def;

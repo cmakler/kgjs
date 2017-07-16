@@ -99,19 +99,29 @@ var KG;
             else {
                 view.scales = [];
             }
-            // establish drag update listeners
-            if (data.hasOwnProperty('dragUpdates')) {
-                view.dragUpdates = data.dragUpdates.map(function (def) {
+            // establish click listeners
+            if (data.hasOwnProperty('clickListeners')) {
+                view.clickListeners = data.clickListeners.map(function (def) {
                     def.model = view.model;
-                    return new KG.DragUpdateListener(def);
+                    return new KG.ClickListener(def);
                 });
             }
             else {
-                view.dragUpdates = [];
+                view.dragListeners = [];
+            }
+            // establish drag listeners
+            if (data.hasOwnProperty('dragListeners')) {
+                view.dragListeners = data.dragListeners.map(function (def) {
+                    def.model = view.model;
+                    return new KG.DragListener(def);
+                });
+            }
+            else {
+                view.dragListeners = [];
             }
             // establish functions
-            if (data.hasOwnProperty('functions')) {
-                view.univariateFunctions = data.functions.map(function (def) {
+            if (data.hasOwnProperty('univariateFunctions')) {
+                view.univariateFunctions = data.univariateFunctions.map(function (def) {
                     def.model = view.model;
                     return new KG.UnivariateFunction(def);
                 });
@@ -124,12 +134,16 @@ var KG;
                 if (def.hasOwnProperty('clipPathName')) {
                     def.clipPath = view.getByName("clipPaths", def.clipPathName);
                 }
-                def.dragUpdateNames = def.dragUpdateNames || [];
-                def.dragUpdates = def.dragUpdateNames.map(function (name) {
-                    return view.getByName("dragUpdates", name);
+                def.clickListenerNames = def.clickListenerNames || [];
+                def.clickListeners = def.clickListenerNames.map(function (name) {
+                    return view.getByName("clickListeners", name);
                 });
-                def.functionNames = def.functionNames || [];
-                def.univariateFunctions = def.functionNames.map(function (name) {
+                def.dragListenerNames = def.dragListenerNames || [];
+                def.dragListeners = def.dragListenerNames.map(function (name) {
+                    return view.getByName("dragListeners", name);
+                });
+                def.univariateFunctionNames = def.univariateFunctionNames || [];
+                def.univariateFunctions = def.univariateFunctionNames.map(function (name) {
                     return view.getByName("univariateFunctions", name);
                 });
                 return def;
@@ -463,30 +477,77 @@ var KG;
     }(KG.UpdateListener));
     KG.UnivariateFunction = UnivariateFunction;
 })(KG || (KG = {}));
-/// <reference path="../kg.ts" />
+/// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var DragUpdateListener = (function (_super) {
-        __extends(DragUpdateListener, _super);
-        function DragUpdateListener(def) {
+    /*
+
+        A listener is defined by a param and an expression.
+        When the interactionHandler senses a change, it generates a scope of the current state of the model.
+        The listener then determines the current value of its expression within the context of that scope,
+        and sends a signal to the model to update its param.
+
+     */
+    var Listener = (function (_super) {
+        __extends(Listener, _super);
+        function Listener(def) {
             var _this = this;
-            def.updatables = ['draggable', 'dragDirections'];
-            def.constants = ['dragParam', 'dragUpdateExpression', 'name'];
-            def = _.defaults(def, { dragDirections: "xy" });
+            def = _.defaults(def, { constants: [], updatables: [] });
+            def.updatables = def.updatables.concat(['expression']);
+            def.constants = def.constants.concat(['param']);
             _this = _super.call(this, def) || this;
             return _this;
         }
-        DragUpdateListener.prototype.updateDrag = function (scope) {
-            var d = this;
-            if (d.dragDirections.length > 0) {
-                var compiledMath = math.compile(d.dragUpdateExpression);
-                var parsedMath = compiledMath.eval(scope);
-                d.model.updateParam(d.dragParam, parsedMath);
-            }
+        Listener.prototype.onChange = function (scope) {
+            var l = this, compiledMath = math.compile(l.expression);
+            var parsedMath = compiledMath.eval(scope);
+            l.model.updateParam(l.param, parsedMath);
         };
-        return DragUpdateListener;
+        return Listener;
     }(KG.UpdateListener));
-    KG.DragUpdateListener = DragUpdateListener;
+    KG.Listener = Listener;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    /*
+
+        A DragListener is a special kind of Listener that listens for drag events.
+        In addition to a param and an expression, it has properties for whether it is draggable
+        and, if so, in which directions it is draggable.
+
+     */
+    var DragListener = (function (_super) {
+        __extends(DragListener, _super);
+        function DragListener(def) {
+            var _this = this;
+            def = _.defaults(def, { dragDirections: "xy", updatables: [] });
+            def.updatables = def.updatables.concat(['draggable', 'dragDirections']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        DragListener.prototype.update = function (force) {
+            var dl = _super.prototype.update.call(this, force);
+            if (!dl.def.hasOwnProperty('draggable')) {
+                dl.draggable = (dl.dragDirections.length > 0);
+            }
+            return dl;
+        };
+        return DragListener;
+    }(KG.Listener));
+    KG.DragListener = DragListener;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ClickListener = (function (_super) {
+        __extends(ClickListener, _super);
+        function ClickListener(def) {
+            return _super.call(this, def) || this;
+        }
+        return ClickListener;
+    }(KG.Listener));
+    KG.ClickListener = ClickListener;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -495,7 +556,8 @@ var KG;
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
             var _this = this;
-            def.constants = ["dragUpdateListeners"];
+            def = _.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
+            def.constants = def.constants.concat(["dragListeners", "clickListeners"]);
             _this = _super.call(this, def) || this;
             _this.update(true);
             _this.scope = { params: {}, drag: {} };
@@ -503,10 +565,10 @@ var KG;
         }
         InteractionHandler.prototype.update = function (force) {
             var ih = _super.prototype.update.call(this, force);
-            // first update dragUpdateListeners
-            if (ih.hasChanged && ih.hasOwnProperty('dragUpdateListeners') && (ih.element != undefined)) {
+            // first update dragListeners
+            if (ih.hasChanged && ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
                 var xDrag_1 = false, yDrag_1 = false;
-                ih.dragUpdateListeners.forEach(function (dul) {
+                ih.dragListeners.forEach(function (dul) {
                     dul.update(force);
                     if (dul.dragDirections == "x") {
                         xDrag_1 = true;
@@ -524,37 +586,42 @@ var KG;
             }
             return ih;
         };
-        InteractionHandler.prototype.startDrag = function (handler) {
-            handler.scope.params = handler.model.currentParamValues();
-            handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-            handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
-        };
-        InteractionHandler.prototype.onDrag = function (handler) {
-            var drag = handler.scope.drag;
-            drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-            drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
-            drag.dx = drag.x - drag.x0;
-            drag.dy = drag.y - drag.y0;
-            handler.dragUpdateListeners.forEach(function (d) {
-                d.updateDrag(handler.scope);
-            });
-        };
-        InteractionHandler.prototype.endDrag = function (handler) {
-            //handler.element.style("cursor","default");
-        };
         InteractionHandler.prototype.addTrigger = function (element) {
             var handler = this;
             handler.element = element;
-            element.call(d3.drag()
-                .on('start', function () {
-                handler.startDrag(handler);
-            })
-                .on('drag', function () {
-                handler.onDrag(handler);
-            })
-                .on('end', function () {
-                handler.endDrag(handler);
-            }));
+            // add click listeners
+            if (handler.clickListeners.length > 0) {
+                element.on("click", function () {
+                    if (d3.event.defaultPrevented)
+                        return; //dragged)
+                    handler.scope.params = handler.model.currentParamValues();
+                    handler.clickListeners.forEach(function (d) {
+                        d.onChange(handler.scope);
+                    });
+                });
+            }
+            // add drag listeners
+            if (handler.dragListeners.length > 0) {
+                element.call(d3.drag()
+                    .on('start', function () {
+                    handler.scope.params = handler.model.currentParamValues();
+                    handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+                    handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                })
+                    .on('drag', function () {
+                    var drag = handler.scope.drag;
+                    drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
+                    drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                    drag.dx = drag.x - drag.x0;
+                    drag.dy = drag.y - drag.y0;
+                    handler.dragListeners.forEach(function (d) {
+                        d.onChange(handler.scope);
+                    });
+                })
+                    .on('end', function () {
+                    //handler.element.style("cursor","default");
+                }));
+            }
             handler.update(true);
         };
         return InteractionHandler;
@@ -608,7 +675,8 @@ var KG;
             vo.interactionHandler = new KG.InteractionHandler({
                 viewObject: vo,
                 model: vo.model,
-                dragUpdateListeners: def.dragUpdates || []
+                dragListeners: def.dragListeners || [],
+                clickListeners: def.clickListeners || []
             });
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
@@ -912,7 +980,9 @@ var KG;
 /// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 /// <reference path="math/fn.ts" />
-/// <reference path="controller/dragUpdateListener.ts" />
+/// <reference path="controller/listeners/listener.ts" />
+/// <reference path="controller/listeners/dragListener.ts" />
+/// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />

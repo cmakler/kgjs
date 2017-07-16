@@ -13,7 +13,9 @@
 
 /// <reference path="math/fn.ts" />
 
-/// <reference path="controller/dragUpdateListener.ts" />
+/// <reference path="controller/listeners/listener.ts" />
+/// <reference path="controller/listeners/dragListener.ts" />
+/// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 
 /// <reference path="view/scale.ts" />

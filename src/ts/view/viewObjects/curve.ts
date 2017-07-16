@@ -3,7 +3,7 @@
 module KG {
 
     export interface CurveDefinition extends ViewObjectDefinition {
-        functionNames: string[];
+        univariateFunctionNames: string[];
     }
 
     export class Curve extends ViewObject {

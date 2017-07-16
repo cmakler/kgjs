@@ -9,7 +9,8 @@ module KG {
         xScale: Scale;
         yScale: Scale;
         clipPath: ClipPath;
-        dragUpdates?: DragUpdateListener[];
+        dragListeners?: DragListener[];
+        clickListeners?: ClickListener[];
     }
 
     export interface IViewObject extends IUpdateListener {
@@ -49,7 +50,8 @@ module KG {
             vo.interactionHandler = new InteractionHandler({
                 viewObject: vo,
                 model: vo.model,
-                dragUpdateListeners: def.dragUpdates || []
+                dragListeners: def.dragListeners || [],
+                clickListeners: def.clickListeners || []
             });
 
             // the draw method creates the DOM elements for the view object
