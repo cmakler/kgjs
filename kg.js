@@ -66,16 +66,75 @@ var _;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
+    KG.REFS = [
+        {
+            category: 'clickListeners',
+            className: 'ClickListener',
+            refListName: 'clickListenerNames'
+        },
+        {
+            category: 'dragListeners',
+            className: 'DragListener',
+            refListName: 'dragListenerNames'
+        },
+        {
+            category: 'univariateFunctions',
+            className: 'UnivariateFunction',
+            refListName: 'univariateFunctionNames'
+        }
+    ];
+    KG.LAYERS = [
+        {
+            name: 'clipPaths',
+            parent: 'svg',
+            element: 'defs',
+            className: 'ClipPath'
+        },
+        {
+            name: 'segments',
+            parent: 'svg',
+            element: 'g',
+            className: 'Segment'
+        },
+        {
+            name: 'curves',
+            parent: 'svg',
+            element: 'g',
+            className: 'Curve'
+        },
+        {
+            name: 'axes',
+            parent: 'svg',
+            element: 'g',
+            className: 'Axis'
+        },
+        {
+            name: 'points',
+            parent: 'svg',
+            element: 'g',
+            className: 'Point'
+        },
+        {
+            name: 'labels',
+            parent: 'div',
+            element: 'div',
+            className: 'Label'
+        },
+    ];
     var View = (function () {
         function View(div, data) {
             var view = this;
             view.div = d3.select(div).style('position', 'relative');
+            view.aspectRatio = data.aspectRatio || 1;
             data.params = data.params || [];
             data.restrictions = data.restrictions || [];
+            data.scales = data.scales || [];
             data.params = data.params.map(function (paramData) {
+                // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name);
                 }
+                // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
@@ -86,104 +145,53 @@ var KG;
                 return new KG.Restriction(def);
             });
             view.model = new KG.Model(params, restrictions);
-            view.aspectRatio = data.aspectRatio || 1;
+            view.scales = data.scales.map(function (def) {
+                def.model = view.model;
+                return new KG.Scale(def);
+            });
+            view.refs = {};
+            var createRef = function (refDef) {
+                if (data.hasOwnProperty(refDef.category)) {
+                    data[refDef.category].forEach(function (def) {
+                        def.model = view.model;
+                        view.refs[refDef.category + '_' + def.name] = new KG[refDef.className](def);
+                    });
+                }
+            };
+            KG.REFS.forEach(createRef);
             // add svg element as a child of the div
             view.svg = view.div.append("svg");
-            // establish scales
-            if (data.hasOwnProperty('scales')) {
-                view.scales = data.scales.map(function (def) {
-                    def.model = view.model;
-                    return new KG.Scale(def);
-                });
-            }
-            else {
-                view.scales = [];
-            }
-            // establish click listeners
-            if (data.hasOwnProperty('clickListeners')) {
-                view.clickListeners = data.clickListeners.map(function (def) {
-                    def.model = view.model;
-                    return new KG.ClickListener(def);
-                });
-            }
-            else {
-                view.dragListeners = [];
-            }
-            // establish drag listeners
-            if (data.hasOwnProperty('dragListeners')) {
-                view.dragListeners = data.dragListeners.map(function (def) {
-                    def.model = view.model;
-                    return new KG.DragListener(def);
-                });
-            }
-            else {
-                view.dragListeners = [];
-            }
-            // establish functions
-            if (data.hasOwnProperty('univariateFunctions')) {
-                view.univariateFunctions = data.univariateFunctions.map(function (def) {
-                    def.model = view.model;
-                    return new KG.UnivariateFunction(def);
-                });
-            }
-            var prepareDef = function (def, layer) {
-                def.model = view.model;
-                def.layer = layer;
-                def.xScale = view.getByName("scales", def.xScaleName);
-                def.yScale = view.getByName("scales", def.yScaleName);
-                if (def.hasOwnProperty('clipPathName')) {
-                    def.clipPath = view.getByName("clipPaths", def.clipPathName);
+            var addLayer = function (layerDef) {
+                if (data.hasOwnProperty(layerDef.name)) {
+                    view[layerDef.name] = [];
+                    var layer_1 = view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
+                    data[layerDef.name].forEach(function (def) {
+                        def = _.defaults(def, {
+                            model: view.model,
+                            layer: layer_1,
+                            xScale: view.getByName("scales", def.xScaleName),
+                            yScale: view.getByName("scales", def.yScaleName)
+                        });
+                        if (def.hasOwnProperty('clipPathName')) {
+                            def.clipPath = view.getByName("clipPaths", def.clipPathName);
+                        }
+                        KG.REFS.forEach(function (ref) {
+                            if (!def.hasOwnProperty(ref.refListName))
+                                return;
+                            if (def[ref.refListName] instanceof Array) {
+                                def[ref.category] = def[ref.refListName].map(function (name) {
+                                    return view.refs[ref.category + '_' + name];
+                                });
+                            }
+                            else {
+                                def[ref.category] = view.refs[ref.category + '_' + def.refListName];
+                            }
+                        });
+                        view[layerDef.name].push(new KG[layerDef.className](def));
+                    });
                 }
-                def.clickListenerNames = def.clickListenerNames || [];
-                def.clickListeners = def.clickListenerNames.map(function (name) {
-                    return view.getByName("clickListeners", name);
-                });
-                def.dragListenerNames = def.dragListenerNames || [];
-                def.dragListeners = def.dragListenerNames.map(function (name) {
-                    return view.getByName("dragListeners", name);
-                });
-                def.univariateFunctionNames = def.univariateFunctionNames || [];
-                def.univariateFunctions = def.univariateFunctionNames.map(function (name) {
-                    return view.getByName("univariateFunctions", name);
-                });
-                return def;
             };
-            var defLayer = view.svg.append('defs');
-            if (data.hasOwnProperty('clipPaths')) {
-                view.clipPaths = data.clipPaths.map(function (def) {
-                    return new KG.ClipPath(prepareDef(def, defLayer));
-                });
-            }
-            if (data.hasOwnProperty('segments')) {
-                var segmentLayer_1 = view.svg.append('g').attr('class', 'segments');
-                data.segments.forEach(function (def) {
-                    new KG.Segment(prepareDef(def, segmentLayer_1));
-                });
-            }
-            if (data.hasOwnProperty('curves')) {
-                var curveLayer_1 = view.svg.append('g').attr('class', 'curves');
-                data.curves.forEach(function (def) {
-                    new KG.Curve(prepareDef(def, curveLayer_1));
-                });
-            }
-            if (data.hasOwnProperty('axes')) {
-                var axisLayer_1 = view.svg.append('g').attr('class', 'axes');
-                data.axes.forEach(function (def) {
-                    new KG.Axis(prepareDef(def, axisLayer_1));
-                });
-            }
-            if (data.hasOwnProperty('points')) {
-                var pointLayer_1 = view.svg.append('g').attr('class', 'points');
-                data.points.forEach(function (def) {
-                    new KG.Point(prepareDef(def, pointLayer_1));
-                });
-            }
-            if (data.hasOwnProperty('labels')) {
-                var labelLayer_1 = view.div.append('div').attr('class', 'labels');
-                data.labels.forEach(function (def) {
-                    new KG.Label(prepareDef(def, labelLayer_1));
-                });
-            }
+            KG.LAYERS.forEach(addLayer);
             // establish dimensions of view and views
             view.updateDimensions();
         }

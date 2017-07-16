@@ -2,6 +2,17 @@
 
 module KG {
 
+    export interface RefDef {
+        category: string; // name of key in JSON object
+        className: string; // class to generate object of
+        refListName: string; // name of reference property
+    }
+
+    export interface PointerDef {
+        singular?: boolean // single reference or list
+
+    }
+
     export interface ViewDefinition {
         aspectRatio: number;
         params?: ParamDefinition[];
@@ -22,31 +33,90 @@ module KG {
         updateDimensions: () => View;  // called on a window resize event; updates the size of the Container
     }
 
+    export const REFS: RefDef[] = [
+                {
+                    category: 'clickListeners',
+                    className: 'ClickListener',
+                    refListName: 'clickListenerNames'
+                },
+                {
+                    category: 'dragListeners',
+                    className: 'DragListener',
+                    refListName: 'dragListenerNames'
+                },
+                {
+                    category: 'univariateFunctions',
+                    className: 'UnivariateFunction',
+                    refListName: 'univariateFunctionNames'
+                }
+            ];
+
+    export const LAYERS = [
+                {
+                    name: 'clipPaths',
+                    parent: 'svg',
+                    element: 'defs',
+                    className: 'ClipPath'
+                },
+                {
+                    name: 'segments',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Segment'
+                },
+                {
+                    name: 'curves',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Curve'
+                },
+                {
+                    name: 'axes',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Axis'
+                },
+                {
+                    name: 'points',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Point'
+                },
+                {
+                    name: 'labels',
+                    parent: 'div',
+                    element: 'div',
+                    className: 'Label'
+                },
+
+            ];
+
     export class View implements IView {
 
         private div;
         private svg;
         private model;
-        private univariateFunctions: UnivariateFunction[];
+        private scales;
         private aspectRatio: number;
-        private scales: Scale[];
-        private dragListeners: DragListener[];
-        private clickListeners: ClickListener[];
-        private clipPaths: ClipPath[];
+        private refs: any;
 
         constructor(div: Element, data: ViewDefinition) {
 
             let view = this;
 
             view.div = d3.select(div).style('position', 'relative');
+            view.aspectRatio = data.aspectRatio || 1;
 
             data.params = data.params || [];
             data.restrictions = data.restrictions || [];
+            data.scales = data.scales || [];
 
             data.params = data.params.map(function (paramData) {
+                // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name)
                 }
+                // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
@@ -60,112 +130,60 @@ module KG {
             });
 
             view.model = new KG.Model(params, restrictions);
-            view.aspectRatio = data.aspectRatio || 1;
+
+            view.scales = data.scales.map(function (def) {
+                def.model = view.model;
+                return new Scale(def);
+            });
+
+            view.refs = {};
+
+            let createRef = function (refDef: { category: string, className: string }) {
+                if (data.hasOwnProperty(refDef.category)) {
+                    data[refDef.category].forEach(function (def) {
+                        def.model = view.model;
+                        view.refs[refDef.category + '_' + def.name] = new KG[refDef.className](def);
+                    })
+                }
+            };
+
+            REFS.forEach(createRef);
 
             // add svg element as a child of the div
             view.svg = view.div.append("svg");
 
-            // establish scales
-            if (data.hasOwnProperty('scales')) {
-                view.scales = data.scales.map(function (def) {
-                    def.model = view.model;
-                    return new Scale(def);
-                })
-            } else {
-                view.scales = [];
-            }
-
-            // establish click listeners
-            if (data.hasOwnProperty('clickListeners')) {
-                view.clickListeners = data.clickListeners.map(function (def: ClickListenerDefinition) {
-                    def.model = view.model;
-                    return new ClickListener(def);
-                })
-            } else {
-                view.dragListeners = [];
-            }
-
-            // establish drag listeners
-            if (data.hasOwnProperty('dragListeners')) {
-                view.dragListeners = data.dragListeners.map(function (def: DragListenerDefinition) {
-                    def.model = view.model;
-                    return new DragListener(def);
-                })
-            } else {
-                view.dragListeners = [];
-            }
-
-            // establish functions
-            if (data.hasOwnProperty('univariateFunctions')) {
-                view.univariateFunctions = data.univariateFunctions.map(function (def: UnivariateFunctionDefinition) {
-                    def.model = view.model;
-                    return new UnivariateFunction(def);
-                })
-            }
-
-            let prepareDef = function (def, layer) {
-                def.model = view.model;
-                def.layer = layer;
-
-                def.xScale = view.getByName("scales", def.xScaleName);
-                def.yScale = view.getByName("scales", def.yScaleName);
-
-                if (def.hasOwnProperty('clipPathName')) {
-                    def.clipPath = view.getByName("clipPaths", def.clipPathName);
+            let addLayer = function (layerDef: { name: string, parent: string, element: string, className: string }) {
+                if (data.hasOwnProperty(layerDef.name)) {
+                    view[layerDef.name] = [];
+                    let layer = view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
+                    data[layerDef.name].forEach(function (def) {
+                        def = _.defaults(def, {
+                            model: view.model,
+                            layer: layer,
+                            xScale: view.getByName("scales", def.xScaleName),
+                            yScale: view.getByName("scales", def.yScaleName)
+                        });
+                        if (def.hasOwnProperty('clipPathName')) {
+                            def.clipPath = view.getByName("clipPaths", def.clipPathName)
+                        }
+                        REFS.forEach(function (ref) {
+                            if(!def.hasOwnProperty(ref.refListName)) return;
+                            if(def[ref.refListName] instanceof Array) {
+                                def[ref.category] = def[ref.refListName].map(function(name){
+                                    return view.refs[ref.category + '_' + name]
+                                })
+                            } else {
+                                def[ref.category] = view.refs[ref.category + '_' + def.refListName]
+                            }
+                        });
+                        view[layerDef.name].push(new KG[layerDef.className](def));
+                    });
                 }
-
-                def.clickListenerNames = def.clickListenerNames || [];
-                def.clickListeners = def.clickListenerNames.map(function (name) {
-                    return view.getByName("clickListeners", name)
-                });
-                def.dragListenerNames = def.dragListenerNames || [];
-                def.dragListeners = def.dragListenerNames.map(function (name) {
-                    return view.getByName("dragListeners", name)
-                });
-                def.univariateFunctionNames = def.univariateFunctionNames || [];
-                def.univariateFunctions = def.univariateFunctionNames.map(function (name) {
-                    return view.getByName("univariateFunctions", name)
-                });
-                return def;
             };
 
-            const defLayer = view.svg.append('defs');
 
-            if (data.hasOwnProperty('clipPaths')) {
-                view.clipPaths = data.clipPaths.map(function (def: ClipPathDefinition) {
-                    return new ClipPath(prepareDef(def, defLayer));
-                });
-            }
-            if (data.hasOwnProperty('segments')) {
-                let segmentLayer = view.svg.append('g').attr('class', 'segments');
-                data.segments.forEach(function (def: SegmentDefinition) {
-                    new Segment(prepareDef(def, segmentLayer));
-                });
-            }
-            if (data.hasOwnProperty('curves')) {
-                let curveLayer = view.svg.append('g').attr('class', 'curves');
-                data.curves.forEach(function (def: CurveDefinition) {
-                    new Curve(prepareDef(def, curveLayer));
-                });
-            }
-            if (data.hasOwnProperty('axes')) {
-                let axisLayer = view.svg.append('g').attr('class', 'axes');
-                data.axes.forEach(function (def: AxisDefinition) {
-                    new Axis(prepareDef(def, axisLayer));
-                });
-            }
-            if (data.hasOwnProperty('points')) {
-                let pointLayer = view.svg.append('g').attr('class', 'points');
-                data.points.forEach(function (def: PointDefinition) {
-                    new Point(prepareDef(def, pointLayer));
-                });
-            }
-            if (data.hasOwnProperty('labels')) {
-                let labelLayer = view.div.append('div').attr('class', 'labels');
-                data.labels.forEach(function (def: LabelDefinition) {
-                    new Label(prepareDef(def, labelLayer));
-                });
-            }
+
+            LAYERS.forEach(addLayer);
 
             // establish dimensions of view and views
             view.updateDimensions();
@@ -179,10 +197,10 @@ module KG {
                     if (objs[i].name == name) {
                         return objs[i];
                     }
-                    console.log('tried to find ',name,' in category ', category,' but no entry with that name exists.')
+                    console.log('tried to find ', name, ' in category ', category, ' but no entry with that name exists.')
                 }
             } else {
-                console.log ('tried to find ',name,' in category ', category,' but that category does not exist');
+                console.log('tried to find ', name, ' in category ', category, ' but that category does not exist');
             }
         }
 
