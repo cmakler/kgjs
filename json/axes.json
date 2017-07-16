@@ -83,24 +83,24 @@
       "yScaleName": "y"
     }
   ],
-  "dragUpdates": [
+  "dragListeners": [
     {
       "name": "yA",
       "dragDirections": "y",
-      "dragParam": "yA",
-      "dragUpdateExpression": "params.yA + drag.dy"
+      "param": "yA",
+      "expression": "params.yA + drag.dy"
     },
     {
       "name": "yB",
       "dragDirections": "y",
-      "dragParam": "yB",
-      "dragUpdateExpression": "params.yB + drag.dy"
+      "param": "yB",
+      "expression": "params.yB + drag.dy"
     },
     {
       "name": "xB",
       "dragDirections": "x",
-      "dragParam": "xB",
-      "dragUpdateExpression": "params.xB + drag.dx"
+      "param": "xB",
+      "expression": "params.xB + drag.dx"
     }
   ],
   "segments": [
@@ -113,7 +113,7 @@
       "yScaleName": "y",
       "color": "(params.xB > 10) ? 'green' : 'blue'",
       "clipPathName": "graph1",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "yA",
         "yB"
       ]
@@ -147,7 +147,7 @@
       "y": "params.yA",
       "xScaleName": "x",
       "yScaleName": "y",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "yA"
       ]
     },
@@ -156,7 +156,7 @@
       "y": "params.yB",
       "xScaleName": "x",
       "yScaleName": "y",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "xB",
         "yB"
       ]
@@ -166,7 +166,7 @@
       "y": 0,
       "xScaleName": "p1",
       "yScaleName": "sliders",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "xB"
       ]
     }
@@ -181,7 +181,7 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "yA"
       ]
     },
@@ -194,7 +194,7 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "xB",
         "yB"
       ]

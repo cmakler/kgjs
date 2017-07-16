@@ -99,51 +99,51 @@
       "yScaleName": "good2"
     }
   ],
-  "dragUpdates": [
+  "dragListeners": [
     {
       "name": "bundle",
       "dragDirections": "x",
-      "dragParam": "x1",
-      "dragUpdateExpression": "params.x1 + drag.dx"
+      "param": "x1",
+      "expression": "params.x1 + drag.dx"
     },
     {
       "name": "p1",
       "dragDirections": "x",
-      "dragParam": "p1",
-      "dragUpdateExpression": "params.p1 + drag.dx"
+      "param": "p1",
+      "expression": "params.p1 + drag.dx"
     },
     {
       "name": "p2",
       "dragDirections": "x",
-      "dragParam": "p2",
-      "dragUpdateExpression": "params.p2 + drag.dx"
+      "param": "p2",
+      "expression": "params.p2 + drag.dx"
     },
     {
       "name": "m",
       "dragDirections": "x",
-      "dragParam": "m",
-      "dragUpdateExpression": "params.m + drag.dx"
+      "param": "m",
+      "expression": "params.m + drag.dx"
     },
     {
       "name": "xIntercept",
       "dragDirections": "x",
-      "dragParam": "p1",
-      "dragUpdateExpression": "params.m/drag.x"
+      "param": "p1",
+      "expression": "params.m/drag.x"
     },
     {
       "name": "yIntercept",
       "dragDirections": "y",
-      "dragParam": "p2",
-      "dragUpdateExpression": "params.m/drag.y"
+      "param": "p2",
+      "expression": "params.m/drag.y"
     },
     {
       "name": "budget",
       "dragDirections": "xy",
-      "dragParam": "m",
-      "dragUpdateExpression": "drag.x*params.p1 + drag.y*params.p2"
+      "param": "m",
+      "expression": "drag.x*params.p1 + drag.y*params.p2"
     }
   ],
-  "functions": [
+  "univariateFunctions": [
     {
       "name": "indifferenceCurveX",
       "fn": "(params.x1*(params.m - params.p1*params.x1)/params.p2)/x"
@@ -164,7 +164,7 @@
       "yScaleName": "good2",
       "color": "blue",
       "clipPathName": "graph1",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "budget"
       ]
     }
@@ -173,7 +173,7 @@
     {
       "xScaleName": "good1",
       "yScaleName": "good2",
-      "functionNames": ["indifferenceCurveX","indifferenceCurveY"],
+      "univariateFunctionNames": ["indifferenceCurveX","indifferenceCurveY"],
       "clipPathName": "graph1",
       "strokeWidth": 2,
       "stroke": "purple"
@@ -198,7 +198,7 @@
       "xScaleName": "good1",
       "yScaleName": "good2",
       "clipPathName": "graph1",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "bundle"
       ]
     },
@@ -208,7 +208,7 @@
       "xScaleName": "good1",
       "yScaleName": "good2",
       "clipPathName": "graph1",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "xIntercept"
       ]
     },
@@ -218,7 +218,7 @@
       "xScaleName": "good1",
       "yScaleName": "good2",
       "clipPathName": "graph1",
-      "dragUpdateNames": [
+      "dragListenerNames": [
         "yIntercept"
       ]
     }
@@ -233,7 +233,7 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "dragUpdateNames": ["p1"]
+      "dragListenerNames": ["p1"]
     },
     {
       "x": "0",
@@ -244,7 +244,7 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "dragUpdateNames": ["p2"]
+      "dragListenerNames": ["p2"]
     },
     {
       "x": "0",
@@ -255,7 +255,7 @@
       "xPixelOffset": "5",
       "yPixelOffset": "-15",
       "fontSize": "8",
-      "dragUpdateNames": ["m"]
+      "dragListenerNames": ["m"]
     }
   ]
 }
