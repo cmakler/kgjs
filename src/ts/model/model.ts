@@ -16,10 +16,10 @@ module KG {
         private restrictions: Restriction[];
         private updateListeners;
 
-        constructor(params:Param[],restrictions:Restriction[]) {
+        constructor(params:ParamDefinition[],restrictions:RestrictionDefinition[]) {
             let model = this;
-            model.params = params;
-            model.restrictions = restrictions;
+            model.params = params.map(function (def) {return new Param(def)});
+            model.restrictions = restrictions.map(function (def) {return new Restriction(def)});
             model.updateListeners = [];
         }
 
@@ -38,7 +38,6 @@ module KG {
 
         // the model serves as a model, and can evaluate expressions within the context of that model
         eval(name) {
-            let p = this.params;
 
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {

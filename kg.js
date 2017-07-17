@@ -98,6 +98,7 @@ var KG;
             refName: 'univariateFunctionNames'
         }
     ];
+    KG.STORED_CATEGORIES = ['xScales', 'yScales'];
     KG.LAYERS = [
         {
             name: 'clipPaths',
@@ -152,28 +153,21 @@ var KG;
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
-            var params = data.params.map(function (def) {
-                return new KG.Param(def);
-            });
-            var restrictions = data.restrictions.map(function (def) {
-                return new KG.Restriction(def);
-            });
-            view.model = new KG.Model(params, restrictions);
+            view.model = new KG.Model(data.params, data.restrictions);
             view.refs = {};
-            view.xScales = [];
-            view.yScales = [];
             var createRef = function (refDef) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
                         def.model = view.model;
                         var newRef = new KG[refDef.className](def);
                         view.refs[refDef.category + '_' + def.name] = newRef;
-                        if (refDef.category == 'xScales') {
-                            view.xScales.push(newRef);
-                        }
-                        if (refDef.category == 'yScales') {
-                            view.yScales.push(newRef);
-                        }
+                        // store some categories (e.g., scales) as properties of the view
+                        KG.STORED_CATEGORIES.forEach(function (category) {
+                            view[category] = view[category] || [];
+                            if (refDef.category == category) {
+                                view[category].push(newRef);
+                            }
+                        });
                     });
                 }
             };
@@ -242,8 +236,8 @@ var KG;
     var Model = (function () {
         function Model(params, restrictions) {
             var model = this;
-            model.params = params;
-            model.restrictions = restrictions;
+            model.params = params.map(function (def) { return new KG.Param(def); });
+            model.restrictions = restrictions.map(function (def) { return new KG.Restriction(def); });
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -259,7 +253,6 @@ var KG;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model
         Model.prototype.eval = function (name) {
-            var p = this.params;
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
                 //console.log('interpreted ', name, 'as a number.');

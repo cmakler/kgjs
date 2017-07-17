@@ -9,6 +9,13 @@ module KG {
         propName: string;
     }
 
+    export interface LayerDef {
+        name: string;
+        parent: string;
+        element: string;
+        className: string;
+    }
+
     export interface ViewDefinition {
         aspectRatio: number;
         params?: ParamDefinition[];
@@ -62,7 +69,9 @@ module KG {
         }
     ];
 
-    export const LAYERS = [
+    export const STORED_CATEGORIES = ['xScales', 'yScales'];
+
+    export const LAYERS: LayerDef[] = [
         {
             name: 'clipPaths',
             parent: 'defs',
@@ -133,19 +142,9 @@ module KG {
                 return paramData;
             });
 
-            const params = data.params.map(function (def) {
-                return new Param(def)
-            });
-
-            const restrictions = data.restrictions.map(function (def) {
-                return new Restriction(def)
-            });
-
-            view.model = new KG.Model(params, restrictions);
+            view.model = new KG.Model(data.params, data.restrictions);
 
             view.refs = {};
-            view.xScales = [];
-            view.yScales = [];
 
             let createRef = function (refDef: { category: string, className: string }) {
                 if (data.hasOwnProperty(refDef.category)) {
@@ -153,12 +152,14 @@ module KG {
                         def.model = view.model;
                         const newRef = new KG[refDef.className](def);
                         view.refs[refDef.category + '_' + def.name] = newRef;
-                        if (refDef.category == 'xScales') {
-                            view.xScales.push(newRef);
-                        }
-                        if (refDef.category == 'yScales') {
-                            view.yScales.push(newRef);
-                        }
+
+                        // store some categories (e.g., scales) as properties of the view
+                        STORED_CATEGORIES.forEach(function (category) {
+                            view[category] = view[category] || [];
+                            if (refDef.category == category) {
+                                view[category].push(newRef);
+                            }
+                        })
                     })
                 }
             };
@@ -166,44 +167,44 @@ module KG {
             REFS.forEach(createRef);
 
             // add svg element as a child of the div
-            view.svg = view.div.append("svg").style("overflow","visible").style("pointer-events","none");
+            view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
             view.svgDefs = view.svg.append("defs");
 
             let addLayer = function (layerDef: { name: string, parent: string, element: string, className: string }) {
-                    if (data.hasOwnProperty(layerDef.name)) {
-                        const layer = (layerDef.parent == 'defs') ? view.svgDefs : view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
-                        data[layerDef.name].forEach(function (def) {
-                            def = _.defaults(def, {
-                                model: view.model,
-                                layer: layer
-                            });
+                if (data.hasOwnProperty(layerDef.name)) {
+                    const layer = (layerDef.parent == 'defs') ? view.svgDefs : view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
+                    data[layerDef.name].forEach(function (def) {
+                        def = _.defaults(def, {
+                            model: view.model,
+                            layer: layer
+                        });
 
-                            // a clip path is both a layer and a ref
-                            if (def.hasOwnProperty('clipPathName')) {
-                                def.clipPath = view.refs["clipPaths_" + def.clipPathName]
-                            }
+                        // a clip path is both a layer and a ref
+                        if (def.hasOwnProperty('clipPathName')) {
+                            def.clipPath = view.refs["clipPaths_" + def.clipPathName]
+                        }
 
-                            REFS.forEach(function (ref) {
-                                if (!def.hasOwnProperty(ref.refName)) return;
-                                if (def[ref.refName] instanceof Array) {
-                                    def[ref.propName] = def[ref.refName].map(function (name) {
-                                        return view.refs[ref.category + '_' + name]
-                                    })
-                                } else {
-                                    def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
-                                }
-
-                            });
-                            const newLayer = new KG[layerDef.className](def);
-
-                            // a clip path is both a layer and a ref
-                            if (layerDef.className == 'ClipPath') {
-                                view.refs['clipPaths_' + def.name] = newLayer;
+                        REFS.forEach(function (ref) {
+                            if (!def.hasOwnProperty(ref.refName)) return;
+                            if (def[ref.refName] instanceof Array) {
+                                def[ref.propName] = def[ref.refName].map(function (name) {
+                                    return view.refs[ref.category + '_' + name]
+                                })
+                            } else {
+                                def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
                             }
 
                         });
-                    }
+                        const newLayer = new KG[layerDef.className](def);
+
+                        // a clip path is both a layer and a ref
+                        if (layerDef.className == 'ClipPath') {
+                            view.refs['clipPaths_' + def.name] = newLayer;
+                        }
+
+                    });
                 }
+            }
 
             LAYERS.forEach(addLayer);
 
