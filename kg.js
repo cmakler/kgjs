@@ -179,7 +179,7 @@ var KG;
             };
             KG.REFS.forEach(createRef);
             // add svg element as a child of the div
-            view.svg = view.div.append("svg");
+            view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
             view.svgDefs = view.svg.append("defs");
             var addLayer = function (layerDef) {
                 if (data.hasOwnProperty(layerDef.name)) {

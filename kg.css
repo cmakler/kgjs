@@ -40,20 +40,6 @@ footer {
     text-align: center;
 }
 
-svg {
-    overflow: visible;
-}
-
-/* NOTE: stroke-opacity 0.0 instead of omitting it makes the transitions smoother */
-
-/* {
-    transition: fill 2s, fill-opacity 2s, stroke 2s, stroke-width 2s, stroke-opacity 2s;
-}*/
-
-svg {
-    pointer-events: none;
-}
-
 div.kg-container text {
     cursor: default;
     -webkit-user-select: none;
