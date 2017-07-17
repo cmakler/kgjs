@@ -151,7 +151,7 @@ var KG;
             var view = this;
             view.div = d3.select(div).style('position', 'relative');
             view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
-            view.svgDefs = view.svg.append("defs");
+            var defLayer = view.svg.append("defs");
             view.aspectRatio = data.aspectRatio || 1;
             view.model = new KG.Model(data.params, data.restrictions);
             /*
@@ -159,9 +159,9 @@ var KG;
              Each REF is a JS object that is used by viewable objects, but has no DOM representation.
              This next part of the code reads each category of REF and generates the appropriate REF objects.
              Each REF has a name that is unique within its category; the global key for each REF is category_name.
-             For example, an xAxis REF named 'good1' would now be referred to as 'view.refs.xAxis_good1.'
+             For example, an xAxis REF named 'good1' would now be referred to as 'refs.xAxis_good1.'
              */
-            view.refs = {};
+            var refs = {};
             KG.REF_CATEGORIES.forEach(function (refDef) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
@@ -169,8 +169,8 @@ var KG;
                         def.model = view.model;
                         // create the object
                         var newRef = new KG[refDef.className](def);
-                        // add the object, with a unique name, to the view.refs object
-                        view.refs[refDef.category + '_' + def.name] = newRef;
+                        // add the object, with a unique name, to the refs object
+                        refs[refDef.category + '_' + def.name] = newRef;
                         // store some categories (e.g., scales) as properties of the view
                         KG.STORED_CATEGORIES.forEach(function (category) {
                             view[category] = view[category] || [];
@@ -190,7 +190,7 @@ var KG;
             KG.VIEW_OBJECT_CATEGORIES.forEach(function (voCategoryDef) {
                 if (data.hasOwnProperty(voCategoryDef.name)) {
                     // Create the DOM parent for the category
-                    var layer_1 = (voCategoryDef.parent == 'defs') ? view.svgDefs : view[voCategoryDef.parent].append(voCategoryDef.element).attr('class', voCategoryDef.name);
+                    var layer_1 = (voCategoryDef.parent == 'defs') ? defLayer : view[voCategoryDef.parent].append(voCategoryDef.element).attr('class', voCategoryDef.name);
                     // Create a JS object for each element of the category by creating its definition object
                     data[voCategoryDef.name].forEach(function (def) {
                         // each object has a reference to the model so it can update itself
@@ -199,7 +199,7 @@ var KG;
                         def.layer = layer_1;
                         // a clip path is both a layer and a ref; needs to be handled separately from other REFs.
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = view.refs["clipPaths_" + def.clipPathName];
+                            def.clipPath = refs["clipPaths_" + def.clipPathName];
                         }
                         // point to previously created REFs in each category of REF
                         KG.REF_CATEGORIES.forEach(function (ref) {
@@ -207,18 +207,18 @@ var KG;
                                 return;
                             if (def[ref.refName] instanceof Array) {
                                 def[ref.propName] = def[ref.refName].map(function (name) {
-                                    return view.refs[ref.category + '_' + name];
+                                    return refs[ref.category + '_' + name];
                                 });
                             }
                             else {
-                                def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
+                                def[ref.propName] = refs[ref.category + '_' + def[ref.refName]];
                             }
                         });
                         // use the definition object to create the ViewObject
                         var newViewObject = new KG[voCategoryDef.className](def);
-                        // a clip path is both a layer and a ref; need to store them to view.refs
+                        // a clip path is both a layer and a ref; need to store them to refs
                         if (voCategoryDef.className == 'ClipPath') {
-                            view.refs['clipPaths_' + def.name] = newViewObject;
+                            refs['clipPaths_' + def.name] = newViewObject;
                         }
                     });
                 }
