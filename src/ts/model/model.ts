@@ -16,10 +16,10 @@ module KG {
         private restrictions: Restriction[];
         private updateListeners;
 
-        constructor(params:ParamDefinition[],restrictions:RestrictionDefinition[]) {
+        constructor(params:ParamDefinition[],restrictions?:RestrictionDefinition[]) {
             let model = this;
             model.params = params.map(function (def) {return new Param(def)});
-            model.restrictions = restrictions.map(function (def) {return new Restriction(def)});
+            model.restrictions = (restrictions || []).map(function (def) {return new Restriction(def)});
             model.updateListeners = [];
         }
 

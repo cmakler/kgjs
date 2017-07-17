@@ -66,7 +66,7 @@ var _;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    KG.REFS = [
+    KG.REF_CATEGORIES = [
         {
             category: 'xScales',
             className: 'Scale',
@@ -99,7 +99,7 @@ var KG;
         }
     ];
     KG.STORED_CATEGORIES = ['xScales', 'yScales'];
-    KG.LAYERS = [
+    KG.VIEW_OBJECT_CATEGORIES = [
         {
             name: 'clipPaths',
             parent: 'defs',
@@ -139,12 +139,7 @@ var KG;
     ];
     var View = (function () {
         function View(div, data) {
-            var view = this;
-            view.div = d3.select(div).style('position', 'relative');
-            view.aspectRatio = data.aspectRatio || 1;
-            data.params = data.params || [];
-            data.restrictions = data.restrictions || [];
-            data.params = data.params.map(function (paramData) {
+            data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name);
@@ -153,13 +148,28 @@ var KG;
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
+            var view = this;
+            view.div = d3.select(div).style('position', 'relative');
+            view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
+            view.svgDefs = view.svg.append("defs");
+            view.aspectRatio = data.aspectRatio || 1;
             view.model = new KG.Model(data.params, data.restrictions);
+            /*
+             Each REF_CATEGORY is a category of REF -- e.g., a scale or a function.
+             Each REF is a JS object that is used by viewable objects, but has no DOM representation.
+             This next part of the code reads each category of REF and generates the appropriate REF objects.
+             Each REF has a name that is unique within its category; the global key for each REF is category_name.
+             For example, an xAxis REF named 'good1' would now be referred to as 'view.refs.xAxis_good1.'
+             */
             view.refs = {};
-            var createRef = function (refDef) {
+            KG.REF_CATEGORIES.forEach(function (refDef) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
+                        // each object has a reference to the model so it can update itself
                         def.model = view.model;
+                        // create the object
                         var newRef = new KG[refDef.className](def);
+                        // add the object, with a unique name, to the view.refs object
                         view.refs[refDef.category + '_' + def.name] = newRef;
                         // store some categories (e.g., scales) as properties of the view
                         KG.STORED_CATEGORIES.forEach(function (category) {
@@ -170,24 +180,29 @@ var KG;
                         });
                     });
                 }
-            };
-            KG.REFS.forEach(createRef);
-            // add svg element as a child of the div
-            view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
-            view.svgDefs = view.svg.append("defs");
-            var addLayer = function (layerDef) {
-                if (data.hasOwnProperty(layerDef.name)) {
-                    var layer_1 = (layerDef.parent == 'defs') ? view.svgDefs : view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
-                    data[layerDef.name].forEach(function (def) {
-                        def = _.defaults(def, {
-                            model: view.model,
-                            layer: layer_1
-                        });
-                        // a clip path is both a layer and a ref
+            });
+            /*
+             Each VIEW_OBJECT_CATEGORY is a category of a viewObject -- e.g., a point or a segment.
+             Each category is allocated a "layer" in the SVG (or div).
+             As each is created, it adds elements to the DOM within that layer.
+             Once the diagram is completed, only the attributes of the DOM change; no new elements are added.
+             */
+            KG.VIEW_OBJECT_CATEGORIES.forEach(function (voCategoryDef) {
+                if (data.hasOwnProperty(voCategoryDef.name)) {
+                    // Create the DOM parent for the category
+                    var layer_1 = (voCategoryDef.parent == 'defs') ? view.svgDefs : view[voCategoryDef.parent].append(voCategoryDef.element).attr('class', voCategoryDef.name);
+                    // Create a JS object for each element of the category by creating its definition object
+                    data[voCategoryDef.name].forEach(function (def) {
+                        // each object has a reference to the model so it can update itself
+                        def.model = view.model;
+                        // each object is assigned its category's "layer" in the SVG (or div).
+                        def.layer = layer_1;
+                        // a clip path is both a layer and a ref; needs to be handled separately from other REFs.
                         if (def.hasOwnProperty('clipPathName')) {
                             def.clipPath = view.refs["clipPaths_" + def.clipPathName];
                         }
-                        KG.REFS.forEach(function (ref) {
+                        // point to previously created REFs in each category of REF
+                        KG.REF_CATEGORIES.forEach(function (ref) {
                             if (!def.hasOwnProperty(ref.refName))
                                 return;
                             if (def[ref.refName] instanceof Array) {
@@ -199,32 +214,36 @@ var KG;
                                 def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
                             }
                         });
-                        var newLayer = new KG[layerDef.className](def);
-                        // a clip path is both a layer and a ref
-                        if (layerDef.className == 'ClipPath') {
-                            view.refs['clipPaths_' + def.name] = newLayer;
+                        // use the definition object to create the ViewObject
+                        var newViewObject = new KG[voCategoryDef.className](def);
+                        // a clip path is both a layer and a ref; need to store them to view.refs
+                        if (voCategoryDef.className == 'ClipPath') {
+                            view.refs['clipPaths_' + def.name] = newViewObject;
                         }
                     });
                 }
-            };
-            KG.LAYERS.forEach(addLayer);
-            // establish dimensions of view and views
+            });
             view.updateDimensions();
         }
+        // update dimensions, either when first rendering or when the window is resized
         View.prototype.updateDimensions = function () {
             var view = this;
+            // read the client width of the enclosing div and calculate the height using the aspectRatio
             var width = view.div.node().clientWidth, height = width / view.aspectRatio;
+            // set the height of the div
             view.div.style.height = height + 'px';
+            // set the dimensions of the svg
             view.svg.style('width', width);
             view.svg.style('height', height);
+            // adjust all of the scales to be proportional to the new dimensions
             view.xScales.forEach(function (scale) {
                 scale.extent = width;
             });
             view.yScales.forEach(function (scale) {
                 scale.extent = height;
             });
+            // once the scales are updated, update the coordinates of all view objects
             view.model.update(true);
-            return view;
         };
         return View;
     }());
@@ -237,7 +256,7 @@ var KG;
         function Model(params, restrictions) {
             var model = this;
             model.params = params.map(function (def) { return new KG.Param(def); });
-            model.restrictions = restrictions.map(function (def) { return new KG.Restriction(def); });
+            model.restrictions = (restrictions || []).map(function (def) { return new KG.Restriction(def); });
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -1019,6 +1038,7 @@ var _loop_1 = function (i) {
         views.push(new KG.View(viewDivs[i], data));
     });
 };
+// for each div, fetch the JSON definition and create a View object with that div and data
 for (var i = 0; i < viewDivs.length; i++) {
     _loop_1(i);
 }

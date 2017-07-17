@@ -35,6 +35,7 @@
 let viewDivs = document.getElementsByClassName('kg-container'),
     views = [];
 
+// for each div, fetch the JSON definition and create a View object with that div and data
 for(let i = 0; i< viewDivs.length; i++) {
     d3.json(viewDivs[i].getAttribute('src'), function (data){
         views.push(new KG.View(viewDivs[i],data));
