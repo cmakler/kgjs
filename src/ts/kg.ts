@@ -11,7 +11,7 @@
 /// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 
-/// <reference path="math/fn.ts" />
+/// <reference path="math/univariateFunction.ts" />
 
 /// <reference path="controller/listeners/listener.ts" />
 /// <reference path="controller/listeners/dragListener.ts" />

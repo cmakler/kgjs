@@ -10,10 +10,10 @@ module KG {
 
     export interface IUnivariateFunction {
         eval: (input: number) => number;
-        dataPoints: (min: number, max: number) => { x: number, y: number }
+        dataPoints: (min: number, max: number) => { x: number, y: number }[]
     }
 
-    export class UnivariateFunction extends UpdateListener {
+    export class UnivariateFunction extends UpdateListener implements IUnivariateFunction {
 
         private fn;
         private ind;
@@ -47,8 +47,6 @@ module KG {
         dataPoints(min, max) {
             let fn = this,
                 data = [];
-            const compiledFunction = math.compile(fn.fn),
-                params = fn.model.currentParamValues();
             for (let i = 0; i < fn.samplePoints; i++) {
                 let a = i / fn.samplePoints,
                     input = a * min + (1 - a) * max,

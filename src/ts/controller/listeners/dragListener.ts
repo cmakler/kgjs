@@ -26,7 +26,10 @@ module KG {
         public draggable;
 
         constructor(def: DragListenerDefinition) {
-            def = _.defaults(def, {dragDirections: "xy", updatables: []});
+            def = _.defaults(def, {
+                dragDirections: "xy",
+                updatables: []
+            });
             def.updatables = def.updatables.concat(['draggable', 'dragDirections']);
             super(def);
         }

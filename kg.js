@@ -497,7 +497,6 @@ var KG;
         };
         UnivariateFunction.prototype.dataPoints = function (min, max) {
             var fn = this, data = [];
-            var compiledFunction = math.compile(fn.fn), params = fn.model.currentParamValues();
             for (var i = 0; i < fn.samplePoints; i++) {
                 var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
                 data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
@@ -552,7 +551,10 @@ var KG;
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
-            def = _.defaults(def, { dragDirections: "xy", updatables: [] });
+            def = _.defaults(def, {
+                dragDirections: "xy",
+                updatables: []
+            });
             def.updatables = def.updatables.concat(['draggable', 'dragDirections']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -1017,7 +1019,7 @@ var KG;
 /// <reference path="model/param.ts" />
 /// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
-/// <reference path="math/fn.ts" />
+/// <reference path="math/univariateFunction.ts" />
 /// <reference path="controller/listeners/listener.ts" />
 /// <reference path="controller/listeners/dragListener.ts" />
 /// <reference path="controller/listeners/clickListener.ts" />
