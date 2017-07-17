@@ -282,8 +282,7 @@ var KG;
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             var v = function (s) {
                 var compiledMath = math.compile(s);
-                var parsedMath = compiledMath.eval();
-                return parsedMath;
+                return compiledMath.eval();
             };
             // try to evaluate using mathjs
             try {
@@ -300,7 +299,6 @@ var KG;
                     return result;
                 }
                 catch (err) {
-                    // if that doesn't work, try to evaluate using native js eval
                     //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
                     return name;
                 }
@@ -368,7 +366,7 @@ var KG;
             this.max = parseFloat(def.max);
             this.round = parseFloat(def.round);
             this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
-            console.log('initialized param object: ', this);
+            //console.log('initialized param object: ', this);
         }
         // Receives an instruction to update the parameter to a new value
         // Updates to the closest rounded value to the desired newValue within accepted range
@@ -452,7 +450,7 @@ var KG;
                 if (initialValue != newValue) {
                     u.hasChanged = true;
                     u[name] = newValue;
-                    console.log(u.constructor['name'], name, 'changed from', initialValue, 'to', newValue);
+                    //console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
                 }
             }
             return u;
@@ -485,7 +483,6 @@ var KG;
             });
             // define updatable properties
             def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
-            //def.updatables = def.updatables.concat(['fn']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -741,7 +738,7 @@ var KG;
         // create SVG elements
         ClipPath.prototype.draw = function (layer) {
             var cp = this;
-            console.log('drawing clipPath with id', cp.id);
+            //console.log('drawing clipPath with id', cp.id);
             cp.clipPath = layer.append('clipPath').attr('id', cp.id);
             cp.rect = cp.clipPath.append('rect');
             return cp;

@@ -51,8 +51,7 @@ module KG {
             // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
             let v = function (s) {
                 let compiledMath = math.compile(s);
-                let parsedMath = compiledMath.eval();
-                return parsedMath;
+                return compiledMath.eval();
             };
 
             // try to evaluate using mathjs
@@ -73,7 +72,6 @@ module KG {
                 }
 
                 catch (err) {
-                    // if that doesn't work, try to evaluate using native js eval
                     //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
                     return name;
                 }

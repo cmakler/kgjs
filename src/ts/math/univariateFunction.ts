@@ -31,7 +31,6 @@ module KG {
 
             // define updatable properties
             def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
-            //def.updatables = def.updatables.concat(['fn']);
 
             super(def);
         }
@@ -54,7 +53,6 @@ module KG {
                 data.push((fn.ind == 'x') ? {x: input, y: output} : {x: output, y: input});
             }
             return data;
-
         }
     }
 }

@@ -56,7 +56,7 @@ module KG {
             this.round = parseFloat(def.round);
             this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
 
-            console.log('initialized param object: ', this);
+            //console.log('initialized param object: ', this);
         }
 
         // Receives an instruction to update the parameter to a new value

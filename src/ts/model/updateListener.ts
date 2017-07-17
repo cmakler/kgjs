@@ -53,7 +53,7 @@ module KG {
                 if(initialValue != newValue) {
                     u.hasChanged = true;
                     u[name] = newValue;
-                    console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
+                    //console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
                 }
             }
             return u;

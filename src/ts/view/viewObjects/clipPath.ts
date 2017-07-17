@@ -17,7 +17,7 @@ module KG {
         // create SVG elements
         draw(layer) {
             let cp = this;
-            console.log('drawing clipPath with id', cp.id);
+            //console.log('drawing clipPath with id', cp.id);
             cp.clipPath = layer.append('clipPath').attr('id', cp.id);
             cp.rect = cp.clipPath.append('rect');
             return cp;
