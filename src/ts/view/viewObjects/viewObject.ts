@@ -11,6 +11,7 @@ module KG {
         clipPath: ClipPath;
         dragListeners?: DragListener[];
         clickListeners?: ClickListener[];
+        interactive?: boolean;
     }
 
     export interface IViewObject extends IUpdateListener {
@@ -35,28 +36,36 @@ module KG {
         public strokeOpacity;
 
         constructor(def: ViewObjectDefinition) {
-            def.updatables = (def.updatables || []).concat('fill','stroke','strokeWidth','opacity','strokeOpacity');
-            def.constants = (def.constants || []).concat(['xScale','yScale','clipPath']);
-            def = _.defaults(def,{
+            def = _.defaults(def, {
+                updatables: [],
+                constants: [],
+                interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true
             });
+            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
+            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
+
             super(def);
 
             let vo = this;
 
             // the interaction handler manages drag and hover events
-            vo.interactionHandler = new InteractionHandler({
-                viewObject: vo,
-                model: vo.model,
-                dragListeners: def.dragListeners || [],
-                clickListeners: def.clickListeners || []
-            });
+            if (def.interactive) {
+                vo.interactionHandler = new InteractionHandler({
+                    viewObject: vo,
+                    model: vo.model,
+                    dragListeners: def.dragListeners || [],
+                    clickListeners: def.clickListeners || []
+                });
+            }
 
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
-            vo.draw(def.layer).update(true);
+            if (def.hasOwnProperty('layer')) {
+                vo.draw(def.layer).update(true);
+            }
         }
 
         draw(layer) {

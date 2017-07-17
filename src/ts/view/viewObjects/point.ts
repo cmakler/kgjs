@@ -41,7 +41,7 @@ module KG {
         // create SVG elements
         draw(layer) {
             let p = this;
-            p.g = layer.append('g').attr('class', "draggable"); // SVG group
+            p.g = layer.append('g'); // SVG group
             p.dragCircle = p.g.append('circle').style('fill-opacity',0).attr('r', 20);
             p.circle = p.g.append('circle');
             if(p.hasOwnProperty('clipPath') && p.clipPath != undefined) {

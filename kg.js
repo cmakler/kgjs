@@ -101,8 +101,8 @@ var KG;
     KG.LAYERS = [
         {
             name: 'clipPaths',
-            parent: 'svg',
-            element: 'defs',
+            parent: 'defs',
+            element: '',
             className: 'ClipPath'
         },
         {
@@ -180,17 +180,18 @@ var KG;
             KG.REFS.forEach(createRef);
             // add svg element as a child of the div
             view.svg = view.div.append("svg");
+            view.svgDefs = view.svg.append("defs");
             var addLayer = function (layerDef) {
                 if (data.hasOwnProperty(layerDef.name)) {
-                    view[layerDef.name] = [];
-                    var layer_1 = view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
+                    var layer_1 = (layerDef.parent == 'defs') ? view.svgDefs : view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
                     data[layerDef.name].forEach(function (def) {
                         def = _.defaults(def, {
                             model: view.model,
                             layer: layer_1
                         });
+                        // a clip path is both a layer and a ref
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = view.getByName("clipPaths", def.clipPathName);
+                            def.clipPath = view.refs["clipPaths_" + def.clipPathName];
                         }
                         KG.REFS.forEach(function (ref) {
                             if (!def.hasOwnProperty(ref.refName))
@@ -204,7 +205,11 @@ var KG;
                                 def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
                             }
                         });
-                        view[layerDef.name].push(new KG[layerDef.className](def));
+                        var newLayer = new KG[layerDef.className](def);
+                        // a clip path is both a layer and a ref
+                        if (layerDef.className == 'ClipPath') {
+                            view.refs['clipPaths_' + def.name] = newLayer;
+                        }
                     });
                 }
             };
@@ -212,20 +217,6 @@ var KG;
             // establish dimensions of view and views
             view.updateDimensions();
         }
-        View.prototype.getByName = function (category, name) {
-            var objs = this[category];
-            if (objs != undefined) {
-                for (var i = 0; i < objs.length; i++) {
-                    if (objs[i].name == name) {
-                        return objs[i];
-                    }
-                    console.log('tried to find ', name, ' in category ', category, ' but no entry with that name exists.');
-                }
-            }
-            else {
-                console.log('tried to find ', name, ' in category ', category, ' but that category does not exist');
-            }
-        };
         View.prototype.updateDimensions = function () {
             var view = this;
             var width = view.div.node().clientWidth, height = width / view.aspectRatio;
@@ -690,25 +681,32 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def.updatables = (def.updatables || []).concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
-            def.constants = (def.constants || []).concat(['xScale', 'yScale', 'clipPath']);
             def = _.defaults(def, {
+                updatables: [],
+                constants: [],
+                interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true
             });
+            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
+            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
-            vo.interactionHandler = new KG.InteractionHandler({
-                viewObject: vo,
-                model: vo.model,
-                dragListeners: def.dragListeners || [],
-                clickListeners: def.clickListeners || []
-            });
+            if (def.interactive) {
+                vo.interactionHandler = new KG.InteractionHandler({
+                    viewObject: vo,
+                    model: vo.model,
+                    dragListeners: def.dragListeners || [],
+                    clickListeners: def.clickListeners || []
+                });
+            }
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
-            vo.draw(def.layer).update(true);
+            if (def.hasOwnProperty('layer')) {
+                vo.draw(def.layer).update(true);
+            }
             return _this;
         }
         ViewObject.prototype.draw = function (layer) {
@@ -922,7 +920,7 @@ var KG;
         // create SVG elements
         Point.prototype.draw = function (layer) {
             var p = this;
-            p.g = layer.append('g').attr('class', "draggable"); // SVG group
+            p.g = layer.append('g'); // SVG group
             p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.g.append('circle');
             if (p.hasOwnProperty('clipPath') && p.clipPath != undefined) {

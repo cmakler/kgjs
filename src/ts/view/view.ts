@@ -65,8 +65,8 @@ module KG {
     export const LAYERS = [
         {
             name: 'clipPaths',
-            parent: 'svg',
-            element: 'defs',
+            parent: 'defs',
+            element: '',
             className: 'ClipPath'
         },
         {
@@ -106,6 +106,7 @@ module KG {
 
         private div;
         private svg;
+        private svgDefs;
         private model;
         private xScales;
         private yScales;
@@ -152,10 +153,10 @@ module KG {
                         def.model = view.model;
                         const newRef = new KG[refDef.className](def);
                         view.refs[refDef.category + '_' + def.name] = newRef;
-                        if(refDef.category == 'xScales') {
+                        if (refDef.category == 'xScales') {
                             view.xScales.push(newRef);
                         }
-                        if(refDef.category == 'yScales') {
+                        if (refDef.category == 'yScales') {
                             view.yScales.push(newRef);
                         }
                     })
@@ -166,54 +167,49 @@ module KG {
 
             // add svg element as a child of the div
             view.svg = view.div.append("svg");
+            view.svgDefs = view.svg.append("defs");
 
             let addLayer = function (layerDef: { name: string, parent: string, element: string, className: string }) {
-                if (data.hasOwnProperty(layerDef.name)) {
-                    view[layerDef.name] = [];
-                    let layer = view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
-                    data[layerDef.name].forEach(function (def) {
-                        def = _.defaults(def, {
-                            model: view.model,
-                            layer: layer
-                        });
-                        if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = view.getByName("clipPaths", def.clipPathName)
-                        }
-                        REFS.forEach(function(ref) {
-                            if(!def.hasOwnProperty(ref.refName)) return;
-                            if(def[ref.refName] instanceof Array) {
-                                def[ref.propName] = def[ref.refName].map(function (name) {
-                                return view.refs[ref.category + '_' + name]
-                            })
-                            } else {
-                                def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
+                    if (data.hasOwnProperty(layerDef.name)) {
+                        const layer = (layerDef.parent == 'defs') ? view.svgDefs : view[layerDef.parent].append(layerDef.element).attr('class', layerDef.name);
+                        data[layerDef.name].forEach(function (def) {
+                            def = _.defaults(def, {
+                                model: view.model,
+                                layer: layer
+                            });
+
+                            // a clip path is both a layer and a ref
+                            if (def.hasOwnProperty('clipPathName')) {
+                                def.clipPath = view.refs["clipPaths_" + def.clipPathName]
+                            }
+
+                            REFS.forEach(function (ref) {
+                                if (!def.hasOwnProperty(ref.refName)) return;
+                                if (def[ref.refName] instanceof Array) {
+                                    def[ref.propName] = def[ref.refName].map(function (name) {
+                                        return view.refs[ref.category + '_' + name]
+                                    })
+                                } else {
+                                    def[ref.propName] = view.refs[ref.category + '_' + def[ref.refName]];
+                                }
+
+                            });
+                            const newLayer = new KG[layerDef.className](def);
+
+                            // a clip path is both a layer and a ref
+                            if (layerDef.className == 'ClipPath') {
+                                view.refs['clipPaths_' + def.name] = newLayer;
                             }
 
                         });
-                        view[layerDef.name].push(new KG[layerDef.className](def));
-                    });
+                    }
                 }
-            };
 
             LAYERS.forEach(addLayer);
 
             // establish dimensions of view and views
             view.updateDimensions();
 
-        }
-
-        getByName(category, name) {
-            const objs = this[category];
-            if (objs != undefined) {
-                for (let i = 0; i < objs.length; i++) {
-                    if (objs[i].name == name) {
-                        return objs[i];
-                    }
-                    console.log('tried to find ', name, ' in category ', category, ' but no entry with that name exists.')
-                }
-            } else {
-                console.log('tried to find ', name, ' in category ', category, ' but that category does not exist');
-            }
         }
 
         updateDimensions() {
