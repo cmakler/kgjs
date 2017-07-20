@@ -1,0 +1,104 @@
+{
+  "aspectRatio": 2,
+  "params": [
+    {
+      "name": "x",
+      "value": "4",
+      "min": "-4",
+      "max": "4",
+      "round": "0.1"
+    }
+  ],
+  "xScales": [
+    {
+      "name": "square",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0",
+      "rangeMax": "0.45"
+    },
+    {
+      "name": "real",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0.55",
+      "rangeMax": "0.95"
+    }
+  ],
+  "yScales": [
+    {
+      "name": "imaginary",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0.95",
+      "rangeMax": "0.05"
+    }
+  ],
+  "dragListeners": [
+    {
+      "name": "x",
+      "dragDirections": "x",
+      "param": "x",
+      "expression": "params.x + drag.dx"
+    }
+  ],
+  "axes": [
+    {
+      "xScaleName": "square",
+      "yScaleName": "imaginary",
+      "orient": "bottom"
+    },
+    {
+      "xScaleName": "real",
+      "yScaleName": "imaginary",
+      "orient": "bottom"
+    },
+    {
+      "xScaleName": "real",
+      "yScaleName": "imaginary",
+      "orient": "left",
+      "show": "(params.x < 0)"
+    }
+  ],
+  "points": [
+    {
+      "x": "params.x",
+      "y": "0",
+      "xScaleName": "square",
+      "yScaleName": "imaginary",
+      "clipPathName": "graph1",
+      "dragListenerNames": [
+        "x"
+      ]
+    },
+    {
+      "x": "(params.x < 0) ? 0 : sqrt(params.x)",
+      "y": "(params.x < 0) ? sqrt(-params.x) : 0",
+      "xScaleName": "real",
+      "yScaleName": "imaginary"
+    }
+  ],
+  "labels": [
+    {
+      "x": "params.x",
+      "y": "0",
+      "text": "`x = ${params.x.toFixed(1)}`",
+      "xScaleName": "square",
+      "yScaleName": "imaginary",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8",
+      "dragListenerNames": ["x"]
+    },
+    {
+      "x": "(params.x < 0) ? 0 : (params.x)^0.5",
+      "y": "(params.x < 0) ? (-params.x)^0.5 : 0",
+      "xScaleName": "real",
+      "yScaleName": "imaginary",
+      "text": "`\\\\sqrt{x} = ${(params.x < 0) ? Math.pow(-params.x,0.5).toFixed(2)+'i' : Math.pow(params.x,0.5).toFixed(2)}`",
+      "xPixelOffset": "5",
+      "yPixelOffset": "-15",
+      "fontSize": "8"
+    }
+  ]
+}
