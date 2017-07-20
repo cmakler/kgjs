@@ -48,15 +48,10 @@ module KG {
             // collect current parameter values in a params object
             let params = this.currentParamValues();
 
-            // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
-            let v = function (s) {
-                let compiledMath = math.compile(s);
-                return compiledMath.eval();
-            };
-
             // try to evaluate using mathjs
             try {
-                let result = v(name);
+                const compiledMath = math.compile(name);
+                let result = compiledMath.eval({params: params});
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }

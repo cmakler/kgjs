@@ -16,6 +16,8 @@ module KG {
     export class UnivariateFunction extends UpdateListener implements IUnivariateFunction {
 
         private fn;
+        private scope;
+        private compiledFunction;
         private ind;
         private samplePoints;
 
@@ -33,14 +35,15 @@ module KG {
             def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
 
             super(def);
+
+            this.compiledFunction = math.compile(def.fn);
         }
 
         eval(input) {
-            const fn = this,
-                compiledFunction = math.compile(fn.fn);
-            let scope: any = {params: fn.model.currentParamValues()};
-            scope[fn.ind] = input;
-            return compiledFunction.eval(scope);
+            let fn = this;
+            fn.scope = fn.scope || {params: fn.model.currentParamValues()};
+            fn.scope[fn.ind] = input;
+            return fn.compiledFunction.eval(fn.scope);
         }
 
         dataPoints(min, max) {
@@ -54,5 +57,12 @@ module KG {
             }
             return data;
         }
+
+        update(force) {
+            let fn = this;
+            fn.scope = {params: fn.model.currentParamValues()};
+            return fn;
+        }
+
     }
 }

@@ -279,14 +279,10 @@ var KG;
             }
             // collect current parameter values in a params object
             var params = this.currentParamValues();
-            // establish a function, usable by eval, that uses mathjs to parse a string in the context of p
-            var v = function (s) {
-                var compiledMath = math.compile(s);
-                return compiledMath.eval();
-            };
             // try to evaluate using mathjs
             try {
-                var result = v(name);
+                var compiledMath = math.compile(name);
+                var result = compiledMath.eval({ params: params });
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
@@ -484,13 +480,14 @@ var KG;
             // define updatable properties
             def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
             _this = _super.call(this, def) || this;
+            _this.compiledFunction = math.compile(def.fn);
             return _this;
         }
         UnivariateFunction.prototype.eval = function (input) {
-            var fn = this, compiledFunction = math.compile(fn.fn);
-            var scope = { params: fn.model.currentParamValues() };
-            scope[fn.ind] = input;
-            return compiledFunction.eval(scope);
+            var fn = this;
+            fn.scope = fn.scope || { params: fn.model.currentParamValues() };
+            fn.scope[fn.ind] = input;
+            return fn.compiledFunction.eval(fn.scope);
         };
         UnivariateFunction.prototype.dataPoints = function (min, max) {
             var fn = this, data = [];
@@ -499,6 +496,11 @@ var KG;
                 data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
             }
             return data;
+        };
+        UnivariateFunction.prototype.update = function (force) {
+            var fn = this;
+            fn.scope = { params: fn.model.currentParamValues() };
+            return fn;
         };
         return UnivariateFunction;
     }(KG.UpdateListener));
