@@ -80,18 +80,6 @@ var KG;
             refName: 'yScaleName'
         },
         {
-            category: 'clickListeners',
-            className: 'ClickListener',
-            propName: 'clickListeners',
-            refName: 'clickListenerNames'
-        },
-        {
-            category: 'dragListeners',
-            className: 'DragListener',
-            propName: 'dragListeners',
-            refName: 'dragListenerNames'
-        },
-        {
             category: 'univariateFunctions',
             className: 'UnivariateFunction',
             propName: 'univariateFunctions',
@@ -473,7 +461,7 @@ var KG;
             // establish property defaults
             def = _.defaults(def, {
                 ind: 'x',
-                samplePoints: 30,
+                samplePoints: 50,
                 constants: [],
                 updatables: []
             });
@@ -551,17 +539,17 @@ var KG;
         function DragListener(def) {
             var _this = this;
             def = _.defaults(def, {
-                dragDirections: "xy",
+                directions: "xy",
                 updatables: []
             });
-            def.updatables = def.updatables.concat(['draggable', 'dragDirections']);
+            def.updatables = def.updatables.concat(['draggable', 'directions']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         DragListener.prototype.update = function (force) {
             var dl = _super.prototype.update.call(this, force);
             if (!dl.def.hasOwnProperty('draggable')) {
-                dl.draggable = (dl.dragDirections.length > 0);
+                dl.draggable = (dl.directions.length > 0);
             }
             return dl;
         };
@@ -602,13 +590,13 @@ var KG;
                 var xDrag_1 = false, yDrag_1 = false;
                 ih.dragListeners.forEach(function (dul) {
                     dul.update(force);
-                    if (dul.dragDirections == "x") {
+                    if (dul.directions == "x") {
                         xDrag_1 = true;
                     }
-                    else if (dul.dragDirections == "y") {
+                    else if (dul.directions == "y") {
                         yDrag_1 = true;
                     }
-                    else if (dul.dragDirections == "xy") {
+                    else if (dul.directions == "xy") {
                         xDrag_1 = true;
                         yDrag_1 = true;
                     }
@@ -708,11 +696,21 @@ var KG;
             var vo = _this;
             // the interaction handler manages drag and hover events
             if (def.interactive) {
+                def.drag = def.drag || [];
+                var dragListeners = def.drag.map(function (dragDef) {
+                    dragDef.model = vo.model;
+                    return new KG.DragListener(dragDef);
+                });
+                def.click = def.click || [];
+                var clickListeners = def.click.map(function (clickDef) {
+                    clickDef.model = vo.model;
+                    return new KG.ClickListener(clickDef);
+                });
                 vo.interactionHandler = new KG.InteractionHandler({
                     viewObject: vo,
                     model: vo.model,
-                    dragListeners: def.dragListeners || [],
-                    clickListeners: def.clickListeners || []
+                    dragListeners: dragListeners,
+                    clickListeners: clickListeners
                 });
             }
             // the draw method creates the DOM elements for the view object
@@ -811,20 +809,17 @@ var KG;
     }(KG.ViewObject));
     KG.Segment = Segment;
 })(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path='../../kg.ts' />
 var KG;
 (function (KG) {
     var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def) {
-            var _this = this;
-            // establish property defaults
-            def = _.defaults(def, {
-                constants: []
+            var _this = _super.call(this, def) || this;
+            _this.univariateFunctions = def.univariateFunctions.map(function (f) {
+                f.model = def.model;
+                return new KG.UnivariateFunction(f);
             });
-            // define properties
-            def.constants = def.constants.concat(['univariateFunctions']);
-            _this = _super.call(this, def) || this;
             return _this;
         }
         // create SVG elements
@@ -843,28 +838,31 @@ var KG;
         Curve.prototype.update = function (force) {
             var curve = _super.prototype.update.call(this, force);
             var data = [];
-            curve.univariateFunctions.forEach(function (fn) {
-                data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
-            });
             function sortObjects(key, descending) {
                 return function (a, b) {
                     var lower = descending ? a[key] : b[key], higher = descending ? b[key] : a[key];
                     return lower > higher ? -1 : lower < higher ? 1 : lower <= higher ? 0 : NaN;
                 };
             }
-            data = data.sort(sortObjects('x'));
-            var dataline = d3.line()
-                .curve(d3.curveBasis)
-                .x(function (d) {
-                return curve.xScale.scale(d.x);
-            })
-                .y(function (d) {
-                return curve.yScale.scale(d.y);
-            });
-            curve.dragPath.data([data]).attr("d", dataline);
-            curve.path.data([data]).attr("d", dataline);
-            curve.path.attr("stroke", curve.stroke);
-            curve.path.attr('stroke-width', curve.strokeWidth);
+            if (curve.hasOwnProperty('univariateFunctions')) {
+                curve.univariateFunctions.forEach(function (fn) {
+                    fn.update(force);
+                    data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
+                });
+                data = data.sort(sortObjects('x'));
+                var dataLine = d3.line()
+                    .curve(d3.curveBasis)
+                    .x(function (d) {
+                    return curve.xScale.scale(d.x);
+                })
+                    .y(function (d) {
+                    return curve.yScale.scale(d.y);
+                });
+                curve.dragPath.data([data]).attr('d', dataLine);
+                curve.path.data([data]).attr('d', dataLine);
+                curve.path.attr('stroke', curve.stroke);
+                curve.path.attr('stroke-width', curve.strokeWidth);
+            }
             return curve;
         };
         return Curve;
@@ -1035,8 +1033,14 @@ var KG;
 // initialize the diagram from divs with class kg-container
 var viewDivs = document.getElementsByClassName('kg-container'), views = [];
 var _loop_1 = function (i) {
-    d3.json(viewDivs[i].getAttribute('src'), function (data) {
-        views.push(new KG.View(viewDivs[i], data));
+    var url = viewDivs[i].getAttribute('src');
+    d3.json(url, function (data) {
+        if (!data) {
+            viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>";
+        }
+        else {
+            views.push(new KG.View(viewDivs[i], data));
+        }
     });
 };
 // for each div, fetch the JSON definition and create a View object with that div and data

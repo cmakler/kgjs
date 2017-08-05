@@ -21,7 +21,6 @@ module KG {
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
         scales?: ScaleDefinition[];
-        dragListeners?: DragListenerDefinition[];
         clickListeners?: ClickListenerDefinition[];
         univariateFunctions?: UnivariateFunctionDefinition[];
         curves?: CurveDefinition[];
@@ -48,18 +47,6 @@ module KG {
             className: 'Scale',
             propName: 'yScale',
             refName: 'yScaleName'
-        },
-        {
-            category: 'clickListeners',
-            className: 'ClickListener',
-            propName: 'clickListeners',
-            refName: 'clickListenerNames'
-        },
-        {
-            category: 'dragListeners',
-            className: 'DragListener',
-            propName: 'dragListeners',
-            refName: 'dragListenerNames'
         },
         {
             category: 'univariateFunctions',

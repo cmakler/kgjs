@@ -37,8 +37,13 @@ let viewDivs = document.getElementsByClassName('kg-container'),
 
 // for each div, fetch the JSON definition and create a View object with that div and data
 for(let i = 0; i< viewDivs.length; i++) {
-    d3.json(viewDivs[i].getAttribute('src'), function (data){
-        views.push(new KG.View(viewDivs[i],data));
+    const url = viewDivs[i].getAttribute('src');
+    d3.json(url, function (data){
+        if(!data) {
+            viewDivs[i].innerHTML = "<p>oops, "+url+" doesn't seem to exist.</p>"
+        } else {
+            views.push(new KG.View(viewDivs[i],data));
+        }
     });
 }
 

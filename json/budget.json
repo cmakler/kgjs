@@ -97,43 +97,43 @@
   "dragListeners": [
     {
       "name": "bundle",
-      "dragDirections": "xy",
+      "directions": "xy",
       "param": "a",
       "expression": "drag.x*params.p1/params.m"
     },
     {
       "name": "p1",
-      "dragDirections": "x",
+      "directions": "x",
       "param": "p1",
       "expression": "params.p1 + drag.dx"
     },
     {
       "name": "p2",
-      "dragDirections": "x",
+      "directions": "x",
       "param": "p2",
       "expression": "params.p2 + drag.dx"
     },
     {
       "name": "m",
-      "dragDirections": "x",
+      "directions": "x",
       "param": "m",
       "expression": "params.m + drag.dx"
     },
     {
       "name": "xIntercept",
-      "dragDirections": "x",
+      "directions": "x",
       "param": "p1",
       "expression": "params.m/drag.x"
     },
     {
       "name": "yIntercept",
-      "dragDirections": "y",
+      "directions": "y",
       "param": "p2",
       "expression": "params.m/drag.y"
     },
     {
       "name": "budget",
-      "dragDirections": "xy",
+      "directions": "xy",
       "param": "m",
       "expression": "drag.x*params.p1 + drag.y*params.p2"
     }

@@ -26,7 +26,7 @@ module KG {
             // establish property defaults
             def = _.defaults(def, {
                 ind: 'x',
-                samplePoints: 30,
+                samplePoints: 50,
                 constants: [],
                 updatables: []
             });

@@ -37,7 +37,7 @@
   "dragListeners": [
     {
       "name": "x",
-      "dragDirections": "x",
+      "directions": "x",
       "param": "x",
       "expression": "params.x + drag.dx"
     }

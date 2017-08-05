@@ -36,11 +36,11 @@ module KG {
                     yDrag = false;
                 ih.dragListeners.forEach(function (dul) {
                     dul.update(force);
-                    if (dul.dragDirections == "x") {
+                    if (dul.directions == "x") {
                         xDrag = true;
-                    } else if (dul.dragDirections == "y") {
+                    } else if (dul.directions == "y") {
                         yDrag = true;
-                    } else if (dul.dragDirections == "xy") {
+                    } else if (dul.directions == "xy") {
                         xDrag = true;
                         yDrag = true;
                     }

@@ -1,9 +1,9 @@
-/// <reference path="../../kg.ts" />
+/// <reference path='../../kg.ts' />
 
 module KG {
 
     export interface CurveDefinition extends ViewObjectDefinition {
-        univariateFunctionNames: string[];
+        univariateFunctions: UnivariateFunctionDefinition[];
     }
 
     export class Curve extends ViewObject {
@@ -14,16 +14,11 @@ module KG {
         private univariateFunctions: UnivariateFunction[];
 
         constructor(def: CurveDefinition) {
-
-            // establish property defaults
-            def = _.defaults(def, {
-                constants: []
-            });
-
-            // define properties
-            def.constants = def.constants.concat(['univariateFunctions']);
-
             super(def);
+            this.univariateFunctions = def.univariateFunctions.map(function (f) {
+                f.model = def.model;
+                return new UnivariateFunction(f)
+            })
         }
 
         // create SVG elements
@@ -43,30 +38,33 @@ module KG {
         update(force) {
             let curve = super.update(force);
             let data = [];
-            curve.univariateFunctions.forEach(function (fn) {
-                data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
-            });
             function sortObjects(key, descending?) {
-                return function (a, b) {
-                    let lower = descending ? a[key] : b[key],
-                        higher = descending ? b[key] : a[key];
-                    return lower > higher ? -1 : lower < higher ? 1 : lower <= higher ? 0 : NaN;
+                    return function (a, b) {
+                        let lower = descending ? a[key] : b[key],
+                            higher = descending ? b[key] : a[key];
+                        return lower > higher ? -1 : lower < higher ? 1 : lower <= higher ? 0 : NaN;
+                    }
                 }
+            if (curve.hasOwnProperty('univariateFunctions')) {
+                curve.univariateFunctions.forEach(function (fn) {
+                    fn.update(force);
+                    data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
+                });
+                data = data.sort(sortObjects('x'));
+                const dataLine = d3.line()
+                    .curve(d3.curveBasis)
+                    .x(function (d: any) {
+                        return curve.xScale.scale(d.x)
+                    })
+                    .y(function (d: any) {
+                        return curve.yScale.scale(d.y)
+                    });
+                curve.dragPath.data([data]).attr('d', dataLine);
+                curve.path.data([data]).attr('d', dataLine);
+                curve.path.attr('stroke', curve.stroke);
+                curve.path.attr('stroke-width', curve.strokeWidth);
             }
 
-            data = data.sort(sortObjects('x'));
-            const dataline = d3.line()
-                .curve(d3.curveBasis)
-                .x(function (d: any) {
-                    return curve.xScale.scale(d.x)
-                })
-                .y(function (d: any) {
-                    return curve.yScale.scale(d.y)
-                });
-            curve.dragPath.data([data]).attr("d", dataline);
-            curve.path.data([data]).attr("d", dataline);
-            curve.path.attr("stroke", curve.stroke);
-            curve.path.attr('stroke-width', curve.strokeWidth);
             return curve;
         }
     }

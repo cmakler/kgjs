@@ -9,8 +9,8 @@ module KG {
         xScale: Scale;
         yScale: Scale;
         clipPath: ClipPath;
-        dragListeners?: DragListener[];
-        clickListeners?: ClickListener[];
+        drag?: DragListenerDefinition[];
+        click?: ClickListenerDefinition[];
         interactive?: boolean;
     }
 
@@ -53,11 +53,21 @@ module KG {
 
             // the interaction handler manages drag and hover events
             if (def.interactive) {
+                def.drag = def.drag || [];
+                const dragListeners = def.drag.map(function(dragDef) {
+                    dragDef.model = vo.model;
+                    return new DragListener(dragDef)
+                });
+                def.click = def.click || [];
+                const clickListeners = def.click.map(function(clickDef) {
+                    clickDef.model = vo.model;
+                    return new ClickListener(clickDef)
+                });
                 vo.interactionHandler = new InteractionHandler({
                     viewObject: vo,
                     model: vo.model,
-                    dragListeners: def.dragListeners || [],
-                    clickListeners: def.clickListeners || []
+                    dragListeners: dragListeners,
+                    clickListeners: clickListeners
                 });
             }
 

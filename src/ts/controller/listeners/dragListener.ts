@@ -4,12 +4,12 @@ module KG {
 
     export interface DragListenerDefinition extends ListenerDefinition {
         draggable?: string;
-        dragDirections: string;
+        directions: string;
     }
 
     export interface IDragListener extends IListener {
         draggable: boolean;
-        dragDirections: "" | "x" | "y" | "xy";
+        directions: "" | "x" | "y" | "xy";
     }
 
     /*
@@ -22,22 +22,22 @@ module KG {
 
     export class DragListener extends Listener implements IDragListener {
 
-        public dragDirections;
+        public directions;
         public draggable;
 
         constructor(def: DragListenerDefinition) {
             def = _.defaults(def, {
-                dragDirections: "xy",
+                directions: "xy",
                 updatables: []
             });
-            def.updatables = def.updatables.concat(['draggable', 'dragDirections']);
+            def.updatables = def.updatables.concat(['draggable', 'directions']);
             super(def);
         }
 
         update(force) {
             let dl = super.update(force);
             if(!dl.def.hasOwnProperty('draggable')) {
-                dl.draggable = (dl.dragDirections.length > 0);
+                dl.draggable = (dl.directions.length > 0);
             }
             return dl;
         }
