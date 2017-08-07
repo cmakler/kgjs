@@ -3,7 +3,7 @@
 module KG {
 
     export interface CurveDefinition extends ViewObjectDefinition {
-        univariateFunctions: UnivariateFunctionDefinition[];
+        univariateFunction: UnivariateFunctionDefinition;
     }
 
     export class Curve extends ViewObject {
@@ -11,14 +11,21 @@ module KG {
         private g;
         private dragPath;
         private path;
-        private univariateFunctions: UnivariateFunction[];
+        private interpolation;
+        private univariateFunction: UnivariateFunction;
 
         constructor(def: CurveDefinition) {
+            // establish property defaults
+            def = _.defaults(def, {
+                interpolation: 'curveBasis',
+                constants: []
+            });
+
+            // define updatable properties
+            def.constants = def.constants.concat(['interpolation']);
             super(def);
-            this.univariateFunctions = def.univariateFunctions.map(function (f) {
-                f.model = def.model;
-                return new UnivariateFunction(f)
-            })
+            def.univariateFunction.model = def.model
+            this.univariateFunction = new UnivariateFunction(def.univariateFunction)
         }
 
         // create SVG elements
@@ -38,21 +45,12 @@ module KG {
         update(force) {
             let curve = super.update(force);
             let data = [];
-            function sortObjects(key, descending?) {
-                    return function (a, b) {
-                        let lower = descending ? a[key] : b[key],
-                            higher = descending ? b[key] : a[key];
-                        return lower > higher ? -1 : lower < higher ? 1 : lower <= higher ? 0 : NaN;
-                    }
-                }
-            if (curve.hasOwnProperty('univariateFunctions')) {
-                curve.univariateFunctions.forEach(function (fn) {
-                    fn.update(force);
-                    data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
-                });
-                data = data.sort(sortObjects('x'));
+            if (curve.hasOwnProperty('univariateFunction')) {
+                const fn = curve.univariateFunction.update(force);
+                const scale = fn.ind == 'y' ? curve.yScale: curve.xScale;
+                data = fn.dataPoints(scale.domainMin, scale.domainMax);
                 const dataLine = d3.line()
-                    .curve(d3.curveBasis)
+                    .curve(d3[curve.interpolation])
                     .x(function (d: any) {
                         return curve.xScale.scale(d.x)
                     })

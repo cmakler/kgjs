@@ -467,6 +467,7 @@ var KG;
             });
             // define updatable properties
             def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
+            def.updatables = def.updatables.concat(['min', 'max']);
             _this = _super.call(this, def) || this;
             _this.compiledFunction = math.compile(def.fn);
             return _this;
@@ -479,14 +480,16 @@ var KG;
         };
         UnivariateFunction.prototype.dataPoints = function (min, max) {
             var fn = this, data = [];
-            for (var i = 0; i < fn.samplePoints; i++) {
+            min = fn.min || min;
+            max = fn.max || max;
+            for (var i = 0; i < fn.samplePoints + 1; i++) {
                 var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
                 data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
             }
             return data;
         };
         UnivariateFunction.prototype.update = function (force) {
-            var fn = this;
+            var fn = _super.prototype.update.call(this, force);
             fn.scope = { params: fn.model.currentParamValues() };
             return fn;
         };
@@ -815,11 +818,17 @@ var KG;
     var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def) {
-            var _this = _super.call(this, def) || this;
-            _this.univariateFunctions = def.univariateFunctions.map(function (f) {
-                f.model = def.model;
-                return new KG.UnivariateFunction(f);
+            var _this = this;
+            // establish property defaults
+            def = _.defaults(def, {
+                interpolation: 'curveBasis',
+                constants: []
             });
+            // define updatable properties
+            def.constants = def.constants.concat(['interpolation']);
+            _this = _super.call(this, def) || this;
+            def.univariateFunction.model = def.model;
+            _this.univariateFunction = new KG.UnivariateFunction(def.univariateFunction);
             return _this;
         }
         // create SVG elements
@@ -838,20 +847,12 @@ var KG;
         Curve.prototype.update = function (force) {
             var curve = _super.prototype.update.call(this, force);
             var data = [];
-            function sortObjects(key, descending) {
-                return function (a, b) {
-                    var lower = descending ? a[key] : b[key], higher = descending ? b[key] : a[key];
-                    return lower > higher ? -1 : lower < higher ? 1 : lower <= higher ? 0 : NaN;
-                };
-            }
-            if (curve.hasOwnProperty('univariateFunctions')) {
-                curve.univariateFunctions.forEach(function (fn) {
-                    fn.update(force);
-                    data = data.concat(fn.dataPoints(curve.xScale.domainMin, curve.xScale.domainMax));
-                });
-                data = data.sort(sortObjects('x'));
+            if (curve.hasOwnProperty('univariateFunction')) {
+                var fn = curve.univariateFunction.update(force);
+                var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                data = fn.dataPoints(scale.domainMin, scale.domainMax);
                 var dataLine = d3.line()
-                    .curve(d3.curveBasis)
+                    .curve(d3[curve.interpolation])
                     .x(function (d) {
                     return curve.xScale.scale(d.x);
                 })
