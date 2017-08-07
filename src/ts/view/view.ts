@@ -66,16 +66,16 @@ module KG {
             className: 'ClipPath'
         },
         {
-            name: 'segments',
-            parent: 'svg',
-            element: 'g',
-            className: 'Segment'
-        },
-        {
             name: 'curves',
             parent: 'svg',
             element: 'g',
             className: 'Curve'
+        },
+        {
+            name: 'segments',
+            parent: 'svg',
+            element: 'g',
+            className: 'Segment'
         },
         {
             name: 'axes',
