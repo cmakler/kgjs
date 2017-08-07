@@ -723,6 +723,12 @@ var KG;
             }
             return _this;
         }
+        ViewObject.prototype.addClipPath = function (g) {
+            var vo = this;
+            if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
+                g.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+            }
+        };
         ViewObject.prototype.draw = function (layer) {
             return this;
         };
@@ -784,9 +790,7 @@ var KG;
             segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
             segment.line = segment.g.append('line');
-            if (segment.hasOwnProperty('clipPath') && segment.clipPath != undefined) {
-                segment.g.attr('clip-path', "url(#" + segment.clipPath.id + ")");
-            }
+            segment.addClipPath(segment.g);
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         };
@@ -935,9 +939,7 @@ var KG;
             p.g = layer.append('g'); // SVG group
             p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.g.append('circle');
-            if (p.hasOwnProperty('clipPath') && p.clipPath != undefined) {
-                //p.g.attr('clip-path',`url(#${p.clipPath.id})`);
-            }
+            //p.addClipPath(p.g)
             p.interactionHandler.addTrigger(p.g);
             return p;
         };

@@ -78,6 +78,13 @@ module KG {
             }
         }
 
+        addClipPath(g) {
+            const vo = this;
+            if(vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
+                g.attr('clip-path',`url(#${vo.clipPath.id})`);
+            }
+        }
+
         draw(layer) {
             return this;
         }

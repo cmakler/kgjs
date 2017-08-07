@@ -44,9 +44,7 @@ module KG {
             p.g = layer.append('g'); // SVG group
             p.dragCircle = p.g.append('circle').style('fill-opacity',0).attr('r', 20);
             p.circle = p.g.append('circle');
-            if(p.hasOwnProperty('clipPath') && p.clipPath != undefined) {
-                //p.g.attr('clip-path',`url(#${p.clipPath.id})`);
-            }
+            //p.addClipPath(p.g)
             p.interactionHandler.addTrigger(p.g);
             return p;
         }

@@ -43,9 +43,7 @@ module KG {
             segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity',0);
             segment.line = segment.g.append('line');
-            if(segment.hasOwnProperty('clipPath') && segment.clipPath != undefined) {
-                segment.g.attr('clip-path',`url(#${segment.clipPath.id})`);
-            }
+            segment.addClipPath(segment.g)
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         }
