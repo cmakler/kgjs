@@ -30,27 +30,35 @@
 
 // this file provides the interface with the overall web page
 
+let views = [];
+
 // initialize the diagram from divs with class kg-container
 
-let viewDivs = document.getElementsByClassName('kg-container'),
-    views = [];
+window.addEventListener("load", function () {
+    let viewDivs = document.getElementsByClassName('kg-container');
 
 // for each div, fetch the JSON definition and create a View object with that div and data
-for(let i = 0; i< viewDivs.length; i++) {
-    const url = viewDivs[i].getAttribute('src');
-    d3.json(url, function (data){
-        if(!data) {
-            viewDivs[i].innerHTML = "<p>oops, "+url+" doesn't seem to exist.</p>"
-        } else {
-            views.push(new KG.View(viewDivs[i],data));
-        }
-    });
-}
+    for (let i = 0; i < viewDivs.length; i++) {
+        const url = viewDivs[i].getAttribute('src');
+        viewDivs[i].innerHTML = "<p>loading...</p>";
+        d3.json(url, function (data) {
+            if (!data) {
+                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>"
+            } else {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], data));
+            }
+        })
+    }
+});
+
 
 // if the window changes size, update the dimensions of the containers
 
-window.onresize = function() {
-    views.forEach(function(c) {c.updateDimensions()} )
+window.onresize = function () {
+    views.forEach(function (c) {
+        c.updateDimensions()
+    })
 };
 
 
