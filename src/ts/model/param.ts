@@ -23,17 +23,17 @@ module KG {
 
     export class Param implements IParam {
 
-        public name;
-        public label;
-        public value;
-        private min;
-        private max;
-        private round;
-        private precision;
+        public name: string;
+        public label: string;
+        public value: any;
+        private min: number;
+        private max: number;
+        private round: number;
+        private precision: number;
 
-        constructor(def) {
+        constructor(def:ParamDefinition) {
 
-            function decimalPlaces(numAsString) {
+            function decimalPlaces(numAsString:string) {
                 let match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
                 if (!match) {
                     return 0;
@@ -61,7 +61,7 @@ module KG {
 
         // Receives an instruction to update the parameter to a new value
         // Updates to the closest rounded value to the desired newValue within accepted range
-        update(newValue) {
+        update(newValue:any) {
             let param = this;
             if (newValue < param.min) {
                 param.value = param.min;
@@ -77,7 +77,7 @@ module KG {
 
         // Displays current value of the parameter to desired precision
         // If no precision is given, uses the implied precision given by the rounding parameter
-        formatted(precision?) {
+        formatted(precision?:number) {
             precision = precision || this.precision;
             return d3.format(`.${precision}f`)(this.value);
         }

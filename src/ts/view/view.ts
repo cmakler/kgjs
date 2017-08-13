@@ -35,79 +35,16 @@ module KG {
         updateDimensions: () => void;  // called on a window resize event; updates the size of the Container
     }
 
-    export const REF_CATEGORIES: RefCategoryDef[] = [
-        {
-            category: 'xScales',
-            className: 'Scale',
-            propName: 'xScale',
-            refName: 'xScaleName'
-        },
-        {
-            category: 'yScales',
-            className: 'Scale',
-            propName: 'yScale',
-            refName: 'yScaleName'
-        },
-        {
-            category: 'univariateFunctions',
-            className: 'UnivariateFunction',
-            propName: 'univariateFunctions',
-            refName: 'univariateFunctionNames'
-        }
-    ];
-
-    export const STORED_CATEGORIES = ['xScales', 'yScales'];
-
-    export const VIEW_OBJECT_CATEGORIES: ViewObjectCategoryDef[] = [
-        {
-            name: 'clipPaths',
-            parent: 'defs',
-            element: '',
-            className: 'ClipPath'
-        },
-        {
-            name: 'curves',
-            parent: 'svg',
-            element: 'g',
-            className: 'Curve'
-        },
-        {
-            name: 'segments',
-            parent: 'svg',
-            element: 'g',
-            className: 'Segment'
-        },
-        {
-            name: 'axes',
-            parent: 'svg',
-            element: 'g',
-            className: 'Axis'
-        },
-        {
-            name: 'points',
-            parent: 'svg',
-            element: 'g',
-            className: 'Point'
-        },
-        {
-            name: 'labels',
-            parent: 'div',
-            element: 'div',
-            className: 'Label'
-        },
-
-    ];
 
     export class View implements IView {
 
-        private div;
-        private svg;
-        private svgDefs;
-        private model;
-        private xScales;
-        private yScales;
+        private div: any;
+        private svg: any;
+        private svgDefs: any;
+        private model: Model;
+        private xScales: Scale[];
+        private yScales: Scale[];
         private aspectRatio: number;
-        private refs: any;
 
         constructor(div: Element, data: ViewDefinition) {
 
@@ -129,6 +66,69 @@ module KG {
             view.aspectRatio = data.aspectRatio || 1;
             view.model = new KG.Model(data.params, data.restrictions);
 
+            const REF_CATEGORIES: RefCategoryDef[] = [
+                {
+                    category: 'xScales',
+                    className: 'Scale',
+                    propName: 'xScale',
+                    refName: 'xScaleName'
+                },
+                {
+                    category: 'yScales',
+                    className: 'Scale',
+                    propName: 'yScale',
+                    refName: 'yScaleName'
+                },
+                {
+                    category: 'univariateFunctions',
+                    className: 'UnivariateFunction',
+                    propName: 'univariateFunctions',
+                    refName: 'univariateFunctionNames'
+                }
+            ];
+
+            const STORED_CATEGORIES = ['xScales', 'yScales'];
+
+            const VIEW_OBJECT_CATEGORIES: ViewObjectCategoryDef[] = [
+                {
+                    name: 'clipPaths',
+                    parent: 'defs',
+                    element: '',
+                    className: 'ClipPath'
+                },
+                {
+                    name: 'curves',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Curve'
+                },
+                {
+                    name: 'segments',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Segment'
+                },
+                {
+                    name: 'axes',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Axis'
+                },
+                {
+                    name: 'points',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Point'
+                },
+                {
+                    name: 'labels',
+                    parent: 'div',
+                    element: 'div',
+                    className: 'Label'
+                },
+
+            ];
+
 
             /*
              Each REF_CATEGORY is a category of REF -- e.g., a scale or a function.
@@ -141,7 +141,7 @@ module KG {
             let refs = {};
             REF_CATEGORIES.forEach(function (refDef: RefCategoryDef) {
                 if (data.hasOwnProperty(refDef.category)) {
-                    data[refDef.category].forEach(function (def) {
+                    data[refDef.category].forEach(function (def: ViewObjectDefinition) {
 
                         // each object has a reference to the model so it can update itself
                         def.model = view.model;

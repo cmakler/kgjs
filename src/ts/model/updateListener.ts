@@ -16,16 +16,18 @@ module KG {
 
     export class UpdateListener implements IUpdateListener {
 
-        private updatables;
-        public name;
-        public id;
-        public def;
-        public model;
-        public hasChanged;
+        private updatables: string[];
+        public name: string;
+        public id: string;
+        public def: UpdateListenerDefinition;
+        public model: Model;
+        public hasChanged: boolean;
+
+        [propName: string]: any;
 
         constructor(def: UpdateListenerDefinition) {
 
-            function randomString(length) {
+            function randomString(length:number) {
                 let text = "";
                 const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 for (let i = 0; i < length; i++) {
@@ -44,7 +46,7 @@ module KG {
             ul.model.addUpdateListener(this);
         }
 
-        private updateDef(name) {
+        private updateDef(name:string) {
             let u = this;
             if(u.def.hasOwnProperty(name)) {
                 const d = u.def[name],
@@ -59,7 +61,7 @@ module KG {
             return u;
         }
 
-        update(force) {
+        update(force:boolean) {
             let u = this;
             u.hasChanged = !!force;
             if(u.hasOwnProperty('updatables') && u.updatables != undefined){

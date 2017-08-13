@@ -14,7 +14,7 @@ module KG {
 
         private params: Param[];
         private restrictions: Restriction[];
-        private updateListeners;
+        private updateListeners: UpdateListener[];
 
         constructor(params:ParamDefinition[],restrictions?:RestrictionDefinition[]) {
             let model = this;
@@ -23,13 +23,13 @@ module KG {
             model.updateListeners = [];
         }
 
-        addUpdateListener(updateListener) {
+        addUpdateListener(updateListener:UpdateListener) {
             this.updateListeners.push(updateListener);
             return this;
         }
 
         currentParamValues() {
-            let p = {};
+            let p:any = {};
             this.params.forEach(function (param) {
                 p[param.name] = param.value;
             });
@@ -37,7 +37,7 @@ module KG {
         }
 
         // the model serves as a model, and can evaluate expressions within the context of that model
-        eval(name) {
+        eval(name:string) {
 
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -75,7 +75,7 @@ module KG {
 
         }
 
-        getParam(paramName) {
+        getParam(paramName:string) {
             const params = this.params;
             for (let i = 0; i < params.length; i++) {
                 if (params[i].name == paramName) {
@@ -86,7 +86,7 @@ module KG {
 
 
         // method exposed to viewObjects to allow them to try to change a parameter
-        updateParam(name, newValue) {
+        updateParam(name:string, newValue:any) {
             let model = this,
                 param = model.getParam(name);
             const oldValue = param.value;
@@ -105,7 +105,7 @@ module KG {
             }
         }
 
-        update(force) {
+        update(force:boolean) {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force)
             });

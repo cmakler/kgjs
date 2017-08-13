@@ -15,10 +15,10 @@ module KG {
 
     export class Restriction implements IRestriction {
 
-        private expression;
-        private type;
-        private min;
-        private max;
+        private expression: string;
+        private type: string;
+        private min: any;
+        private max: any;
 
         constructor(def:RestrictionDefinition) {
 
@@ -28,7 +28,7 @@ module KG {
             this.max = def.max;
         }
 
-        valid(model) {
+        valid(model:Model) {
             const r = this,
                 value = model.eval(r.expression),
                 min = model.eval(r.min),

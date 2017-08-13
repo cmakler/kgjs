@@ -24,16 +24,16 @@ module KG {
 
     export class ViewObject extends UpdateListener implements IViewObject {
 
-        public xScale;
-        public yScale;
-        public clipPath;
+        public xScale: Scale;
+        public yScale: Scale;
+        public clipPath: ClipPath;
         public interactionHandler: InteractionHandler;
 
-        public fill;
-        public opacity;
-        public stroke;
-        public strokeWidth;
-        public strokeOpacity;
+        public fill: string;
+        public opacity: string;
+        public stroke: string;
+        public strokeWidth: string;
+        public strokeOpacity: string;
 
         constructor(def: ViewObjectDefinition) {
             def = _.defaults(def, {
@@ -78,14 +78,14 @@ module KG {
             }
         }
 
-        addClipPath(g) {
+        addClipPath(g:any) {
             const vo = this;
             if(vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
                 g.attr('clip-path',`url(#${vo.clipPath.id})`);
             }
         }
 
-        draw(layer) {
+        draw(layer:any) {
             return this;
         }
 
