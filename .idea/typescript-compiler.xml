@@ -5,6 +5,7 @@
     <option name="typeScriptCompilerParams" value="-m commonjs --outfile /Users/chrismakler/code/applications/kgjs/kg.js" />
     <option name="mainFilePath" value="$PROJECT_DIR$/src/ts/kg.ts" />
     <option name="useMainFile" value="true" />
+    <option name="useConfig" value="true" />
     <option name="showAllErrors" value="true" />
   </component>
 </project>

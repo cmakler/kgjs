@@ -18,7 +18,7 @@
  included in all copies or substantial portions of the Software.*/
 
 
-// These are the (very few) functions I use from the amazing underscorejs library.
+// I adapted these functions from the amazing underscorejs library.
 
 module _ {
 
@@ -34,23 +34,16 @@ module _ {
         return keys;
     }
 
-    // An internal function for creating assigner functions.
-    function createAssigner(keysFunc, undefinedOnly) {
-        return function (obj) {
-            const length = arguments.length;
-            if (length < 2 || obj == null) return obj;
-            for (let index = 1; index < length; index++) {
-                let source = arguments[index],
-                    keys = keysFunc(source),
-                    l = keys.length;
-                for (let i = 0; i < l; i++) {
-                    const key = keys[i];
-                    if (!undefinedOnly || obj[key] === void 0) obj[key] = source[key];
-                }
-            }
-            return obj;
-        };
+    export function defaults(obj: {}, def: {}) {
+        if (def == null || obj == null) return obj;
+        const keys = allKeys(def),
+            l = keys.length;
+        for (let i = 0; i < l; i++) {
+            const key = keys[i];
+            if (obj[key] === void 0) obj[key] = def[key];
+        }
+        return obj;
     }
-
-    export const defaults:(obj:{},def:{}) => any = createAssigner(allKeys, true);
 }
+
+// End of underscorejs functions

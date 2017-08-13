@@ -28,7 +28,7 @@ var __extends = (this && this.__extends) || (function () {
 
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.*/
-// These are the (very few) functions I use from the amazing underscorejs library.
+// I adapted these functions from the amazing underscorejs library.
 var _;
 (function (_) {
     function isObject(obj) {
@@ -44,87 +44,23 @@ var _;
         return keys;
     }
     _.allKeys = allKeys;
-    // An internal function for creating assigner functions.
-    function createAssigner(keysFunc, undefinedOnly) {
-        return function (obj) {
-            var length = arguments.length;
-            if (length < 2 || obj == null)
-                return obj;
-            for (var index = 1; index < length; index++) {
-                var source = arguments[index], keys = keysFunc(source), l = keys.length;
-                for (var i = 0; i < l; i++) {
-                    var key = keys[i];
-                    if (!undefinedOnly || obj[key] === void 0)
-                        obj[key] = source[key];
-                }
-            }
+    function defaults(obj, def) {
+        if (def == null || obj == null)
             return obj;
-        };
+        var keys = allKeys(def), l = keys.length;
+        for (var i = 0; i < l; i++) {
+            var key = keys[i];
+            if (obj[key] === void 0)
+                obj[key] = def[key];
+        }
+        return obj;
     }
-    _.defaults = createAssigner(allKeys, true);
+    _.defaults = defaults;
 })(_ || (_ = {}));
+// End of underscorejs functions 
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    KG.REF_CATEGORIES = [
-        {
-            category: 'xScales',
-            className: 'Scale',
-            propName: 'xScale',
-            refName: 'xScaleName'
-        },
-        {
-            category: 'yScales',
-            className: 'Scale',
-            propName: 'yScale',
-            refName: 'yScaleName'
-        },
-        {
-            category: 'univariateFunctions',
-            className: 'UnivariateFunction',
-            propName: 'univariateFunctions',
-            refName: 'univariateFunctionNames'
-        }
-    ];
-    KG.STORED_CATEGORIES = ['xScales', 'yScales'];
-    KG.VIEW_OBJECT_CATEGORIES = [
-        {
-            name: 'clipPaths',
-            parent: 'defs',
-            element: '',
-            className: 'ClipPath'
-        },
-        {
-            name: 'curves',
-            parent: 'svg',
-            element: 'g',
-            className: 'Curve'
-        },
-        {
-            name: 'segments',
-            parent: 'svg',
-            element: 'g',
-            className: 'Segment'
-        },
-        {
-            name: 'axes',
-            parent: 'svg',
-            element: 'g',
-            className: 'Axis'
-        },
-        {
-            name: 'points',
-            parent: 'svg',
-            element: 'g',
-            className: 'Point'
-        },
-        {
-            name: 'labels',
-            parent: 'div',
-            element: 'div',
-            className: 'Label'
-        },
-    ];
     var View = (function () {
         function View(div, data) {
             data.params = (data.params || []).map(function (paramData) {
@@ -142,6 +78,65 @@ var KG;
             var defLayer = view.svg.append("defs");
             view.aspectRatio = data.aspectRatio || 1;
             view.model = new KG.Model(data.params, data.restrictions);
+            var REF_CATEGORIES = [
+                {
+                    category: 'xScales',
+                    className: 'Scale',
+                    propName: 'xScale',
+                    refName: 'xScaleName'
+                },
+                {
+                    category: 'yScales',
+                    className: 'Scale',
+                    propName: 'yScale',
+                    refName: 'yScaleName'
+                },
+                {
+                    category: 'univariateFunctions',
+                    className: 'UnivariateFunction',
+                    propName: 'univariateFunctions',
+                    refName: 'univariateFunctionNames'
+                }
+            ];
+            var STORED_CATEGORIES = ['xScales', 'yScales'];
+            var VIEW_OBJECT_CATEGORIES = [
+                {
+                    name: 'clipPaths',
+                    parent: 'defs',
+                    element: '',
+                    className: 'ClipPath'
+                },
+                {
+                    name: 'curves',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Curve'
+                },
+                {
+                    name: 'segments',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Segment'
+                },
+                {
+                    name: 'axes',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Axis'
+                },
+                {
+                    name: 'points',
+                    parent: 'svg',
+                    element: 'g',
+                    className: 'Point'
+                },
+                {
+                    name: 'labels',
+                    parent: 'div',
+                    element: 'div',
+                    className: 'Label'
+                },
+            ];
             /*
              Each REF_CATEGORY is a category of REF -- e.g., a scale or a function.
              Each REF is a JS object that is used by viewable objects, but has no DOM representation.
@@ -150,7 +145,7 @@ var KG;
              For example, an xAxis REF named 'good1' would now be referred to as 'refs.xAxis_good1.'
              */
             var refs = {};
-            KG.REF_CATEGORIES.forEach(function (refDef) {
+            REF_CATEGORIES.forEach(function (refDef) {
                 if (data.hasOwnProperty(refDef.category)) {
                     data[refDef.category].forEach(function (def) {
                         // each object has a reference to the model so it can update itself
@@ -160,7 +155,7 @@ var KG;
                         // add the object, with a unique name, to the refs object
                         refs[refDef.category + '_' + def.name] = newRef;
                         // store some categories (e.g., scales) as properties of the view
-                        KG.STORED_CATEGORIES.forEach(function (category) {
+                        STORED_CATEGORIES.forEach(function (category) {
                             view[category] = view[category] || [];
                             if (refDef.category == category) {
                                 view[category].push(newRef);
@@ -175,7 +170,7 @@ var KG;
              As each is created, it adds elements to the DOM within that layer.
              Once the diagram is completed, only the attributes of the DOM change; no new elements are added.
              */
-            KG.VIEW_OBJECT_CATEGORIES.forEach(function (voCategoryDef) {
+            VIEW_OBJECT_CATEGORIES.forEach(function (voCategoryDef) {
                 if (data.hasOwnProperty(voCategoryDef.name)) {
                     // Create the DOM parent for the category
                     var layer_1 = (voCategoryDef.parent == 'defs') ? defLayer : view[voCategoryDef.parent].append(voCategoryDef.element).attr('class', voCategoryDef.name);
@@ -190,7 +185,7 @@ var KG;
                             def.clipPath = refs["clipPaths_" + def.clipPathName];
                         }
                         // point to previously created REFs in each category of REF
-                        KG.REF_CATEGORIES.forEach(function (ref) {
+                        REF_CATEGORIES.forEach(function (ref) {
                             if (!def.hasOwnProperty(ref.refName))
                                 return;
                             if (def[ref.refName] instanceof Array) {
