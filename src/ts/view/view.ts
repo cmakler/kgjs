@@ -29,6 +29,7 @@ module KG {
         labels?: LabelDefinition[];
         axes?: AxisDefinition[];
         clipPaths?: ClipPathDefinition[];
+        legends?: LegendDefinition;
     }
 
     export interface IView {
@@ -44,6 +45,7 @@ module KG {
         private xScales: Scale[];
         private yScales: Scale[];
         private aspectRatio: number;
+        private legends: Legend[];
 
         constructor(div: Element, data: ViewDefinition) {
 
@@ -64,6 +66,7 @@ module KG {
             const defLayer = view.svg.append("defs");
             view.aspectRatio = data.aspectRatio || 1;
             view.model = new KG.Model(data.params, data.restrictions);
+            view.legends = [];
 
             const REF_CATEGORIES: RefCategoryDef[] = [
                 {
@@ -125,7 +128,12 @@ module KG {
                     element: 'div',
                     className: 'Label'
                 },
-
+                {
+                    name: 'legends',
+                    parent: 'div',
+                    element: 'div',
+                    className: 'Legend'
+                }
             ];
 
 
@@ -205,6 +213,11 @@ module KG {
                             // use the definition object to create the ViewObject
                             const newViewObject = new KG[voCategoryDef.className](def);
 
+                            // if the object is a legend, append to view.legends
+                            if (voCategoryDef.className == 'Legend') {
+                                view.legends.push(newViewObject);
+                            }
+
                             // a clip path is both a layer and a ref; need to store them to refs
                             if (voCategoryDef.className == 'ClipPath') {
                                 refs['clipPaths_' + def.name] = newViewObject;
@@ -224,9 +237,17 @@ module KG {
             let view = this;
 
             // read the client width of the enclosing div and calculate the height using the aspectRatio
-            const width = view.div.node().clientWidth,
-                height = width / view.aspectRatio;
+            let width = view.div.node().clientWidth;
+            console.log(width);
 
+            if (width > 563 && view.legends.length > 0) {
+                view.legends.forEach(function(legend) {legend.positionRight(width) });
+                width = width * 77/126; // make width of graph the same width as main Tufte column
+            } else {
+                view.legends.forEach(function(legend) {legend.positionBelow()});
+            }
+
+            const height = width / view.aspectRatio;
             // set the height of the div
             view.div.style.height = height + 'px';
 
@@ -241,6 +262,7 @@ module KG {
             view.yScales.forEach(function (scale) {
                 scale.extent = height;
             });
+
 
             // once the scales are updated, update the coordinates of all view objects
             view.model.update(true);

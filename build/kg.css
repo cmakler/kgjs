@@ -13,3 +13,7 @@ def.kg-container text::selection {
 text {
     font-size: 10px;
 }
+
+input {
+    font-family: KaTeX_Main;
+}

@@ -15,13 +15,14 @@ module KG {
     export class InteractionHandler extends UpdateListener implements IInteractionHandler {
 
         private scope: { params: any, drag: any };
+        private viewObject: ViewObject;
         private dragListeners: DragListener[];
         private clickListeners: ClickListener[];
         private element;
 
         constructor(def: InteractionHandlerDefinition) {
             def = _.defaults(def, {constants: [], dragListeners: [], clickListeners: []});
-            def.constants = def.constants.concat(["dragListeners", "clickListeners"]);
+            def.constants = def.constants.concat(["viewObject","dragListeners", "clickListeners"]);
             super(def);
             this.update(true);
             this.scope = {params: {}, drag: {}}
@@ -71,13 +72,13 @@ module KG {
                 element.call(d3.drag()
                     .on('start', function () {
                         handler.scope.params = handler.model.currentParamValues();
-                        handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-                        handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                        handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
+                        handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
                     })
                     .on('drag', function () {
                         let drag = handler.scope.drag;
-                        drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-                        drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                        drag.x = handler.viewObject.xScale.scale.invert(d3.event.x);
+                        drag.y = handler.viewObject.yScale.scale.invert(d3.event.y);
                         drag.dx = drag.x - drag.x0;
                         drag.dy = drag.y - drag.y0;
                         handler.dragListeners.forEach(function (d) {

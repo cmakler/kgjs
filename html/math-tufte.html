@@ -11,6 +11,7 @@
     <script src="../node_modules/d3/build/d3.js"></script>
     <script src="../node_modules/mathjs/dist/math.js"></script>
     <link rel="stylesheet" href="../tufte/tufte.css"/>
+        <link rel="stylesheet" href="../build/kg.css"/>
     <style>
         .katex {
             font-size: 1em
@@ -36,13 +37,6 @@
             column. Don’t wrap figures in a paragraph tag. Any label or margin note goes in a regular margin note inside
             the figure. For example, most of the time one should introduce a figure directly into the main flow of
             discussion, like so:</p>
-        <figure>
-            <label for="mn-exports-imports" class="margin-toggle">&#8853;</label><input type="checkbox"
-                                                                                        id="mn-exports-imports"
-                                                                                        class="margin-toggle"/><span
-                class="marginnote">From Edward Tufte, <em>Visual Display of Quantitative Information</em>, page 92.</span>
-            <div id="diagramDiv2" class="kg-container" src="http://127.0.0.1:5000/convert/tufte"></div>
-        </figure>
         <p><span class="marginnote">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
             incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
             laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
@@ -56,8 +50,12 @@
 
 
         <figure class="fullwidth">
-            <div id="diagramDiv3" class="kg-container" src="http://127.0.0.1:5000/convert/tufte"></div>
+            <div id="diagramDiv3" class="kg-container" src="http://127.0.0.1:5000/convert/budget"></div>
         </figure>
+        <p>Figures should try to use the <code>figure</code> element, which by default are constrained to the main
+            column. Don’t wrap figures in a paragraph tag. Any label or margin note goes in a regular margin note inside
+            the figure. For example, most of the time one should introduce a figure directly into the main flow of
+            discussion, like so:</p>
     </section>
 </article>
 <script src="../build/kg.js"></script>

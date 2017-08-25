@@ -26,10 +26,10 @@ module KG {
         public name: string;
         public label: string;
         public value: any;
-        private min: number;
-        private max: number;
-        private round: number;
-        private precision: number;
+        public min: number;
+        public max: number;
+        public round: number;
+        public precision: number;
 
         constructor(def:ParamDefinition) {
 

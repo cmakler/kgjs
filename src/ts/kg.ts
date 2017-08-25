@@ -6,6 +6,7 @@
 
 /// <reference path="view/view.ts"/>
 
+
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/restriction.ts" />
@@ -18,8 +19,12 @@
 /// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
+
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/legend.ts"/>
 /// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
