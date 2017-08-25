@@ -5,14 +5,14 @@
 module KG {
     export interface AxisDefinition extends ViewObjectDefinition {
         scale: any;
-        orient: 'Top' | 'Bottom' | 'Left' | 'Right';
+        orient: 'top' | 'bottom' | 'left' | 'right';
         intercept?: any;
         ticks?: any;
     }
 
     export class Axis extends ViewObject {
 
-        private orient;
+        private orient: 'top' | 'bottom' | 'left' | 'right';
         private intercept: any;
         private ticks;
         private g;
@@ -22,9 +22,11 @@ module KG {
             def = _.defaults(def, {
                 ticks: 5,
                 intercept: 0,
-                updatables: []
+                updatables: [],
+                constants: []
             });
 
+            def.constants = def.constants.concat(['orient']);
             def.updatables = def.updatables.concat(['ticks','intercept']);
 
             super(def);
@@ -39,7 +41,7 @@ module KG {
 
         update(force) {
             let a = super.update(force);
-            switch (a.def.orient) {
+            switch (a.orient) {
                     case 'bottom':
                         a.g.attr('transform', `translate(0, ${a.yScale.scale(a.intercept)})`);
                         a.g.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Experimenting with Tufte styles and math</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/contrib/auto-render.min.js"
+            integrity="sha384-RkgGHBDdR8eyBOoWeZ/vpGg1cOvSAJRflCUDACusAAIVwkwPrOUYykglPeqWakZu"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="../node_modules/katex/dist/katex.css">
+    <script src="../node_modules/katex/dist/katex.js"></script>
+    <script src="../node_modules/d3/build/d3.js"></script>
+    <script src="../node_modules/mathjs/dist/math.js"></script>
+    <link rel="stylesheet" href="../tufte/tufte.css"/>
+    <style>
+        .katex {
+            font-size: 1em
+        }
+    </style>
+</head>
+<body>
+<article>
+    <section>
+        <h2>Heading</h2>
+        <p>This is some $F = MC$. For example,
+            $$\begin{aligned}
+            f(x) &= (x+1)^2\\
+            &= x^2 + 2x + 1\end{aligned}$$</p>
+
+    </section>
+    <section>
+        <h2 id="figures">Figures</h2>
+        <p>Tufte emphasizes tight integration of graphics with text. Data, graphs, and figures are kept with the text
+            that discusses them. In print, this means they are not relegated to a separate page. On the web, that means
+            readability of graphics and their accompanying text without extra clicks, tab-switching, or scrolling.</p>
+        <p>Figures should try to use the <code>figure</code> element, which by default are constrained to the main
+            column. Don’t wrap figures in a paragraph tag. Any label or margin note goes in a regular margin note inside
+            the figure. For example, most of the time one should introduce a figure directly into the main flow of
+            discussion, like so:</p>
+        <figure>
+            <label for="mn-exports-imports" class="margin-toggle">&#8853;</label><input type="checkbox"
+                                                                                        id="mn-exports-imports"
+                                                                                        class="margin-toggle"/><span
+                class="marginnote">From Edward Tufte, <em>Visual Display of Quantitative Information</em>, page 92.</span>
+            <div id="diagramDiv2" class="kg-container" src="http://127.0.0.1:5000/convert/tufte"></div>
+        </figure>
+        <p><span class="marginnote">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+            laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit
+            esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+            qui officia deserunt mollit anim id est laborum.
+        </span>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
+            magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
+            commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+            nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
+            anim id est laborum.</p>
+
+
+        <figure class="fullwidth">
+            <div id="diagramDiv3" class="kg-container" src="http://127.0.0.1:5000/convert/tufte"></div>
+        </figure>
+    </section>
+</article>
+<script src="../build/kg.js"></script>
+<script>
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\[", right: "\\]", display: true},
+            {left: "$", right: "$", display: false},
+            {left: "\\(", right: "\\)", display: false}
+        ]
+    });
+</script>
+</body>
+</html>

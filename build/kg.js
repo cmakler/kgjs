@@ -878,8 +878,10 @@ var KG;
             def = _.defaults(def, {
                 ticks: 5,
                 intercept: 0,
-                updatables: []
+                updatables: [],
+                constants: []
             });
+            def.constants = def.constants.concat(['orient']);
             def.updatables = def.updatables.concat(['ticks', 'intercept']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -891,7 +893,7 @@ var KG;
         };
         Axis.prototype.update = function (force) {
             var a = _super.prototype.update.call(this, force);
-            switch (a.def.orient) {
+            switch (a.orient) {
                 case 'bottom':
                     a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
                     a.g.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));

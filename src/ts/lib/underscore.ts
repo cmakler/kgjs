@@ -34,7 +34,7 @@ module _ {
         return keys;
     }
 
-    export function defaults(obj: {}, def: {}) {
+    export function defaults(obj: any, def: any) {
         if (def == null || obj == null) return obj;
         const keys = allKeys(def),
             l = keys.length;

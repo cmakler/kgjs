@@ -40,7 +40,6 @@ module KG {
 
         private div: any;
         private svg: any;
-        private svgDefs: any;
         private model: Model;
         private xScales: Scale[];
         private yScales: Scale[];
