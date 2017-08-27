@@ -595,7 +595,7 @@ var KG;
         function InteractionHandler(def) {
             var _this = this;
             def = _.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
-            def.constants = def.constants.concat(["dragListeners", "clickListeners"]);
+            def.constants = def.constants.concat(["viewObject", "dragListeners", "clickListeners"]);
             _this = _super.call(this, def) || this;
             _this.update(true);
             _this.scope = { params: {}, drag: {} };
@@ -643,13 +643,13 @@ var KG;
                 element.call(d3.drag()
                     .on('start', function () {
                     handler.scope.params = handler.model.currentParamValues();
-                    handler.scope.drag.x0 = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-                    handler.scope.drag.y0 = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                    handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
+                    handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
                 })
                     .on('drag', function () {
                     var drag = handler.scope.drag;
-                    drag.x = handler.def.viewObject.xScale.scale.invert(d3.event.x);
-                    drag.y = handler.def.viewObject.yScale.scale.invert(d3.event.y);
+                    drag.x = handler.viewObject.xScale.scale.invert(d3.event.x);
+                    drag.y = handler.viewObject.yScale.scale.invert(d3.event.y);
                     drag.dx = drag.x - drag.x0;
                     drag.dy = drag.y - drag.y0;
                     handler.dragListeners.forEach(function (d) {
@@ -665,6 +665,97 @@ var KG;
         return InteractionHandler;
     }(KG.UpdateListener));
     KG.InteractionHandler = InteractionHandler;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var DivObject = (function (_super) {
+        __extends(DivObject, _super);
+        function DivObject(def) {
+            var _this = this;
+            def = _.defaults(def, {
+                updatables: [],
+                constants: [],
+                show: true
+            });
+            _this = _super.call(this, def) || this;
+            var divObj = _this;
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
+            if (def.hasOwnProperty('layer')) {
+                divObj.draw(def.layer).update(true);
+            }
+            return _this;
+        }
+        DivObject.prototype.draw = function (layer) {
+            return this;
+        };
+        return DivObject;
+    }(KG.UpdateListener));
+    KG.DivObject = DivObject;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Slider = (function (_super) {
+        __extends(Slider, _super);
+        function Slider(def) {
+            var _this = this;
+            // establish property defaults
+            def = _.defaults(def, {
+                value: 'params.' + def.param,
+                noAxis: false,
+                constants: [],
+                updatables: []
+            });
+            // define constant and updatable properties
+            def.constants = def.constants.concat(['param', 'noAxis']);
+            def.updatables = def.updatables.concat(['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Slider.prototype.draw = function (layer) {
+            var slider = this;
+            slider.element = layer.append('tr');
+            var param = slider.model.getParam(slider.param);
+            slider.labelElement = slider.element.append('td')
+                .style('font-size', '14pt');
+            slider.numberInput = slider.element.append('td').append('input')
+                .attr('type', 'number')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round)
+                .style('font-size', '14pt')
+                .style('border', 'none')
+                .style('background', 'none')
+                .style('padding-left', '5px')
+                .style('font-family', 'KaTeX_Main');
+            slider.numberInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            slider.rangeInput = slider.element.append('td').append('input')
+                .attr('type', 'range')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round);
+            slider.rangeInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            return slider;
+        };
+        // update properties
+        Slider.prototype.update = function (force) {
+            var slider = _super.prototype.update.call(this, force);
+            if (slider.hasChanged) {
+                katex.render(slider.label + " = ", slider.labelElement.node());
+                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+                slider.rangeInput.property('value', slider.value);
+            }
+            return slider;
+        };
+        return Slider;
+    }(KG.DivObject));
+    KG.Slider = Slider;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -760,9 +851,11 @@ var KG;
             var _this = this;
             // establish property defaults
             def = _.defaults(def, {
+                constants: [],
                 updatables: []
             });
             // define updatable properties
+            def.constants = def.constants.concat(['sliders']);
             def.updatables = def.updatables.concat(['title', 'description']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -788,13 +881,11 @@ var KG;
         Legend.prototype.draw = function (layer) {
             var legend = this;
             legend.element = layer.append('div').style('position', 'absolute');
-            legend.titleElement = legend.element.append('h3');
-            legend.element.append('hr');
+            legend.titleElement = legend.element.append('p').style('width', '100%').append('span').attr('class', 'newthought');
             legend.descriptionElement = legend.element.append('div');
-            legend.element.append('hr');
-            legend.slider = legend.element.append('input').attr('type', 'range').attr('min', 0).attr('max', 100);
-            legend.slider.on("input", function () {
-                legend.model.updateParam('x', +this.value);
+            var sliderTable = legend.element.append('table').style('padding', '10px');
+            legend.sliders.forEach(function (slider) {
+                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: legend.model });
             });
             return legend;
         };
@@ -802,9 +893,8 @@ var KG;
         Legend.prototype.update = function (force) {
             var legend = _super.prototype.update.call(this, force);
             if (legend.hasChanged) {
-                legend.titleElement.text(legend.title);
+                legend.titleElement.text(legend.title.toLowerCase());
                 legend.descriptionElement.text(legend.description);
-                legend.slider.property('value', legend.model.currentParamValues()['x']);
             }
             return legend;
         };
@@ -1111,6 +1201,8 @@ var KG;
 /// <reference path="controller/listeners/dragListener.ts" />
 /// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
 /// <reference path="view/viewObjects/legend.ts"/>
@@ -1152,119 +1244,50 @@ window.onresize = function () {
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Slider = (function (_super) {
-        __extends(Slider, _super);
-        function Slider(def) {
-            var _this = this;
-            // establish property defaults
-            def = _.defaults(def, {
-                updatables: []
-            });
-            // define updatable properties
-            def.updatables = def.updatables.concat(['title', 'description']);
-            _this = _super.call(this, def) || this;
-            return _this;
+    var Schema = (function () {
+        function Schema() {
         }
-        Slider.prototype.positionRight = function (width) {
-            var legend = this;
-            legend.element
-                .style('position', 'absolute')
-                .style('left', width * 847 / 1260 + 'px')
-                .style('top', '0px')
-                .style('width', width * 385 / 1260 + 'px');
+        Schema.prototype.parse = function (schema) {
+            return this;
         };
-        Slider.prototype.positionBelow = function () {
-            var legend = this;
-            legend.element
-                .style('position', null)
-                .style('left', null)
-                .style('width', null);
+        return Schema;
+    }());
+    KG.Schema = Schema;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Parser = (function () {
+        function Parser() {
+        }
+        Parser.prototype.parse = function (data) {
+            return data;
         };
-        Slider.prototype.addSlider = function (sliderDef) {
-        };
-        // create div for text
-        Slider.prototype.draw = function (layer) {
-            var legend = this;
-            legend.element = layer.append('div').style('position', 'absolute');
-            legend.titleElement = legend.element.append('h3');
-            legend.element.append('hr');
-            legend.descriptionElement = legend.element.append('div');
-            legend.element.append('hr');
-            legend.slider = legend.element.append('input').attr('type', 'range').attr('min', 0).attr('max', 100);
-            legend.slider.on("input", function () {
-                legend.model.updateParam('x', +this.value);
-            });
-            return legend;
-        };
-        // update properties
-        Slider.prototype.update = function (force) {
-            var legend = _super.prototype.update.call(this, force);
-            if (legend.hasChanged) {
-                legend.titleElement.text(legend.title);
-                legend.descriptionElement.text(legend.description);
-                legend.slider.property('value', legend.model.currentParamValues()['x']);
-            }
-            return legend;
-        };
-        return Slider;
-    }(KG.ViewObject));
-    KG.Slider = Slider;
+        return Parser;
+    }());
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var DivObject = (function (_super) {
-        __extends(DivObject, _super);
-        function DivObject(def) {
-            var _this = this;
+    var AuthoringObject = (function () {
+        function AuthoringObject(def) {
             def = _.defaults(def, {
                 updatables: [],
                 constants: [],
-                interactive: true,
-                stroke: 'black',
-                strokeWidth: 1,
                 show: true
             });
-            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
-            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
             _this = _super.call(this, def) || this;
-            var vo = _this;
-            // the interaction handler manages drag and hover events
-            if (def.interactive) {
-                def.drag = def.drag || [];
-                var dragListeners = def.drag.map(function (dragDef) {
-                    dragDef.model = vo.model;
-                    return new KG.DragListener(dragDef);
-                });
-                def.click = def.click || [];
-                var clickListeners = def.click.map(function (clickDef) {
-                    clickDef.model = vo.model;
-                    return new KG.ClickListener(clickDef);
-                });
-                vo.interactionHandler = new KG.InteractionHandler({
-                    viewObject: vo,
-                    model: vo.model,
-                    dragListeners: dragListeners,
-                    clickListeners: clickListeners
-                });
-            }
+            var divObj = this;
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
             if (def.hasOwnProperty('layer')) {
-                vo.draw(def.layer).update(true);
+                divObj.draw(def.layer).update(true);
             }
-            return _this;
         }
-        DivObject.prototype.addClipPath = function (g) {
-            var vo = this;
-            if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                g.attr('clip-path', "url(#" + vo.clipPath.id + ")");
-            }
-        };
-        DivObject.prototype.draw = function (layer) {
+        AuthoringObject.prototype.parse = function (schema) {
             return this;
         };
-        return DivObject;
-    }(KG.UpdateListener));
-    KG.DivObject = DivObject;
+        return AuthoringObject;
+    }());
+    KG.AuthoringObject = AuthoringObject;
 })(KG || (KG = {}));

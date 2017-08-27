@@ -62,12 +62,11 @@ module KG {
             let legend = this;
 
             legend.element = layer.append('div').style('position', 'absolute');
-            legend.titleElement = legend.element.append('h3');
-            legend.element.append('hr');
+            legend.titleElement = legend.element.append('p').style('width','100%').append('span').attr('class','newthought');
             legend.descriptionElement = legend.element.append('div');
-            const sliderTable = legend.element.append('table');
+            const sliderTable = legend.element.append('table').style('padding','10px');
             legend.sliders.forEach(function(slider) {
-                new Slider({layer: legend.element, param: slider.param, label: slider.label, model: legend.model})
+                new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: legend.model})
             });
             return legend;
 
@@ -77,7 +76,7 @@ module KG {
         update(force) {
             let legend = super.update(force);
             if (legend.hasChanged) {
-                legend.titleElement.text(legend.title);
+                legend.titleElement.text(legend.title.toLowerCase());
                 legend.descriptionElement.text(legend.description);
             }
             return legend;

@@ -7,8 +7,6 @@ module KG {
         y1: any;
         x2: any;
         y2: any;
-        color?: any;
-        width?: any;
     }
 
     export class Segment extends ViewObject {
@@ -17,12 +15,10 @@ module KG {
         private y1;
         private x2;
         private y2;
-        private color;
 
         private g;
         private dragLine;
         private line;
-        private width;
 
         constructor(def: SegmentDefinition) {
 
@@ -43,7 +39,7 @@ module KG {
             segment.g = layer.append('g');
             segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity',0);
             segment.line = segment.g.append('line');
-            segment.addClipPath(segment.g)
+            segment.addClipPath(segment.g);
             segment.interactionHandler.addTrigger(segment.g);
             return segment;
         }
