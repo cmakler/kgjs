@@ -6,7 +6,7 @@ div.kg-container text {
     user-select: none;
 }
 
-def.kg-container text::selection {
+div.kg-container text::selection {
     background: none;
 }
 
@@ -16,4 +16,8 @@ text {
 
 input {
     font-family: KaTeX_Main;
+}
+
+.katex {
+    font-size: 1em
 }
