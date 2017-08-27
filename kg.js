@@ -61,196 +61,75 @@ var _;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var View = (function () {
-        function View(div, data) {
-            data.params = (data.params || []).map(function (paramData) {
-                // allow author to override initial parameter values by specifying them as div attributes
-                if (div.hasAttribute(paramData.name)) {
-                    paramData.value = div.getAttribute(paramData.name);
+    var Parser = (function () {
+        function Parser(author_data) {
+            var parser = this;
+            parser.author_data = author_data;
+            if (author_data.hasOwnProperty('schema')) {
+                if (author_data['schema'] == 'econ') {
+                    parser.schema = new KG.EconSchema(author_data);
                 }
-                // convert numerical params from strings to numbers
-                paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
-                return paramData;
-            });
-            var view = this;
-            view.div = d3.select(div).style('position', 'relative');
-            view.svg = view.div.append("svg").style("overflow", "visible").style("pointer-events", "none");
-            var defLayer = view.svg.append("defs");
-            view.aspectRatio = data.aspectRatio || 1;
-            view.model = new KG.Model(data.params, data.restrictions);
-            view.legends = [];
-            var REF_CATEGORIES = [
-                {
-                    category: 'xScales',
-                    className: 'Scale',
-                    propName: 'xScale',
-                    refName: 'xScaleName'
-                },
-                {
-                    category: 'yScales',
-                    className: 'Scale',
-                    propName: 'yScale',
-                    refName: 'yScaleName'
-                },
-                {
-                    category: 'univariateFunctions',
-                    className: 'UnivariateFunction',
-                    propName: 'univariateFunctions',
-                    refName: 'univariateFunctionNames'
-                }
-            ];
-            var STORED_CATEGORIES = ['xScales', 'yScales'];
-            var VIEW_OBJECT_CATEGORIES = [
-                {
-                    name: 'clipPaths',
-                    parent: 'defs',
-                    element: '',
-                    className: 'ClipPath'
-                },
-                {
-                    name: 'curves',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Curve'
-                },
-                {
-                    name: 'segments',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Segment'
-                },
-                {
-                    name: 'axes',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Axis'
-                },
-                {
-                    name: 'points',
-                    parent: 'svg',
-                    element: 'g',
-                    className: 'Point'
-                },
-                {
-                    name: 'labels',
-                    parent: 'div',
-                    element: 'div',
-                    className: 'Label'
-                },
-                {
-                    name: 'legends',
-                    parent: 'div',
-                    element: 'div',
-                    className: 'Legend'
-                }
-            ];
-            /*
-             Each REF_CATEGORY is a category of REF -- e.g., a scale or a function.
-             Each REF is a JS object that is used by viewable objects, but has no DOM representation.
-             This next part of the code reads each category of REF and generates the appropriate REF objects.
-             Each REF has a name that is unique within its category; the global key for each REF is category_name.
-             For example, an xAxis REF named 'good1' would now be referred to as 'refs.xAxis_good1.'
-             */
-            var refs = {};
-            REF_CATEGORIES.forEach(function (refDef) {
-                if (data.hasOwnProperty(refDef.category)) {
-                    data[refDef.category].forEach(function (def) {
-                        // each object has a reference to the model so it can update itself
-                        def.model = view.model;
-                        // create the object
-                        var newRef = new KG[refDef.className](def);
-                        // add the object, with a unique name, to the refs object
-                        refs[refDef.category + '_' + def.name] = newRef;
-                        // store some categories (e.g., scales) as properties of the view
-                        STORED_CATEGORIES.forEach(function (category) {
-                            view[category] = view[category] || [];
-                            if (refDef.category == category) {
-                                view[category].push(newRef);
-                            }
-                        });
-                    });
-                }
-            });
-            /*
-             Each VIEW_OBJECT_CATEGORY is a category of a viewObject -- e.g., a point or a segment.
-             Each category is allocated a "layer" in the SVG (or div).
-             As each is created, it adds elements to the DOM within that layer.
-             Once the diagram is completed, only the attributes of the DOM change; no new elements are added.
-             */
-            VIEW_OBJECT_CATEGORIES.forEach(function (voCategoryDef) {
-                if (data.hasOwnProperty(voCategoryDef.name)) {
-                    // Create the DOM parent for the category
-                    var layer_1 = (voCategoryDef.parent == 'defs') ? defLayer : view[voCategoryDef.parent].append(voCategoryDef.element).attr('class', voCategoryDef.name);
-                    // Create a JS object for each element of the category by creating its definition object
-                    data[voCategoryDef.name].forEach(function (def) {
-                        // each object has a reference to the model so it can update itself
-                        def.model = view.model;
-                        // each object is assigned its category's "layer" in the SVG (or div).
-                        def.layer = layer_1;
-                        // a clip path is both a layer and a ref; needs to be handled separately from other REFs.
-                        if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = refs["clipPaths_" + def.clipPathName];
-                        }
-                        // point to previously created REFs in each category of REF
-                        REF_CATEGORIES.forEach(function (ref) {
-                            if (!def.hasOwnProperty(ref.refName))
-                                return;
-                            if (def[ref.refName] instanceof Array) {
-                                def[ref.propName] = def[ref.refName].map(function (name) {
-                                    return refs[ref.category + '_' + name];
-                                });
-                            }
-                            else {
-                                def[ref.propName] = refs[ref.category + '_' + def[ref.refName]];
-                            }
-                        });
-                        // use the definition object to create the ViewObject
-                        var newViewObject = new KG[voCategoryDef.className](def);
-                        // if the object is a legend, append to view.legends
-                        if (voCategoryDef.className == 'Legend') {
-                            view.legends.push(newViewObject);
-                        }
-                        // a clip path is both a layer and a ref; need to store them to refs
-                        if (voCategoryDef.className == 'ClipPath') {
-                            refs['clipPaths_' + def.name] = newViewObject;
-                        }
-                    });
-                }
-            });
-            view.updateDimensions();
+            }
         }
-        // update dimensions, either when first rendering or when the window is resized
-        View.prototype.updateDimensions = function () {
-            var view = this;
-            // read the client width of the enclosing div and calculate the height using the aspectRatio
-            var width = view.div.node().clientWidth;
-            console.log(width);
-            if (width > 563 && view.legends.length > 0) {
-                view.legends.forEach(function (legend) { legend.positionRight(width); });
-                width = width * 77 / 126; // make width of graph the same width as main Tufte column
-            }
-            else {
-                view.legends.forEach(function (legend) { legend.positionBelow(); });
-            }
-            var height = width / view.aspectRatio;
-            // set the height of the div
-            view.div.style.height = height + 'px';
-            // set the dimensions of the svg
-            view.svg.style('width', width);
-            view.svg.style('height', height);
-            // adjust all of the scales to be proportional to the new dimensions
-            view.xScales.forEach(function (scale) {
-                scale.extent = width;
-            });
-            view.yScales.forEach(function (scale) {
-                scale.extent = height;
-            });
-            // once the scales are updated, update the coordinates of all view objects
-            view.model.update(true);
+        Parser.prototype.parse = function (render_data) {
+            var author_data = this.author_data;
+            return render_data;
         };
-        return View;
+        return Parser;
     }());
-    KG.View = View;
+    KG.Parser = Parser;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Schema = (function (_super) {
+        __extends(Schema, _super);
+        function Schema(author_data) {
+            return _super.call(this, author_data) || this;
+        }
+        Schema.prototype.parse = function (render_data) {
+            return render_data;
+        };
+        return Schema;
+    }(KG.Parser));
+    KG.Schema = Schema;
+})(KG || (KG = {}));
+/// <reference path="../../../kg.ts" />
+var KG;
+(function (KG) {
+    var EconSchema = (function (_super) {
+        __extends(EconSchema, _super);
+        function EconSchema() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return EconSchema;
+    }(KG.Schema));
+    KG.EconSchema = EconSchema;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var AuthoringObject = (function () {
+        function AuthoringObject(def) {
+            def = _.defaults(def, {
+                updatables: [],
+                constants: [],
+                show: true
+            });
+            _this = _super.call(this, def) || this;
+            var divObj = this;
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
+            if (def.hasOwnProperty('layer')) {
+                divObj.draw(def.layer).update(true);
+            }
+        }
+        AuthoringObject.prototype.parse = function (schema) {
+            return this;
+        };
+        return AuthoringObject;
+    }());
+    KG.AuthoringObject = AuthoringObject;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -666,96 +545,123 @@ var KG;
     }(KG.UpdateListener));
     KG.InteractionHandler = InteractionHandler;
 })(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path='../kg.ts' />
 var KG;
 (function (KG) {
-    var DivObject = (function (_super) {
-        __extends(DivObject, _super);
-        function DivObject(def) {
-            var _this = this;
-            def = _.defaults(def, {
-                updatables: [],
-                constants: [],
-                show: true
+    var View = (function () {
+        function View(div, data) {
+            data.params = (data.params || []).map(function (paramData) {
+                // allow author to override initial parameter values by specifying them as div attributes
+                if (div.hasAttribute(paramData.name)) {
+                    paramData.value = div.getAttribute(paramData.name);
+                }
+                // convert numerical params from strings to numbers
+                paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
+                return paramData;
             });
-            _this = _super.call(this, def) || this;
-            var divObj = _this;
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                divObj.draw(def.layer).update(true);
-            }
-            return _this;
+            var view = this;
+            view.aspectRatio = data.aspectRatio || 1;
+            view.model = new KG.Model(data.params, data.restrictions);
+            // create scales
+            view.scales = data.scales.map(function (def) {
+                def.model = view.model;
+                return new KG.Scale(def);
+            });
+            // create the div for the view
+            view.div = d3.select(div)
+                .style('position', 'relative');
+            // create the SVG element for the view
+            view.svg = view.div.append('svg')
+                .style('overflow', 'visible')
+                .style('pointer-events', 'none');
+            view.addViewObjects(data);
         }
-        DivObject.prototype.draw = function (layer) {
-            return this;
-        };
-        return DivObject;
-    }(KG.UpdateListener));
-    KG.DivObject = DivObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Slider = (function (_super) {
-        __extends(Slider, _super);
-        function Slider(def) {
-            var _this = this;
-            // establish property defaults
-            def = _.defaults(def, {
-                value: 'params.' + def.param,
-                noAxis: false,
-                constants: [],
-                updatables: []
-            });
-            // define constant and updatable properties
-            def.constants = def.constants.concat(['param', 'noAxis']);
-            def.updatables = def.updatables.concat(['label', 'value']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Slider.prototype.draw = function (layer) {
-            var slider = this;
-            slider.element = layer.append('tr');
-            var param = slider.model.getParam(slider.param);
-            slider.labelElement = slider.element.append('td')
-                .style('font-size', '14pt');
-            slider.numberInput = slider.element.append('td').append('input')
-                .attr('type', 'number')
-                .attr('min', param.min)
-                .attr('max', param.max)
-                .attr('step', param.round)
-                .style('font-size', '14pt')
-                .style('border', 'none')
-                .style('background', 'none')
-                .style('padding-left', '5px')
-                .style('font-family', 'KaTeX_Main');
-            slider.numberInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
-            });
-            slider.rangeInput = slider.element.append('td').append('input')
-                .attr('type', 'range')
-                .attr('min', param.min)
-                .attr('max', param.max)
-                .attr('step', param.round);
-            slider.rangeInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
-            });
-            return slider;
-        };
-        // update properties
-        Slider.prototype.update = function (force) {
-            var slider = _super.prototype.update.call(this, force);
-            if (slider.hasChanged) {
-                katex.render(slider.label + " = ", slider.labelElement.node());
-                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
-                slider.rangeInput.property('value', slider.value);
+        // add view information (model, layer, scales) to an object
+        View.prototype.addViewToDef = function (def, layer) {
+            var view = this;
+            function getScale(name) {
+                var result = null;
+                view.scales.forEach(function (scale) {
+                    if (scale.name == name) {
+                        result = scale;
+                    }
+                });
+                return result;
             }
-            return slider;
+            def.model = view.model;
+            def.layer = layer;
+            def.xScale = getScale(def['xScaleName']);
+            def.yScale = getScale(def['yScaleName']);
+            if (def.hasOwnProperty('xScale2Name')) {
+                def.xScale2 = getScale(def['xScale2Name']);
+                def.yScale2 = getScale(def['yScale2Name']);
+            }
+            return def;
         };
-        return Slider;
-    }(KG.DivObject));
-    KG.Slider = Slider;
+        // create view objects
+        View.prototype.addViewObjects = function (data) {
+            var view = this;
+            var clipPathRefs = {};
+            if (data.hasOwnProperty('clipPaths')) {
+                // create ClipPaths, store them to refs, and add them to the SVG.
+                var defLayer_1 = view.svg.append('defs');
+                data.clipPaths.forEach(function (def) {
+                    def = view.addViewToDef(def, defLayer_1);
+                    clipPathRefs[def.name] = new KG.ClipPath(def);
+                });
+            }
+            // add layers of objects
+            data.layers.forEach(function (layerViewObjectDefs) {
+                var layer = view.svg.append('g');
+                layerViewObjectDefs.forEach(function (defWithType) {
+                    var def = defWithType.def;
+                    if (def.hasOwnProperty('clipPathName')) {
+                        def.clipPath = clipPathRefs[def['clipPathName']];
+                    }
+                    def = view.addViewToDef(def, layer);
+                    new KG[defWithType.type](def);
+                });
+            });
+            // add divs
+            if (data.hasOwnProperty('divs')) {
+                data.divs.forEach(function (defWithType) {
+                    var def = view.addViewToDef(defWithType.def, view.div), newDiv = KG[defWithType.type](def);
+                    if (defWithType.type == 'Sidebar') {
+                        view.sidebar = newDiv;
+                    }
+                });
+            }
+            view.updateDimensions();
+        };
+        // update dimensions, either when first rendering or when the window is resized
+        View.prototype.updateDimensions = function () {
+            var view = this;
+            // read the client width of the enclosing div and calculate the height using the aspectRatio
+            var width = view.div.node().clientWidth;
+            console.log(width);
+            if (width > 563 && view.sidebar) {
+                view.sidebar.positionRight(width);
+                width = width * 77 / 126; // make width of graph the same width as main Tufte column
+            }
+            else if (view.sidebar) {
+                view.sidebar.positionBelow();
+            }
+            var height = width / view.aspectRatio;
+            // set the height of the div
+            view.div.style.height = height + 'px';
+            // set the dimensions of the svg
+            view.svg.style('width', width);
+            view.svg.style('height', height);
+            // adjust all of the scales to be proportional to the new dimensions
+            view.scales.forEach(function (scale) {
+                scale.updateDimensions(width, height);
+            });
+            // once the scales are updated, update the coordinates of all view objects
+            view.model.update(true);
+        };
+        return View;
+    }());
+    KG.View = View;
 })(KG || (KG = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -779,6 +685,11 @@ var KG;
                 s.scale.range([rangeMin, rangeMax]);
             }
             return s;
+        };
+        Scale.prototype.updateDimensions = function (width, height) {
+            var s = this;
+            s.extent = (s.axis == 'x') ? width : height;
+            return s.update(true);
         };
         return Scale;
     }(KG.UpdateListener));
@@ -841,66 +752,6 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Legend = (function (_super) {
-        __extends(Legend, _super);
-        function Legend(def) {
-            var _this = this;
-            // establish property defaults
-            def = _.defaults(def, {
-                constants: [],
-                updatables: []
-            });
-            // define updatable properties
-            def.constants = def.constants.concat(['sliders']);
-            def.updatables = def.updatables.concat(['title', 'description']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Legend.prototype.positionRight = function (width) {
-            var legend = this;
-            legend.element
-                .style('position', 'absolute')
-                .style('left', width * 847 / 1260 + 'px')
-                .style('top', '0px')
-                .style('width', width * 385 / 1260 + 'px');
-        };
-        Legend.prototype.positionBelow = function () {
-            var legend = this;
-            legend.element
-                .style('position', null)
-                .style('left', null)
-                .style('width', null);
-        };
-        Legend.prototype.addSlider = function (sliderDef) {
-        };
-        // create div for text
-        Legend.prototype.draw = function (layer) {
-            var legend = this;
-            legend.element = layer.append('div').style('position', 'absolute');
-            legend.titleElement = legend.element.append('p').style('width', '100%').append('span').attr('class', 'newthought');
-            legend.descriptionElement = legend.element.append('div');
-            var sliderTable = legend.element.append('table').style('padding', '10px');
-            legend.sliders.forEach(function (slider) {
-                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: legend.model });
-            });
-            return legend;
-        };
-        // update properties
-        Legend.prototype.update = function (force) {
-            var legend = _super.prototype.update.call(this, force);
-            if (legend.hasChanged) {
-                legend.titleElement.text(legend.title.toLowerCase());
-                legend.descriptionElement.text(legend.description);
-            }
-            return legend;
-        };
-        return Legend;
-    }(KG.ViewObject));
-    KG.Legend = Legend;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -1144,6 +995,215 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var DivObject = (function (_super) {
+        __extends(DivObject, _super);
+        function DivObject(def) {
+            var _this = this;
+            def = _.defaults(def, {
+                updatables: [],
+                constants: [],
+                show: true
+            });
+            _this = _super.call(this, def) || this;
+            var divObj = _this;
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
+            if (def.hasOwnProperty('layer')) {
+                divObj.draw(def.layer).update(true);
+            }
+            return _this;
+        }
+        DivObject.prototype.draw = function (layer) {
+            return this;
+        };
+        return DivObject;
+    }(KG.UpdateListener));
+    KG.DivObject = DivObject;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Slider = (function (_super) {
+        __extends(Slider, _super);
+        function Slider(def) {
+            var _this = this;
+            // establish property defaults
+            def = _.defaults(def, {
+                value: 'params.' + def.param,
+                noAxis: false,
+                constants: [],
+                updatables: []
+            });
+            // define constant and updatable properties
+            def.constants = def.constants.concat(['param', 'noAxis']);
+            def.updatables = def.updatables.concat(['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Slider.prototype.draw = function (layer) {
+            var slider = this;
+            slider.element = layer.append('tr');
+            var param = slider.model.getParam(slider.param);
+            slider.labelElement = slider.element.append('td')
+                .style('font-size', '14pt');
+            slider.numberInput = slider.element.append('td').append('input')
+                .attr('type', 'number')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round)
+                .style('font-size', '14pt')
+                .style('border', 'none')
+                .style('background', 'none')
+                .style('padding-left', '5px')
+                .style('font-family', 'KaTeX_Main');
+            slider.numberInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            slider.rangeInput = slider.element.append('td').append('input')
+                .attr('type', 'range')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round);
+            slider.rangeInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            return slider;
+        };
+        // update properties
+        Slider.prototype.update = function (force) {
+            var slider = _super.prototype.update.call(this, force);
+            if (slider.hasChanged) {
+                katex.render(slider.label + " = ", slider.labelElement.node());
+                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+                slider.rangeInput.property('value', slider.value);
+            }
+            return slider;
+        };
+        return Slider;
+    }(KG.DivObject));
+    KG.Slider = Slider;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Sidebar = (function (_super) {
+        __extends(Sidebar, _super);
+        function Sidebar(def) {
+            var _this = this;
+            // establish property defaults
+            def = _.defaults(def, {
+                constants: [],
+                updatables: []
+            });
+            // define updatable properties
+            def.constants = def.constants.concat(['sliders']);
+            def.updatables = def.updatables.concat(['title', 'description']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Sidebar.prototype.positionRight = function (width) {
+            var sidebar = this;
+            sidebar.element
+                .style('position', 'absolute')
+                .style('left', width * 847 / 1260 + 'px')
+                .style('top', '0px')
+                .style('width', width * 385 / 1260 + 'px');
+        };
+        Sidebar.prototype.positionBelow = function () {
+            var sidebar = this;
+            sidebar.element
+                .style('position', null)
+                .style('left', null)
+                .style('width', null);
+        };
+        Sidebar.prototype.addSlider = function (sliderDef) {
+        };
+        // create div for text
+        Sidebar.prototype.draw = function (layer) {
+            var sidebar = this;
+            sidebar.element = layer.append('div').style('position', 'absolute');
+            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').append('span').attr('class', 'newthought');
+            sidebar.descriptionElement = sidebar.element.append('div');
+            var sliderTable = sidebar.element.append('table').style('padding', '10px');
+            sidebar.sliders.forEach(function (slider) {
+                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model });
+            });
+            return sidebar;
+        };
+        // update properties
+        Sidebar.prototype.update = function (force) {
+            var sidebar = _super.prototype.update.call(this, force);
+            if (sidebar.hasChanged) {
+                sidebar.titleElement.text(sidebar.title.toLowerCase());
+                sidebar.descriptionElement.text(sidebar.description);
+            }
+            return sidebar;
+        };
+        return Sidebar;
+    }(KG.ViewObject));
+    KG.Sidebar = Sidebar;
+})(KG || (KG = {}));
+/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
+/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
+/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="lib/underscore.ts"/>
+/// <reference path="parser/parser.ts"/>
+/// <reference path="parser/schemas/schema.ts"/>
+/// <reference path="parser/schemas/econ/econ.ts"/>
+/// <reference path="parser/authoringObjects/authoringObject.ts"/>
+/// <reference path="model/model.ts"/>
+/// <reference path="model/param.ts" />
+/// <reference path="model/restriction.ts" />
+/// <reference path="model/updateListener.ts" />
+/// <reference path="math/univariateFunction.ts" />
+/// <reference path="controller/listeners/listener.ts" />
+/// <reference path="controller/listeners/dragListener.ts" />
+/// <reference path="controller/listeners/clickListener.ts" />
+/// <reference path="controller/interactionHandler.ts" />
+/// <reference path="view/view.ts"/>
+/// <reference path="view/scale.ts" />
+/// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/clipPath.ts" />
+/// <reference path="view/viewObjects/segment.ts" />
+/// <reference path="view/viewObjects/curve.ts" />
+/// <reference path="view/viewObjects/axis.ts" />
+/// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/sidebar.ts"/>
+/// <reference path="view/divObjects/label.ts" />
+// this file provides the interface with the overall web page
+var views = [];
+// initialize the diagram from divs with class kg-container
+window.addEventListener("load", function () {
+    var viewDivs = document.getElementsByClassName('kg-container');
+    var _loop_1 = function (i) {
+        var url = viewDivs[i].getAttribute('src');
+        viewDivs[i].innerHTML = "<p>loading...</p>";
+        d3.json(url, function (data) {
+            if (!data) {
+                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>";
+            }
+            else {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], data));
+            }
+        });
+    };
+    // for each div, fetch the JSON definition and create a View object with that div and data
+    for (var i = 0; i < viewDivs.length; i++) {
+        _loop_1(i);
+    }
+});
+// if the window changes size, update the dimensions of the containers
+window.onresize = function () {
+    views.forEach(function (c) {
+        c.updateDimensions();
+    });
+};
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def) {
@@ -1186,108 +1246,4 @@ var KG;
         return Label;
     }(KG.ViewObject));
     KG.Label = Label;
-})(KG || (KG = {}));
-/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
-/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
-/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
-/// <reference path="lib/underscore.ts"/>
-/// <reference path="view/view.ts"/>
-/// <reference path="model/model.ts"/>
-/// <reference path="model/param.ts" />
-/// <reference path="model/restriction.ts" />
-/// <reference path="model/updateListener.ts" />
-/// <reference path="math/univariateFunction.ts" />
-/// <reference path="controller/listeners/listener.ts" />
-/// <reference path="controller/listeners/dragListener.ts" />
-/// <reference path="controller/listeners/clickListener.ts" />
-/// <reference path="controller/interactionHandler.ts" />
-/// <reference path="view/divObjects/divObject.ts" />
-/// <reference path="view/divObjects/slider.ts"/>
-/// <reference path="view/scale.ts" />
-/// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/legend.ts"/>
-/// <reference path="view/viewObjects/clipPath.ts" />
-/// <reference path="view/viewObjects/segment.ts" />
-/// <reference path="view/viewObjects/curve.ts" />
-/// <reference path="view/viewObjects/axis.ts" />
-/// <reference path="view/viewObjects/point.ts" />
-/// <reference path="view/viewObjects/label.ts" />
-// this file provides the interface with the overall web page
-var views = [];
-// initialize the diagram from divs with class kg-container
-window.addEventListener("load", function () {
-    var viewDivs = document.getElementsByClassName('kg-container');
-    var _loop_1 = function (i) {
-        var url = viewDivs[i].getAttribute('src');
-        viewDivs[i].innerHTML = "<p>loading...</p>";
-        d3.json(url, function (data) {
-            if (!data) {
-                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>";
-            }
-            else {
-                viewDivs[i].innerHTML = "";
-                views.push(new KG.View(viewDivs[i], data));
-            }
-        });
-    };
-    // for each div, fetch the JSON definition and create a View object with that div and data
-    for (var i = 0; i < viewDivs.length; i++) {
-        _loop_1(i);
-    }
-});
-// if the window changes size, update the dimensions of the containers
-window.onresize = function () {
-    views.forEach(function (c) {
-        c.updateDimensions();
-    });
-};
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Schema = (function () {
-        function Schema() {
-        }
-        Schema.prototype.parse = function (schema) {
-            return this;
-        };
-        return Schema;
-    }());
-    KG.Schema = Schema;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Parser = (function () {
-        function Parser() {
-        }
-        Parser.prototype.parse = function (data) {
-            return data;
-        };
-        return Parser;
-    }());
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var AuthoringObject = (function () {
-        function AuthoringObject(def) {
-            def = _.defaults(def, {
-                updatables: [],
-                constants: [],
-                show: true
-            });
-            _this = _super.call(this, def) || this;
-            var divObj = this;
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                divObj.draw(def.layer).update(true);
-            }
-        }
-        AuthoringObject.prototype.parse = function (schema) {
-            return this;
-        };
-        return AuthoringObject;
-    }());
-    KG.AuthoringObject = AuthoringObject;
 })(KG || (KG = {}));

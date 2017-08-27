@@ -8,7 +8,7 @@ module KG {
         show?: any;
         xScale: Scale;
         yScale: Scale;
-        clipPath: ClipPath;
+        clipPath?: ClipPath;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;

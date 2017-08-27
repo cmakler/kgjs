@@ -2,20 +2,14 @@
 
 module KG {
 
-    export interface ISchema extends IParser {
-        specialTypes: string[]
-    }
+    export class Schema extends Parser {
 
-    export class Schema implements ISchema {
-
-        public specialTypes;
-
-        constructor() {
-
+        constructor(author_data) {
+            super(author_data)
         }
 
-        parse(schema:any) {
-            return this;
+        parse(render_data) {
+            return render_data;
         }
 
     }

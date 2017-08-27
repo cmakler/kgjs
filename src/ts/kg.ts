@@ -4,8 +4,10 @@
 
 /// <reference path="lib/underscore.ts"/>
 
-/// <reference path="view/view.ts"/>
-
+/// <reference path="parser/parser.ts"/>
+/// <reference path="parser/schemas/schema.ts"/>
+/// <reference path="parser/schemas/econ/econ.ts"/>
+/// <reference path="parser/authoringObjects/authoringObject.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
@@ -19,17 +21,19 @@
 /// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 
-/// <reference path="view/divObjects/divObject.ts" />
-/// <reference path="view/divObjects/slider.ts"/>
-
+/// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
+
 /// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/legend.ts"/>
 /// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 
 

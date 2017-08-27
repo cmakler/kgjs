@@ -2,18 +2,18 @@
 
 module KG {
 
-    export interface LegendDefinition extends ViewObjectDefinition {
+    export interface SidebarDefinition extends ViewObjectDefinition {
         title: string;
         description: string;
         sliders: any[];
     }
 
-    export interface ILegend extends IViewObject {
+    export interface ISidebar extends IViewObject {
         positionRight: (width: number) => void;
         positionBelow: () => void;
     }
 
-    export class Legend extends ViewObject {
+    export class Sidebar extends ViewObject implements ISidebar {
 
         private title;
         private description;
@@ -21,7 +21,7 @@ module KG {
         private descriptionElement;
         public position: 'right' | 'bottom';
 
-        constructor(def: LegendDefinition) {
+        constructor(def: SidebarDefinition) {
 
             // establish property defaults
             def = _.defaults(def, {
@@ -37,8 +37,8 @@ module KG {
         }
 
         positionRight(width) {
-            let legend = this;
-            legend.element
+            let sidebar = this;
+            sidebar.element
                 .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
@@ -46,8 +46,8 @@ module KG {
         }
 
         positionBelow() {
-            let legend = this;
-            legend.element
+            let sidebar = this;
+            sidebar.element
                 .style('position', null)
                 .style('left', null)
                 .style('width', null);
@@ -59,27 +59,27 @@ module KG {
 
         // create div for text
         draw(layer) {
-            let legend = this;
+            let sidebar = this;
 
-            legend.element = layer.append('div').style('position', 'absolute');
-            legend.titleElement = legend.element.append('p').style('width','100%').append('span').attr('class','newthought');
-            legend.descriptionElement = legend.element.append('div');
-            const sliderTable = legend.element.append('table').style('padding','10px');
-            legend.sliders.forEach(function(slider) {
-                new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: legend.model})
+            sidebar.element = layer.append('div').style('position', 'absolute');
+            sidebar.titleElement = sidebar.element.append('p').style('width','100%').append('span').attr('class','newthought');
+            sidebar.descriptionElement = sidebar.element.append('div');
+            const sliderTable = sidebar.element.append('table').style('padding','10px');
+            sidebar.sliders.forEach(function(slider) {
+                new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model})
             });
-            return legend;
+            return sidebar;
 
         }
 
         // update properties
         update(force) {
-            let legend = super.update(force);
-            if (legend.hasChanged) {
-                legend.titleElement.text(legend.title.toLowerCase());
-                legend.descriptionElement.text(legend.description);
+            let sidebar = super.update(force);
+            if (sidebar.hasChanged) {
+                sidebar.titleElement.text(sidebar.title.toLowerCase());
+                sidebar.descriptionElement.text(sidebar.description);
             }
-            return legend;
+            return sidebar;
         }
     }
 

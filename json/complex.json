@@ -1,0 +1,130 @@
+{
+  "aspectRatio": 2,
+  "params": [
+    {
+      "name": "x",
+      "value": "4",
+      "min": "-4",
+      "max": "4",
+      "round": "0.1"
+    }
+  ],
+  "scales": [
+    {
+      "name": "square",
+      "axis": "x",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0",
+      "rangeMax": "0.45"
+    },
+    {
+      "name": "real",
+      "axis": "x",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0.55",
+      "rangeMax": "0.95"
+    },
+    {
+      "name": "imaginary",
+      "axis": "y",
+      "domainMin": "-4",
+      "domainMax": "4",
+      "rangeMin": "0.95",
+      "rangeMax": "0.05"
+    }
+  ],
+  "layers": [
+    [
+      {
+        "type": "Axis",
+        "def": {
+          "xScaleName": "square",
+          "yScaleName": "imaginary",
+          "orient": "bottom"
+        }
+      },
+      {
+        "type": "Axis",
+        "def": {
+          "xScaleName": "real",
+          "yScaleName": "imaginary",
+          "orient": "bottom"
+        }
+      },
+      {
+        "type": "Axis",
+        "def": {
+          "xScaleName": "real",
+          "yScaleName": "imaginary",
+          "orient": "left",
+          "show": "(params.x < 0)"
+        }
+      }
+    ],
+    [
+      {
+        "type": "Point",
+        "def": {
+          "x": "params.x",
+          "y": "0",
+          "xScaleName": "square",
+          "yScaleName": "imaginary",
+          "clipPathName": "graph1",
+          "drag": [
+            {
+              "directions": "x",
+              "param": "x",
+              "expression": "params.x + drag.dx"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Point",
+        "def": {
+          "x": "(params.x < 0) ? 0 : sqrt(params.x)",
+          "y": "(params.x < 0) ? sqrt(-params.x) : 0",
+          "xScaleName": "real",
+          "yScaleName": "imaginary"
+        }
+      }
+    ]
+  ],
+  "divs": [
+    {
+      "type": "Label",
+      "def": {
+        "x": "params.x",
+        "y": "0",
+        "text": "`x = ${params.x.toFixed(1)}`",
+        "xScaleName": "square",
+        "yScaleName": "imaginary",
+        "xPixelOffset": "5",
+        "yPixelOffset": "-15",
+        "fontSize": "8",
+        "drag": [
+          {
+            "directions": "x",
+            "param": "x",
+            "expression": "params.x + drag.dx"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Label",
+      "def": {
+        "x": "(params.x < 0) ? 0 : (params.x)^0.5",
+        "y": "(params.x < 0) ? (-params.x)^0.5 : 0",
+        "xScaleName": "real",
+        "yScaleName": "imaginary",
+        "text": "`\\\\sqrt{x} = ${(params.x < 0) ? Math.pow(-params.x,0.5).toFixed(2)+'i' : Math.pow(params.x,0.5).toFixed(2)}`",
+        "xPixelOffset": "5",
+        "yPixelOffset": "-15",
+        "fontSize": "8"
+      }
+    }
+  ]
+}

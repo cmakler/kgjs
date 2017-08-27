@@ -2,24 +2,33 @@
 
 module KG {
 
-    interface GraphDef {
-        type: string;
-        def: any;
-    }
-
     interface IParser {
-        parseSpecial: (data: any) => any;
-        parse: (data:any) => any;
+        parse: (render_data:ViewDefinition) => ViewDefinition;
     }
 
-    class Parser {
+    export class Parser implements IParser {
 
+        private author_data;
+        private schema;
         public specialTypes: string[];
 
-        constructor(defs:AuthoringObjectDefinition[])
+        constructor(author_data) {
+            let parser = this;
+            parser.author_data = author_data;
+            if (author_data.hasOwnProperty('schema')) {
+                if (author_data['schema'] == 'econ') {
+                    parser.schema = new EconSchema(author_data)
+                }
+            }
+        }
 
-        parse(data) {
-            return data;
+        parse(render_data) {
+
+            let author_data = this.author_data;
+
+            return render_data;
+
+
         }
     }
 
