@@ -4,8 +4,9 @@
 
 /// <reference path="lib/underscore.ts"/>
 
-/// <reference path="view/view.ts"/>
-
+/// <reference path="KGAuthor/authoringObject.ts"/>
+/// <reference path="KGAuthor/graph.ts"/>
+/// <reference path="KGAuthor/graphObject.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
@@ -19,17 +20,19 @@
 /// <reference path="controller/listeners/clickListener.ts" />
 /// <reference path="controller/interactionHandler.ts" />
 
-/// <reference path="view/divObjects/divObject.ts" />
-/// <reference path="view/divObjects/slider.ts"/>
-
+/// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
+
 /// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/legend.ts"/>
 /// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 
 

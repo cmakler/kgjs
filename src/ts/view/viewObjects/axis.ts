@@ -41,6 +41,7 @@ module KG {
 
         update(force) {
             let a = super.update(force);
+            a.g.style('display',a.show ? null : 'none');
             switch (a.orient) {
                 case 'bottom':
                     a.g.attr('transform', `translate(0, ${a.yScale.scale(a.intercept)})`);
@@ -61,8 +62,8 @@ module KG {
                     a.g.attr('transform', `translate(${a.xScale.scale(a.intercept)},0)`);
                     a.g.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
                     return a;
-
             }
+
             return a;
         }
 
