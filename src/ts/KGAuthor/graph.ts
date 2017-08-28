@@ -44,7 +44,7 @@ module KGAuthor {
                 type: 'Axis',
                 def: this.def.yAxis
             });
-            g.subobjects = this.def.objects.map(function(obj) {
+            g.subObjects = this.def.objects.map(function(obj) {
                 return new KGAuthor[obj.type](obj.def, g)
             })
 

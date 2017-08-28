@@ -78,17 +78,106 @@ var KGAuthor;
         return parsedData;
     }
     KGAuthor.parse = parse;
+    function getDefinitionProperty(def) {
+        if (typeof def == 'string') {
+            if (def.match(/[\*/+-]/)) {
+                return '(' + def + ')';
+            }
+            else {
+                return def;
+            }
+        }
+        else {
+            return def;
+        }
+    }
+    KGAuthor.getDefinitionProperty = getDefinitionProperty;
+    function getPropertyAsString(def) {
+        var d = def;
+        if (typeof d == 'number') {
+            return d.toString();
+        }
+        else {
+            return "(" + d.toString() + ")";
+        }
+    }
+    KGAuthor.getPropertyAsString = getPropertyAsString;
+    function getParameterName(str) {
+        if (typeof str == 'string') {
+            return str.replace('params.', '');
+        }
+        else {
+            return str;
+        }
+    }
+    KGAuthor.getParameterName = getParameterName;
+    function binaryFunction(def1, def2, fn) {
+        if (typeof def1 == 'number' && typeof def2 == 'number') {
+            switch (fn) {
+                case "+":
+                    return def1 + def2;
+                case "-":
+                    return def1 - def2;
+                case "/":
+                    return def1 / def2;
+                case "*":
+                    return def1 * def2;
+                case "^":
+                    return Math.pow(def1, def2);
+            }
+        }
+        else {
+            return "(" + getDefinitionProperty(def1) + fn + getDefinitionProperty(def2) + ")";
+        }
+    }
+    KGAuthor.binaryFunction = binaryFunction;
+    function addDefs(def1, def2) {
+        return binaryFunction(def1, def2, '+');
+    }
+    KGAuthor.addDefs = addDefs;
+    function subtractDefs(def1, def2) {
+        return binaryFunction(def1, def2, '-');
+    }
+    KGAuthor.subtractDefs = subtractDefs;
+    function divideDefs(def1, def2) {
+        return binaryFunction(def1, def2, '/');
+    }
+    KGAuthor.divideDefs = divideDefs;
+    function multiplyDefs(def1, def2) {
+        return binaryFunction(def1, def2, '*');
+    }
+    KGAuthor.multiplyDefs = multiplyDefs;
+    function squareDef(def) {
+        return binaryFunction(def, def, '*');
+    }
+    KGAuthor.squareDef = squareDef;
+    function sqrtDef(def) {
+        return 'Math.sqrt(' + def + ')';
+    }
+    KGAuthor.sqrtDef = sqrtDef;
+    function raiseDefToDef(def1, def2) {
+        return binaryFunction(def1, def2, '^');
+    }
+    KGAuthor.raiseDefToDef = raiseDefToDef;
+    function paramName(def) {
+        return def.replace('params.', '');
+    }
+    KGAuthor.paramName = paramName;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var AuthoringObject = (function () {
         function AuthoringObject(def) {
             this.def = def;
-            this.subobjects = [];
+            this.subObjects = [];
         }
         AuthoringObject.prototype.parse_self = function (parsedData) {
             return parsedData;
         };
         AuthoringObject.prototype.parse = function (parsedData) {
             parsedData = this.parse_self(parsedData);
-            this.subobjects.forEach(function (obj) {
+            this.subObjects.forEach(function (obj) {
                 parsedData = obj.parse(parsedData);
             });
             return parsedData;
@@ -118,7 +207,7 @@ var KGAuthor;
                 type: 'Axis',
                 def: _this.def.yAxis
             });
-            g.subobjects = _this.def.objects.map(function (obj) {
+            g.subObjects = _this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g);
             });
             return _this;
@@ -155,17 +244,17 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var GraphObject = (function (_super) {
-        __extends(GraphObject, _super);
-        function GraphObject(def, graph) {
+    var GraphObjectGenerator = (function (_super) {
+        __extends(GraphObjectGenerator, _super);
+        function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
             _this.def.xScaleName = graph.xScaleName;
             _this.def.yScaleName = graph.yScaleName;
             _this.def.clipPathName = graph.clipPathName;
-            _this.subobjects = [];
+            _this.subObjects = [];
             return _this;
         }
-        GraphObject.prototype.extractCoordinates = function (coordinatesKey, xKey, yKey) {
+        GraphObjectGenerator.prototype.extractCoordinates = function (coordinatesKey, xKey, yKey) {
             coordinatesKey = coordinatesKey || 'coordinates';
             xKey = xKey || 'x';
             yKey = yKey || 'y';
@@ -178,12 +267,20 @@ var KGAuthor;
             }
             console.log(def);
         };
+        return GraphObjectGenerator;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.GraphObjectGenerator = GraphObjectGenerator;
+    var GraphObject = (function (_super) {
+        __extends(GraphObject, _super);
+        function GraphObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
         GraphObject.prototype.parse_self = function (parsedData) {
             parsedData.layers[this.layer].push({ "type": this.type, "def": this.def });
             return parsedData;
         };
         return GraphObject;
-    }(KGAuthor.AuthoringObject));
+    }(GraphObjectGenerator));
     KGAuthor.GraphObject = GraphObject;
     var Axis = (function (_super) {
         __extends(Axis, _super);
@@ -196,6 +293,21 @@ var KGAuthor;
         return Axis;
     }(GraphObject));
     KGAuthor.Axis = Axis;
+    var Curve = (function (_super) {
+        __extends(Curve, _super);
+        function Curve(def, graph) {
+            var _this = this;
+            if (def.hasOwnProperty('univariateFunctions')) {
+                delete def.univariateFunctions;
+            }
+            _this = _super.call(this, def, graph) || this;
+            _this.type = 'Curve';
+            _this.layer = 1;
+            return _this;
+        }
+        return Curve;
+    }(GraphObject));
+    KGAuthor.Curve = Curve;
     var Label = (function (_super) {
         __extends(Label, _super);
         function Label() {
@@ -223,7 +335,7 @@ var KGAuthor;
                     xPixelOffset: 5,
                     yPixelOffset: -15
                 });
-                p.subobjects.push(new Label(labelDef, graph));
+                p.subObjects.push(new Label(labelDef, graph));
             }
             return _this;
         }
@@ -244,6 +356,76 @@ var KGAuthor;
         return Segment;
     }(GraphObject));
     KGAuthor.Segment = Segment;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var EconBudgetLine = (function (_super) {
+        __extends(EconBudgetLine, _super);
+        function EconBudgetLine(def, graph) {
+            var _this = this;
+            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
+            def.a = [xIntercept, 0];
+            def.b = [0, yIntercept];
+            def.stroke = 'green';
+            def.label = { text: 'BL' };
+            if (def.draggable) {
+                def.drag = {
+                    'directions': 'xy',
+                    'param': KGAuthor.paramName(def.m),
+                    'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
+                };
+            }
+            _this = _super.call(this, def, graph) || this;
+            var subObjects = _this.subObjects;
+            if (def.handles) {
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [xIntercept, 0],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'x',
+                            'param': KGAuthor.paramName(def.p1),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
+                        }]
+                }, graph));
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [0, yIntercept],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'y',
+                            'param': KGAuthor.paramName(def.p2),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
+                        }]
+                }, graph));
+            }
+            return _this;
+        }
+        return EconBudgetLine;
+    }(KGAuthor.Segment));
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var EconIndifferenceCurve = (function (_super) {
+        __extends(EconIndifferenceCurve, _super);
+        function EconIndifferenceCurve(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            def.map = !!def.map;
+            if (def.map) {
+                def.strokeWidth = 1;
+                def.stroke = 'lightgrey';
+            }
+            else {
+                def.strokeWidth = 2;
+                def.stroke = 'purple';
+            }
+            _this.subObjects = new KGAuthor[def.utilityFunction.type]();
+            return _this;
+        }
+        return EconIndifferenceCurve;
+    }(KGAuthor.GraphObjectGenerator));
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KG;
@@ -1323,9 +1505,12 @@ var KG;
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
+/// <reference path="KGAuthor/parsingFunctions.ts"/>
 /// <reference path="KGAuthor/authoringObject.ts"/>
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+/// <reference path="KGAuthor/econ/budgetLine.ts"/>
+/// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/restriction.ts" />

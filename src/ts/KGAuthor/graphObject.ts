@@ -2,20 +2,17 @@
 
 module KGAuthor {
 
-    export class GraphObject extends AuthoringObject {
+    export class GraphObjectGenerator extends AuthoringObject {
 
-        public type: string;
         public def: any;
-        public name: string;
-        public layer: number;
-        public subobjects: GraphObject[];
+        public subObjects: GraphObject[];
 
         constructor(def, graph: Graph) {
             super(def);
             this.def.xScaleName = graph.xScaleName;
             this.def.yScaleName = graph.yScaleName;
             this.def.clipPathName = graph.clipPathName;
-            this.subobjects = [];
+            this.subObjects = [];
         }
 
         extractCoordinates(coordinatesKey?, xKey?, yKey?) {
@@ -31,12 +28,19 @@ module KGAuthor {
             }
             console.log(def);
         }
+    }
+
+    export class GraphObject extends GraphObjectGenerator {
+
+        public type: string;
+        public layer: number;
 
         parse_self(parsedData: KG.ViewDefinition) {
             parsedData.layers[this.layer].push({"type": this.type, "def": this.def});
             return parsedData;
         }
     }
+
 
     export class Axis extends GraphObject {
 
@@ -48,6 +52,18 @@ module KGAuthor {
 
     }
 
+    export class Curve extends GraphObject {
+
+        constructor(def, graph) {
+            if(def.hasOwnProperty('univariateFunctions')) {
+                delete def.univariateFunctions;
+            }
+            super(def, graph);
+            this.type = 'Curve';
+            this.layer = 1;
+        }
+
+    }
 
     export class Label extends GraphObject {
 
@@ -76,7 +92,7 @@ module KGAuthor {
                     xPixelOffset: 5,
                     yPixelOffset: -15
                 });
-                p.subobjects.push(new Label(labelDef, graph));
+                p.subObjects.push(new Label(labelDef, graph));
             }
         }
 
