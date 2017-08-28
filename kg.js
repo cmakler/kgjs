@@ -59,78 +59,100 @@ var _;
 })(_ || (_ = {}));
 // End of underscorejs functions 
 /// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Parser = (function () {
-        function Parser(author_data) {
-            var parser = this;
-            parser.author_data = author_data;
-            if (author_data.hasOwnProperty('schema')) {
-                if (author_data['schema'] == 'econ') {
-                    parser.schema = new KG.EconSchema(author_data);
-                }
+var KGAuthor;
+(function (KGAuthor) {
+    function parse(data, parsedData) {
+        for (var prop in data) {
+            if (KGAuthor.hasOwnProperty(prop)) {
+                parsedData = new KGAuthor[prop](data[prop]).parse(parsedData);
+            }
+            else if (prop == 'graphs') {
+                data['graphs'].forEach(function (def) {
+                    parsedData = new KGAuthor.Graph(def).parse(parsedData);
+                });
+            }
+            else {
+                parsedData[prop] = parsedData[prop];
             }
         }
-        Parser.prototype.parse = function (render_data) {
-            var author_data = this.author_data;
-            return render_data;
-        };
-        return Parser;
-    }());
-    KG.Parser = Parser;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Schema = (function (_super) {
-        __extends(Schema, _super);
-        function Schema(author_data) {
-            return _super.call(this, author_data) || this;
-        }
-        Schema.prototype.parse = function (render_data) {
-            return render_data;
-        };
-        return Schema;
-    }(KG.Parser));
-    KG.Schema = Schema;
-})(KG || (KG = {}));
-/// <reference path="../../../kg.ts" />
-var KG;
-(function (KG) {
-    var EconSchema = (function (_super) {
-        __extends(EconSchema, _super);
-        function EconSchema() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return EconSchema;
-    }(KG.Schema));
-    KG.EconSchema = EconSchema;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
+        return parsedData;
+    }
+    KGAuthor.parse = parse;
     var AuthoringObject = (function () {
         function AuthoringObject(def) {
-            def = _.defaults(def, {
-                updatables: [],
-                constants: [],
-                show: true
-            });
-            _this = _super.call(this, def) || this;
-            var divObj = this;
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                divObj.draw(def.layer).update(true);
-            }
+            this.def = def;
         }
-        AuthoringObject.prototype.parse = function (schema) {
-            return this;
+        AuthoringObject.prototype.parse = function (parsedData) {
+            return parsedData;
         };
         return AuthoringObject;
     }());
-    KG.AuthoringObject = AuthoringObject;
-})(KG || (KG = {}));
+    KGAuthor.AuthoringObject = AuthoringObject;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Graph = (function (_super) {
+        __extends(Graph, _super);
+        function Graph(def) {
+            var _this = _super.call(this, def) || this;
+            _this.xScaleName = KG.randomString(10);
+            _this.yScaleName = KG.randomString(10);
+            _this.clipPathName = KG.randomString(10);
+            _this.def.xAxis.range = def.xAxis.range || [0, 1];
+            _this.def.yAxis.range = def.yAxis.range || [1, 0];
+            return _this;
+        }
+        Graph.prototype.parse = function (parsedData) {
+            var graph = this, xAxis = graph.def.xAxis, xScale = graph.xScaleName, yAxis = graph.def.yAxis, yScale = graph.yScaleName, clipPath = graph.clipPathName;
+            parsedData.scales.push({
+                "name": xScale,
+                "axis": "x",
+                "domainMin": xAxis.domain[0],
+                "domainMax": xAxis.domain[1],
+                "rangeMin": xAxis.range[0],
+                "rangeMax": xAxis.range[1]
+            });
+            parsedData.scales.push({
+                "name": yScale,
+                "axis": "y",
+                "domainMin": yAxis.domain[0],
+                "domainMax": yAxis.domain[1],
+                "rangeMin": yAxis.range[0],
+                "rangeMax": yAxis.range[1]
+            });
+            parsedData.clipPaths.push({
+                "name": clipPath,
+                "xScaleName": xScale,
+                "yScaleName": yScale
+            });
+            parsedData.layers[2].push({
+                "type": "Axis",
+                "def": {
+                    "xScaleName": xScale,
+                    "yScaleName": yScale,
+                    "orient": xAxis.orient,
+                    "title": xAxis.title
+                }
+            });
+            parsedData.layers[2].push({
+                "type": "Axis",
+                "def": {
+                    "xScaleName": xScale,
+                    "yScaleName": yScale,
+                    "orient": yAxis.orient,
+                    "title": yAxis.title
+                }
+            });
+            this.def.objects.forEach(function (obj) {
+                parsedData = new KGAuthor[obj.type](obj.def, graph).parse(parsedData);
+            });
+            return parsedData;
+        };
+        return Graph;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Graph = Graph;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
@@ -301,23 +323,24 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
+    function randomString(length) {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (var i = 0; i < length; i++) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
+    }
+    KG.randomString = randomString;
     var UpdateListener = (function () {
         function UpdateListener(def) {
-            function randomString(length) {
-                var text = "";
-                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                for (var i = 0; i < length; i++) {
-                    text += possible.charAt(Math.floor(Math.random() * possible.length));
-                }
-                return text;
-            }
             def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
             var ul = this;
             ul.def = def;
             def.constants.forEach(function (c) {
                 ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
             });
-            ul.id = randomString(5);
+            ul.id = randomString(10);
             ul.model.addUpdateListener(this);
         }
         UpdateListener.prototype.updateDef = function (name) {
@@ -337,7 +360,9 @@ var KG;
             var u = this;
             u.hasChanged = !!force;
             if (u.hasOwnProperty('updatables') && u.updatables != undefined) {
-                u.updatables.forEach(function (name) { u.updateDef(name); });
+                u.updatables.forEach(function (name) {
+                    u.updateDef(name);
+                });
             }
             return u;
         };
@@ -559,11 +584,21 @@ var KG;
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
+            var parsedData = {
+                aspectRatio: data.aspectRatio || 1,
+                params: data.params,
+                restrictions: data.restrictions,
+                clipPaths: data.clipPaths || [],
+                scales: data.scales || [],
+                layers: data.layers || [[], [], [], []],
+                divs: data.divs || []
+            };
+            parsedData = KGAuthor.parse(data, parsedData);
             var view = this;
-            view.aspectRatio = data.aspectRatio || 1;
-            view.model = new KG.Model(data.params, data.restrictions);
+            view.aspectRatio = parsedData.aspectRatio || 1;
+            view.model = new KG.Model(parsedData.params, parsedData.restrictions);
             // create scales
-            view.scales = data.scales.map(function (def) {
+            view.scales = parsedData.scales.map(function (def) {
                 def.model = view.model;
                 return new KG.Scale(def);
             });
@@ -574,7 +609,7 @@ var KG;
             view.svg = view.div.append('svg')
                 .style('overflow', 'visible')
                 .style('pointer-events', 'none');
-            view.addViewObjects(data);
+            view.addViewObjects(parsedData);
         }
         // add view information (model, layer, scales) to an object
         View.prototype.addViewToDef = function (def, layer) {
@@ -602,7 +637,7 @@ var KG;
         View.prototype.addViewObjects = function (data) {
             var view = this;
             var clipPathRefs = {};
-            if (data.hasOwnProperty('clipPaths')) {
+            if (data.clipPaths.length > 0) {
                 // create ClipPaths, store them to refs, and add them to the SVG.
                 var defLayer_1 = view.svg.append('defs');
                 data.clipPaths.forEach(function (def) {
@@ -612,20 +647,22 @@ var KG;
             }
             // add layers of objects
             data.layers.forEach(function (layerViewObjectDefs) {
-                var layer = view.svg.append('g');
-                layerViewObjectDefs.forEach(function (defWithType) {
-                    var def = defWithType.def;
-                    if (def.hasOwnProperty('clipPathName')) {
-                        def.clipPath = clipPathRefs[def['clipPathName']];
-                    }
-                    def = view.addViewToDef(def, layer);
-                    new KG[defWithType.type](def);
-                });
+                if (layerViewObjectDefs.length > 0) {
+                    var layer_1 = view.svg.append('g');
+                    layerViewObjectDefs.forEach(function (defWithType) {
+                        var def = defWithType.def;
+                        if (def.hasOwnProperty('clipPathName')) {
+                            def.clipPath = clipPathRefs[def['clipPathName']];
+                        }
+                        def = view.addViewToDef(def, layer_1);
+                        new KG[defWithType.type](def);
+                    });
+                }
             });
             // add divs
-            if (data.hasOwnProperty('divs')) {
+            if (data.divs.length > 0) {
                 data.divs.forEach(function (defWithType) {
-                    var def = view.addViewToDef(defWithType.def, view.div), newDiv = KG[defWithType.type](def);
+                    var def = view.addViewToDef(defWithType.def, view.div), newDiv = new KG[defWithType.type](def);
                     if (defWithType.type == 'Sidebar') {
                         view.sidebar = newDiv;
                     }
@@ -1143,64 +1180,6 @@ var KG;
     }(KG.ViewObject));
     KG.Sidebar = Sidebar;
 })(KG || (KG = {}));
-/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
-/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
-/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
-/// <reference path="lib/underscore.ts"/>
-/// <reference path="parser/parser.ts"/>
-/// <reference path="parser/schemas/schema.ts"/>
-/// <reference path="parser/schemas/econ/econ.ts"/>
-/// <reference path="parser/authoringObjects/authoringObject.ts"/>
-/// <reference path="model/model.ts"/>
-/// <reference path="model/param.ts" />
-/// <reference path="model/restriction.ts" />
-/// <reference path="model/updateListener.ts" />
-/// <reference path="math/univariateFunction.ts" />
-/// <reference path="controller/listeners/listener.ts" />
-/// <reference path="controller/listeners/dragListener.ts" />
-/// <reference path="controller/listeners/clickListener.ts" />
-/// <reference path="controller/interactionHandler.ts" />
-/// <reference path="view/view.ts"/>
-/// <reference path="view/scale.ts" />
-/// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/clipPath.ts" />
-/// <reference path="view/viewObjects/segment.ts" />
-/// <reference path="view/viewObjects/curve.ts" />
-/// <reference path="view/viewObjects/axis.ts" />
-/// <reference path="view/viewObjects/point.ts" />
-/// <reference path="view/divObjects/divObject.ts" />
-/// <reference path="view/divObjects/slider.ts"/>
-/// <reference path="view/divObjects/sidebar.ts"/>
-/// <reference path="view/divObjects/label.ts" />
-// this file provides the interface with the overall web page
-var views = [];
-// initialize the diagram from divs with class kg-container
-window.addEventListener("load", function () {
-    var viewDivs = document.getElementsByClassName('kg-container');
-    var _loop_1 = function (i) {
-        var url = viewDivs[i].getAttribute('src');
-        viewDivs[i].innerHTML = "<p>loading...</p>";
-        d3.json(url, function (data) {
-            if (!data) {
-                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>";
-            }
-            else {
-                viewDivs[i].innerHTML = "";
-                views.push(new KG.View(viewDivs[i], data));
-            }
-        });
-    };
-    // for each div, fetch the JSON definition and create a View object with that div and data
-    for (var i = 0; i < viewDivs.length; i++) {
-        _loop_1(i);
-    }
-});
-// if the window changes size, update the dimensions of the containers
-window.onresize = function () {
-    views.forEach(function (c) {
-        c.updateDimensions();
-    });
-};
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
@@ -1247,3 +1226,90 @@ var KG;
     }(KG.ViewObject));
     KG.Label = Label;
 })(KG || (KG = {}));
+/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
+/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
+/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="lib/underscore.ts"/>
+/// <reference path="KGAuthor/authoringObject.ts"/>
+/// <reference path="KGAuthor/graph.ts"/>
+/// <reference path="model/model.ts"/>
+/// <reference path="model/param.ts" />
+/// <reference path="model/restriction.ts" />
+/// <reference path="model/updateListener.ts" />
+/// <reference path="math/univariateFunction.ts" />
+/// <reference path="controller/listeners/listener.ts" />
+/// <reference path="controller/listeners/dragListener.ts" />
+/// <reference path="controller/listeners/clickListener.ts" />
+/// <reference path="controller/interactionHandler.ts" />
+/// <reference path="view/view.ts"/>
+/// <reference path="view/scale.ts" />
+/// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/clipPath.ts" />
+/// <reference path="view/viewObjects/segment.ts" />
+/// <reference path="view/viewObjects/curve.ts" />
+/// <reference path="view/viewObjects/axis.ts" />
+/// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/sidebar.ts"/>
+/// <reference path="view/viewObjects/label.ts" />
+// this file provides the interface with the overall web page
+var views = [];
+// initialize the diagram from divs with class kg-container
+window.addEventListener("load", function () {
+    var viewDivs = document.getElementsByClassName('kg-container');
+    var _loop_1 = function (i) {
+        var url = viewDivs[i].getAttribute('src');
+        viewDivs[i].innerHTML = "<p>loading...</p>";
+        d3.json(url, function (data) {
+            if (!data) {
+                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>";
+            }
+            else {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], data));
+            }
+        });
+    };
+    // for each div, fetch the JSON definition and create a View object with that div and data
+    for (var i = 0; i < viewDivs.length; i++) {
+        _loop_1(i);
+    }
+});
+// if the window changes size, update the dimensions of the containers
+window.onresize = function () {
+    views.forEach(function (c) {
+        c.updateDimensions();
+    });
+};
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var GraphObject = (function (_super) {
+        __extends(GraphObject, _super);
+        function GraphObject(def, graph) {
+            var _this = _super.call(this, def) || this;
+            _this.def.xScaleName = graph.xScaleName;
+            _this.def.yScaleName = graph.yScaleName;
+            _this.def.clipPathName = graph.clipPathName;
+            return _this;
+        }
+        GraphObject.prototype.parse = function (parsedData) {
+            parsedData.layers[this.layer].push({ "type": this.type, "def": this.def });
+            return parsedData;
+        };
+        return GraphObject;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.GraphObject = GraphObject;
+    var Point = (function (_super) {
+        __extends(Point, _super);
+        function Point(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Point';
+            _this.layer = 3;
+            return _this;
+        }
+        return Point;
+    }(GraphObject));
+    KGAuthor.Point = Point;
+})(KGAuthor || (KGAuthor = {}));

@@ -9,7 +9,6 @@ module KG {
         domainMax: any;
         rangeMin: any;
         rangeMax: any;
-        range: { min: number; max: number; }; // fractional amounts of enclosing view dimension
     }
 
     export interface IScale {

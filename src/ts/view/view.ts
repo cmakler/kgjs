@@ -4,22 +4,22 @@ module KG {
 
     export interface ViewObjectWithType {
         type: string;
-        def: ViewObjectDefinition
+        def: any;
     }
 
     export interface DivObjectWithType {
         type: string;
-        def: DivObjectDefinition
+        def: any;
     }
 
     export interface ViewDefinition {
-        aspectRatio: number;
+        aspectRatio?: number;
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
         scales?: ScaleDefinition[];
         clipPaths?: ClipPathDefinition[];
-        layers: ViewObjectWithType[][];
-        divs: DivObjectWithType[];
+        layers?: ViewObjectWithType[][];
+        divs?: DivObjectWithType[];
     }
 
     export interface IView {
@@ -49,13 +49,25 @@ module KG {
                 return paramData;
             });
 
+            let parsedData:ViewDefinition = {
+                aspectRatio: data.aspectRatio || 1,
+                params: data.params,
+                restrictions: data.restrictions,
+                clipPaths: data.clipPaths || [],
+                scales: data.scales || [],
+                layers: data.layers || [[], [], [], []],
+                divs: data.divs || []
+            };
+
+            parsedData = KGAuthor.parse(data, parsedData);
+
             let view = this;
 
-            view.aspectRatio = data.aspectRatio || 1;
-            view.model = new KG.Model(data.params, data.restrictions);
+            view.aspectRatio = parsedData.aspectRatio || 1;
+            view.model = new KG.Model(parsedData.params, parsedData.restrictions);
 
             // create scales
-            view.scales = data.scales.map(function (def: ScaleDefinition) {
+            view.scales = parsedData.scales.map(function (def: ScaleDefinition) {
                 def.model = view.model;
                 return new Scale(def);
             });
@@ -69,7 +81,7 @@ module KG {
                 .style('overflow', 'visible')
                 .style('pointer-events', 'none');
 
-            view.addViewObjects(data);
+            view.addViewObjects(parsedData);
 
         }
 
@@ -105,7 +117,7 @@ module KG {
 
             let clipPathRefs = {};
 
-            if (data.hasOwnProperty('clipPaths')) {
+            if (data.clipPaths.length > 0) {
                 // create ClipPaths, store them to refs, and add them to the SVG.
                 const defLayer = view.svg.append('defs');
                 data.clipPaths.forEach(function (def: ClipPathDefinition) {
@@ -117,19 +129,21 @@ module KG {
 
             // add layers of objects
             data.layers.forEach(function (layerViewObjectDefs: ViewObjectWithType[]) {
-                const layer = view.svg.append('g');
-                layerViewObjectDefs.forEach(function (defWithType) {
-                    let def: ViewObjectDefinition = defWithType.def;
-                    if (def.hasOwnProperty('clipPathName')) {
-                        def.clipPath = clipPathRefs[def['clipPathName']]
-                    }
-                    def = view.addViewToDef(def, layer);
-                    new KG[defWithType.type](def);
-                })
+                if (layerViewObjectDefs.length > 0) {
+                    const layer = view.svg.append('g');
+                    layerViewObjectDefs.forEach(function (defWithType) {
+                        let def: ViewObjectDefinition = defWithType.def;
+                        if (def.hasOwnProperty('clipPathName')) {
+                            def.clipPath = clipPathRefs[def['clipPathName']]
+                        }
+                        def = view.addViewToDef(def, layer);
+                        new KG[defWithType.type](def);
+                    })
+                }
             });
 
             // add divs
-            if (data.hasOwnProperty('divs')) {
+            if (data.divs.length > 0) {
                 data.divs.forEach(function (defWithType: DivObjectWithType) {
                     const def = view.addViewToDef(defWithType.def, view.div),
                         newDiv = new KG[defWithType.type](def);

@@ -4,10 +4,9 @@
 
 /// <reference path="lib/underscore.ts"/>
 
-/// <reference path="parser/parser.ts"/>
-/// <reference path="parser/schemas/schema.ts"/>
-/// <reference path="parser/schemas/econ/econ.ts"/>
-/// <reference path="parser/authoringObjects/authoringObject.ts"/>
+/// <reference path="KGAuthor/authoringObject.ts"/>
+/// <reference path="KGAuthor/graph.ts"/>
+/// <reference path="KGAuthor/graphObject.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />

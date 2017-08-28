@@ -3,15 +3,21 @@
 module KG {
 
     export interface ViewObjectDefinition extends UpdateListenerDefinition {
-        layer: any;
+        layer?: any;
         name?: string;
         show?: any;
-        xScale: Scale;
-        yScale: Scale;
+        xScale?: Scale;
+        yScale?: Scale;
         clipPath?: ClipPath;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;
+
+        // the following are used in the JSON definition but replaced by objects before creation
+        xScaleName?: string;
+        yScaleName?: string;
+        clipPathName?: string;
+
     }
 
     export interface IViewObject extends IUpdateListener {
@@ -44,7 +50,7 @@ module KG {
                 strokeWidth: 1,
                 show: true
             });
-            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity');
+            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show');
             def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
 
             super(def);
