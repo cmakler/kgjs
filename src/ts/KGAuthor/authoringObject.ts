@@ -25,13 +25,22 @@ module KGAuthor {
     export class AuthoringObject implements IAuthoringObject {
 
         public def:any;
-        public name: string;
+        public subobjects: AuthoringObject[];
 
         constructor(def) {
             this.def = def;
+            this.subobjects = [];
+        }
+
+        parse_self(parsedData:KG.ViewDefinition) {
+            return parsedData;
         }
 
         parse(parsedData:KG.ViewDefinition) {
+            parsedData = this.parse_self(parsedData);
+            this.subobjects.forEach(function(obj) {
+                parsedData = obj.parse(parsedData);
+            });
             return parsedData;
         }
     }

@@ -28,23 +28,29 @@ module KGAuthor {
 
         constructor(def) {
             super(def);
-            this.xScaleName = KG.randomString(10);
-            this.yScaleName = KG.randomString(10);
-            this.clipPathName = KG.randomString(10);
-            this.def.xAxis.range = def.xAxis.range || [0, 1];
-            this.def.yAxis.range = def.yAxis.range || [1, 0];
-            this.def.objects.push({
+
+            const g = this;
+            g.xScaleName = KG.randomString(10);
+            g.yScaleName = KG.randomString(10);
+            g.clipPathName = KG.randomString(10);
+            g.def.xAxis.range = def.xAxis.range || [0, 1];
+            g.def.yAxis.range = def.yAxis.range || [1, 0];
+
+            g.def.objects.push({
                 type: 'Axis',
                 def: this.def.xAxis
             });
-            this.def.objects.push({
+            g.def.objects.push({
                 type: 'Axis',
                 def: this.def.yAxis
             });
+            g.subobjects = this.def.objects.map(function(obj) {
+                return new KGAuthor[obj.type](obj.def, g)
+            })
 
         }
 
-        parse(parsedData: KG.ViewDefinition) {
+        parse_self(parsedData: KG.ViewDefinition) {
 
             const graph = this,
                 xAxis = graph.def.xAxis,
@@ -75,10 +81,6 @@ module KGAuthor {
                 "name": clipPath,
                 "xScaleName": xScale,
                 "yScaleName": yScale
-            });
-
-            this.def.objects.forEach(function (obj) {
-                parsedData = new KGAuthor[obj.type](obj.def, graph).parse(parsedData);
             });
 
             return parsedData;

@@ -81,8 +81,16 @@ var KGAuthor;
     var AuthoringObject = (function () {
         function AuthoringObject(def) {
             this.def = def;
+            this.subobjects = [];
         }
+        AuthoringObject.prototype.parse_self = function (parsedData) {
+            return parsedData;
+        };
         AuthoringObject.prototype.parse = function (parsedData) {
+            parsedData = this.parse_self(parsedData);
+            this.subobjects.forEach(function (obj) {
+                parsedData = obj.parse(parsedData);
+            });
             return parsedData;
         };
         return AuthoringObject;
@@ -96,22 +104,26 @@ var KGAuthor;
         __extends(Graph, _super);
         function Graph(def) {
             var _this = _super.call(this, def) || this;
-            _this.xScaleName = KG.randomString(10);
-            _this.yScaleName = KG.randomString(10);
-            _this.clipPathName = KG.randomString(10);
-            _this.def.xAxis.range = def.xAxis.range || [0, 1];
-            _this.def.yAxis.range = def.yAxis.range || [1, 0];
-            _this.def.objects.push({
+            var g = _this;
+            g.xScaleName = KG.randomString(10);
+            g.yScaleName = KG.randomString(10);
+            g.clipPathName = KG.randomString(10);
+            g.def.xAxis.range = def.xAxis.range || [0, 1];
+            g.def.yAxis.range = def.yAxis.range || [1, 0];
+            g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
             });
-            _this.def.objects.push({
+            g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.yAxis
             });
+            g.subobjects = _this.def.objects.map(function (obj) {
+                return new KGAuthor[obj.type](obj.def, g);
+            });
             return _this;
         }
-        Graph.prototype.parse = function (parsedData) {
+        Graph.prototype.parse_self = function (parsedData) {
             var graph = this, xAxis = graph.def.xAxis, xScale = graph.xScaleName, yAxis = graph.def.yAxis, yScale = graph.yScaleName, clipPath = graph.clipPathName;
             parsedData.scales.push({
                 "name": xScale,
@@ -133,9 +145,6 @@ var KGAuthor;
                 "name": clipPath,
                 "xScaleName": xScale,
                 "yScaleName": yScale
-            });
-            this.def.objects.forEach(function (obj) {
-                parsedData = new KGAuthor[obj.type](obj.def, graph).parse(parsedData);
             });
             return parsedData;
         };
@@ -169,11 +178,8 @@ var KGAuthor;
             }
             console.log(def);
         };
-        GraphObject.prototype.parse = function (parsedData) {
+        GraphObject.prototype.parse_self = function (parsedData) {
             parsedData.layers[this.layer].push({ "type": this.type, "def": this.def });
-            this.subobjects.forEach(function (obj) {
-                parsedData = obj.parse(parsedData);
-            });
             return parsedData;
         };
         return GraphObject;
@@ -190,6 +196,18 @@ var KGAuthor;
         return Axis;
     }(GraphObject));
     KGAuthor.Axis = Axis;
+    var Label = (function (_super) {
+        __extends(Label, _super);
+        function Label() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Label.prototype.parse_self = function (parsedData) {
+            parsedData.divs.push({ "type": "Label", "def": this.def });
+            return parsedData;
+        };
+        return Label;
+    }(GraphObject));
+    KGAuthor.Label = Label;
     var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def, graph) {
@@ -212,18 +230,20 @@ var KGAuthor;
         return Point;
     }(GraphObject));
     KGAuthor.Point = Point;
-    var Label = (function (_super) {
-        __extends(Label, _super);
-        function Label(def, graph) {
-            return _super.call(this, def, graph) || this;
+    var Segment = (function (_super) {
+        __extends(Segment, _super);
+        function Segment(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            var s = _this;
+            s.type = 'Segment';
+            s.layer = 1;
+            s.extractCoordinates('a', 'x1', 'y1');
+            s.extractCoordinates('b', 'x2', 'y2');
+            return _this;
         }
-        Label.prototype.parse = function (parsedData) {
-            parsedData.divs.push({ "type": "Label", "def": this.def });
-            return parsedData;
-        };
-        return Label;
+        return Segment;
     }(GraphObject));
-    KGAuthor.Label = Label;
+    KGAuthor.Segment = Segment;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KG;

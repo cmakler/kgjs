@@ -32,11 +32,8 @@ module KGAuthor {
             console.log(def);
         }
 
-        parse(parsedData: KG.ViewDefinition) {
+        parse_self(parsedData: KG.ViewDefinition) {
             parsedData.layers[this.layer].push({"type": this.type, "def": this.def});
-            this.subobjects.forEach(function(obj) {
-                parsedData = obj.parse(parsedData);
-            });
             return parsedData;
         }
     }
@@ -48,6 +45,17 @@ module KGAuthor {
             this.type = 'Axis';
             this.layer = 2;
         }
+
+    }
+
+
+    export class Label extends GraphObject {
+
+        parse_self(parsedData: KG.ViewDefinition) {
+            parsedData.divs.push({"type": "Label", "def": this.def});
+            return parsedData;
+        }
+
     }
 
 
@@ -61,7 +69,7 @@ module KGAuthor {
             p.layer = 3;
             p.extractCoordinates();
 
-            if(def.hasOwnProperty('label')) {
+            if (def.hasOwnProperty('label')) {
                 let labelDef = _.defaults(def, {
                     text: def.label.text,
                     fontSize: 8,
@@ -74,16 +82,18 @@ module KGAuthor {
 
     }
 
-    export class Label extends GraphObject {
+
+    export class Segment extends GraphObject {
 
         constructor(def, graph) {
             super(def, graph);
+            const s = this;
+            s.type = 'Segment';
+            s.layer = 1;
+            s.extractCoordinates('a', 'x1', 'y1');
+            s.extractCoordinates('b', 'x2', 'y2');
         }
 
-        parse(parsedData: KG.ViewDefinition) {
-            parsedData.divs.push({"type": "Label", "def": this.def});
-            return parsedData;
-        }
     }
 
 }
