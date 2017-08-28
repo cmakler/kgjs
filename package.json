@@ -7,9 +7,11 @@
     "@types/d3": "^4.9.0",
     "@types/katex": "^0.5.0",
     "@types/mathjs": "0.0.34",
-    "typescript": "next"
+    "typescript": "next",
+    "http-server": "latest"
   },
   "scripts": {
+    "preview": "tsc && http-server -o",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

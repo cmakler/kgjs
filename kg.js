@@ -348,7 +348,7 @@ var KGAuthor;
             p.layer = 3;
             p.extractCoordinates();
             if (def.hasOwnProperty('label')) {
-                var labelDef = defaults(def, {
+                var labelDef = KG.defaults(def, {
                     text: def.label.text,
                     fontSize: 8,
                     xPixelOffset: 5,
@@ -504,6 +504,55 @@ var KGAuthor;
         return MinFunction;
     }(MultivariateFunction));
     KGAuthor.MinFunction = MinFunction;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var EconBudgetLine = (function (_super) {
+        __extends(EconBudgetLine, _super);
+        function EconBudgetLine(def, graph) {
+            var _this = this;
+            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
+            def.a = [xIntercept, 0];
+            def.b = [0, yIntercept];
+            def.stroke = 'green';
+            def.label = { text: 'BL' };
+            if (def.draggable) {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.m),
+                        'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
+                    }];
+            }
+            _this = _super.call(this, def, graph) || this;
+            var subObjects = _this.subObjects;
+            if (def.handles) {
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [xIntercept, 0],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'x',
+                            'param': KGAuthor.paramName(def.p1),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
+                        }]
+                }, graph));
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [0, yIntercept],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'y',
+                            'param': KGAuthor.paramName(def.p2),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
+                        }]
+                }, graph));
+            }
+            return _this;
+        }
+        return EconBudgetLine;
+    }(KGAuthor.Segment));
+    KGAuthor.EconBudgetLine = EconBudgetLine;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -1695,49 +1744,15 @@ window.onresize = function () {
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconBudgetLine = (function (_super) {
-        __extends(EconBudgetLine, _super);
-        function EconBudgetLine(def, graph) {
-            var _this = this;
-            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
-            def.a = [xIntercept, 0];
-            def.b = [0, yIntercept];
-            def.stroke = 'green';
-            def.label = { text: 'BL' };
-            if (def.draggable) {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.m),
-                        'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
-                    }];
-            }
-            _this = _super.call(this, def, graph) || this;
-            var subObjects = _this.subObjects;
-            if (def.handles) {
-                subObjects.push(new KGAuthor.Point({
-                    'coordinates': [xIntercept, 0],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'x',
-                            'param': KGAuthor.paramName(def.p1),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
-                        }]
-                }, graph));
-                subObjects.push(new KGAuthor.Point({
-                    'coordinates': [0, yIntercept],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'y',
-                            'param': KGAuthor.paramName(def.p2),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
-                        }]
-                }, graph));
-            }
-            return _this;
+    var EconUtilityFunction = (function (_super) {
+        __extends(EconUtilityFunction, _super);
+        function EconUtilityFunction(def) {
+            return _super.call(this, def) || this;
         }
-        return EconBudgetLine;
-    }(KGAuthor.Segment));
-    KGAuthor.EconBudgetLine = EconBudgetLine;
+        EconUtilityFunction.prototype.parse = function () {
+            return {};
+        };
+        return EconUtilityFunction;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.EconUtilityFunction = EconUtilityFunction;
 })(KGAuthor || (KGAuthor = {}));
