@@ -29,8 +29,8 @@ var __extends = (this && this.__extends) || (function () {
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.*/
 // I adapted these functions from the amazing underscorejs library.
-var _;
-(function (_) {
+var KG;
+(function (KG) {
     function isObject(obj) {
         var type = typeof obj;
         return type === 'function' || type === 'object' && !!obj;
@@ -43,7 +43,7 @@ var _;
             keys.push(key);
         return keys;
     }
-    _.allKeys = allKeys;
+    KG.allKeys = allKeys;
     function defaults(obj, def) {
         if (def == null || obj == null)
             return obj;
@@ -55,8 +55,8 @@ var _;
         }
         return obj;
     }
-    _.defaults = defaults;
-})(_ || (_ = {}));
+    KG.defaults = defaults;
+})(KG || (KG = {}));
 // End of underscorejs functions 
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -348,7 +348,7 @@ var KGAuthor;
             p.layer = 3;
             p.extractCoordinates();
             if (def.hasOwnProperty('label')) {
-                var labelDef = _.defaults(def, {
+                var labelDef = KG.defaults(def, {
                     text: def.label.text,
                     fontSize: 8,
                     xPixelOffset: 5,
@@ -561,7 +561,7 @@ var KGAuthor;
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple'
             });
@@ -584,7 +584,7 @@ var KGAuthor;
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 1,
                 stroke: 'lightgrey',
                 layer: 0
@@ -711,7 +711,7 @@ var KG;
                 (match[1] ? match[1].length : 0)
                     - (match[2] ? +match[2] : 0));
             }
-            def = _.defaults(def, { min: 0, max: 10, round: 1 });
+            def = KG.defaults(def, { min: 0, max: 10, round: 1 });
             this.name = def.name;
             this.label = def.label || '';
             this.value = parseFloat(def.value);
@@ -831,7 +831,7 @@ var KG;
         function UnivariateFunction(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 ind: 'x',
                 samplePoints: 50,
                 constants: [],
@@ -884,7 +884,7 @@ var KG;
         __extends(Listener, _super);
         function Listener(def) {
             var _this = this;
-            def = _.defaults(def, { constants: [], updatables: [] });
+            def = KG.defaults(def, { constants: [], updatables: [] });
             def.updatables = def.updatables.concat(['expression']);
             def.constants = def.constants.concat(['param']);
             _this = _super.call(this, def) || this;
@@ -913,7 +913,7 @@ var KG;
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 directions: "xy",
                 updatables: []
             });
@@ -951,7 +951,7 @@ var KG;
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
             var _this = this;
-            def = _.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
+            def = KG.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
             def.constants = def.constants.concat(["viewObject", "dragListeners", "clickListeners"]);
             _this = _super.call(this, def) || this;
             _this.update(true);
@@ -1191,7 +1191,7 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: [],
                 constants: [],
                 interactive: true,
@@ -1282,7 +1282,7 @@ var KG;
         function Segment(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: []
             });
             // define updatable properties
@@ -1330,7 +1330,7 @@ var KG;
         function Curve(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 interpolation: 'curveBasis',
                 constants: []
             });
@@ -1386,7 +1386,7 @@ var KG;
         __extends(Axis, _super);
         function Axis(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 ticks: 5,
                 intercept: 0,
                 updatables: [],
@@ -1437,7 +1437,7 @@ var KG;
         function Point(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 fill: 'blue',
                 opacity: 1,
                 stroke: 'white',
@@ -1489,7 +1489,7 @@ var KG;
         __extends(DivObject, _super);
         function DivObject(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: [],
                 constants: [],
                 show: true
@@ -1518,7 +1518,7 @@ var KG;
         function Slider(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 value: 'params.' + def.param,
                 noAxis: false,
                 constants: [],
@@ -1581,7 +1581,7 @@ var KG;
         function Sidebar(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 constants: [],
                 updatables: []
             });
@@ -1641,7 +1641,7 @@ var KG;
         function Label(def) {
             var _this = this;
             //establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
                 fontSize: 12,

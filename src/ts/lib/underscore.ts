@@ -20,7 +20,7 @@
 
 // I adapted these functions from the amazing underscorejs library.
 
-module _ {
+module KG {
 
     function isObject(obj) {
         const type = typeof obj;

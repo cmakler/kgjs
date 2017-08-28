@@ -22,7 +22,7 @@ module KG {
         constructor(def: PointDefinition) {
 
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 fill: 'blue',
                 opacity: 1,
                 stroke: 'white',

@@ -6,7 +6,7 @@ module KGAuthor {
 
         constructor(def, graph) {
             super(def, graph);
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple'
             });
@@ -25,7 +25,7 @@ module KGAuthor {
 
         constructor(def, graph) {
             super(def, graph);
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 1,
                 stroke: 'lightgrey',
                 layer: 0

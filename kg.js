@@ -29,8 +29,8 @@ var __extends = (this && this.__extends) || (function () {
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.*/
 // I adapted these functions from the amazing underscorejs library.
-var _;
-(function (_) {
+var KG;
+(function (KG) {
     function isObject(obj) {
         var type = typeof obj;
         return type === 'function' || type === 'object' && !!obj;
@@ -43,7 +43,7 @@ var _;
             keys.push(key);
         return keys;
     }
-    _.allKeys = allKeys;
+    KG.allKeys = allKeys;
     function defaults(obj, def) {
         if (def == null || obj == null)
             return obj;
@@ -55,8 +55,8 @@ var _;
         }
         return obj;
     }
-    _.defaults = defaults;
-})(_ || (_ = {}));
+    KG.defaults = defaults;
+})(KG || (KG = {}));
 // End of underscorejs functions 
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -235,17 +235,15 @@ var KGAuthor;
         return Graph;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Graph = Graph;
-})(KGAuthor || (KGAuthor = {}));
-/// <reference path="../kg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
     var GraphObjectGenerator = (function (_super) {
         __extends(GraphObjectGenerator, _super);
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
-            _this.def.xScaleName = graph.xScaleName;
-            _this.def.yScaleName = graph.yScaleName;
-            _this.def.clipPathName = graph.clipPathName;
+            if (graph) {
+                _this.def.xScaleName = graph.xScaleName;
+                _this.def.yScaleName = graph.yScaleName;
+                _this.def.clipPathName = graph.clipPathName;
+            }
             _this.subObjects = [];
             return _this;
         }
@@ -269,12 +267,52 @@ var KGAuthor;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         GraphObject.prototype.parse_self = function (parsedData) {
-            parsedData.layers[this.layer].push({ "type": this.type, "def": this.def });
+            parsedData.layers[this.layer].push(this);
             return parsedData;
         };
         return GraphObject;
     }(GraphObjectGenerator));
     KGAuthor.GraphObject = GraphObject;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var DivObject = (function (_super) {
+        __extends(DivObject, _super);
+        function DivObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        DivObject.prototype.parse_self = function (parsedData) {
+            parsedData.divs.push(this);
+            return parsedData;
+        };
+        return DivObject;
+    }(KGAuthor.GraphObject));
+    KGAuthor.DivObject = DivObject;
+    var Label = (function (_super) {
+        __extends(Label, _super);
+        function Label(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Label';
+            return _this;
+        }
+        return Label;
+    }(DivObject));
+    KGAuthor.Label = Label;
+    var Sidebar = (function (_super) {
+        __extends(Sidebar, _super);
+        function Sidebar(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Sidebar';
+            return _this;
+        }
+        return Sidebar;
+    }(DivObject));
+    KGAuthor.Sidebar = Sidebar;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def, graph) {
@@ -284,7 +322,7 @@ var KGAuthor;
             return _this;
         }
         return Axis;
-    }(GraphObject));
+    }(KGAuthor.GraphObject));
     KGAuthor.Axis = Axis;
     var Curve = (function (_super) {
         __extends(Curve, _super);
@@ -299,7 +337,7 @@ var KGAuthor;
             return _this;
         }
         return Curve;
-    }(GraphObject));
+    }(KGAuthor.GraphObject));
     KGAuthor.Curve = Curve;
     var Point = (function (_super) {
         __extends(Point, _super);
@@ -310,7 +348,7 @@ var KGAuthor;
             p.layer = 3;
             p.extractCoordinates();
             if (def.hasOwnProperty('label')) {
-                var labelDef = _.defaults(def, {
+                var labelDef = defaults(def, {
                     text: def.label.text,
                     fontSize: 8,
                     xPixelOffset: 5,
@@ -321,7 +359,7 @@ var KGAuthor;
             return _this;
         }
         return Point;
-    }(GraphObject));
+    }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
     var Segment = (function (_super) {
         __extends(Segment, _super);
@@ -335,7 +373,7 @@ var KGAuthor;
             return _this;
         }
         return Segment;
-    }(GraphObject));
+    }(KGAuthor.GraphObject));
     KGAuthor.Segment = Segment;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
@@ -470,60 +508,11 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconBudgetLine = (function (_super) {
-        __extends(EconBudgetLine, _super);
-        function EconBudgetLine(def, graph) {
-            var _this = this;
-            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
-            def.a = [xIntercept, 0];
-            def.b = [0, yIntercept];
-            def.stroke = 'green';
-            def.label = { text: 'BL' };
-            if (def.draggable) {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.m),
-                        'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
-                    }];
-            }
-            _this = _super.call(this, def, graph) || this;
-            var subObjects = _this.subObjects;
-            if (def.handles) {
-                subObjects.push(new KGAuthor.Point({
-                    'coordinates': [xIntercept, 0],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'x',
-                            'param': KGAuthor.paramName(def.p1),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
-                        }]
-                }, graph));
-                subObjects.push(new KGAuthor.Point({
-                    'coordinates': [0, yIntercept],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'y',
-                            'param': KGAuthor.paramName(def.p2),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
-                        }]
-                }, graph));
-            }
-            return _this;
-        }
-        return EconBudgetLine;
-    }(KGAuthor.Segment));
-    KGAuthor.EconBudgetLine = EconBudgetLine;
-})(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
     var EconIndifferenceCurve = (function (_super) {
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple'
             });
@@ -546,7 +535,7 @@ var KGAuthor;
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 strokeWidth: 1,
                 stroke: 'lightgrey',
                 layer: 0
@@ -673,7 +662,7 @@ var KG;
                 (match[1] ? match[1].length : 0)
                     - (match[2] ? +match[2] : 0));
             }
-            def = _.defaults(def, { min: 0, max: 10, round: 1 });
+            def = KG.defaults(def, { min: 0, max: 10, round: 1 });
             this.name = def.name;
             this.label = def.label || '';
             this.value = parseFloat(def.value);
@@ -793,7 +782,7 @@ var KG;
         function UnivariateFunction(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 ind: 'x',
                 samplePoints: 50,
                 constants: [],
@@ -846,7 +835,7 @@ var KG;
         __extends(Listener, _super);
         function Listener(def) {
             var _this = this;
-            def = _.defaults(def, { constants: [], updatables: [] });
+            def = KG.defaults(def, { constants: [], updatables: [] });
             def.updatables = def.updatables.concat(['expression']);
             def.constants = def.constants.concat(['param']);
             _this = _super.call(this, def) || this;
@@ -875,7 +864,7 @@ var KG;
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 directions: "xy",
                 updatables: []
             });
@@ -913,7 +902,7 @@ var KG;
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
             var _this = this;
-            def = _.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
+            def = KG.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
             def.constants = def.constants.concat(["viewObject", "dragListeners", "clickListeners"]);
             _this = _super.call(this, def) || this;
             _this.update(true);
@@ -1090,7 +1079,6 @@ var KG;
             var view = this;
             // read the client width of the enclosing div and calculate the height using the aspectRatio
             var width = view.div.node().clientWidth;
-            console.log(width);
             if (width > 563 && view.sidebar) {
                 view.sidebar.positionRight(width);
                 width = width * 77 / 126; // make width of graph the same width as main Tufte column
@@ -1154,7 +1142,7 @@ var KG;
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: [],
                 constants: [],
                 interactive: true,
@@ -1245,7 +1233,7 @@ var KG;
         function Segment(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: []
             });
             // define updatable properties
@@ -1293,7 +1281,7 @@ var KG;
         function Curve(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 interpolation: 'curveBasis',
                 constants: []
             });
@@ -1349,7 +1337,7 @@ var KG;
         __extends(Axis, _super);
         function Axis(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 ticks: 5,
                 intercept: 0,
                 updatables: [],
@@ -1400,7 +1388,7 @@ var KG;
         function Point(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 fill: 'blue',
                 opacity: 1,
                 stroke: 'white',
@@ -1452,7 +1440,7 @@ var KG;
         __extends(DivObject, _super);
         function DivObject(def) {
             var _this = this;
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 updatables: [],
                 constants: [],
                 show: true
@@ -1481,7 +1469,7 @@ var KG;
         function Slider(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 value: 'params.' + def.param,
                 noAxis: false,
                 constants: [],
@@ -1544,7 +1532,7 @@ var KG;
         function Sidebar(def) {
             var _this = this;
             // establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 constants: [],
                 updatables: []
             });
@@ -1575,7 +1563,7 @@ var KG;
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
             sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').append('span').attr('class', 'newthought');
+            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').style('font-size', '10pt');
             sidebar.descriptionElement = sidebar.element.append('div');
             var sliderTable = sidebar.element.append('table').style('padding', '10px');
             sidebar.sliders.forEach(function (slider) {
@@ -1587,7 +1575,7 @@ var KG;
         Sidebar.prototype.update = function (force) {
             var sidebar = _super.prototype.update.call(this, force);
             if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toLowerCase());
+                sidebar.titleElement.text(sidebar.title.toUpperCase());
                 sidebar.descriptionElement.text(sidebar.description);
             }
             return sidebar;
@@ -1604,7 +1592,7 @@ var KG;
         function Label(def) {
             var _this = this;
             //establish property defaults
-            def = _.defaults(def, {
+            def = KG.defaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
                 fontSize: 12,
@@ -1649,6 +1637,7 @@ var KG;
 /// <reference path="KGAuthor/parsingFunctions.ts"/>
 /// <reference path="KGAuthor/authoringObject.ts"/>
 /// <reference path="KGAuthor/graph.ts"/>
+/// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
 /// <reference path="KGAuthor/math/multivariateFunction.ts"/>
 /// <reference path="KGAuthor/econ/budgetLine.ts"/>
@@ -1703,53 +1692,52 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
-/// <reference path="../kg.ts" />
+/// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var DivObjectGenerator = (function (_super) {
-        __extends(DivObjectGenerator, _super);
-        function DivObjectGenerator(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            _this.def.xScaleName = graph.xScaleName;
-            _this.def.yScaleName = graph.yScaleName;
-            _this.def.clipPathName = graph.clipPathName;
-            _this.subObjects = [];
-            return _this;
-        }
-        DivObjectGenerator.prototype.extractCoordinates = function (coordinatesKey, xKey, yKey) {
-            coordinatesKey = coordinatesKey || 'coordinates';
-            xKey = xKey || 'x';
-            yKey = yKey || 'y';
-            var def = this.def;
-            if (def.hasOwnProperty(coordinatesKey)) {
-                def[xKey] = def[coordinatesKey][0].toString();
-                def[yKey] = def[coordinatesKey][1].toString();
-                delete def[coordinatesKey];
+    var EconBudgetLine = (function (_super) {
+        __extends(EconBudgetLine, _super);
+        function EconBudgetLine(def, graph) {
+            var _this = this;
+            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
+            def.a = [xIntercept, 0];
+            def.b = [0, yIntercept];
+            def.stroke = 'green';
+            def.label = { text: 'BL' };
+            if (def.draggable) {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.m),
+                        'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
+                    }];
             }
-        };
-        return DivObjectGenerator;
-    }(KGAuthor.GraphObjectGenerator));
-    KGAuthor.DivObjectGenerator = DivObjectGenerator;
-    var DivObject = (function (_super) {
-        __extends(DivObject, _super);
-        function DivObject() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        DivObject.prototype.parse_self = function (parsedData) {
-            parsedData.divs.push({ "type": "Label", "def": this.def });
-            return parsedData;
-        };
-        return DivObject;
-    }(DivObjectGenerator));
-    KGAuthor.DivObject = DivObject;
-    var Label = (function (_super) {
-        __extends(Label, _super);
-        function Label(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            _this.type = 'Label';
+            _this = _super.call(this, def, graph) || this;
+            var subObjects = _this.subObjects;
+            if (def.handles) {
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [xIntercept, 0],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'x',
+                            'param': KGAuthor.paramName(def.p1),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
+                        }]
+                }, graph));
+                subObjects.push(new KGAuthor.Point({
+                    'coordinates': [0, yIntercept],
+                    'fill': 'green',
+                    'r': 4,
+                    'drag': [{
+                            'directions': 'y',
+                            'param': KGAuthor.paramName(def.p2),
+                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
+                        }]
+                }, graph));
+            }
             return _this;
         }
-        return Label;
-    }(DivObject));
-    KGAuthor.Label = Label;
+        return EconBudgetLine;
+    }(KGAuthor.Segment));
+    KGAuthor.EconBudgetLine = EconBudgetLine;
 })(KGAuthor || (KGAuthor = {}));

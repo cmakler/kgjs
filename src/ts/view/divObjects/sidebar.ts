@@ -24,7 +24,7 @@ module KG {
         constructor(def: SidebarDefinition) {
 
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 constants: [],
                 updatables: []
             });

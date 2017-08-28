@@ -16,7 +16,7 @@ module KG {
 
         constructor(def: CurveDefinition) {
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 interpolation: 'curveBasis',
                 constants: []
             });

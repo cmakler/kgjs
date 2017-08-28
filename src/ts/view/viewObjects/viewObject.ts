@@ -42,7 +42,7 @@ module KG {
         public strokeOpacity: string;
 
         constructor(def: ViewObjectDefinition) {
-            def = _.defaults(def, {
+            def = defaults(def, {
                 updatables: [],
                 constants: [],
                 interactive: true,

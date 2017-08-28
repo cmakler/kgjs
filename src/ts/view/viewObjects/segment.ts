@@ -23,7 +23,7 @@ module KG {
         constructor(def: SegmentDefinition) {
 
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 updatables: []
             });
 

@@ -24,7 +24,7 @@ module KG {
         constructor(def: SliderDefinition) {
 
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 value: 'params.' + def.param,
                 noAxis: false,
                 constants: [],

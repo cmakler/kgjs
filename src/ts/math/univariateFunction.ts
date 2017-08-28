@@ -26,7 +26,7 @@ module KG {
         constructor(def: UnivariateFunctionDefinition) {
 
             // establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 ind: 'x',
                 samplePoints: 50,
                 constants: [],

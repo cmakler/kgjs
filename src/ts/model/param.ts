@@ -46,7 +46,7 @@ module KG {
                     - (match[2] ? +match[2] : 0));
             }
 
-            def = _.defaults(def,{min: 0, max: 10, round: 1});
+            def = defaults(def,{min: 0, max: 10, round: 1});
 
             this.name = def.name;
             this.label = def.label || '';

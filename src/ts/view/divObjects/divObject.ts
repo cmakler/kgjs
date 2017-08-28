@@ -17,7 +17,7 @@ module KG {
         public element;
 
         constructor(def: DivObjectDefinition) {
-            def = _.defaults(def, {
+            def = defaults(def, {
                 updatables: [],
                 constants: [],
                 show: true

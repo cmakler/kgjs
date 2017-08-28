@@ -19,7 +19,7 @@ module KG {
 
         constructor(def: AxisDefinition) {
 
-            def = _.defaults(def, {
+            def = defaults(def, {
                 ticks: 5,
                 intercept: 0,
                 updatables: [],

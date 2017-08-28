@@ -23,7 +23,7 @@ module KG {
         constructor(def) {
 
             //establish property defaults
-            def = _.defaults(def, {
+            def = defaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
                 fontSize: 12,

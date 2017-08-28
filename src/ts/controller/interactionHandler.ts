@@ -21,7 +21,7 @@ module KG {
         private element;
 
         constructor(def: InteractionHandlerDefinition) {
-            def = _.defaults(def, {constants: [], dragListeners: [], clickListeners: []});
+            def = defaults(def, {constants: [], dragListeners: [], clickListeners: []});
             def.constants = def.constants.concat(["viewObject","dragListeners", "clickListeners"]);
             super(def);
             this.update(true);
