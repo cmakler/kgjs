@@ -16,20 +16,24 @@ module KG {
         private restrictions: Restriction[];
         private updateListeners: UpdateListener[];
 
-        constructor(params:ParamDefinition[],restrictions?:RestrictionDefinition[]) {
+        constructor(params: ParamDefinition[], restrictions?: RestrictionDefinition[]) {
             let model = this;
-            model.params = params.map(function (def) {return new Param(def)});
-            model.restrictions = (restrictions || []).map(function (def) {return new Restriction(def)});
+            model.params = params.map(function (def) {
+                return new Param(def)
+            });
+            model.restrictions = (restrictions || []).map(function (def) {
+                return new Restriction(def)
+            });
             model.updateListeners = [];
         }
 
-        addUpdateListener(updateListener:UpdateListener) {
+        addUpdateListener(updateListener: UpdateListener) {
             this.updateListeners.push(updateListener);
             return this;
         }
 
         currentParamValues() {
-            let p:any = {};
+            let p: any = {};
             this.params.forEach(function (param) {
                 p[param.name] = param.value;
             });
@@ -37,7 +41,7 @@ module KG {
         }
 
         // the model serves as a model, and can evaluate expressions within the context of that model
-        eval(name:string) {
+        eval(name: string) {
 
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -75,7 +79,7 @@ module KG {
 
         }
 
-        getParam(paramName:string) {
+        getParam(paramName: string) {
             const params = this.params;
             for (let i = 0; i < params.length; i++) {
                 if (params[i].name == paramName) {
@@ -86,7 +90,7 @@ module KG {
 
 
         // method exposed to viewObjects to allow them to try to change a parameter
-        updateParam(name:string, newValue:any) {
+        updateParam(name: string, newValue: any) {
             let model = this,
                 param = model.getParam(name);
             const oldValue = param.value;
@@ -94,10 +98,13 @@ module KG {
             // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
                 let valid = true;
-                model.restrictions.forEach(function(r) {
-                    if(!r.valid(model)) {valid = false};
+                model.restrictions.forEach(function (r) {
+                    if (!r.valid(model)) {
+                        valid = false
+                    }
+                    ;
                 });
-                if(valid) {
+                if (valid) {
                     model.update(false);
                 } else {
                     param.update(oldValue);
@@ -105,7 +112,22 @@ module KG {
             }
         }
 
-        update(force:boolean) {
+
+        // method exposed to viewObjects to allow them to toggle a binary param
+        toggleParam(name: string) {
+            const currentValue = this.getParam(name).value;
+            this.updateParam(name, !currentValue);
+        }
+
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
+        cycleParam(name:string) {
+            const param = this.getParam(name);
+            this.updateParam(name, param.value < param.max ? param.value++ : 0 );
+        }
+
+
+        update(force: boolean) {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force)
             });

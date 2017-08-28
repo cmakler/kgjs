@@ -162,7 +162,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var AuthoringObject = /** @class */ (function () {
+    var AuthoringObject = (function () {
         function AuthoringObject(def) {
             this.def = def;
             this.subObjects = [];
@@ -184,7 +184,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Graph = /** @class */ (function (_super) {
+    var Graph = (function (_super) {
         __extends(Graph, _super);
         function Graph(def) {
             var _this = _super.call(this, def) || this;
@@ -235,7 +235,7 @@ var KGAuthor;
         return Graph;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Graph = Graph;
-    var GraphObjectGenerator = /** @class */ (function (_super) {
+    var GraphObjectGenerator = (function (_super) {
         __extends(GraphObjectGenerator, _super);
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
@@ -261,7 +261,7 @@ var KGAuthor;
         return GraphObjectGenerator;
     }(KGAuthor.AuthoringObject));
     KGAuthor.GraphObjectGenerator = GraphObjectGenerator;
-    var GraphObject = /** @class */ (function (_super) {
+    var GraphObject = (function (_super) {
         __extends(GraphObject, _super);
         function GraphObject() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -277,7 +277,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var DivObject = /** @class */ (function (_super) {
+    var DivObject = (function (_super) {
         __extends(DivObject, _super);
         function DivObject() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -289,7 +289,7 @@ var KGAuthor;
         return DivObject;
     }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
-    var Label = /** @class */ (function (_super) {
+    var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -299,7 +299,7 @@ var KGAuthor;
         return Label;
     }(DivObject));
     KGAuthor.Label = Label;
-    var Sidebar = /** @class */ (function (_super) {
+    var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -313,7 +313,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Axis = /** @class */ (function (_super) {
+    var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -324,7 +324,7 @@ var KGAuthor;
         return Axis;
     }(KGAuthor.GraphObject));
     KGAuthor.Axis = Axis;
-    var Curve = /** @class */ (function (_super) {
+    var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def, graph) {
             var _this = this;
@@ -339,7 +339,7 @@ var KGAuthor;
         return Curve;
     }(KGAuthor.GraphObject));
     KGAuthor.Curve = Curve;
-    var Point = /** @class */ (function (_super) {
+    var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -361,7 +361,7 @@ var KGAuthor;
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
-    var Segment = /** @class */ (function (_super) {
+    var Segment = (function (_super) {
         __extends(Segment, _super);
         function Segment(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -379,7 +379,7 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var MathFunction = /** @class */ (function (_super) {
+    var MathFunction = (function (_super) {
         __extends(MathFunction, _super);
         function MathFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -387,7 +387,7 @@ var KGAuthor;
         return MathFunction;
     }(KGAuthor.AuthoringObject));
     KGAuthor.MathFunction = MathFunction;
-    var MultivariateFunction = /** @class */ (function (_super) {
+    var MultivariateFunction = (function (_super) {
         __extends(MultivariateFunction, _super);
         function MultivariateFunction(def) {
             var _this = _super.call(this, def) || this;
@@ -417,7 +417,7 @@ var KGAuthor;
         return MultivariateFunction;
     }(MathFunction));
     KGAuthor.MultivariateFunction = MultivariateFunction;
-    var CobbDouglasFunction = /** @class */ (function (_super) {
+    var CobbDouglasFunction = (function (_super) {
         __extends(CobbDouglasFunction, _super);
         function CobbDouglasFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -447,7 +447,7 @@ var KGAuthor;
         return CobbDouglasFunction;
     }(MultivariateFunction));
     KGAuthor.CobbDouglasFunction = CobbDouglasFunction;
-    var LinearFunction = /** @class */ (function (_super) {
+    var LinearFunction = (function (_super) {
         __extends(LinearFunction, _super);
         function LinearFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -475,7 +475,7 @@ var KGAuthor;
         return LinearFunction;
     }(MultivariateFunction));
     KGAuthor.LinearFunction = LinearFunction;
-    var MinFunction = /** @class */ (function (_super) {
+    var MinFunction = (function (_super) {
         __extends(MinFunction, _super);
         function MinFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -508,7 +508,7 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconBudgetLine = /** @class */ (function (_super) {
+    var EconBudgetLine = (function (_super) {
         __extends(EconBudgetLine, _super);
         function EconBudgetLine(def, graph) {
             var _this = this;
@@ -557,7 +557,7 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconIndifferenceCurve = /** @class */ (function (_super) {
+    var EconIndifferenceCurve = (function (_super) {
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -580,7 +580,7 @@ var KGAuthor;
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
-    var EconIndifferenceMap = /** @class */ (function (_super) {
+    var EconIndifferenceMap = (function (_super) {
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -609,11 +609,15 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var Model = /** @class */ (function () {
+    var Model = (function () {
         function Model(params, restrictions) {
             var model = this;
-            model.params = params.map(function (def) { return new KG.Param(def); });
-            model.restrictions = (restrictions || []).map(function (def) { return new KG.Restriction(def); });
+            model.params = params.map(function (def) {
+                return new KG.Param(def);
+            });
+            model.restrictions = (restrictions || []).map(function (def) {
+                return new KG.Restriction(def);
+            });
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -687,6 +691,17 @@ var KG;
                 }
             }
         };
+        // method exposed to viewObjects to allow them to toggle a binary param
+        Model.prototype.toggleParam = function (name) {
+            var currentValue = this.getParam(name).value;
+            this.updateParam(name, !currentValue);
+        };
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
+        Model.prototype.cycleParam = function (name) {
+            var param = this.getParam(name);
+            this.updateParam(name, param.value < param.max ? param.value++ : 0);
+        };
         Model.prototype.update = function (force) {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force);
@@ -699,7 +714,7 @@ var KG;
 /// <reference path="model.ts" />
 var KG;
 (function (KG) {
-    var Param = /** @class */ (function () {
+    var Param = (function () {
         function Param(def) {
             function decimalPlaces(numAsString) {
                 var match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
@@ -709,7 +724,6 @@ var KG;
                 return Math.max(0, 
                 // Number of digits right of decimal point.
                 (match[1] ? match[1].length : 0)
-                    // Adjust for scientific notation.
                     - (match[2] ? +match[2] : 0));
             }
             def = KG.defaults(def, { min: 0, max: 10, round: 1 });
@@ -743,15 +757,6 @@ var KG;
             precision = precision || this.precision;
             return d3.format("." + precision + "f")(this.value);
         };
-        // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        Param.prototype.paramScale = function (domain) {
-            domain = domain || 100;
-            var param = this;
-            return d3.scaleLinear()
-                .clamp(true)
-                .domain([domain * -1, domain])
-                .range([param.min, param.max]);
-        };
         return Param;
     }());
     KG.Param = Param;
@@ -759,7 +764,7 @@ var KG;
 /// <reference path="model.ts" />
 var KG;
 (function (KG) {
-    var Restriction = /** @class */ (function () {
+    var Restriction = (function () {
         function Restriction(def) {
             this.expression = def.expression;
             this.type = def.type;
@@ -786,7 +791,7 @@ var KG;
         return text;
     }
     KG.randomString = randomString;
-    var UpdateListener = /** @class */ (function () {
+    var UpdateListener = (function () {
         function UpdateListener(def) {
             def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
             var ul = this;
@@ -827,7 +832,7 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var UnivariateFunction = /** @class */ (function (_super) {
+    var UnivariateFunction = (function (_super) {
         __extends(UnivariateFunction, _super);
         function UnivariateFunction(def) {
             var _this = this;
@@ -881,7 +886,7 @@ var KG;
         and sends a signal to the model to update its param.
 
      */
-    var Listener = /** @class */ (function (_super) {
+    var Listener = (function (_super) {
         __extends(Listener, _super);
         function Listener(def) {
             var _this = this;
@@ -910,7 +915,7 @@ var KG;
         and, if so, in which directions it is draggable.
 
      */
-    var DragListener = /** @class */ (function (_super) {
+    var DragListener = (function (_super) {
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
@@ -936,7 +941,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ClickListener = /** @class */ (function (_super) {
+    var ClickListener = (function (_super) {
         __extends(ClickListener, _super);
         function ClickListener(def) {
             return _super.call(this, def) || this;
@@ -948,7 +953,7 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var InteractionHandler = /** @class */ (function (_super) {
+    var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
             var _this = this;
@@ -1027,7 +1032,7 @@ var KG;
 /// <reference path='../kg.ts' />
 var KG;
 (function (KG) {
-    var View = /** @class */ (function () {
+    var View = (function () {
         function View(div, data) {
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
@@ -1156,7 +1161,7 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var Scale = /** @class */ (function (_super) {
+    var Scale = (function (_super) {
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
@@ -1188,7 +1193,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ViewObject = /** @class */ (function (_super) {
+    var ViewObject = (function (_super) {
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
@@ -1246,7 +1251,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ClipPath = /** @class */ (function (_super) {
+    var ClipPath = (function (_super) {
         __extends(ClipPath, _super);
         function ClipPath(def) {
             return _super.call(this, def) || this;
@@ -1278,7 +1283,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Segment = /** @class */ (function (_super) {
+    var Segment = (function (_super) {
         __extends(Segment, _super);
         function Segment(def) {
             var _this = this;
@@ -1326,7 +1331,7 @@ var KG;
 /// <reference path='../../kg.ts' />
 var KG;
 (function (KG) {
-    var Curve = /** @class */ (function (_super) {
+    var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def) {
             var _this = this;
@@ -1383,7 +1388,7 @@ var KG;
 })(KG || (KG = {}));
 var KG;
 (function (KG) {
-    var Axis = /** @class */ (function (_super) {
+    var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def) {
             var _this = this;
@@ -1433,7 +1438,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Point = /** @class */ (function (_super) {
+    var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def) {
             var _this = this;
@@ -1486,7 +1491,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var DivObject = /** @class */ (function (_super) {
+    var DivObject = (function (_super) {
         __extends(DivObject, _super);
         function DivObject(def) {
             var _this = this;
@@ -1514,7 +1519,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Slider = /** @class */ (function (_super) {
+    var Slider = (function (_super) {
         __extends(Slider, _super);
         function Slider(def) {
             var _this = this;
@@ -1577,7 +1582,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Sidebar = /** @class */ (function (_super) {
+    var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
             var _this = this;
@@ -1637,7 +1642,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Label = /** @class */ (function (_super) {
+    var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def) {
             var _this = this;

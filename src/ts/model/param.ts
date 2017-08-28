@@ -18,7 +18,6 @@ module KG {
         value: number;
         update: (newValue: any) => any;
         formatted: (precision?: number) => string;
-        paramScale: (domain?: number) => d3.ScaleLinear<Number, Number>;
     }
 
     export class Param implements IParam {
@@ -82,15 +81,6 @@ module KG {
             return d3.format(`.${precision}f`)(this.value);
         }
 
-        // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        paramScale(domain?: number) {
-            domain = domain || 100;
-            let param = this;
-            return d3.scaleLinear()
-                .clamp(true)
-                .domain([domain * -1, domain])
-                .range([param.min, param.max]);
-        }
     }
 
 }

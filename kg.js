@@ -742,15 +742,6 @@ var KG;
             precision = precision || this.precision;
             return d3.format("." + precision + "f")(this.value);
         };
-        // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        Param.prototype.paramScale = function (domain) {
-            domain = domain || 100;
-            var param = this;
-            return d3.scaleLinear()
-                .clamp(true)
-                .domain([domain * -1, domain])
-                .range([param.min, param.max]);
-        };
         return Param;
     }());
     KG.Param = Param;
