@@ -4,9 +4,16 @@
 
 /// <reference path="lib/underscore.ts"/>
 
+/// <reference path="KGAuthor/parsingFunctions.ts"/>
 /// <reference path="KGAuthor/authoringObject.ts"/>
 /// <reference path="KGAuthor/graph.ts"/>
+/// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+
+/// <reference path="KGAuthor/math/multivariateFunction.ts"/>
+
+/// <reference path="KGAuthor/econ/budgetLine.ts"/>
+/// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />

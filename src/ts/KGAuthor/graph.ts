@@ -9,15 +9,10 @@ module KGAuthor {
         orient: string;
     }
 
-    export interface GraphObjectDefinition {
-        type: string;
-        def: any;
-    }
-
     export interface GraphDefinition {
         xAxis: AxisDefinition,
         yAxis: AxisDefinition,
-        objects: GraphObjectDefinition[]
+        objects: KG.TypeAndDef[]
     }
 
     export class Graph extends AuthoringObject {
@@ -28,23 +23,29 @@ module KGAuthor {
 
         constructor(def) {
             super(def);
-            this.xScaleName = KG.randomString(10);
-            this.yScaleName = KG.randomString(10);
-            this.clipPathName = KG.randomString(10);
-            this.def.xAxis.range = def.xAxis.range || [0, 1];
-            this.def.yAxis.range = def.yAxis.range || [1, 0];
-            this.def.objects.push({
+
+            const g = this;
+            g.xScaleName = KG.randomString(10);
+            g.yScaleName = KG.randomString(10);
+            g.clipPathName = KG.randomString(10);
+            g.def.xAxis.range = def.xAxis.range || [0, 1];
+            g.def.yAxis.range = def.yAxis.range || [1, 0];
+
+            g.def.objects.push({
                 type: 'Axis',
                 def: this.def.xAxis
             });
-            this.def.objects.push({
+            g.def.objects.push({
                 type: 'Axis',
                 def: this.def.yAxis
+            });
+            g.subObjects = this.def.objects.map(function (obj) {
+                return new KGAuthor[obj.type](obj.def, g)
             });
 
         }
 
-        parse(parsedData: KG.ViewDefinition) {
+        parse_self(parsedData: KG.ViewDefinition) {
 
             const graph = this,
                 xAxis = graph.def.xAxis,
@@ -77,10 +78,45 @@ module KGAuthor {
                 "yScaleName": yScale
             });
 
-            this.def.objects.forEach(function (obj) {
-                parsedData = new KGAuthor[obj.type](obj.def, graph).parse(parsedData);
-            });
+            return parsedData;
+        }
+    }
 
+    export class GraphObjectGenerator extends AuthoringObject {
+
+        public def: any;
+        public subObjects: AuthoringObject[];
+
+        constructor(def, graph?: Graph) {
+            super(def);
+            if (graph) {
+                this.def.xScaleName = graph.xScaleName;
+                this.def.yScaleName = graph.yScaleName;
+                this.def.clipPathName = graph.clipPathName;
+            }
+            this.subObjects = [];
+        }
+
+        extractCoordinates(coordinatesKey?, xKey?, yKey?) {
+            coordinatesKey = coordinatesKey || 'coordinates';
+            xKey = xKey || 'x';
+            yKey = yKey || 'y';
+            let def = this.def;
+            if (def.hasOwnProperty(coordinatesKey)) {
+                def[xKey] = def[coordinatesKey][0].toString();
+                def[yKey] = def[coordinatesKey][1].toString();
+                delete def[coordinatesKey];
+            }
+        }
+    }
+
+    export class GraphObject extends GraphObjectGenerator {
+
+        public type: string;
+        public layer: number;
+
+        parse_self(parsedData: KG.ViewDefinition) {
+            parsedData.layers[this.layer].push(this);
             return parsedData;
         }
     }

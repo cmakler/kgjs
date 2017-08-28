@@ -62,7 +62,7 @@ module KG {
             let sidebar = this;
 
             sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width','100%').append('span').attr('class','newthought');
+            sidebar.titleElement = sidebar.element.append('p').style('width','100%').style('font-size','10pt');
             sidebar.descriptionElement = sidebar.element.append('div');
             const sliderTable = sidebar.element.append('table').style('padding','10px');
             sidebar.sliders.forEach(function(slider) {
@@ -76,7 +76,7 @@ module KG {
         update(force) {
             let sidebar = super.update(force);
             if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toLowerCase());
+                sidebar.titleElement.text(sidebar.title.toUpperCase());
                 sidebar.descriptionElement.text(sidebar.description);
             }
             return sidebar;
