@@ -239,9 +239,11 @@ var KGAuthor;
         __extends(GraphObjectGenerator, _super);
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
-            _this.def.xScaleName = graph.xScaleName;
-            _this.def.yScaleName = graph.yScaleName;
-            _this.def.clipPathName = graph.clipPathName;
+            if (graph) {
+                _this.def.xScaleName = graph.xScaleName;
+                _this.def.yScaleName = graph.yScaleName;
+                _this.def.clipPathName = graph.clipPathName;
+            }
             _this.subObjects = [];
             return _this;
         }
@@ -265,7 +267,7 @@ var KGAuthor;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         GraphObject.prototype.parse_self = function (parsedData) {
-            parsedData.layers[this.layer].push({ "type": this.type, "def": this.def });
+            parsedData.layers[this.layer].push(this);
             return parsedData;
         };
         return GraphObject;
@@ -275,41 +277,17 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var DivObjectGenerator = (function (_super) {
-        __extends(DivObjectGenerator, _super);
-        function DivObjectGenerator(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            _this.def.xScaleName = graph.xScaleName;
-            _this.def.yScaleName = graph.yScaleName;
-            _this.def.clipPathName = graph.clipPathName;
-            _this.subObjects = [];
-            return _this;
-        }
-        DivObjectGenerator.prototype.extractCoordinates = function (coordinatesKey, xKey, yKey) {
-            coordinatesKey = coordinatesKey || 'coordinates';
-            xKey = xKey || 'x';
-            yKey = yKey || 'y';
-            var def = this.def;
-            if (def.hasOwnProperty(coordinatesKey)) {
-                def[xKey] = def[coordinatesKey][0].toString();
-                def[yKey] = def[coordinatesKey][1].toString();
-                delete def[coordinatesKey];
-            }
-        };
-        return DivObjectGenerator;
-    }(KGAuthor.GraphObjectGenerator));
-    KGAuthor.DivObjectGenerator = DivObjectGenerator;
     var DivObject = (function (_super) {
         __extends(DivObject, _super);
         function DivObject() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         DivObject.prototype.parse_self = function (parsedData) {
-            parsedData.divs.push({ "type": "Label", "def": this.def });
+            parsedData.divs.push(this);
             return parsedData;
         };
         return DivObject;
-    }(DivObjectGenerator));
+    }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
     var Label = (function (_super) {
         __extends(Label, _super);
@@ -321,6 +299,16 @@ var KGAuthor;
         return Label;
     }(DivObject));
     KGAuthor.Label = Label;
+    var Sidebar = (function (_super) {
+        __extends(Sidebar, _super);
+        function Sidebar(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Sidebar';
+            return _this;
+        }
+        return Sidebar;
+    }(DivObject));
+    KGAuthor.Sidebar = Sidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -1140,7 +1128,6 @@ var KG;
             var view = this;
             // read the client width of the enclosing div and calculate the height using the aspectRatio
             var width = view.div.node().clientWidth;
-            console.log(width);
             if (width > 563 && view.sidebar) {
                 view.sidebar.positionRight(width);
                 width = width * 77 / 126; // make width of graph the same width as main Tufte column
@@ -1625,7 +1612,7 @@ var KG;
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
             sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').append('span').attr('class', 'newthought');
+            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').style('font-size', '10pt');
             sidebar.descriptionElement = sidebar.element.append('div');
             var sliderTable = sidebar.element.append('table').style('padding', '10px');
             sidebar.sliders.forEach(function (slider) {
@@ -1637,7 +1624,7 @@ var KG;
         Sidebar.prototype.update = function (force) {
             var sidebar = _super.prototype.update.call(this, force);
             if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toLowerCase());
+                sidebar.titleElement.text(sidebar.title.toUpperCase());
                 sidebar.descriptionElement.text(sidebar.description);
             }
             return sidebar;

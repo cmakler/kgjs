@@ -39,7 +39,7 @@ module KGAuthor {
                 type: 'Axis',
                 def: this.def.yAxis
             });
-            g.subObjects = this.def.objects.map(function(obj) {
+            g.subObjects = this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g)
             });
 
@@ -87,11 +87,13 @@ module KGAuthor {
         public def: any;
         public subObjects: AuthoringObject[];
 
-        constructor(def, graph: Graph) {
+        constructor(def, graph?: Graph) {
             super(def);
-            this.def.xScaleName = graph.xScaleName;
-            this.def.yScaleName = graph.yScaleName;
-            this.def.clipPathName = graph.clipPathName;
+            if (graph) {
+                this.def.xScaleName = graph.xScaleName;
+                this.def.yScaleName = graph.yScaleName;
+                this.def.clipPathName = graph.clipPathName;
+            }
             this.subObjects = [];
         }
 
@@ -114,7 +116,7 @@ module KGAuthor {
         public layer: number;
 
         parse_self(parsedData: KG.ViewDefinition) {
-            parsedData.layers[this.layer].push({"type": this.type, "def": this.def});
+            parsedData.layers[this.layer].push(this);
             return parsedData;
         }
     }

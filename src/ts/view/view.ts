@@ -37,7 +37,6 @@ module KG {
 
         constructor(div: Element, data: ViewDefinition) {
 
-
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -152,7 +151,6 @@ module KG {
                 });
             }
 
-
             view.updateDimensions();
         }
 
@@ -162,7 +160,6 @@ module KG {
 
             // read the client width of the enclosing div and calculate the height using the aspectRatio
             let width = view.div.node().clientWidth;
-            console.log(width);
 
             if (width > 563 && view.sidebar) {
                 view.sidebar.positionRight(width);
