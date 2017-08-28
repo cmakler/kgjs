@@ -2,46 +2,6 @@
 
 module KGAuthor {
 
-    export class GraphObjectGenerator extends AuthoringObject {
-
-        public def: any;
-        public subObjects: GraphObject[];
-
-        constructor(def, graph: Graph) {
-            super(def);
-            this.def.xScaleName = graph.xScaleName;
-            this.def.yScaleName = graph.yScaleName;
-            this.def.clipPathName = graph.clipPathName;
-            this.subObjects = [];
-        }
-
-        extractCoordinates(coordinatesKey?, xKey?, yKey?) {
-            coordinatesKey = coordinatesKey || 'coordinates';
-            xKey = xKey || 'x';
-            yKey = yKey || 'y';
-            let def = this.def;
-            console.log(def);
-            if (def.hasOwnProperty(coordinatesKey)) {
-                def[xKey] = def[coordinatesKey][0].toString();
-                def[yKey] = def[coordinatesKey][1].toString();
-                delete def[coordinatesKey];
-            }
-            console.log(def);
-        }
-    }
-
-    export class GraphObject extends GraphObjectGenerator {
-
-        public type: string;
-        public layer: number;
-
-        parse_self(parsedData: KG.ViewDefinition) {
-            parsedData.layers[this.layer].push({"type": this.type, "def": this.def});
-            return parsedData;
-        }
-    }
-
-
     export class Axis extends GraphObject {
 
         constructor(def, graph) {
@@ -60,20 +20,10 @@ module KGAuthor {
             }
             super(def, graph);
             this.type = 'Curve';
-            this.layer = 1;
+            this.layer = def.layer || 1;
         }
 
     }
-
-    export class Label extends GraphObject {
-
-        parse_self(parsedData: KG.ViewDefinition) {
-            parsedData.divs.push({"type": "Label", "def": this.def});
-            return parsedData;
-        }
-
-    }
-
 
     export class Point extends GraphObject {
 

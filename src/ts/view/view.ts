@@ -2,24 +2,23 @@
 
 module KG {
 
-    export interface ViewObjectWithType {
-        type: string;
-        def: any;
-    }
-
-    export interface DivObjectWithType {
+    export interface TypeAndDef {
         type: string;
         def: any;
     }
 
     export interface ViewDefinition {
+        // These are usually specified by the user
         aspectRatio?: number;
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
+        objects?: TypeAndDef[];
+
+        // The rest of these are usually generated
         scales?: ScaleDefinition[];
         clipPaths?: ClipPathDefinition[];
-        layers?: ViewObjectWithType[][];
-        divs?: DivObjectWithType[];
+        layers?: TypeAndDef[][];
+        divs?: TypeAndDef[];
     }
 
     export interface IView {
@@ -59,7 +58,7 @@ module KG {
                 divs: data.divs || []
             };
 
-            parsedData = KGAuthor.parse(data, parsedData);
+            parsedData = KGAuthor.parse(data.objects, parsedData);
 
             let view = this;
 
@@ -128,26 +127,26 @@ module KG {
 
 
             // add layers of objects
-            data.layers.forEach(function (layerViewObjectDefs: ViewObjectWithType[]) {
-                if (layerViewObjectDefs.length > 0) {
+            data.layers.forEach(function (layerTds: TypeAndDef[]) {
+                if (layerTds.length > 0) {
                     const layer = view.svg.append('g');
-                    layerViewObjectDefs.forEach(function (defWithType) {
-                        let def: ViewObjectDefinition = defWithType.def;
+                    layerTds.forEach(function (td) {
+                        let def: ViewObjectDefinition = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
                             def.clipPath = clipPathRefs[def['clipPathName']]
                         }
                         def = view.addViewToDef(def, layer);
-                        new KG[defWithType.type](def);
+                        new KG[td.type](def);
                     })
                 }
             });
 
             // add divs
             if (data.divs.length > 0) {
-                data.divs.forEach(function (defWithType: DivObjectWithType) {
-                    const def = view.addViewToDef(defWithType.def, view.div),
-                        newDiv = new KG[defWithType.type](def);
-                    if (defWithType.type == 'Sidebar') {
+                data.divs.forEach(function (td: TypeAndDef) {
+                    const def = view.addViewToDef(td.def, view.div),
+                        newDiv = new KG[td.type](def);
+                    if (td.type == 'Sidebar') {
                         view.sidebar = newDiv;
                     }
                 });

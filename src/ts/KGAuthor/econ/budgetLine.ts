@@ -2,7 +2,7 @@
 
 module KGAuthor {
 
-    class EconBudgetLine extends Segment {
+    export class EconBudgetLine extends Segment {
 
         constructor(def, graph) {
 
@@ -15,11 +15,11 @@ module KGAuthor {
             def.label = {text: 'BL'};
 
             if (def.draggable) {
-                def.drag = {
+                def.drag = [{
                     'directions': 'xy',
                     'param': paramName(def.m),
                     'expression': addDefs(multiplyDefs('drag.x', def.p1), multiplyDefs('drag.y', def.p2))
-                }
+                }]
             }
 
             super(def, graph);

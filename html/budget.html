@@ -2,9 +2,9 @@
 <html class="no-js" lang="">
 <head>
     <title>Budget Line</title>
-    <link rel="stylesheet" href="https://kg-authoring.herokuapp.com/css/kg-lib.css">
-    <link rel="stylesheet" href="https://kg-authoring.herokuapp.com/css/kg.css"/>
-    <script src="https://kg-authoring.herokuapp.com/js/kg-lib.js"></script>
+    <link rel="stylesheet" href="../build/lib/kg-lib.css"/>
+    <link rel="stylesheet" href="../build/kg.css"/>
+    <script src="../build/lib/kg-lib.js"></script>
 </head>
 <body>
 <p>This is a page with (almost) no CSS except KaTex. This is to ensure that the styling in the illustrations doesn't collide with the surrounding pages.</p>
@@ -17,11 +17,9 @@
 </ul>
 
 
-<!--<div id="diagramDiv1" class="kg-container" src="http://127.0.0.1:5000/convert/budget" style="width: 400px;margin-right: auto;margin-left: auto;margin-top: 2em;margin-bottom: 2em;"></div>-->
-
-<div id="diagramDiv2" class="kg-container" src="http://kg-authoring.herokuapp.com/convert/budget" >
+<div id="diagram" class="kg-container" src="../json/budget.json" style="width: 80%;margin-right: auto;margin-left: auto;margin-top: 2em;margin-bottom: 2em;">
 
 </div>
-<script src="https://kg-authoring.herokuapp.com/js/kg.js"></script>
+<script src="../build/kg.js"></script>
 </body>
 </html>

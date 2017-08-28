@@ -13,8 +13,7 @@ module KGAuthor {
     }
 
     export interface IMultivariateFunction extends IMathFunction {
-        levelCurve: (level: any, def: any, graph: Graph) => Curve;
-        levelCurveThroughPoint: (point: any, def: any, graph: Graph) => Curve;
+        levelCurve: (def: any, graph: Graph) => Curve[];
     }
 
     export class MultivariateFunction extends MathFunction implements IMultivariateFunction {
@@ -37,26 +36,33 @@ module KGAuthor {
             return '';
         }
 
-        levelCurve(level, def, graph) {
-            return new Curve(def, graph);
+        levelCurve(def, graph) {
+            return this.curvesFromFunctions([],def,graph);
         }
 
-        levelCurveThroughPoint(point, def, graph) {
-            return this.levelCurve(this.value(point), def, graph);
+        curvesFromFunctions(fns:any[], def, graph) {
+            return fns.map(function(fn) {
+                let curveDef = JSON.parse(JSON.stringify(def));
+                delete curveDef.utilityFunction;
+                curveDef.univariateFunction = fn;
+                return new Curve(curveDef,graph);
+            })
         }
+
     }
 
     export class CobbDouglasFunction extends MultivariateFunction {
 
         value(x) {
             const e = this.exponents;
-            return `((${x[0]})^(${e[0]}))*((${x[0]})^(${e[0]}))`;
+            return `((${x[0]})^(${e[0]}))*((${x[1]})^(${e[1]}))`;
         }
 
-        levelCurve(level, def, graph) {
-            const e = this.exponents;
+        levelCurve(def, graph) {
+            const e = this.exponents,
+                level = def.level || this.value(def.point);
             def.interpolation = 'curveMonotoneX';
-            def.data = [
+            return this.curvesFromFunctions([
                 {
                     "fn": `(${level}/y^(${e[1]}))^(1/(${e[0]}))`,
                     "ind": "y",
@@ -69,22 +75,22 @@ module KGAuthor {
                     "min": `(${level})^(1/(${e[0]} + ${e[1]}))`,
                     "samplePoints": 30
                 }
-            ];
-            return new Curve(def, graph);
+            ], def, graph)
         }
     }
 
-    export class Linear extends MultivariateFunction {
+    export class LinearFunction extends MultivariateFunction {
 
         value(x) {
             const c = this.coefficients;
             return `((${x[0]})*(${c[0]})+(${x[0]})*(${c[0]}))`;
         }
 
-        levelCurve(level, def, graph) {
-            const c = this.coefficients;
+        levelCurve(def, graph) {
+            const c = this.coefficients,
+                level = def.level || this.value(def.point);
             def.interpolation = 'curveLinear';
-            def.data = [
+            return this.curvesFromFunctions([
                 {
                     "fn": `(${level} - (${c[1]})*y)/(${c[0]})`,
                     "ind": "y",
@@ -95,22 +101,22 @@ module KGAuthor {
                     "ind": "x",
                     "samplePoints": 2
                 }
-            ];
-            return new Curve(def, graph);
+            ], def, graph)
         }
     }
 
-    export class Min extends MultivariateFunction {
+    export class MinFunction extends MultivariateFunction {
 
         value(x) {
             const c = this.def.coefficients;
             return `(min((${x[0]})*(${c[0]}),(${x[0]})*(${c[0]})))`;
         }
 
-        levelCurve(level, def, graph) {
-            const c = this.def.coefficients;
+        levelCurve(def, graph) {
+            const c = this.def.coefficients,
+                level = def.level || this.value(def.point);
             def.interpolation = 'curveLinear';
-            def.data = [
+            return this.curvesFromFunctions([
                 {
                     "fn": divideDefs(level, c[1]),
                     "ind": "x",
@@ -122,8 +128,7 @@ module KGAuthor {
                     "min": divideDefs(level, c[1]),
                     "samplePoints": 2
                 }
-            ];
-            return new Curve(def, graph);
+            ], def, graph);
         }
     }
 }
