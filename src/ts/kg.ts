@@ -38,7 +38,9 @@
 /// <reference path="view/viewObjects/point.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 

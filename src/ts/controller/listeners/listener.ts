@@ -26,9 +26,8 @@ module KG {
         public expression;
 
         constructor(def: ListenerDefinition) {
-            def = defaults(def, {constants: [], updatables: []});
-            def.updatables = def.updatables.concat(['expression']);
-            def.constants = def.constants.concat(['param']);
+            setProperties(def, 'updatables',['expression']);
+            setProperties(def, 'constants',['param']);
             super(def);
         }
 

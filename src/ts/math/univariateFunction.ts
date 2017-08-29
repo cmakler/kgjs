@@ -25,18 +25,12 @@ module KG {
 
         constructor(def: UnivariateFunctionDefinition) {
 
-            // establish property defaults
-            def = defaults(def, {
+            setDefaults(def, {
                 ind: 'x',
-                samplePoints: 50,
-                constants: [],
-                updatables: []
+                samplePoints: 50
             });
-
-            // define updatable properties
-            def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
-            def.updatables = def.updatables.concat(['min','max']);
-
+            setProperties(def, 'constants',['samplePoints', 'ind', 'fn']);
+            setProperties(def, 'updatables',['min','max']);
             super(def);
 
             this.compiledFunction = math.compile(def.fn);

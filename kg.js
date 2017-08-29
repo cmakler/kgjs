@@ -612,8 +612,12 @@ var KG;
     var Model = (function () {
         function Model(params, restrictions) {
             var model = this;
-            model.params = params.map(function (def) { return new KG.Param(def); });
-            model.restrictions = (restrictions || []).map(function (def) { return new KG.Restriction(def); });
+            model.params = params.map(function (def) {
+                return new KG.Param(def);
+            });
+            model.restrictions = (restrictions || []).map(function (def) {
+                return new KG.Restriction(def);
+            });
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -686,6 +690,17 @@ var KG;
                     param.update(oldValue);
                 }
             }
+        };
+        // method exposed to viewObjects to allow them to toggle a binary param
+        Model.prototype.toggleParam = function (name) {
+            var currentValue = this.getParam(name).value;
+            this.updateParam(name, !currentValue);
+        };
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
+        Model.prototype.cycleParam = function (name) {
+            var param = this.getParam(name);
+            this.updateParam(name, param.value < param.max ? param.value++ : 0);
         };
         Model.prototype.update = function (force) {
             this.updateListeners.forEach(function (listener) {
@@ -1185,13 +1200,14 @@ var KG;
             def = KG.defaults(def, {
                 updatables: [],
                 constants: [],
+                alwaysUpdate: false,
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true
             });
             def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show');
-            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
+            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
@@ -1220,14 +1236,42 @@ var KG;
             }
             return _this;
         }
-        ViewObject.prototype.addClipPath = function (g) {
+        ViewObject.prototype.addClipPath = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                g.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath.id + ")");
             }
+            return vo;
+        };
+        ViewObject.prototype.addInteraction = function () {
+            var vo = this;
+            vo.interactionHandler.addTrigger(vo.rootElement);
+            return vo;
         };
         ViewObject.prototype.draw = function (layer) {
             return this;
+        };
+        ViewObject.prototype.redraw = function () {
+            return this;
+        };
+        ViewObject.prototype.displayElement = function (show) {
+            var vo = this;
+            if (vo.hasOwnProperty('rootElement')) {
+                vo.rootElement.style('display', show ? null : 'none');
+            }
+        };
+        ViewObject.prototype.update = function (force) {
+            var vo = _super.prototype.update.call(this, force);
+            if (vo.show) {
+                vo.displayElement(true);
+                if (vo.hasChanged || vo.alwaysUpdate) {
+                    vo.redraw();
+                }
+            }
+            else {
+                vo.displayElement(false);
+            }
+            return vo;
         };
         return ViewObject;
     }(KG.UpdateListener));
@@ -1250,15 +1294,13 @@ var KG;
             return cp;
         };
         // update properties
-        ClipPath.prototype.update = function (force) {
-            var cp = _super.prototype.update.call(this, force);
-            if (cp.hasChanged) {
-                var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
-                cp.rect.attr('x', Math.min(x1, x2));
-                cp.rect.attr('y', Math.min(y1, y2));
-                cp.rect.attr('width', Math.abs(x2 - x1));
-                cp.rect.attr('height', Math.abs(y2 - y1));
-            }
+        ClipPath.prototype.redraw = function () {
+            var cp = this;
+            var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
+            cp.rect.attr('x', Math.min(x1, x2));
+            cp.rect.attr('y', Math.min(y1, y2));
+            cp.rect.attr('width', Math.abs(x2 - x1));
+            cp.rect.attr('height', Math.abs(y2 - y1));
             return cp;
         };
         return ClipPath;
@@ -1284,29 +1326,25 @@ var KG;
         // create SVG elements
         Segment.prototype.draw = function (layer) {
             var segment = this;
-            segment.g = layer.append('g');
-            segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
-            segment.line = segment.g.append('line');
-            segment.addClipPath(segment.g);
-            segment.interactionHandler.addTrigger(segment.g);
-            return segment;
+            segment.rootElement = layer.append('g');
+            segment.dragLine = segment.rootElement.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
+            segment.line = segment.rootElement.append('line');
+            return segment.addClipPath().addInteraction();
         };
         // update properties
-        Segment.prototype.update = function (force) {
-            var segment = _super.prototype.update.call(this, force);
-            if (segment.hasChanged) {
-                var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale.scale(segment.y1), y2 = segment.yScale.scale(segment.y2), stroke = segment.stroke, strokeWidth = segment.strokeWidth;
-                segment.dragLine.attr("x1", x1);
-                segment.dragLine.attr("y1", y1);
-                segment.dragLine.attr("x2", x2);
-                segment.dragLine.attr("y2", y2);
-                segment.line.attr("x1", x1);
-                segment.line.attr("y1", y1);
-                segment.line.attr("x2", x2);
-                segment.line.attr("y2", y2);
-                segment.line.attr("stroke", stroke);
-                segment.line.attr('stroke-width', strokeWidth);
-            }
+        Segment.prototype.redraw = function () {
+            var segment = this;
+            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale.scale(segment.y1), y2 = segment.yScale.scale(segment.y2), stroke = segment.stroke, strokeWidth = segment.strokeWidth;
+            segment.dragLine.attr("x1", x1);
+            segment.dragLine.attr("y1", y1);
+            segment.dragLine.attr("x2", x2);
+            segment.dragLine.attr("y2", y2);
+            segment.line.attr("x1", x1);
+            segment.line.attr("y1", y1);
+            segment.line.attr("x2", x2);
+            segment.line.attr("y2", y2);
+            segment.line.attr("stroke", stroke);
+            segment.line.attr('stroke-width', strokeWidth);
             return segment;
         };
         return Segment;
@@ -1322,6 +1360,7 @@ var KG;
             var _this = this;
             // establish property defaults
             def = KG.defaults(def, {
+                alwaysUpdate: true,
                 interpolation: 'curveBasis',
                 constants: []
             });
@@ -1335,33 +1374,31 @@ var KG;
         // create SVG elements
         Curve.prototype.draw = function (layer) {
             var curve = this;
-            curve.g = layer.append('g');
-            curve.dragPath = curve.g.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
-            curve.path = curve.g.append('path').style('fill', 'none');
-            if (curve.hasOwnProperty('clipPath') && curve.clipPath != undefined) {
-                curve.g.attr('clip-path', "url(#" + curve.clipPath.id + ")");
-            }
-            curve.interactionHandler.addTrigger(curve.g);
-            return curve;
+            curve.rootElement = layer.append('g');
+            curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
+            curve.path = curve.rootElement.append('path').style('fill', 'none');
+            return curve.addClipPath().addInteraction();
         };
         // update properties
-        Curve.prototype.update = function (force) {
-            var curve = _super.prototype.update.call(this, force);
+        Curve.prototype.redraw = function () {
+            var curve = this;
             var data = [];
             if (curve.hasOwnProperty('univariateFunction')) {
-                var fn = curve.univariateFunction.update(force);
-                var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                var dataLine = d3.line()
-                    .curve(d3[curve.interpolation])
-                    .x(function (d) {
-                    return curve.xScale.scale(d.x);
-                })
-                    .y(function (d) {
-                    return curve.yScale.scale(d.y);
-                });
-                curve.dragPath.data([data]).attr('d', dataLine);
-                curve.path.data([data]).attr('d', dataLine);
+                var fn = curve.univariateFunction.update(true);
+                if (fn.hasChanged) {
+                    var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                    data = fn.dataPoints(scale.domainMin, scale.domainMax);
+                    var dataLine = d3.line()
+                        .curve(d3[curve.interpolation])
+                        .x(function (d) {
+                        return curve.xScale.scale(d.x);
+                    })
+                        .y(function (d) {
+                        return curve.yScale.scale(d.y);
+                    });
+                    curve.dragPath.data([data]).attr('d', dataLine);
+                    curve.path.data([data]).attr('d', dataLine);
+                }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
             }
@@ -1390,28 +1427,27 @@ var KG;
         }
         Axis.prototype.draw = function (layer) {
             var a = this;
-            a.g = layer.append('g').attr('class', 'axis');
+            a.rootElement = layer.append('g').attr('class', 'axis');
             return a;
         };
-        Axis.prototype.update = function (force) {
-            var a = _super.prototype.update.call(this, force);
-            a.g.style('display', a.show ? null : 'none');
+        Axis.prototype.redraw = function () {
+            var a = this;
             switch (a.orient) {
                 case 'bottom':
-                    a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.g.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
                     return a;
                 case 'left':
-                    a.g.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.g.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
                     return a;
                 case 'top':
-                    a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.g.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
                     return a;
                 case 'right':
-                    a.g.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.g.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
                     return a;
             }
             return a;
@@ -1445,28 +1481,22 @@ var KG;
         // create SVG elements
         Point.prototype.draw = function (layer) {
             var p = this;
-            p.g = layer.append('g'); // SVG group
-            p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
-            p.circle = p.g.append('circle');
-            //p.addClipPath(p.g)
-            p.interactionHandler.addTrigger(p.g);
-            return p;
+            p.rootElement = layer.append('g'); // SVG group
+            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.rootElement.append('circle');
+            //p.addClipPath()
+            return p.addInteraction();
         };
         // update properties
-        Point.prototype.update = function (force) {
-            var p = _super.prototype.update.call(this, force);
-            if (p.hasChanged) {
-                //updated property values
-                var x = p.xScale.scale(p.x), y = p.yScale.scale(p.y), r = p.r;
-                //assign property values to SVG attributes
-                p.g.attr('transform', "translate(" + x + " " + y + ")");
-                p.circle.attr('r', p.r);
-                p.circle.style('fill', p.fill);
-                p.circle.style('opacity', p.opacity);
-                p.circle.style('stroke', p.stroke);
-                p.circle.style('stroke-width', p.strokeWidth + "px");
-                p.circle.style('stroke-opacity', p.strokeOpacity);
-            }
+        Point.prototype.redraw = function () {
+            var p = this;
+            p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
+            p.circle.attr('r', p.r);
+            p.circle.style('fill', p.fill);
+            p.circle.style('opacity', p.opacity);
+            p.circle.style('stroke', p.stroke);
+            p.circle.style('stroke-width', p.strokeWidth + "px");
+            p.circle.style('stroke-opacity', p.strokeOpacity);
             return p;
         };
         return Point;
@@ -1478,27 +1508,11 @@ var KG;
 (function (KG) {
     var DivObject = (function (_super) {
         __extends(DivObject, _super);
-        function DivObject(def) {
-            var _this = this;
-            def = KG.defaults(def, {
-                updatables: [],
-                constants: [],
-                show: true
-            });
-            _this = _super.call(this, def) || this;
-            var divObj = _this;
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                divObj.draw(def.layer).update(true);
-            }
-            return _this;
+        function DivObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        DivObject.prototype.draw = function (layer) {
-            return this;
-        };
         return DivObject;
-    }(KG.UpdateListener));
+    }(KG.ViewObject));
     KG.DivObject = DivObject;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
@@ -1511,6 +1525,7 @@ var KG;
             // establish property defaults
             def = KG.defaults(def, {
                 value: 'params.' + def.param,
+                alwaysUpdate: true,
                 noAxis: false,
                 constants: [],
                 updatables: []
@@ -1523,11 +1538,11 @@ var KG;
         }
         Slider.prototype.draw = function (layer) {
             var slider = this;
-            slider.element = layer.append('tr');
+            slider.rootElement = layer.append('tr');
             var param = slider.model.getParam(slider.param);
-            slider.labelElement = slider.element.append('td')
+            slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt');
-            slider.numberInput = slider.element.append('td').append('input')
+            slider.numberInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -1540,7 +1555,7 @@ var KG;
             slider.numberInput.on("input", function () {
                 slider.model.updateParam(slider.param, +this.value);
             });
-            slider.rangeInput = slider.element.append('td').append('input')
+            slider.rangeInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -1551,13 +1566,11 @@ var KG;
             return slider;
         };
         // update properties
-        Slider.prototype.update = function (force) {
-            var slider = _super.prototype.update.call(this, force);
-            if (slider.hasChanged) {
-                katex.render(slider.label + " = ", slider.labelElement.node());
-                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
-                slider.rangeInput.property('value', slider.value);
-            }
+        Slider.prototype.redraw = function () {
+            var slider = this;
+            katex.render(slider.label + " = ", slider.labelElement.node());
+            slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+            slider.rangeInput.property('value', slider.value);
             return slider;
         };
         return Slider;
@@ -1584,7 +1597,7 @@ var KG;
         }
         Sidebar.prototype.positionRight = function (width) {
             var sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
@@ -1592,7 +1605,7 @@ var KG;
         };
         Sidebar.prototype.positionBelow = function () {
             var sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
                 .style('width', null);
@@ -1602,22 +1615,20 @@ var KG;
         // create div for text
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
-            sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').style('font-size', '10pt');
-            sidebar.descriptionElement = sidebar.element.append('div');
-            var sliderTable = sidebar.element.append('table').style('padding', '10px');
+            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            sidebar.descriptionElement = sidebar.rootElement.append('div');
+            var sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
             sidebar.sliders.forEach(function (slider) {
                 new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model });
             });
             return sidebar;
         };
         // update properties
-        Sidebar.prototype.update = function (force) {
-            var sidebar = _super.prototype.update.call(this, force);
-            if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toUpperCase());
-                sidebar.descriptionElement.text(sidebar.description);
-            }
+        Sidebar.prototype.redraw = function () {
+            var sidebar = this;
+            sidebar.titleElement.text(sidebar.title.toUpperCase());
+            sidebar.descriptionElement.text(sidebar.description);
             return sidebar;
         };
         return Sidebar;
@@ -1648,22 +1659,19 @@ var KG;
         // create div for text
         Label.prototype.draw = function (layer) {
             var label = this;
-            label.element = layer.append('div')
+            label.rootElement = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
                 .style('font-size', label.fontSize + 'pt');
-            label.interactionHandler.addTrigger(label.element);
-            return label;
+            return label.addInteraction();
         };
         // update properties
-        Label.prototype.update = function (force) {
-            var label = _super.prototype.update.call(this, force);
-            if (label.hasChanged) {
-                var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
-                label.element.style('left', x + 'px');
-                label.element.style('top', y + 'px');
-                katex.render(label.text, label.element.node());
-            }
+        Label.prototype.redraw = function () {
+            var label = this;
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            label.rootElement.style('left', x + 'px');
+            label.rootElement.style('top', y + 'px');
+            katex.render(label.text, label.rootElement.node());
             return label;
         };
         return Label;
@@ -1733,17 +1741,87 @@ window.onresize = function () {
     });
 };
 /// <reference path="../../kg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
-    var EconUtilityFunction = (function (_super) {
-        __extends(EconUtilityFunction, _super);
-        function EconUtilityFunction(def) {
-            return _super.call(this, def) || this;
+var KG;
+(function (KG) {
+    var Checkbox = (function (_super) {
+        __extends(Checkbox, _super);
+        function Checkbox(def) {
+            var _this = this;
+            // establish property defaults
+            def = KG.defaults(def, {
+                value: 'params.' + def.param,
+                constants: [],
+                updatables: []
+            });
+            // define constant and updatable properties
+            def.constants = def.constants.concat(['param', 'noAxis']);
+            def.updatables = def.updatables.concat(['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
         }
-        EconUtilityFunction.prototype.parse = function () {
-            return {};
+        Checkbox.prototype.draw = function (layer) {
+            var slider = this;
+            slider.element = layer.append('tr');
+            var param = slider.model.getParam(slider.param);
+            slider.labelElement = slider.element.append('td')
+                .style('font-size', '14pt');
+            slider.numberInput = slider.element.append('td').append('input')
+                .attr('type', 'number')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round)
+                .style('font-size', '14pt')
+                .style('border', 'none')
+                .style('background', 'none')
+                .style('padding-left', '5px')
+                .style('font-family', 'KaTeX_Main');
+            slider.numberInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            slider.rangeInput = slider.element.append('td').append('input')
+                .attr('type', 'range')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round);
+            slider.rangeInput.on("input", function () {
+                slider.model.updateParam(slider.param, +this.value);
+            });
+            return slider;
         };
-        return EconUtilityFunction;
-    }(KGAuthor.AuthoringObject));
-    KGAuthor.EconUtilityFunction = EconUtilityFunction;
-})(KGAuthor || (KGAuthor = {}));
+        // update properties
+        Checkbox.prototype.update = function (force) {
+            var slider = _super.prototype.update.call(this, force);
+            if (slider.hasChanged) {
+                katex.render(slider.label + " = ", slider.labelElement.node());
+                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+                slider.rangeInput.property('value', slider.value);
+            }
+            return slider;
+        };
+        return Checkbox;
+    }(KG.ParamControl));
+    KG.Checkbox = Checkbox;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ParamControl = (function (_super) {
+        __extends(ParamControl, _super);
+        function ParamControl(def) {
+            var _this = this;
+            // establish property defaults
+            def = KG.defaults(def, {
+                value: 'params.' + def.param,
+                constants: [],
+                updatables: []
+            });
+            // define constant and updatable properties
+            def.constants = def.constants.concat(['param']);
+            def.updatables = def.updatables.concat(['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return ParamControl;
+    }(KG.DivObject));
+    KG.ParamControl = ParamControl;
+})(KG || (KG = {}));

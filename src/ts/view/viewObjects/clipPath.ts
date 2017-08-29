@@ -10,16 +10,11 @@ module KG {
 
         private rect;
 
-        constructor(def: ClipPathDefinition) {
-            super(def);
-        }
-
         // create SVG elements
         draw(layer) {
             let cp = this;
-            //console.log('drawing clipPath with id', cp.id);
-            cp.clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = cp.clipPath.append('rect');
+            const clipPath = layer.append('clipPath').attr('id', cp.id);
+            cp.rect = clipPath.append('rect');
             return cp;
         }
 

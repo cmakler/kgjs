@@ -56,17 +56,15 @@ module KG {
         public strokeOpacity;
 
         constructor(def: ViewObjectDefinition) {
-            def = defaults(def, {
-                updatables: [],
-                constants: [],
+            setDefaults(def, {
                 alwaysUpdate: false,
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true
             });
-            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show');
-            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
+            setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
+            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
 
             super(def);
 

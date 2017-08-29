@@ -23,17 +23,15 @@ module KG {
         constructor(def) {
 
             //establish property defaults
-            def = defaults(def, {
+            setDefaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12,
-                updatables: [],
-                constants: []
+                fontSize: 12
             });
 
             // define constant and updatable properties
-            def.constants = def.constants.concat(['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            def.updatables = def.updatables.concat(['x', 'y', 'text']);
+            setProperties(def, 'constants',['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            setProperties(def, 'updatables',['x', 'y', 'text']);
 
             super(def);
 

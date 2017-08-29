@@ -36,7 +36,9 @@ module KGAuthor {
             p.extractCoordinates();
 
             if (def.hasOwnProperty('label')) {
-                let labelDef = KG.defaults(def, {
+                let labelDef = JSON.parse(JSON.stringify(def));
+                delete labelDef.label;
+                KG.setDefaults(labelDef, {
                     text: def.label.text,
                     fontSize: 8,
                     xPixelOffset: 5,

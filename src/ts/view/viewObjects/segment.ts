@@ -21,15 +21,7 @@ module KG {
         private line;
 
         constructor(def: SegmentDefinition) {
-
-            // establish property defaults
-            def = defaults(def, {
-                updatables: []
-            });
-
-            // define updatable properties
-            def.updatables = def.updatables.concat(['x1', 'y1', 'x2', 'y2']);
-
+            setProperties(def, 'updatables',['x1', 'y1', 'x2', 'y2']);
             super(def);
         }
 

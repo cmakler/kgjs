@@ -30,9 +30,9 @@ module KG {
         public round: number;
         public precision: number;
 
-        constructor(def:ParamDefinition) {
+        constructor(def: ParamDefinition) {
 
-            function decimalPlaces(numAsString:string) {
+            function decimalPlaces(numAsString: string) {
                 let match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
                 if (!match) {
                     return 0;
@@ -45,22 +45,29 @@ module KG {
                     - (match[2] ? +match[2] : 0));
             }
 
-            def = defaults(def,{min: 0, max: 10, round: 1});
+            setDefaults(def, {min: 0, max: 10, round: 1, label: ''});
 
             this.name = def.name;
-            this.label = def.label || '';
-            this.value = parseFloat(def.value);
-            this.min = parseFloat(def.min);
-            this.max = parseFloat(def.max);
-            this.round = parseFloat(def.round);
-            this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
+            this.label = def.label;
 
-            //console.log('initialized param object: ', this);
+            if (typeof def.value == 'boolean') {
+                this.value = +def.value;
+                this.min = 0;
+                this.max = 1;
+                this.round = 1;
+            } else {
+                this.value = parseFloat(def.value);
+                this.min = parseFloat(def.min);
+                this.max = parseFloat(def.max);
+                this.round = parseFloat(def.round);
+                this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
+            }
+
         }
 
         // Receives an instruction to update the parameter to a new value
         // Updates to the closest rounded value to the desired newValue within accepted range
-        update(newValue:any) {
+        update(newValue: any) {
             let param = this;
             if (newValue < param.min) {
                 param.value = param.min;
@@ -76,7 +83,7 @@ module KG {
 
         // Displays current value of the parameter to desired precision
         // If no precision is given, uses the implied precision given by the rounding parameter
-        formatted(precision?:number) {
+        formatted(precision?: number) {
             precision = precision || this.precision;
             return d3.format(`.${precision}f`)(this.value);
         }

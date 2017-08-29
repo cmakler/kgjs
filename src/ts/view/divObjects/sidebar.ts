@@ -23,22 +23,19 @@ module KG {
 
         constructor(def: SidebarDefinition) {
 
-            // establish property defaults
-            def = defaults(def, {
-                constants: [],
-                updatables: []
+            setDefaults(def, {
+                title: '',
+                description: ''
             });
-
-            // define updatable properties
-            def.constants = def.constants.concat(['sliders']);
-            def.updatables = def.updatables.concat(['title', 'description']);
+            setProperties(def, 'constants',['sliders']);
+            setProperties(def, 'updatables',['title', 'description']);
 
             super(def);
         }
 
         positionRight(width) {
             let sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
@@ -47,7 +44,7 @@ module KG {
 
         positionBelow() {
             let sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
                 .style('width', null);
@@ -61,11 +58,11 @@ module KG {
         draw(layer) {
             let sidebar = this;
 
-            sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width','100%').style('font-size','10pt');
-            sidebar.descriptionElement = sidebar.element.append('div');
-            const sliderTable = sidebar.element.append('table').style('padding','10px');
-            sidebar.sliders.forEach(function(slider) {
+            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            sidebar.descriptionElement = sidebar.rootElement.append('div');
+            const sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
+            sidebar.sliders.forEach(function (slider) {
                 new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model})
             });
             return sidebar;
@@ -73,12 +70,10 @@ module KG {
         }
 
         // update properties
-        update(force) {
-            let sidebar = super.update(force);
-            if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toUpperCase());
-                sidebar.descriptionElement.text(sidebar.description);
-            }
+        redraw() {
+            let sidebar = this;
+            sidebar.titleElement.text(sidebar.title.toUpperCase());
+            sidebar.descriptionElement.text(sidebar.description);
             return sidebar;
         }
     }

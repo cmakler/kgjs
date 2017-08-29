@@ -20,20 +20,15 @@ module KG {
 
         constructor(def: PointDefinition) {
 
-            // establish property defaults
-            def = defaults(def, {
+            setDefaults(def, {
                 fill: 'blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,
                 strokeOpacity: 1,
-                r: 6.5,
-                updatables: []
+                r: 6.5
             });
-
-            // define updatable properties
-            def.updatables = def.updatables.concat(['x', 'y', 'r']);
-
+            setProperties(def, 'updatables',['x', 'y', 'r']);
             super(def);
         }
 

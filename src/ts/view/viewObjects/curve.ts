@@ -14,15 +14,12 @@ module KG {
         private univariateFunction: UnivariateFunction;
 
         constructor(def: CurveDefinition) {
-            // establish property defaults
-            def = defaults(def, {
-                alwaysUpdate: true,
-                interpolation: 'curveBasis',
-                constants: []
-            });
 
-            // define updatable properties
-            def.constants = def.constants.concat(['interpolation']);
+            setDefaults(def, {
+                alwaysUpdate: true,
+                interpolation: 'curveBasis'
+            });
+            setProperties(def, 'constants',['interpolation']);
             super(def);
             def.univariateFunction.model = def.model
             this.univariateFunction = new UnivariateFunction(def.univariateFunction)

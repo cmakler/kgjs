@@ -18,15 +18,13 @@ module KG {
 
         constructor(def: AxisDefinition) {
 
-            def = defaults(def, {
+            setDefaults(def, {
                 ticks: 5,
-                intercept: 0,
-                updatables: [],
-                constants: []
+                intercept: 0
             });
 
-            def.constants = def.constants.concat(['orient']);
-            def.updatables = def.updatables.concat(['ticks', 'intercept']);
+            setProperties(def,'constants',['orient']);
+            setProperties(def, 'updatables',['ticks', 'intercept']);
 
             super(def);
 

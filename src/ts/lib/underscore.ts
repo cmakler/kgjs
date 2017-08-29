@@ -1,4 +1,6 @@
-/*
+module KG {
+
+    /*
 
  from underscorejs
 
@@ -20,8 +22,6 @@
 
 // I adapted these functions from the amazing underscorejs library.
 
-module KG {
-
     function isObject(obj) {
         const type = typeof obj;
         return type === 'function' || type === 'object' && !!obj;
@@ -34,7 +34,7 @@ module KG {
         return keys;
     }
 
-    export function defaults(obj: any, def: any) {
+    function defaults(obj: any, def: any) {
         if (def == null || obj == null) return obj;
         const keys = allKeys(def),
             l = keys.length;
@@ -44,6 +44,18 @@ module KG {
         }
         return obj;
     }
+
+    // End of underscorejs functions
+
+    export function setDefaults(def: any, defaultValues:any) {
+        def = defaults(def,defaultValues);
+        return def;
+    }
+
+    export function setProperties(def: any, name: 'constants' | 'updatables', props:string[]) {
+        def[name] = (def[name] || []).concat(props);
+        return def;
+    }
+
 }
 
-// End of underscorejs functions
