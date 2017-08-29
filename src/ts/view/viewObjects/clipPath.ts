@@ -3,7 +3,7 @@
 module KG {
 
     export interface ClipPathDefinition extends ViewObjectDefinition {
-
+        
     }
 
     export class ClipPath extends ViewObject {

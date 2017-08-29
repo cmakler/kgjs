@@ -21,7 +21,7 @@ module KG {
             });
             setProperties(def, 'constants',['interpolation']);
             super(def);
-            def.univariateFunction.model = def.model
+            def.univariateFunction.model = def.model;
             this.univariateFunction = new UnivariateFunction(def.univariateFunction)
         }
 
