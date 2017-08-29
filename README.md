@@ -1,18 +1,40 @@
-# kgjs
+# kg.js
 Javascript Renderer for KineticGraphs
 
-The purpose of kgjs is to provide a way to render interactive documents defined as a JSON.
+## What it does
 
-It is made possible by two incredible open-source technologies:
+The purpose of kg.js is to provide a way to render interactive diagrams ("KineticGraphs") defined as a JSON.
+
+Once the page is loaded, kg.js looks for any elements with a class name `kg-container`. These elements should have a `src` attribute with a URL pointing to a JSON file. This file contains all the information necessary to render a KineticGraph and handle user interactions with it.
+
+Each KineticGraph is a standalone diagram, and does not communicate with the outside page. In particular, you can have multiple graphs rendered from the same JSON and interact with them separately.
+
+Each KineticGraph maintains its aspect ratio as the page window changes dimensions. If a KineticGraph includes a `sidebar` (an area to the right, which generally contains a caption as well as user controls like sliders), that `sidebar` is positioned to the right of the diagram for wide pages, and below the diagram for smaller ones. This responsive flow and layout is designed to work seamlessly with [Tufte CSS](https://edwardtufte.github.io/tufte-css/); just place a KineticGraph within a `figure` element with class `fullwidth`.
+
+## Dependencies
+
+This project is made possible by two incredible open-source technologies:
 * [D3](https://d3js.org/) for drawing
 * [KaTeX](https://khan.github.io/KaTeX/) for rendering math
-For convenience, minified versions of the JS and CSS dependencies are included in this repository in the build/lib folder. This folder includes the necessary JS and CSS files (kg-lib.js and kg-lib.css) as well as the fonts required for KaTex. If your project already includes those libraries, you can just use kg.js.
+For convenience, minified versions of the JS and CSS dependencies are included in this repository in the build/lib folder. This folder includes the necessary JS and CSS files as well as the fonts required for KaTex and Tufte CSS. To use these, add kg-lib.js and either kg-lib.css or kg-tufte.css. If your project already includes those libraries, you can just use kg.js.
 
-The responsive flow and layout is designed to work seamlessly with [Tufte CSS](https://edwardtufte.github.io/tufte-css/). If you want to use this, the fonts are all included in the build/lib folder; just use kg-tufte.css instead of kg-lib.css.
+## Authoring
 
-## How it works
+Anyone can create a KineticGraph simply by creating a JSON file. 
 
-Once the page is loaded, KG looks for any elements with a class name `kg-container`. These elements should have a `src` attribute with a URL pointing to a JSON file. The JSON file has four root objects:
+## Code Development
+
+TBA
+
+## Running locally
+
+Clone this repo and 
+
+## Getting started
+
+Clone this repo
+
+The JSON file has four root objects:
 * `aspectRatio` (optional; default `1`): the interactive diagram will have a fixed proportion based on the width of the enclosing container. As you resize your window, the diagram will retain its proportion. The `aspectRatio` in the JSON specifies the proportion, as width/height. Therefore, if you set `aspectRatio: 2`, the diagram will be twice as wide as it is high.
 * `params` (required): this is a list of parameter definitions. Parameters are always expressed as numbers that the user can change. (Boolean parameters are 0 and 1.) Each `param` definition specifies the following:
   * `name` (required): a unique string name
