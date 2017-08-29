@@ -15,7 +15,6 @@ module KG {
         private x2;
         private y2;
 
-        private g;
         private shape;
 
         constructor(def: RectangleDefinition) {
@@ -30,11 +29,10 @@ module KG {
         // create SVG elements
         draw(layer) {
             let rect = this;
-            rect.g = layer.append('g');
-            rect.rootElement = rect.g;
-            rect.shape = rect.g.append('rect');
+            rect.rootElement = layer.append('g');
+            rect.shape = rect.rootElement.append('rect');
 
-            //rect.interactionHandler.addTrigger(rect.g);
+            //rect.interactionHandler.addTrigger(rect.rootElement);
             return rect.addClipPath().addInteraction();
         }
 
