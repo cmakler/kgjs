@@ -27,7 +27,7 @@ module KG {
                 title: '',
                 description: ''
             });
-            setProperties(def, 'constants',['sliders','checkboxes']);
+            setProperties(def, 'constants',['sliders','checkboxes','radios']);
             setProperties(def, 'updatables',['title', 'description']);
 
             super(def);
@@ -67,6 +67,9 @@ module KG {
             });
             sidebar.checkboxes.forEach(function (checkbox) {
                 new Checkbox({layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model})
+            });
+            sidebar.radios.forEach(function (radio) {
+                new Radio({layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model})
             });
             return sidebar;
 

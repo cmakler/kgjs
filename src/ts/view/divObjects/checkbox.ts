@@ -9,7 +9,7 @@ module KG {
 
         draw(layer) {
             let checkbox = this;
-            checkbox.rootElement = layer.append('label');
+            checkbox.rootElement = layer.append('div').append('label');
             checkbox.inputElement = checkbox.rootElement.append('input');
             checkbox.inputElement
                 .attr('type','checkbox');
