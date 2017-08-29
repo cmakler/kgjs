@@ -910,7 +910,7 @@ var KG;
             fn.scope[fn.ind] = input;
             return fn.compiledFunction.eval(fn.scope);
         };
-        UnivariateFunction.prototype.dataPoints = function (min, max) {
+        UnivariateFunction.prototype.generateData = function (min, max) {
             var fn = this, data = [];
             min = fn.min || min;
             max = fn.max || max;
@@ -918,6 +918,7 @@ var KG;
                 var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
                 data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
             }
+            this.data = data;
             return data;
         };
         UnivariateFunction.prototype.update = function (force) {
@@ -1391,6 +1392,14 @@ var KG;
         // create SVG elements
         Curve.prototype.draw = function (layer) {
             var curve = this;
+            curve.dataLine = d3.line()
+                .curve(d3[curve.interpolation])
+                .x(function (d) {
+                return curve.xScale.scale(d.x);
+            })
+                .y(function (d) {
+                return curve.yScale.scale(d.y);
+            });
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
@@ -1399,22 +1408,13 @@ var KG;
         // update properties
         Curve.prototype.redraw = function () {
             var curve = this;
-            var data = [];
             if (curve.hasOwnProperty('univariateFunction')) {
                 var fn = curve.univariateFunction.update(true);
                 if (fn.hasChanged) {
                     var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                    data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                    var dataLine = d3.line()
-                        .curve(d3[curve.interpolation])
-                        .x(function (d) {
-                        return curve.xScale.scale(d.x);
-                    })
-                        .y(function (d) {
-                        return curve.yScale.scale(d.y);
-                    });
-                    curve.dragPath.data([data]).attr('d', dataLine);
-                    curve.path.data([data]).attr('d', dataLine);
+                    fn.generateData(scale.domainMin, scale.domainMax);
+                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                    curve.path.data([fn.data]).attr('d', curve.dataLine);
                 }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
@@ -1574,7 +1574,12 @@ var KG;
             KG.setDefaults(def, {
                 alwaysUpdate: true,
                 interpolation: 'curveBasis',
-                ind: 'x'
+                ind: 'x',
+                fill: 'lightsteelblue',
+                opacity: 0.2,
+                univariateFunction2: {
+                    "fn": "0"
+                }
             });
             KG.setProperties(def, 'constants', ['interpolation']);
             _this = _super.call(this, def) || this;
@@ -1587,59 +1592,48 @@ var KG;
         // create SVG elements
         Area.prototype.draw = function (layer) {
             var ab = this;
-            ab.g = layer.append('g');
-            ab.rootElement = ab.g;
-            ab.path1 = ab.g.append('path')
-                .style('fill', 'none');
-            ab.path2 = ab.g.append('path')
-                .style('fill', 'none');
-            /*
+            ab.rootElement = layer.append('g');
             ab.areaShape = d3.area()
-                .
-
-            if (ab.hasOwnProperty('clipPath') && ab.clipPath != undefined) {
-                ab.g.attr('clip-path', `url(#${ab.clipPath.id})`);
-            }
-            */
+                .x0(function (d) {
+                return ab.xScale.scale(d[0].x);
+            })
+                .y0(function (d) {
+                return ab.yScale.scale(d[0].y);
+            })
+                .x1(function (d) {
+                return ab.xScale.scale(d[1].x);
+            })
+                .y1(function (d) {
+                return ab.yScale.scale(d[1].y);
+            });
+            ab.areaPath = ab.rootElement.append("path");
             ab.data1 = [];
             ab.data2 = [];
-            ab.areaShape = d3.area()
-                .x0(function (d) { return ab.xScale(d[0].x); })
-                .y0(function (d) { return ab.yScale(d[0].y); })
-                .x1(function (d) { return ab.xScale(d[1].x); })
-                .y1(function (d) { return ab.yScale(d[1].y); });
-            ab.areaPath = ab.g.append("path");
             return ab.addClipPath();
         };
         // update properties
         Area.prototype.redraw = function () {
-            var ab = this;
-            if (ab.hasOwnProperty('univariateFunction1')) {
-                ab.data1 = this.redrawPath(ab, ab.univariateFunction1, ab.path1, ab.data1);
-                ab.data2 = this.redrawPath(ab, ab.univariateFunction2, ab.path2, ab.data2);
-                var areaData = d3.transpose([ab.data1, ab.data2]);
-                //ab.areaPath.attr("d", ab.areaShape);
+            var ab = this, fn1 = ab.univariateFunction1, fn2 = ab.univariateFunction2;
+            if (fn1 != undefined && fn2 != undefined) {
+                ab.updateFn(fn1);
+                ab.updateFn(fn2);
+                if (fn1.hasChanged || fn2.hasChanged) {
+                    ab.areaPath
+                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
+                        .attr('d', ab.areaShape)
+                        .style('fill', ab.fill)
+                        .style('opacity', ab.opacity);
+                }
             }
             return ab;
         };
-        Area.prototype.redrawPath = function (ab, fn, path, data) {
+        Area.prototype.updateFn = function (fn) {
+            var scale = (fn.ind == 'y') ? this.yScale : this.xScale;
             fn.update(true);
             if (fn.hasChanged) {
-                var scale = fn.ind == 'y' ? ab.yScale : ab.xScale;
-                data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                var dataLine = d3.line()
-                    .curve(d3[ab.interpolation])
-                    .x(function (d) {
-                    return ab.xScale.scale(d.x);
-                })
-                    .y(function (d) {
-                    return ab.yScale.scale(d.y);
-                });
-                path.data([data]).attr('d', dataLine);
+                fn.generateData(scale.domainMin, scale.domainMax);
             }
-            path.attr('stroke', ab.stroke);
-            path.attr('stroke-width', ab.strokeWidth);
-            return data;
+            return false;
         };
         return Area;
     }(KG.ViewObject));

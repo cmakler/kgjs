@@ -10,7 +10,7 @@ module KG {
 
     export interface IUnivariateFunction {
         eval: (input: number) => number;
-        dataPoints: (min?: number, max?: number) => { x: number, y: number }[]
+        generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
     export class UnivariateFunction extends UpdateListener implements IUnivariateFunction {
@@ -22,6 +22,7 @@ module KG {
         private samplePoints;
         private min;
         private max;
+        public data;
 
         constructor(def: UnivariateFunctionDefinition) {
 
@@ -43,7 +44,7 @@ module KG {
             return fn.compiledFunction.eval(fn.scope);
         }
 
-        dataPoints(min, max) {
+        generateData(min, max) {
             let fn = this,
                 data = [];
             min = fn.min || min;
@@ -54,6 +55,7 @@ module KG {
                     output = fn.eval(input);
                 data.push((fn.ind == 'x') ? {x: input, y: output} : {x: output, y: input});
             }
+            this.data = data;
             return data;
         }
 

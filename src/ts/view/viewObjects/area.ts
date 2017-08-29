@@ -9,14 +9,7 @@ module KG {
 
     export class Area extends ViewObject {
 
-        private g;
         private interpolation;
-
-        private path1;
-        private path2;
-
-        private data1;
-        private data2;
 
         private areaShape;
         private areaPath;
@@ -30,10 +23,13 @@ module KG {
                 interpolation: 'curveBasis',
                 ind: 'x',
                 fill: 'lightsteelblue',
-                opacity: 0.2
+                opacity: 0.2,
+                univariateFunction2: {
+                    "fn": "0"
+                }
             });
 
-            setProperties(def, 'constants',['interpolation']);
+            setProperties(def, 'constants', ['interpolation']);
             super(def);
 
             def.univariateFunction1.model = def.model;
@@ -46,24 +42,23 @@ module KG {
         draw(layer) {
             let ab = this;
 
-            ab.g = layer.append('g');
-            ab.rootElement = ab.g;
+            ab.rootElement = layer.append('g');
 
             ab.areaShape = d3.area()
-                .x0(function(d: any){return ab.xScale.scale(d[0].x);})
-                .y0(function(d: any){return ab.yScale.scale(d[0].y);})
-                .x1(function(d: any){return ab.xScale.scale(d[1].x);})
-                .y1(function(d: any){return ab.yScale.scale(d[1].y);});
+                .x0(function (d: any) {
+                    return ab.xScale.scale(d[0].x);
+                })
+                .y0(function (d: any) {
+                    return ab.yScale.scale(d[0].y);
+                })
+                .x1(function (d: any) {
+                    return ab.xScale.scale(d[1].x);
+                })
+                .y1(function (d: any) {
+                    return ab.yScale.scale(d[1].y);
+                });
 
-            ab.areaPath = ab.g.append("path");
-
-            console.log("Fill: %s", ab.fill);
-
-            ab.path1 = ab.g.append('path')
-                .style('fill', 'none');
-            ab.path2 = ab.g.append('path')
-                .style('fill', 'none');
-            
+            ab.areaPath = ab.rootElement.append("path");
             ab.data1 = [];
             ab.data2 = [];
 
@@ -72,40 +67,34 @@ module KG {
 
         // update properties
         redraw() {
-            let ab = this;
+            const ab = this,
+                fn1 = ab.univariateFunction1,
+                fn2 = ab.univariateFunction2;
 
-            if (ab.hasOwnProperty('univariateFunction1')) {
-                ab.data1 = this.redrawPath(ab, ab.univariateFunction1, ab.path1, ab.data1);
-                ab.data2 = this.redrawPath(ab, ab.univariateFunction2, ab.path2, ab.data2);
+            if (fn1 != undefined && fn2 != undefined) {
+                ab.updateFn(fn1);
+                ab.updateFn(fn2);
 
-                ab.areaPath
-                    .data([d3.zip(ab.data1, ab.data2)])
-                    .attr('d', ab.areaShape)
-                    .style('fill', ab.fill)
-                    .style('opacity', ab.opacity);
+                if (fn1.hasChanged || fn2.hasChanged) {
+                    ab.areaPath
+                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
+                        .attr('d', ab.areaShape)
+                        .style('fill', ab.fill)
+                        .style('opacity', ab.opacity);
+                }
+
             }
 
             return ab;
         }
 
-        redrawPath(ab, fn, path, data) {
+        updateFn(fn) {
+            const scale = (fn.ind == 'y') ? this.yScale : this.xScale;
             fn.update(true);
             if (fn.hasChanged) {
-                const scale = fn.ind == 'y' ? ab.yScale : ab.xScale;
-                data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                const dataLine = d3.line()
-                    .curve(d3[ab.interpolation])
-                    .x(function (d: any) {
-                        return ab.xScale.scale(d.x)
-                    })
-                    .y(function (d: any) {
-                        return ab.yScale.scale(d.y)
-                    });
-                path.data([data]).attr('d', dataLine);
+                fn.generateData(scale.domainMin, scale.domainMax);
             }
-            path.attr('stroke', ab.stroke);
-            path.attr('stroke-width', ab.strokeWidth);
-            return data;
+            return false;
         }
     }
 
