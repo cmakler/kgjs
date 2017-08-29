@@ -1107,13 +1107,17 @@ var KG;
         // create view objects
         View.prototype.addViewObjects = function (data) {
             var view = this;
-            var clipPathRefs = {};
+            var clipPathURLs = {};
+            var defLayer = view.svg.append('defs');
+            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
             if (data.clipPaths.length > 0) {
-                // create ClipPaths, store them to refs, and add them to the SVG.
-                var defLayer_1 = view.svg.append('defs');
                 data.clipPaths.forEach(function (def) {
-                    def = view.addViewToDef(def, defLayer_1);
-                    clipPathRefs[def.name] = new KG.ClipPath(def);
+                    var clipPathURL = KG.randomString(10);
+                    var clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
+                    def.paths.forEach(function (td) {
+                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                    });
+                    clipPathURLs[def.name] = clipPathURL;
                 });
             }
             // add layers of objects
@@ -1123,7 +1127,7 @@ var KG;
                     layerTds.forEach(function (td) {
                         var def = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = clipPathRefs[def['clipPathName']];
+                            def.clipPath = clipPathURLs[def['clipPathName']];
                         }
                         def = view.addViewToDef(def, layer_1);
                         new KG[td.type](def);
@@ -1249,7 +1253,7 @@ var KG;
         ViewObject.prototype.addClipPath = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
             }
             return vo;
         };
@@ -1286,35 +1290,6 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ClipPath = (function (_super) {
-        __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        // create SVG elements
-        ClipPath.prototype.draw = function (layer) {
-            var cp = this;
-            var clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = clipPath.append('rect');
-            return cp;
-        };
-        // update properties
-        ClipPath.prototype.redraw = function () {
-            var cp = this;
-            var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
-            cp.rect.attr('x', Math.min(x1, x2));
-            cp.rect.attr('y', Math.min(y1, y2));
-            cp.rect.attr('width', Math.abs(x2 - x1));
-            cp.rect.attr('height', Math.abs(y2 - y1));
-            return cp;
-        };
-        return ClipPath;
-    }(KG.ViewObject));
-    KG.ClipPath = ClipPath;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -1784,7 +1759,6 @@ var KG;
 /// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />

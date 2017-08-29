@@ -8,7 +8,7 @@ module KG {
         show?: any;
         xScale?: Scale;
         yScale?: Scale;
-        clipPath?: ClipPath;
+        clipPath?: string;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;
@@ -24,7 +24,7 @@ module KG {
     export interface IViewObject extends IUpdateListener {
         xScale: Scale;
         yScale: Scale;
-        clipPath: ClipPath;
+        clipPath: string;
         interactionHandler: InteractionHandler;
 
         addClipPath: () => ViewObject;
@@ -100,7 +100,7 @@ module KG {
         addClipPath() {
             const vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', `url(#${vo.clipPath.id})`);
+                vo.rootElement.attr('clip-path', `url(#${vo.clipPath})`);
             }
             return vo;
         }
