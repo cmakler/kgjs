@@ -25,6 +25,7 @@ module KG {
         xScale: Scale;
         yScale: Scale;
         clipPath: string;
+        inClipPath: boolean;
         interactionHandler: InteractionHandler;
 
         addClipPath: () => ViewObject;
@@ -44,6 +45,7 @@ module KG {
         public xScale;
         public yScale;
         public clipPath;
+        public inClipPath;
         public interactionHandler;
 
         public rootElement;
@@ -61,10 +63,11 @@ module KG {
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
-                show: true
+                show: true,
+                inClipPath: false
             });
             setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
-            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
+            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
 
             super(def);
 
@@ -111,7 +114,7 @@ module KG {
             return vo;
         }
 
-        draw(layer: any) {
+        draw(layer: any, inClipPath?: boolean) {
             return this;
         }
 

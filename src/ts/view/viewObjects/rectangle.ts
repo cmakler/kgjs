@@ -29,7 +29,12 @@ module KG {
         // create SVG elements
         draw(layer) {
             let rect = this;
-            rect.rootElement = layer.append('g');
+            if(rect.inClipPath){
+                rect.rootElement = layer;
+            } else {
+                rect.rootElement = layer.append('g');
+                rect.addClipPath().addInteraction();
+            }
             rect.shape = rect.rootElement.append('rect');
 
             //rect.interactionHandler.addTrigger(rect.rootElement);
