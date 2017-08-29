@@ -10,32 +10,25 @@ module KG {
 
         private rect;
 
-        constructor(def: ClipPathDefinition) {
-            super(def);
-        }
-
         // create SVG elements
         draw(layer) {
             let cp = this;
-            //console.log('drawing clipPath with id', cp.id);
-            cp.clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = cp.clipPath.append('rect');
+            const clipPath = layer.append('clipPath').attr('id', cp.id);
+            cp.rect = clipPath.append('rect');
             return cp;
         }
 
         // update properties
-        update(force) {
-            let cp = super.update(force);
-            if (cp.hasChanged) {
-                const x1 = cp.xScale.scale(cp.xScale.domainMin),
-                    y1 = cp.yScale.scale(cp.yScale.domainMin),
-                    x2 = cp.xScale.scale(cp.xScale.domainMax),
-                    y2 = cp.yScale.scale(cp.yScale.domainMax);
-                cp.rect.attr('x', Math.min(x1, x2));
-                cp.rect.attr('y', Math.min(y1, y2));
-                cp.rect.attr('width', Math.abs(x2 - x1));
-                cp.rect.attr('height', Math.abs(y2 - y1));
-            }
+        redraw() {
+            const cp = this;
+            const x1 = cp.xScale.scale(cp.xScale.domainMin),
+                y1 = cp.yScale.scale(cp.yScale.domainMin),
+                x2 = cp.xScale.scale(cp.xScale.domainMax),
+                y2 = cp.yScale.scale(cp.yScale.domainMax);
+            cp.rect.attr('x', Math.min(x1, x2));
+            cp.rect.attr('y', Math.min(y1, y2));
+            cp.rect.attr('width', Math.abs(x2 - x1));
+            cp.rect.attr('height', Math.abs(y2 - y1));
             return cp;
         }
     }

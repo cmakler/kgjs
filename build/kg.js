@@ -10,7 +10,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-/*
+var KG;
+(function (KG) {
+    /*
 
  from underscorejs
 
@@ -28,9 +30,7 @@ var __extends = (this && this.__extends) || (function () {
 
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.*/
-// I adapted these functions from the amazing underscorejs library.
-var KG;
-(function (KG) {
+    // I adapted these functions from the amazing underscorejs library.
     function isObject(obj) {
         var type = typeof obj;
         return type === 'function' || type === 'object' && !!obj;
@@ -55,9 +55,18 @@ var KG;
         }
         return obj;
     }
-    KG.defaults = defaults;
+    // End of underscorejs functions
+    function setDefaults(def, defaultValues) {
+        def = defaults(def, defaultValues);
+        return def;
+    }
+    KG.setDefaults = setDefaults;
+    function setProperties(def, name, props) {
+        def[name] = (def[name] || []).concat(props);
+        return def;
+    }
+    KG.setProperties = setProperties;
 })(KG || (KG = {}));
-// End of underscorejs functions 
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
@@ -162,7 +171,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var AuthoringObject = /** @class */ (function () {
+    var AuthoringObject = (function () {
         function AuthoringObject(def) {
             this.def = def;
             this.subObjects = [];
@@ -184,7 +193,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Graph = /** @class */ (function (_super) {
+    var Graph = (function (_super) {
         __extends(Graph, _super);
         function Graph(def) {
             var _this = _super.call(this, def) || this;
@@ -235,7 +244,7 @@ var KGAuthor;
         return Graph;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Graph = Graph;
-    var GraphObjectGenerator = /** @class */ (function (_super) {
+    var GraphObjectGenerator = (function (_super) {
         __extends(GraphObjectGenerator, _super);
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
@@ -261,7 +270,7 @@ var KGAuthor;
         return GraphObjectGenerator;
     }(KGAuthor.AuthoringObject));
     KGAuthor.GraphObjectGenerator = GraphObjectGenerator;
-    var GraphObject = /** @class */ (function (_super) {
+    var GraphObject = (function (_super) {
         __extends(GraphObject, _super);
         function GraphObject() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -277,7 +286,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var DivObject = /** @class */ (function (_super) {
+    var DivObject = (function (_super) {
         __extends(DivObject, _super);
         function DivObject() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -289,7 +298,7 @@ var KGAuthor;
         return DivObject;
     }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
-    var Label = /** @class */ (function (_super) {
+    var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -299,7 +308,7 @@ var KGAuthor;
         return Label;
     }(DivObject));
     KGAuthor.Label = Label;
-    var Sidebar = /** @class */ (function (_super) {
+    var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -313,7 +322,7 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Axis = /** @class */ (function (_super) {
+    var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -324,7 +333,7 @@ var KGAuthor;
         return Axis;
     }(KGAuthor.GraphObject));
     KGAuthor.Axis = Axis;
-    var Curve = /** @class */ (function (_super) {
+    var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def, graph) {
             var _this = this;
@@ -339,7 +348,7 @@ var KGAuthor;
         return Curve;
     }(KGAuthor.GraphObject));
     KGAuthor.Curve = Curve;
-    var Point = /** @class */ (function (_super) {
+    var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -348,7 +357,9 @@ var KGAuthor;
             p.layer = 3;
             p.extractCoordinates();
             if (def.hasOwnProperty('label')) {
-                var labelDef = KG.defaults(def, {
+                var labelDef = JSON.parse(JSON.stringify(def));
+                delete labelDef.label;
+                KG.setDefaults(labelDef, {
                     text: def.label.text,
                     fontSize: 8,
                     xPixelOffset: 5,
@@ -361,7 +372,7 @@ var KGAuthor;
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
-    var Segment = /** @class */ (function (_super) {
+    var Segment = (function (_super) {
         __extends(Segment, _super);
         function Segment(def, graph) {
             var _this = _super.call(this, def, graph) || this;
@@ -379,7 +390,7 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var MathFunction = /** @class */ (function (_super) {
+    var MathFunction = (function (_super) {
         __extends(MathFunction, _super);
         function MathFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -387,7 +398,7 @@ var KGAuthor;
         return MathFunction;
     }(KGAuthor.AuthoringObject));
     KGAuthor.MathFunction = MathFunction;
-    var MultivariateFunction = /** @class */ (function (_super) {
+    var MultivariateFunction = (function (_super) {
         __extends(MultivariateFunction, _super);
         function MultivariateFunction(def) {
             var _this = _super.call(this, def) || this;
@@ -417,7 +428,7 @@ var KGAuthor;
         return MultivariateFunction;
     }(MathFunction));
     KGAuthor.MultivariateFunction = MultivariateFunction;
-    var CobbDouglasFunction = /** @class */ (function (_super) {
+    var CobbDouglasFunction = (function (_super) {
         __extends(CobbDouglasFunction, _super);
         function CobbDouglasFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -447,7 +458,7 @@ var KGAuthor;
         return CobbDouglasFunction;
     }(MultivariateFunction));
     KGAuthor.CobbDouglasFunction = CobbDouglasFunction;
-    var LinearFunction = /** @class */ (function (_super) {
+    var LinearFunction = (function (_super) {
         __extends(LinearFunction, _super);
         function LinearFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -475,7 +486,7 @@ var KGAuthor;
         return LinearFunction;
     }(MultivariateFunction));
     KGAuthor.LinearFunction = LinearFunction;
-    var MinFunction = /** @class */ (function (_super) {
+    var MinFunction = (function (_super) {
         __extends(MinFunction, _super);
         function MinFunction() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -508,7 +519,7 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconBudgetLine = /** @class */ (function (_super) {
+    var EconBudgetLine = (function (_super) {
         __extends(EconBudgetLine, _super);
         function EconBudgetLine(def, graph) {
             var _this = this;
@@ -557,11 +568,11 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconIndifferenceCurve = /** @class */ (function (_super) {
+    var EconIndifferenceCurve = (function (_super) {
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple'
             });
@@ -580,11 +591,11 @@ var KGAuthor;
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
-    var EconIndifferenceMap = /** @class */ (function (_super) {
+    var EconIndifferenceMap = (function (_super) {
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 strokeWidth: 1,
                 stroke: 'lightgrey',
                 layer: 0
@@ -609,11 +620,15 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var Model = /** @class */ (function () {
+    var Model = (function () {
         function Model(params, restrictions) {
             var model = this;
-            model.params = params.map(function (def) { return new KG.Param(def); });
-            model.restrictions = (restrictions || []).map(function (def) { return new KG.Restriction(def); });
+            model.params = params.map(function (def) {
+                return new KG.Param(def);
+            });
+            model.restrictions = (restrictions || []).map(function (def) {
+                return new KG.Restriction(def);
+            });
             model.updateListeners = [];
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -687,6 +702,17 @@ var KG;
                 }
             }
         };
+        // method exposed to viewObjects to allow them to toggle a binary param
+        Model.prototype.toggleParam = function (name) {
+            var currentValue = this.getParam(name).value;
+            this.updateParam(name, !currentValue);
+        };
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
+        Model.prototype.cycleParam = function (name) {
+            var param = this.getParam(name);
+            this.updateParam(name, param.value < param.max ? param.value++ : 0);
+        };
         Model.prototype.update = function (force) {
             this.updateListeners.forEach(function (listener) {
                 listener.update(force);
@@ -699,7 +725,7 @@ var KG;
 /// <reference path="model.ts" />
 var KG;
 (function (KG) {
-    var Param = /** @class */ (function () {
+    var Param = (function () {
         function Param(def) {
             function decimalPlaces(numAsString) {
                 var match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
@@ -709,18 +735,24 @@ var KG;
                 return Math.max(0, 
                 // Number of digits right of decimal point.
                 (match[1] ? match[1].length : 0)
-                    // Adjust for scientific notation.
                     - (match[2] ? +match[2] : 0));
             }
-            def = KG.defaults(def, { min: 0, max: 10, round: 1 });
+            KG.setDefaults(def, { min: 0, max: 10, round: 1, label: '' });
             this.name = def.name;
-            this.label = def.label || '';
-            this.value = parseFloat(def.value);
-            this.min = parseFloat(def.min);
-            this.max = parseFloat(def.max);
-            this.round = parseFloat(def.round);
-            this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
-            //console.log('initialized param object: ', this);
+            this.label = def.label;
+            if (typeof def.value == 'boolean') {
+                this.value = +def.value;
+                this.min = 0;
+                this.max = 1;
+                this.round = 1;
+            }
+            else {
+                this.value = parseFloat(def.value);
+                this.min = parseFloat(def.min);
+                this.max = parseFloat(def.max);
+                this.round = parseFloat(def.round);
+                this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
+            }
         }
         // Receives an instruction to update the parameter to a new value
         // Updates to the closest rounded value to the desired newValue within accepted range
@@ -743,15 +775,6 @@ var KG;
             precision = precision || this.precision;
             return d3.format("." + precision + "f")(this.value);
         };
-        // Creates a D3 scale for use by a scrubbable number. Uses a domain of (-100,100) by default.
-        Param.prototype.paramScale = function (domain) {
-            domain = domain || 100;
-            var param = this;
-            return d3.scaleLinear()
-                .clamp(true)
-                .domain([domain * -1, domain])
-                .range([param.min, param.max]);
-        };
         return Param;
     }());
     KG.Param = Param;
@@ -759,7 +782,7 @@ var KG;
 /// <reference path="model.ts" />
 var KG;
 (function (KG) {
-    var Restriction = /** @class */ (function () {
+    var Restriction = (function () {
         function Restriction(def) {
             this.expression = def.expression;
             this.type = def.type;
@@ -786,7 +809,7 @@ var KG;
         return text;
     }
     KG.randomString = randomString;
-    var UpdateListener = /** @class */ (function () {
+    var UpdateListener = (function () {
         function UpdateListener(def) {
             def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
             var ul = this;
@@ -827,20 +850,16 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var UnivariateFunction = /** @class */ (function (_super) {
+    var UnivariateFunction = (function (_super) {
         __extends(UnivariateFunction, _super);
         function UnivariateFunction(def) {
             var _this = this;
-            // establish property defaults
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 ind: 'x',
-                samplePoints: 50,
-                constants: [],
-                updatables: []
+                samplePoints: 50
             });
-            // define updatable properties
-            def.constants = def.constants.concat(['samplePoints', 'ind', 'fn']);
-            def.updatables = def.updatables.concat(['min', 'max']);
+            KG.setProperties(def, 'constants', ['samplePoints', 'ind', 'fn']);
+            KG.setProperties(def, 'updatables', ['min', 'max']);
             _this = _super.call(this, def) || this;
             _this.compiledFunction = math.compile(def.fn);
             return _this;
@@ -881,13 +900,12 @@ var KG;
         and sends a signal to the model to update its param.
 
      */
-    var Listener = /** @class */ (function (_super) {
+    var Listener = (function (_super) {
         __extends(Listener, _super);
         function Listener(def) {
             var _this = this;
-            def = KG.defaults(def, { constants: [], updatables: [] });
-            def.updatables = def.updatables.concat(['expression']);
-            def.constants = def.constants.concat(['param']);
+            KG.setProperties(def, 'updatables', ['expression']);
+            KG.setProperties(def, 'constants', ['param']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -910,15 +928,14 @@ var KG;
         and, if so, in which directions it is draggable.
 
      */
-    var DragListener = /** @class */ (function (_super) {
+    var DragListener = (function (_super) {
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
-            def = KG.defaults(def, {
-                directions: "xy",
-                updatables: []
+            KG.setDefaults(def, {
+                directions: "xy"
             });
-            def.updatables = def.updatables.concat(['draggable', 'directions']);
+            KG.setProperties(def, 'updatables', ['draggable', 'directions']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -936,7 +953,7 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ClickListener = /** @class */ (function (_super) {
+    var ClickListener = (function (_super) {
         __extends(ClickListener, _super);
         function ClickListener(def) {
             return _super.call(this, def) || this;
@@ -948,12 +965,12 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var InteractionHandler = /** @class */ (function (_super) {
+    var InteractionHandler = (function (_super) {
         __extends(InteractionHandler, _super);
         function InteractionHandler(def) {
             var _this = this;
-            def = KG.defaults(def, { constants: [], dragListeners: [], clickListeners: [] });
-            def.constants = def.constants.concat(["viewObject", "dragListeners", "clickListeners"]);
+            KG.setDefaults(def, { dragListeners: [], clickListeners: [] });
+            KG.setProperties(def, 'constants', ["viewObject", "dragListeners", "clickListeners"]);
             _this = _super.call(this, def) || this;
             _this.update(true);
             _this.scope = { params: {}, drag: {} };
@@ -1027,7 +1044,7 @@ var KG;
 /// <reference path='../kg.ts' />
 var KG;
 (function (KG) {
-    var View = /** @class */ (function () {
+    var View = (function () {
         function View(div, data) {
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
@@ -1156,7 +1173,7 @@ var KG;
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
-    var Scale = /** @class */ (function (_super) {
+    var Scale = (function (_super) {
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
@@ -1188,20 +1205,19 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ViewObject = /** @class */ (function (_super) {
+    var ViewObject = (function (_super) {
         __extends(ViewObject, _super);
         function ViewObject(def) {
             var _this = this;
-            def = KG.defaults(def, {
-                updatables: [],
-                constants: [],
+            KG.setDefaults(def, {
+                alwaysUpdate: false,
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true
             });
-            def.updatables = def.updatables.concat('fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show');
-            def.constants = def.constants.concat(['xScale', 'yScale', 'clipPath']);
+            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
@@ -1230,14 +1246,42 @@ var KG;
             }
             return _this;
         }
-        ViewObject.prototype.addClipPath = function (g) {
+        ViewObject.prototype.addClipPath = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                g.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath.id + ")");
             }
+            return vo;
+        };
+        ViewObject.prototype.addInteraction = function () {
+            var vo = this;
+            vo.interactionHandler.addTrigger(vo.rootElement);
+            return vo;
         };
         ViewObject.prototype.draw = function (layer) {
             return this;
+        };
+        ViewObject.prototype.redraw = function () {
+            return this;
+        };
+        ViewObject.prototype.displayElement = function (show) {
+            var vo = this;
+            if (vo.hasOwnProperty('rootElement')) {
+                vo.rootElement.style('display', show ? null : 'none');
+            }
+        };
+        ViewObject.prototype.update = function (force) {
+            var vo = _super.prototype.update.call(this, force);
+            if (vo.show) {
+                vo.displayElement(true);
+                if (vo.hasChanged || vo.alwaysUpdate) {
+                    vo.redraw();
+                }
+            }
+            else {
+                vo.displayElement(false);
+            }
+            return vo;
         };
         return ViewObject;
     }(KG.UpdateListener));
@@ -1246,29 +1290,26 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var ClipPath = /** @class */ (function (_super) {
+    var ClipPath = (function (_super) {
         __extends(ClipPath, _super);
-        function ClipPath(def) {
-            return _super.call(this, def) || this;
+        function ClipPath() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         // create SVG elements
         ClipPath.prototype.draw = function (layer) {
             var cp = this;
-            //console.log('drawing clipPath with id', cp.id);
-            cp.clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = cp.clipPath.append('rect');
+            var clipPath = layer.append('clipPath').attr('id', cp.id);
+            cp.rect = clipPath.append('rect');
             return cp;
         };
         // update properties
-        ClipPath.prototype.update = function (force) {
-            var cp = _super.prototype.update.call(this, force);
-            if (cp.hasChanged) {
-                var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
-                cp.rect.attr('x', Math.min(x1, x2));
-                cp.rect.attr('y', Math.min(y1, y2));
-                cp.rect.attr('width', Math.abs(x2 - x1));
-                cp.rect.attr('height', Math.abs(y2 - y1));
-            }
+        ClipPath.prototype.redraw = function () {
+            var cp = this;
+            var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
+            cp.rect.attr('x', Math.min(x1, x2));
+            cp.rect.attr('y', Math.min(y1, y2));
+            cp.rect.attr('width', Math.abs(x2 - x1));
+            cp.rect.attr('height', Math.abs(y2 - y1));
             return cp;
         };
         return ClipPath;
@@ -1278,45 +1319,36 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Segment = /** @class */ (function (_super) {
+    var Segment = (function (_super) {
         __extends(Segment, _super);
         function Segment(def) {
             var _this = this;
-            // establish property defaults
-            def = KG.defaults(def, {
-                updatables: []
-            });
-            // define updatable properties
-            def.updatables = def.updatables.concat(['x1', 'y1', 'x2', 'y2']);
+            KG.setProperties(def, 'updatables', ['x1', 'y1', 'x2', 'y2']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create SVG elements
         Segment.prototype.draw = function (layer) {
             var segment = this;
-            segment.g = layer.append('g');
-            segment.dragLine = segment.g.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
-            segment.line = segment.g.append('line');
-            segment.addClipPath(segment.g);
-            segment.interactionHandler.addTrigger(segment.g);
-            return segment;
+            segment.rootElement = layer.append('g');
+            segment.dragLine = segment.rootElement.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
+            segment.line = segment.rootElement.append('line');
+            return segment.addClipPath().addInteraction();
         };
         // update properties
-        Segment.prototype.update = function (force) {
-            var segment = _super.prototype.update.call(this, force);
-            if (segment.hasChanged) {
-                var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale.scale(segment.y1), y2 = segment.yScale.scale(segment.y2), stroke = segment.stroke, strokeWidth = segment.strokeWidth;
-                segment.dragLine.attr("x1", x1);
-                segment.dragLine.attr("y1", y1);
-                segment.dragLine.attr("x2", x2);
-                segment.dragLine.attr("y2", y2);
-                segment.line.attr("x1", x1);
-                segment.line.attr("y1", y1);
-                segment.line.attr("x2", x2);
-                segment.line.attr("y2", y2);
-                segment.line.attr("stroke", stroke);
-                segment.line.attr('stroke-width', strokeWidth);
-            }
+        Segment.prototype.redraw = function () {
+            var segment = this;
+            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale.scale(segment.y1), y2 = segment.yScale.scale(segment.y2), stroke = segment.stroke, strokeWidth = segment.strokeWidth;
+            segment.dragLine.attr("x1", x1);
+            segment.dragLine.attr("y1", y1);
+            segment.dragLine.attr("x2", x2);
+            segment.dragLine.attr("y2", y2);
+            segment.line.attr("x1", x1);
+            segment.line.attr("y1", y1);
+            segment.line.attr("x2", x2);
+            segment.line.attr("y2", y2);
+            segment.line.attr("stroke", stroke);
+            segment.line.attr('stroke-width', strokeWidth);
             return segment;
         };
         return Segment;
@@ -1326,17 +1358,15 @@ var KG;
 /// <reference path='../../kg.ts' />
 var KG;
 (function (KG) {
-    var Curve = /** @class */ (function (_super) {
+    var Curve = (function (_super) {
         __extends(Curve, _super);
         function Curve(def) {
             var _this = this;
-            // establish property defaults
-            def = KG.defaults(def, {
-                interpolation: 'curveBasis',
-                constants: []
+            KG.setDefaults(def, {
+                alwaysUpdate: true,
+                interpolation: 'curveBasis'
             });
-            // define updatable properties
-            def.constants = def.constants.concat(['interpolation']);
+            KG.setProperties(def, 'constants', ['interpolation']);
             _this = _super.call(this, def) || this;
             def.univariateFunction.model = def.model;
             _this.univariateFunction = new KG.UnivariateFunction(def.univariateFunction);
@@ -1345,33 +1375,31 @@ var KG;
         // create SVG elements
         Curve.prototype.draw = function (layer) {
             var curve = this;
-            curve.g = layer.append('g');
-            curve.dragPath = curve.g.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
-            curve.path = curve.g.append('path').style('fill', 'none');
-            if (curve.hasOwnProperty('clipPath') && curve.clipPath != undefined) {
-                curve.g.attr('clip-path', "url(#" + curve.clipPath.id + ")");
-            }
-            curve.interactionHandler.addTrigger(curve.g);
-            return curve;
+            curve.rootElement = layer.append('g');
+            curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
+            curve.path = curve.rootElement.append('path').style('fill', 'none');
+            return curve.addClipPath().addInteraction();
         };
         // update properties
-        Curve.prototype.update = function (force) {
-            var curve = _super.prototype.update.call(this, force);
+        Curve.prototype.redraw = function () {
+            var curve = this;
             var data = [];
             if (curve.hasOwnProperty('univariateFunction')) {
-                var fn = curve.univariateFunction.update(force);
-                var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                var dataLine = d3.line()
-                    .curve(d3[curve.interpolation])
-                    .x(function (d) {
-                    return curve.xScale.scale(d.x);
-                })
-                    .y(function (d) {
-                    return curve.yScale.scale(d.y);
-                });
-                curve.dragPath.data([data]).attr('d', dataLine);
-                curve.path.data([data]).attr('d', dataLine);
+                var fn = curve.univariateFunction.update(true);
+                if (fn.hasChanged) {
+                    var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                    data = fn.dataPoints(scale.domainMin, scale.domainMax);
+                    var dataLine = d3.line()
+                        .curve(d3[curve.interpolation])
+                        .x(function (d) {
+                        return curve.xScale.scale(d.x);
+                    })
+                        .y(function (d) {
+                        return curve.yScale.scale(d.y);
+                    });
+                    curve.dragPath.data([data]).attr('d', dataLine);
+                    curve.path.data([data]).attr('d', dataLine);
+                }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
             }
@@ -1383,45 +1411,42 @@ var KG;
 })(KG || (KG = {}));
 var KG;
 (function (KG) {
-    var Axis = /** @class */ (function (_super) {
+    var Axis = (function (_super) {
         __extends(Axis, _super);
         function Axis(def) {
             var _this = this;
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 ticks: 5,
-                intercept: 0,
-                updatables: [],
-                constants: []
+                intercept: 0
             });
-            def.constants = def.constants.concat(['orient']);
-            def.updatables = def.updatables.concat(['ticks', 'intercept']);
+            KG.setProperties(def, 'constants', ['orient']);
+            KG.setProperties(def, 'updatables', ['ticks', 'intercept']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         Axis.prototype.draw = function (layer) {
             var a = this;
-            a.g = layer.append('g').attr('class', 'axis');
+            a.rootElement = layer.append('g').attr('class', 'axis');
             return a;
         };
-        Axis.prototype.update = function (force) {
-            var a = _super.prototype.update.call(this, force);
-            a.g.style('display', a.show ? null : 'none');
+        Axis.prototype.redraw = function () {
+            var a = this;
             switch (a.orient) {
                 case 'bottom':
-                    a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.g.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
                     return a;
                 case 'left':
-                    a.g.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.g.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
                     return a;
                 case 'top':
-                    a.g.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.g.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
                     return a;
                 case 'right':
-                    a.g.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.g.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
                     return a;
             }
             return a;
@@ -1433,50 +1458,41 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Point = /** @class */ (function (_super) {
+    var Point = (function (_super) {
         __extends(Point, _super);
         function Point(def) {
             var _this = this;
-            // establish property defaults
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 fill: 'blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,
                 strokeOpacity: 1,
-                r: 6.5,
-                updatables: []
+                r: 6.5
             });
-            // define updatable properties
-            def.updatables = def.updatables.concat(['x', 'y', 'r']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create SVG elements
         Point.prototype.draw = function (layer) {
             var p = this;
-            p.g = layer.append('g'); // SVG group
-            p.dragCircle = p.g.append('circle').style('fill-opacity', 0).attr('r', 20);
-            p.circle = p.g.append('circle');
-            //p.addClipPath(p.g)
-            p.interactionHandler.addTrigger(p.g);
-            return p;
+            p.rootElement = layer.append('g'); // SVG group
+            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.rootElement.append('circle');
+            //p.addClipPath()
+            return p.addInteraction();
         };
         // update properties
-        Point.prototype.update = function (force) {
-            var p = _super.prototype.update.call(this, force);
-            if (p.hasChanged) {
-                //updated property values
-                var x = p.xScale.scale(p.x), y = p.yScale.scale(p.y), r = p.r;
-                //assign property values to SVG attributes
-                p.g.attr('transform', "translate(" + x + " " + y + ")");
-                p.circle.attr('r', p.r);
-                p.circle.style('fill', p.fill);
-                p.circle.style('opacity', p.opacity);
-                p.circle.style('stroke', p.stroke);
-                p.circle.style('stroke-width', p.strokeWidth + "px");
-                p.circle.style('stroke-opacity', p.strokeOpacity);
-            }
+        Point.prototype.redraw = function () {
+            var p = this;
+            p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
+            p.circle.attr('r', p.r);
+            p.circle.style('fill', p.fill);
+            p.circle.style('opacity', p.opacity);
+            p.circle.style('stroke', p.stroke);
+            p.circle.style('stroke-width', p.strokeWidth + "px");
+            p.circle.style('stroke-opacity', p.strokeOpacity);
             return p;
         };
         return Point;
@@ -1486,58 +1502,60 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var DivObject = /** @class */ (function (_super) {
+    var DivObject = (function (_super) {
         __extends(DivObject, _super);
-        function DivObject(def) {
-            var _this = this;
-            def = KG.defaults(def, {
-                updatables: [],
-                constants: [],
-                show: true
-            });
-            _this = _super.call(this, def) || this;
-            var divObj = _this;
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                divObj.draw(def.layer).update(true);
-            }
-            return _this;
+        function DivObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        DivObject.prototype.draw = function (layer) {
-            return this;
-        };
         return DivObject;
-    }(KG.UpdateListener));
+    }(KG.ViewObject));
     KG.DivObject = DivObject;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Slider = /** @class */ (function (_super) {
+    var ParamControl = (function (_super) {
+        __extends(ParamControl, _super);
+        function ParamControl(def) {
+            var _this = this;
+            // establish property defaults
+            KG.setDefaults(def, {
+                value: 'params.' + def.param,
+                alwaysUpdate: true
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['param']);
+            KG.setProperties(def, 'updatables', ['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return ParamControl;
+    }(KG.DivObject));
+    KG.ParamControl = ParamControl;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Slider = (function (_super) {
         __extends(Slider, _super);
         function Slider(def) {
             var _this = this;
             // establish property defaults
-            def = KG.defaults(def, {
-                value: 'params.' + def.param,
-                noAxis: false,
-                constants: [],
-                updatables: []
+            KG.setDefaults(def, {
+                noAxis: false
             });
             // define constant and updatable properties
-            def.constants = def.constants.concat(['param', 'noAxis']);
-            def.updatables = def.updatables.concat(['label', 'value']);
+            KG.setProperties(def, 'constants', ['noAxis']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         Slider.prototype.draw = function (layer) {
             var slider = this;
-            slider.element = layer.append('tr');
+            slider.rootElement = layer.append('tr');
             var param = slider.model.getParam(slider.param);
-            slider.labelElement = slider.element.append('td')
+            slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt');
-            slider.numberInput = slider.element.append('td').append('input')
+            slider.numberInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -1550,7 +1568,7 @@ var KG;
             slider.numberInput.on("input", function () {
                 slider.model.updateParam(slider.param, +this.value);
             });
-            slider.rangeInput = slider.element.append('td').append('input')
+            slider.rangeInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -1561,40 +1579,67 @@ var KG;
             return slider;
         };
         // update properties
-        Slider.prototype.update = function (force) {
-            var slider = _super.prototype.update.call(this, force);
-            if (slider.hasChanged) {
-                katex.render(slider.label + " = ", slider.labelElement.node());
-                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
-                slider.rangeInput.property('value', slider.value);
-            }
+        Slider.prototype.redraw = function () {
+            var slider = this;
+            katex.render(slider.label + " = ", slider.labelElement.node());
+            slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+            slider.rangeInput.property('value', slider.value);
             return slider;
         };
         return Slider;
-    }(KG.DivObject));
+    }(KG.ParamControl));
     KG.Slider = Slider;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Sidebar = /** @class */ (function (_super) {
+    var Checkbox = (function (_super) {
+        __extends(Checkbox, _super);
+        function Checkbox() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Checkbox.prototype.draw = function (layer) {
+            var checkbox = this;
+            checkbox.rootElement = layer.append('label');
+            checkbox.inputElement = checkbox.rootElement.append('input');
+            checkbox.inputElement
+                .attr('type', 'checkbox');
+            checkbox.inputElement.on("change", function () {
+                checkbox.model.toggleParam(checkbox.param);
+            });
+            checkbox.labelElement = checkbox.rootElement.append('span');
+            checkbox.labelElement.style('padding-left', '10px');
+            return checkbox;
+        };
+        Checkbox.prototype.redraw = function () {
+            var checkbox = this;
+            checkbox.inputElement.property('checked', Boolean(checkbox.value));
+            katex.render(checkbox.label, checkbox.labelElement.node());
+            return checkbox;
+        };
+        return Checkbox;
+    }(KG.ParamControl));
+    KG.Checkbox = Checkbox;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
             var _this = this;
-            // establish property defaults
-            def = KG.defaults(def, {
-                constants: [],
-                updatables: []
+            KG.setDefaults(def, {
+                title: '',
+                description: ''
             });
-            // define updatable properties
-            def.constants = def.constants.concat(['sliders']);
-            def.updatables = def.updatables.concat(['title', 'description']);
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes']);
+            KG.setProperties(def, 'updatables', ['title', 'description']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         Sidebar.prototype.positionRight = function (width) {
             var sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
@@ -1602,7 +1647,7 @@ var KG;
         };
         Sidebar.prototype.positionBelow = function () {
             var sidebar = this;
-            sidebar.element
+            sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
                 .style('width', null);
@@ -1612,22 +1657,23 @@ var KG;
         // create div for text
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
-            sidebar.element = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.element.append('p').style('width', '100%').style('font-size', '10pt');
-            sidebar.descriptionElement = sidebar.element.append('div');
-            var sliderTable = sidebar.element.append('table').style('padding', '10px');
+            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            sidebar.descriptionElement = sidebar.rootElement.append('div');
+            var sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
             sidebar.sliders.forEach(function (slider) {
                 new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model });
+            });
+            sidebar.checkboxes.forEach(function (checkbox) {
+                new KG.Checkbox({ layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model });
             });
             return sidebar;
         };
         // update properties
-        Sidebar.prototype.update = function (force) {
-            var sidebar = _super.prototype.update.call(this, force);
-            if (sidebar.hasChanged) {
-                sidebar.titleElement.text(sidebar.title.toUpperCase());
-                sidebar.descriptionElement.text(sidebar.description);
-            }
+        Sidebar.prototype.redraw = function () {
+            var sidebar = this;
+            sidebar.titleElement.text(sidebar.title.toUpperCase());
+            sidebar.descriptionElement.text(sidebar.description);
             return sidebar;
         };
         return Sidebar;
@@ -1637,43 +1683,38 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Label = /** @class */ (function (_super) {
+    var Label = (function (_super) {
         __extends(Label, _super);
         function Label(def) {
             var _this = this;
             //establish property defaults
-            def = KG.defaults(def, {
+            KG.setDefaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12,
-                updatables: [],
-                constants: []
+                fontSize: 12
             });
             // define constant and updatable properties
-            def.constants = def.constants.concat(['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            def.updatables = def.updatables.concat(['x', 'y', 'text']);
+            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create div for text
         Label.prototype.draw = function (layer) {
             var label = this;
-            label.element = layer.append('div')
+            label.rootElement = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
                 .style('font-size', label.fontSize + 'pt');
-            label.interactionHandler.addTrigger(label.element);
-            return label;
+            return label.addInteraction();
         };
         // update properties
-        Label.prototype.update = function (force) {
-            var label = _super.prototype.update.call(this, force);
-            if (label.hasChanged) {
-                var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
-                label.element.style('left', x + 'px');
-                label.element.style('top', y + 'px');
-                katex.render(label.text, label.element.node());
-            }
+        Label.prototype.redraw = function () {
+            var label = this;
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            label.rootElement.style('left', x + 'px');
+            label.rootElement.style('top', y + 'px');
+            katex.render(label.text, label.rootElement.node());
             return label;
         };
         return Label;
@@ -1710,7 +1751,9 @@ var KG;
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
