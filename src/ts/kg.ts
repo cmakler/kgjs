@@ -41,6 +41,7 @@
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
+/// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 

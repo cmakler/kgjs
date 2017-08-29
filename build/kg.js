@@ -465,7 +465,7 @@ var KGAuthor;
         }
         LinearFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[0] + ")*(" + c[0] + "))";
+            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[1] + ")*(" + c[1] + "))";
         };
         LinearFunction.prototype.levelCurve = function (def, graph) {
             var c = this.coefficients, level = def.level || this.value(def.point);
@@ -492,11 +492,11 @@ var KGAuthor;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         MinFunction.prototype.value = function (x) {
-            var c = this.def.coefficients;
-            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[0] + ")*(" + c[0] + ")))";
+            var c = this.coefficients;
+            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[1] + ")*(" + c[1] + ")))";
         };
         MinFunction.prototype.levelCurve = function (def, graph) {
-            var c = this.def.coefficients, level = def.level || this.value(def.point);
+            var c = this.coefficients, level = def.level || this.value(def.point);
             def.interpolation = 'curveLinear';
             return this.curvesFromFunctions([
                 {
@@ -1600,7 +1600,7 @@ var KG;
         }
         Checkbox.prototype.draw = function (layer) {
             var checkbox = this;
-            checkbox.rootElement = layer.append('label');
+            checkbox.rootElement = layer.append('div').append('label');
             checkbox.inputElement = checkbox.rootElement.append('input');
             checkbox.inputElement
                 .attr('type', 'checkbox');
@@ -1624,6 +1624,42 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Radio = (function (_super) {
+        __extends(Radio, _super);
+        function Radio(def) {
+            var _this = this;
+            KG.setProperties(def, 'updatables', ['optionValue']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Radio.prototype.draw = function (layer) {
+            var radio = this;
+            radio.rootElement = layer.append('div').append('label');
+            radio.inputElement = radio.rootElement.append('input');
+            radio.inputElement
+                .attr('type', 'radio')
+                .attr('name', 'r_' + radio.param)
+                .attr('value', radio.optionValue);
+            radio.inputElement.on("change", function () {
+                radio.model.updateParam(radio.param, radio.optionValue);
+            });
+            radio.labelElement = radio.rootElement.append('span');
+            radio.labelElement.style('padding-left', '10px');
+            return radio;
+        };
+        Radio.prototype.redraw = function () {
+            var radio = this;
+            radio.inputElement.property('checked', radio.value == radio.optionValue);
+            katex.render(radio.label, radio.labelElement.node());
+            return radio;
+        };
+        return Radio;
+    }(KG.ParamControl));
+    KG.Radio = Radio;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
@@ -1632,7 +1668,7 @@ var KG;
                 title: '',
                 description: ''
             });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes']);
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios']);
             KG.setProperties(def, 'updatables', ['title', 'description']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -1666,6 +1702,9 @@ var KG;
             });
             sidebar.checkboxes.forEach(function (checkbox) {
                 new KG.Checkbox({ layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model });
+            });
+            sidebar.radios.forEach(function (radio) {
+                new KG.Radio({ layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model });
             });
             return sidebar;
         };
@@ -1754,6 +1793,7 @@ var KG;
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
+/// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page

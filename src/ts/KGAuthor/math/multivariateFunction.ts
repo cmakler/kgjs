@@ -83,7 +83,7 @@ module KGAuthor {
 
         value(x) {
             const c = this.coefficients;
-            return `((${x[0]})*(${c[0]})+(${x[0]})*(${c[0]}))`;
+            return `((${x[0]})*(${c[0]})+(${x[1]})*(${c[1]}))`;
         }
 
         levelCurve(def, graph) {
@@ -108,12 +108,12 @@ module KGAuthor {
     export class MinFunction extends MultivariateFunction {
 
         value(x) {
-            const c = this.def.coefficients;
-            return `(min((${x[0]})*(${c[0]}),(${x[0]})*(${c[0]})))`;
+            const c = this.coefficients;
+            return `(min((${x[0]})*(${c[0]}),(${x[1]})*(${c[1]})))`;
         }
 
         levelCurve(def, graph) {
-            const c = this.def.coefficients,
+            const c = this.coefficients,
                 level = def.level || this.value(def.point);
             def.interpolation = 'curveLinear';
             return this.curvesFromFunctions([
