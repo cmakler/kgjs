@@ -59,9 +59,7 @@ module KG {
                 });
 
             ab.areaPath = ab.rootElement.append("path");
-            ab.data1 = [];
-            ab.data2 = [];
-
+            
             return ab.addClipPath();
         }
 
