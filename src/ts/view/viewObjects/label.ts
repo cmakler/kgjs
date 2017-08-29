@@ -32,8 +32,8 @@ module KG {
             });
 
             // define constant and updatable properties
-            def.constants = def.constants.concat(['xPixelOffset','yPixelOffset','fontSize']);
-            def.updatables = def.updatables.concat(['x', 'y','text']);
+            def.constants = def.constants.concat(['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            def.updatables = def.updatables.concat(['x', 'y', 'text']);
 
             super(def);
 
@@ -43,26 +43,22 @@ module KG {
         draw(layer) {
             let label = this;
 
-            label.element = layer.append('div')
-                .attr('class','draggable')
+            label.rootElement = layer.append('div')
+                .attr('class', 'draggable')
                 .style('position', 'absolute')
                 .style('font-size', label.fontSize + 'pt');
 
-            label.interactionHandler.addTrigger(label.element);
-
-            return label;
+            return label.addInteraction();
         }
 
         // update properties
-        update(force) {
-            let label = super.update(force);
-            if (label.hasChanged) {
-                const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
-                    y = label.yScale.scale(label.y) + (+label.yPixelOffset);
-                label.element.style('left', x + 'px');
-                label.element.style('top', y + 'px');
-                katex.render(label.text, label.element.node());
-            }
+        redraw() {
+            let label = this;
+            const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
+                y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            label.rootElement.style('left', x + 'px');
+            label.rootElement.style('top', y + 'px');
+            katex.render(label.text, label.rootElement.node());
             return label;
         }
     }

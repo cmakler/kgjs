@@ -37,6 +37,10 @@
       "min": "0",
       "max": "400",
       "round": "1"
+    },
+    {
+      "name": "showMap",
+      "value": true
     }
   ],
   "restrictions": [

@@ -10,7 +10,6 @@ module KG {
     export class Point extends ViewObject {
 
         // SVG elements
-        private g;
         private dragCircle;
         private circle;
 
@@ -33,7 +32,7 @@ module KG {
             });
 
             // define updatable properties
-            def.updatables = def.updatables.concat(['x','y','r']);
+            def.updatables = def.updatables.concat(['x', 'y', 'r']);
 
             super(def);
         }
@@ -41,33 +40,23 @@ module KG {
         // create SVG elements
         draw(layer) {
             let p = this;
-            p.g = layer.append('g'); // SVG group
-            p.dragCircle = p.g.append('circle').style('fill-opacity',0).attr('r', 20);
-            p.circle = p.g.append('circle');
-            //p.addClipPath(p.g)
-            p.interactionHandler.addTrigger(p.g);
-            return p;
+            p.rootElement = layer.append('g'); // SVG group
+            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.rootElement.append('circle');
+            //p.addClipPath()
+            return p.addInteraction();
         }
 
         // update properties
-        update(force) {
-            let p = super.update(force);
-            if (p.hasChanged) {
-
-                //updated property values
-                let x = p.xScale.scale(p.x),
-                    y = p.yScale.scale(p.y),
-                    r = p.r;
-
-                //assign property values to SVG attributes
-                p.g.attr('transform',`translate(${x} ${y})`);
-                p.circle.attr('r',p.r);
-                p.circle.style('fill',p.fill);
-                p.circle.style('opacity',p.opacity);
-                p.circle.style('stroke',p.stroke);
-                p.circle.style('stroke-width',`${p.strokeWidth}px`);
-                p.circle.style('stroke-opacity',p.strokeOpacity);
-            }
+        redraw() {
+            let p = this;
+            p.rootElement.attr('transform', `translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
+            p.circle.attr('r', p.r);
+            p.circle.style('fill', p.fill);
+            p.circle.style('opacity', p.opacity);
+            p.circle.style('stroke', p.stroke);
+            p.circle.style('stroke-width', `${p.strokeWidth}px`);
+            p.circle.style('stroke-opacity', p.strokeOpacity);
             return p;
         }
     }
