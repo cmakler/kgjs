@@ -27,7 +27,7 @@ module KG {
                 title: '',
                 description: ''
             });
-            setProperties(def, 'constants',['sliders']);
+            setProperties(def, 'constants',['sliders','checkboxes']);
             setProperties(def, 'updatables',['title', 'description']);
 
             super(def);
@@ -64,6 +64,9 @@ module KG {
             const sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
             sidebar.sliders.forEach(function (slider) {
                 new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model})
+            });
+            sidebar.checkboxes.forEach(function (checkbox) {
+                new Checkbox({layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model})
             });
             return sidebar;
 

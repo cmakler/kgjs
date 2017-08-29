@@ -87,6 +87,7 @@
           {
             "type": "EconIndifferenceMap",
             "def": {
+              "show": "params.showMap",
               "utilityFunction": {
                 "type": "CobbDouglas",
                 "def": {
@@ -200,6 +201,12 @@
           {
             "param": "m",
             "label": "m"
+          }
+        ],
+        "checkboxes": [
+          {
+            "param": "showMap",
+            "label": "\\text{show indifference map}"
           }
         ]
       }
