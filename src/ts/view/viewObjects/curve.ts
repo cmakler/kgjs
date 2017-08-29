@@ -21,8 +21,8 @@ module KG {
             });
             setProperties(def, 'constants',['interpolation']);
             super(def);
-            def.univariateFunction.model = def.model
-            this.univariateFunction = new UnivariateFunction(def.univariateFunction)
+            def.univariateFunction.model = def.model;
+            this.univariateFunction = new UnivariateFunction(def.univariateFunction);
         }
 
         // create SVG elements

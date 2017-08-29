@@ -9,71 +9,105 @@
       "round": "0.1"
     }
   ],
-  "objects": [{
-    "type": "Graph",
-    "def": {
-      "xAxis": {
-        "orient": "bottom",
-        "domain": [-4, 4],
-        "range": [0.05, 0.45]
-      },
-      "yAxis": {
-        "orient": "left",
-        "domain": [-4, 4],
-        "range": [0.9, 0.1],
-        "show": false
-      },
-      "objects": [
-        {
-          "type": "Point",
-          "def": {
-            "coordinates": ["params.x", 0],
-            "label": {
-              "text": "`x = ${params.x.toFixed(1)}`"
-            },
-            "drag": [
-              {
-                "directions": "x",
-                "param": "x",
-                "expression": "params.x + drag.dx"
-              }
-            ]
-          }
-        }
-      ]
-    }
-  },
+  "objects": [
     {
-    "type": "Graph",
-    "def": {
-      "xAxis": {
-        "orient": "bottom",
-        "domain": [-4, 4],
-        "range": [0.55, 0.95]
-      },
-      "yAxis": {
-        "orient": "left",
-        "domain": [-4, 4],
-        "range": [0.9, 0.1],
-        "show": "(params.x < 0)"
-      },
-      "objects": [
-        {
-          "type": "Point",
-          "def": {
-            "coordinates": [
-              "(params.x < 0) ? 0 : (params.x)^0.5",
-              "(params.x < 0) ? (-params.x)^0.5 : 0"
-            ],
-            "label": {
-              "text": "`\\\\sqrt{x} = ${(params.x < 0) ? Math.pow(-params.x,0.5).toFixed(2)+'i' : Math.pow(params.x,0.5).toFixed(2)}`"
+      "type": "Graph",
+      "def": {
+        "xAxis": {
+          "orient": "bottom",
+          "domain": [-4, 4],
+          "range": [0.05, 0.45]
+        },
+        "yAxis": {
+          "orient": "left",
+          "domain": [-4, 4],
+          "range": [0.9, 0.1],
+          "show": false
+        },
+        "objects": [
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": ["params.x", 0],
+              "label": {
+                "text": "`x = ${params.x.toFixed(1)}`"
+              },
+              "drag": [
+                {
+                  "directions": "x",
+                  "param": "x",
+                  "expression": "params.x + drag.dx"
+                }
+              ]
             }
           }
-        }
-      ]
+        ]
+      }
+    },
+    {
+      "type": "Graph",
+      "def": {
+        "xAxis": {
+          "orient": "bottom",
+          "domain": [-4, 4],
+          "range": [0.55, 0.95]
+        },
+        "yAxis": {
+          "orient": "left",
+          "domain": [-4, 4],
+          "range": [0.9, 0.1],
+          "show": "(params.x < 0)"
+        },
+        "objects": [
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                "(params.x < 0) ? 0 : (params.x)^0.5",
+                "(params.x < 0) ? (-params.x)^0.5 : 0"
+              ],
+              "label": {
+                "text": "`\\\\sqrt{x} = ${(params.x < 0) ? Math.pow(-params.x,0.5).toFixed(2)+'i' : Math.pow(params.x,0.5).toFixed(2)}`"
+              }
+            }
+          },
+          {
+            "type": "Rectangle",
+            "def": {
+              "a": [
+                0,
+                0
+              ],
+              "b": [
+                2,
+                2
+              ]
+            }
+          },
+          {
+            "type": "Curve",
+            "def": {
+              "univariateFunction": {
+                "fn": "(x-8)^2"
+              }
+            }
+          },
+          {
+            "type": "Area",
+            "def": {
+              "univariateFunction1": {
+                "fn": "(x^2)-2"
+              },
+              "univariateFunction2": {
+                "fn": "-(x^2)+2"
+              },
+              "ind": "x",
+              "min": -2,
+              "max": 2
+            }
+          }
+        ]
+      }
     }
-  }
-
-
   ]
 }

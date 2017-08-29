@@ -50,7 +50,6 @@ module KGAuthor {
 
     }
 
-
     export class Segment extends GraphObject {
 
         constructor(def, graph) {
@@ -60,6 +59,31 @@ module KGAuthor {
             s.layer = 1;
             s.extractCoordinates('a', 'x1', 'y1');
             s.extractCoordinates('b', 'x2', 'y2');
+        }
+
+    }
+
+    export class Rectangle extends GraphObject {
+
+        constructor(def, graph) {
+            super(def, graph);
+            this.type = 'Rectangle';
+            this.layer = def.layer || 0;
+            this.extractCoordinates('a', 'x1', 'y1');
+            this.extractCoordinates('b', 'x2', 'y2');
+        }
+
+    }
+
+    export class Area extends GraphObject {
+
+        constructor(def, graph) {
+            if(def.hasOwnProperty('univariateFunctions')) {
+                delete def.univariateFunctions;
+            }
+            super(def, graph);
+            this.type = 'Area';
+            this.layer = def.layer || 0;
         }
 
     }

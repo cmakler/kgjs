@@ -36,6 +36,8 @@
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/rectangle.ts" />
+/// <reference path="view/viewObjects/area.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
