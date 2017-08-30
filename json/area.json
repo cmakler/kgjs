@@ -15,12 +15,12 @@
       "def": {
         "xAxis": {
           "orient": "bottom",
-          "domain": [-4, 4],
+          "domain": [0,10],
           "range": [0.55, 0.95]
         },
         "yAxis": {
           "orient": "left",
-          "domain": [-4, 4],
+          "domain": [0,10],
           "range": [0.9, 0.1]
         },
         "objects": [
@@ -28,7 +28,9 @@
             "type": "Area",
             "def": {
               "univariateFunction1": {
-                "fn": "(x^2)-2"
+                "fn": "y^(-1)",
+                "ind": "y",
+                "min": 2
               }
             }
           }

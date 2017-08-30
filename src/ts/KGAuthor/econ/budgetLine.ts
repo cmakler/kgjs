@@ -7,7 +7,8 @@ module KGAuthor {
         constructor(def, graph) {
 
             const xIntercept = divideDefs(def.m, def.p1),
-                yIntercept = divideDefs(def.m, def.p2);
+                yIntercept = divideDefs(def.m, def.p2),
+                priceRatio = divideDefs(def.p1, def.p2);
 
             def.a = [xIntercept, 0];
             def.b = [0, yIntercept];
@@ -28,24 +29,35 @@ module KGAuthor {
 
             if (def.handles) {
                 subObjects.push(new Point({
-                    'coordinates': [xIntercept, 0],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                        'directions': 'x',
-                        'param': paramName(def.p1),
-                        'expression': divideDefs(def.m, 'drag.x')
+                    coordinates: [xIntercept, 0],
+                    fill: 'green',
+                    r: 4,
+                    drag: [{
+                        directions: 'x',
+                        param: paramName(def.p1),
+                        expression: divideDefs(def.m, 'drag.x')
                     }]
                 }, graph));
                 subObjects.push(new Point({
-                    'coordinates': [0, yIntercept],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                        'directions': 'y',
-                        'param': paramName(def.p2),
-                        'expression': divideDefs(def.m, 'drag.y')
+                    coordinates: [0, yIntercept],
+                    fill: 'green',
+                    r: 4,
+                    drag: [{
+                        directions: 'y',
+                        param: paramName(def.p2),
+                        expression: divideDefs(def.m, 'drag.y')
                     }]
+                }, graph));
+            }
+
+            if (def.set) {
+                subObjects.push(new Area({
+                    fill: "green",
+                    univariateFunction1: {
+                        fn: `${yIntercept} - ${priceRatio}*x`,
+                        samplePoints: 2
+                    },
+                    show: def.set
                 }, graph));
             }
         }

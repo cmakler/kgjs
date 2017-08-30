@@ -30,8 +30,8 @@ module KG {
                 ind: 'x',
                 samplePoints: 50
             });
-            setProperties(def, 'constants',['samplePoints', 'ind', 'fn']);
-            setProperties(def, 'updatables',['min','max']);
+            setProperties(def, 'constants', ['samplePoints', 'ind', 'fn']);
+            setProperties(def, 'updatables', ['min', 'max']);
             super(def);
 
             this.compiledFunction = math.compile(def.fn);
@@ -53,7 +53,9 @@ module KG {
                 let a = i / fn.samplePoints,
                     input = a * min + (1 - a) * max,
                     output = fn.eval(input);
-                data.push((fn.ind == 'x') ? {x: input, y: output} : {x: output, y: input});
+                if (!isNaN(output) && output != Infinity && output != -Infinity) {
+                    data.push((fn.ind == 'x') ? {x: input, y: output} : {x: output, y: input});
+                }
             }
             this.data = data;
             return data;

@@ -3,6 +3,8 @@
 
 module KGAuthor {
 
+    import randomString = KG.randomString;
+
     export interface IMathFunction {
         value: (x: any) => any;
     }
@@ -13,19 +15,23 @@ module KGAuthor {
     }
 
     export interface IMultivariateFunction extends IMathFunction {
-        levelCurve: (def: any, graph: Graph) => Curve[];
+        levelSet: (def: any, graph: Graph) => KG.UnivariateFunctionDefinition[];
     }
 
     export class MultivariateFunction extends MathFunction implements IMultivariateFunction {
 
         public coefficients;
         public exponents;
+        public interpolation;
+        public fillBelowRect;
+        public fillAboveRect;
 
         constructor(def) {
             super(def);
             let fn = this;
             fn.exponents = def.exponents;
             fn.coefficients = def.coefficients;
+            fn.interpolation = 'curveMonotoneX';
             if (def.hasOwnProperty('alpha')) {
                 fn.exponents = [def.alpha, subtractDefs(1, def.alpha)];
                 fn.coefficients = [def.alpha, subtractDefs(1, def.alpha)];
@@ -36,17 +42,71 @@ module KGAuthor {
             return '';
         }
 
-        levelCurve(def, graph) {
-            return this.curvesFromFunctions([],def,graph);
+        levelSet(def) {
+            return [];
         }
 
-        curvesFromFunctions(fns:any[], def, graph) {
-            return fns.map(function(fn) {
+        levelCurve(def, graph) {
+            def.interpolation = this.interpolation;
+            return this.curvesFromFunctions(this.levelSet(def), def, graph);
+        }
+
+        curvesFromFunctions(fns: any[], def, graph) {
+            return fns.map(function (fn) {
                 let curveDef = JSON.parse(JSON.stringify(def));
-                delete curveDef.utilityFunction;
                 curveDef.univariateFunction = fn;
-                return new Curve(curveDef,graph);
+                return new Curve(curveDef, graph);
             })
+        }
+
+        areaBelowLevelCurve(def, graph) {
+            const fn = this;
+            fn.fillBelowRect = null;
+            def.interpolation = fn.interpolation;
+            const fns = fn.levelSet(def);
+            let objs = [];
+            fns.forEach(function (fn) {
+                let areaDef = JSON.parse(JSON.stringify(def));
+                areaDef.univariateFunction1 = fn;
+                objs.push(new Area(areaDef, graph));
+            });
+            if (fn.fillBelowRect) {
+                fn.fillBelowRect.fill = def.fill;
+                objs.push(new Rectangle(fn.fillBelowRect,graph));
+            }
+            return objs;
+        }
+
+        areaAboveLevelCurve(def, graph) {
+            const fn = this;
+            fn.fillAboveRect = null;
+            def.interpolation = fn.interpolation;
+            const fns = fn.levelSet(def);
+            let objs = [];
+            fns.forEach(function (fn) {
+                let areaDef = JSON.parse(JSON.stringify(def));
+                areaDef.univariateFunction1 = fn;
+                areaDef.inClipPath = true;
+                areaDef.above = true;
+                objs.push(new Area(areaDef, graph));
+            });
+            if (fn.fillAboveRect) {
+                objs.push(new Rectangle(fn.fillAboveRect,graph));
+            }
+            const clipPathName = KG.randomString(10)
+            return [
+                new Rectangle({
+                    clipPathName: clipPathName,
+                    x1: graph.def.xAxis.domain[0],
+                    x2: graph.def.xAxis.domain[1],
+                    y1: graph.def.yAxis.domain[0],
+                    y2: graph.def.yAxis.domain[1],
+                }, graph),
+                new ClipPath({
+                    "name": clipPathName,
+                    "paths": objs
+                }, graph)
+            ]
         }
 
     }
@@ -58,77 +118,97 @@ module KGAuthor {
             return `((${x[0]})^(${e[0]}))*((${x[1]})^(${e[1]}))`;
         }
 
-        levelCurve(def, graph) {
+        levelSet(def) {
             const e = this.exponents,
-                level = def.level || this.value(def.point);
-            def.interpolation = 'curveMonotoneX';
-            return this.curvesFromFunctions([
+                level = def.level || this.value(def.point),
+                xMin = `(${level})^(1/(${e[0]} + ${e[1]}))`,
+                yMin = `(${level})^(1/(${e[0]} + ${e[1]}))`
+            this.fillBelowRect = {
+                x1: 0,
+                x2: xMin,
+                y1: 0,
+                y2: yMin,
+                show: def.show
+            };
+            return [
                 {
                     "fn": `(${level}/y^(${e[1]}))^(1/(${e[0]}))`,
                     "ind": "y",
-                    "min": `(${level})^(1/(${e[0]} + ${e[1]}))`,
+                    "min": yMin,
                     "samplePoints": 30
                 },
                 {
                     "fn": `(${level}/x^(${e[0]}))^(1/(${e[1]}))`,
                     "ind": "x",
-                    "min": `(${level})^(1/(${e[0]} + ${e[1]}))`,
+                    "min": xMin,
                     "samplePoints": 30
                 }
-            ], def, graph)
+            ]
         }
     }
 
     export class LinearFunction extends MultivariateFunction {
+
+        constructor(def) {
+            super(def);
+            this.interpolation = 'curveLinear';
+        }
 
         value(x) {
             const c = this.coefficients;
             return `((${x[0]})*(${c[0]})+(${x[1]})*(${c[1]}))`;
         }
 
-        levelCurve(def, graph) {
+        levelSet(def) {
             const c = this.coefficients,
                 level = def.level || this.value(def.point);
-            def.interpolation = 'curveLinear';
-            return this.curvesFromFunctions([
-                {
-                    "fn": `(${level} - (${c[1]})*y)/(${c[0]})`,
-                    "ind": "y",
-                    "samplePoints": 2
-                },
+            return [
                 {
                     "fn": `(${level} - (${c[0]})*x)/(${c[1]})`,
                     "ind": "x",
                     "samplePoints": 2
                 }
-            ], def, graph)
+            ]
         }
     }
 
     export class MinFunction extends MultivariateFunction {
+
+        constructor(def) {
+            super(def);
+            this.interpolation = 'curveLinear';
+        }
 
         value(x) {
             const c = this.coefficients;
             return `(min((${x[0]})*(${c[0]}),(${x[1]})*(${c[1]})))`;
         }
 
-        levelCurve(def, graph) {
+        levelSet(def) {
             const c = this.coefficients,
-                level = def.level || this.value(def.point);
-            def.interpolation = 'curveLinear';
-            return this.curvesFromFunctions([
+                level = def.level || this.value(def.point),
+                xMin = divideDefs(level, c[0]),
+                yMin = divideDefs(level, c[1]);
+            this.fillBelowRect = {
+                x1: 0,
+                x2: xMin,
+                y1: 0,
+                y2: yMin,
+                show: def.show
+            };
+            return [
                 {
                     "fn": divideDefs(level, c[1]),
                     "ind": "x",
-                    "min": divideDefs(level, c[0]),
+                    "min": xMin,
                     "samplePoints": 2
                 }, {
                     "fn": divideDefs(level, c[0]),
                     "ind": "y",
-                    "min": divideDefs(level, c[1]),
+                    "min": yMin,
                     "samplePoints": 2
                 }
-            ], def, graph);
+            ];
         }
     }
 }

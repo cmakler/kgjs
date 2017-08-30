@@ -4,7 +4,8 @@ module KG {
 
     export interface AreaDefinition extends ViewObjectDefinition {
         univariateFunction1: UnivariateFunctionDefinition;
-        univariateFunction2: UnivariateFunctionDefinition;
+        univariateFunction2?: UnivariateFunctionDefinition;
+        above?: boolean;
     }
 
     export class Area extends ViewObject {
@@ -18,6 +19,10 @@ module KG {
         private univariateFunction2: UnivariateFunction;
 
         constructor(def: AreaDefinition) {
+
+            const minValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMin : def.xScale.domainMin;
+            const maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
+
             setDefaults(def, {
                 alwaysUpdate: true,
                 interpolation: 'curveBasis',
@@ -25,7 +30,11 @@ module KG {
                 fill: 'lightsteelblue',
                 opacity: 0.2,
                 univariateFunction2: {
-                    "fn": "0"
+                    "fn": def.above ? maxValue : minValue,
+                    "ind": def.univariateFunction1['ind'],
+                    "min": def.univariateFunction1['min'],
+                    "max": def.univariateFunction1['max'],
+                    "samplePoints": def.univariateFunction1['samplePoints']
                 }
             });
 
@@ -42,7 +51,7 @@ module KG {
         draw(layer) {
             let ab = this;
 
-            ab.rootElement = layer.append('g');
+            ab.rootElement = layer.append('path');
 
             ab.areaShape = d3.area()
                 .x0(function (d: any) {
@@ -58,8 +67,8 @@ module KG {
                     return ab.yScale.scale(d[1].y);
                 });
 
-            ab.areaPath = ab.rootElement.append("path");
-            
+            ab.areaPath = ab.rootElement;
+
             return ab.addClipPath();
         }
 

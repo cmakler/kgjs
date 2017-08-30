@@ -40,7 +40,19 @@
     },
     {
       "name": "showMap",
+      "value": false
+    },
+    {
+      "name": "showBudgetSet",
       "value": true
+    },
+    {
+      "name": "showPreferred",
+      "value": true
+    },
+    {
+      "name": "showDispreferred",
+      "value": false
     },
     {
       "name": "utilityFn",
@@ -91,6 +103,99 @@
         },
         "objects": [
           {
+            "type": "EconPreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "CobbDouglas",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 1 && params.showPreferred"
+            }
+          },
+          {
+            "type": "EconDispreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "CobbDouglas",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 1 && params.showDispreferred"
+            }
+          },{
+            "type": "EconPreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "PerfectComplements",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 2 && params.showPreferred"
+            }
+          },
+          {
+            "type": "EconDispreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "PerfectComplements",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 2 && params.showDispreferred"
+            }
+          },{
+            "type": "EconPreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "PerfectSubstitutes",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 3 && params.showPreferred"
+            }
+          },
+          {
+            "type": "EconDispreferredRegion",
+            "def": {
+              "utilityFunction": {
+                "type": "PerfectSubstitutes",
+                "def": {
+                  "alpha": "params.alpha"
+                }
+              },
+              "point": [
+                "params.a*params.m/params.p1",
+                "(1-params.a)*params.m/params.p2"
+              ],
+              "show": "params.utilityFn == 3 && params.showDispreferred"
+            }
+          },{
             "type": "EconIndifferenceMap",
             "def": {
               "show": "params.showMap && (params.utilityFn == 1)",
@@ -191,7 +296,8 @@
               "m": "params.m",
               "label": "BL",
               "draggable": true,
-              "handles": true
+              "handles": true,
+              "set": "params.showBudgetSet"
             }
           },
           {
@@ -243,6 +349,18 @@
           {
             "param": "showMap",
             "label": "\\text{show indifference map}"
+          },
+          {
+            "param": "showPreferred",
+            "label": "\\text{show preferred bundles}"
+          },
+          {
+            "param": "showDispreferred",
+            "label": "\\text{show dispreferred bundles}"
+          },
+          {
+            "param": "showBudgetSet",
+            "label": "\\text{show budget set}"
           }
         ],
         "radios": [

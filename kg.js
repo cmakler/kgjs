@@ -214,33 +214,34 @@ var KGAuthor;
             g.subObjects = _this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g);
             });
+            g.subObjects.push(new Scale({
+                "name": g.xScaleName,
+                "axis": "x",
+                "domainMin": def.xAxis.domain[0],
+                "domainMax": def.xAxis.domain[1],
+                "rangeMin": def.xAxis.range[0],
+                "rangeMax": def.xAxis.range[1]
+            }));
+            g.subObjects.push(new Scale({
+                "name": g.yScaleName,
+                "axis": "y",
+                "domainMin": def.yAxis.domain[0],
+                "domainMax": def.yAxis.domain[1],
+                "rangeMin": def.yAxis.range[0],
+                "rangeMax": def.yAxis.range[1]
+            }));
+            g.subObjects.push(new ClipPath({
+                "name": g.clipPathName,
+                "paths": [new KGAuthor.Rectangle({
+                        x1: def.xAxis.domain[0],
+                        x2: def.xAxis.domain[1],
+                        y1: def.yAxis.domain[0],
+                        y2: def.yAxis.domain[1],
+                        inClipPath: true
+                    }, g)]
+            }, g));
             return _this;
         }
-        Graph.prototype.parse_self = function (parsedData) {
-            var graph = this, xAxis = graph.def.xAxis, xScale = graph.xScaleName, yAxis = graph.def.yAxis, yScale = graph.yScaleName, clipPath = graph.clipPathName;
-            parsedData.scales.push({
-                "name": xScale,
-                "axis": "x",
-                "domainMin": xAxis.domain[0],
-                "domainMax": xAxis.domain[1],
-                "rangeMin": xAxis.range[0],
-                "rangeMax": xAxis.range[1]
-            });
-            parsedData.scales.push({
-                "name": yScale,
-                "axis": "y",
-                "domainMin": yAxis.domain[0],
-                "domainMax": yAxis.domain[1],
-                "rangeMin": yAxis.range[0],
-                "rangeMax": yAxis.range[1]
-            });
-            parsedData.clipPaths.push({
-                "name": clipPath,
-                "xScaleName": xScale,
-                "yScaleName": yScale
-            });
-            return parsedData;
-        };
         return Graph;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Graph = Graph;
@@ -251,7 +252,7 @@ var KGAuthor;
             if (graph) {
                 _this.def.xScaleName = graph.xScaleName;
                 _this.def.yScaleName = graph.yScaleName;
-                _this.def.clipPathName = graph.clipPathName;
+                _this.def.clipPathName = def.clipPathName || graph.clipPathName;
             }
             _this.subObjects = [];
             return _this;
@@ -282,6 +283,31 @@ var KGAuthor;
         return GraphObject;
     }(GraphObjectGenerator));
     KGAuthor.GraphObject = GraphObject;
+    var ClipPath = (function (_super) {
+        __extends(ClipPath, _super);
+        function ClipPath() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ClipPath.prototype.parse_self = function (parsedData) {
+            delete this.def.clipPathName;
+            parsedData.clipPaths.push(this.def);
+            return parsedData;
+        };
+        return ClipPath;
+    }(GraphObjectGenerator));
+    KGAuthor.ClipPath = ClipPath;
+    var Scale = (function (_super) {
+        __extends(Scale, _super);
+        function Scale() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Scale.prototype.parse_self = function (parsedData) {
+            parsedData.scales.push(this.def);
+            return parsedData;
+        };
+        return Scale;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Scale = Scale;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -386,6 +412,34 @@ var KGAuthor;
         return Segment;
     }(KGAuthor.GraphObject));
     KGAuthor.Segment = Segment;
+    var Rectangle = (function (_super) {
+        __extends(Rectangle, _super);
+        function Rectangle(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Rectangle';
+            _this.layer = def.layer || 0;
+            _this.extractCoordinates('a', 'x1', 'y1');
+            _this.extractCoordinates('b', 'x2', 'y2');
+            return _this;
+        }
+        return Rectangle;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Rectangle = Rectangle;
+    var Area = (function (_super) {
+        __extends(Area, _super);
+        function Area(def, graph) {
+            var _this = this;
+            if (def.hasOwnProperty('univariateFunctions')) {
+                delete def.univariateFunctions;
+            }
+            _this = _super.call(this, def, graph) || this;
+            _this.type = 'Area';
+            _this.layer = def.layer || 0;
+            return _this;
+        }
+        return Area;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Area = Area;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -405,6 +459,7 @@ var KGAuthor;
             var fn = _this;
             fn.exponents = def.exponents;
             fn.coefficients = def.coefficients;
+            fn.interpolation = 'curveMonotoneX';
             if (def.hasOwnProperty('alpha')) {
                 fn.exponents = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
                 fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
@@ -414,16 +469,67 @@ var KGAuthor;
         MultivariateFunction.prototype.value = function (x) {
             return '';
         };
+        MultivariateFunction.prototype.levelSet = function (def) {
+            return [];
+        };
         MultivariateFunction.prototype.levelCurve = function (def, graph) {
-            return this.curvesFromFunctions([], def, graph);
+            def.interpolation = this.interpolation;
+            return this.curvesFromFunctions(this.levelSet(def), def, graph);
         };
         MultivariateFunction.prototype.curvesFromFunctions = function (fns, def, graph) {
             return fns.map(function (fn) {
                 var curveDef = JSON.parse(JSON.stringify(def));
-                delete curveDef.utilityFunction;
                 curveDef.univariateFunction = fn;
                 return new KGAuthor.Curve(curveDef, graph);
             });
+        };
+        MultivariateFunction.prototype.areaBelowLevelCurve = function (def, graph) {
+            var fn = this;
+            fn.fillBelowRect = null;
+            def.interpolation = fn.interpolation;
+            var fns = fn.levelSet(def);
+            var objs = [];
+            fns.forEach(function (fn) {
+                var areaDef = JSON.parse(JSON.stringify(def));
+                areaDef.univariateFunction1 = fn;
+                objs.push(new KGAuthor.Area(areaDef, graph));
+            });
+            if (fn.fillBelowRect) {
+                fn.fillBelowRect.fill = def.fill;
+                objs.push(new KGAuthor.Rectangle(fn.fillBelowRect, graph));
+            }
+            return objs;
+        };
+        MultivariateFunction.prototype.areaAboveLevelCurve = function (def, graph) {
+            var fn = this;
+            fn.fillAboveRect = null;
+            def.interpolation = fn.interpolation;
+            var fns = fn.levelSet(def);
+            var objs = [];
+            fns.forEach(function (fn) {
+                var areaDef = JSON.parse(JSON.stringify(def));
+                areaDef.univariateFunction1 = fn;
+                areaDef.inClipPath = true;
+                areaDef.above = true;
+                objs.push(new KGAuthor.Area(areaDef, graph));
+            });
+            if (fn.fillAboveRect) {
+                objs.push(new KGAuthor.Rectangle(fn.fillAboveRect, graph));
+            }
+            var clipPathName = KG.randomString(10);
+            return [
+                new KGAuthor.Rectangle({
+                    clipPathName: clipPathName,
+                    x1: graph.def.xAxis.domain[0],
+                    x2: graph.def.xAxis.domain[1],
+                    y1: graph.def.yAxis.domain[0],
+                    y2: graph.def.yAxis.domain[1]
+                }, graph),
+                new KGAuthor.ClipPath({
+                    "name": clipPathName,
+                    "paths": objs
+                }, graph)
+            ];
         };
         return MultivariateFunction;
     }(MathFunction));
@@ -437,80 +543,90 @@ var KGAuthor;
             var e = this.exponents;
             return "((" + x[0] + ")^(" + e[0] + "))*((" + x[1] + ")^(" + e[1] + "))";
         };
-        CobbDouglasFunction.prototype.levelCurve = function (def, graph) {
-            var e = this.exponents, level = def.level || this.value(def.point);
-            def.interpolation = 'curveMonotoneX';
-            return this.curvesFromFunctions([
+        CobbDouglasFunction.prototype.levelSet = function (def) {
+            var e = this.exponents, level = def.level || this.value(def.point), xMin = "(" + level + ")^(1/(" + e[0] + " + " + e[1] + "))", yMin = "(" + level + ")^(1/(" + e[0] + " + " + e[1] + "))";
+            this.fillBelowRect = {
+                x1: 0,
+                x2: xMin,
+                y1: 0,
+                y2: yMin,
+                show: def.show
+            };
+            return [
                 {
                     "fn": "(" + level + "/y^(" + e[1] + "))^(1/(" + e[0] + "))",
                     "ind": "y",
-                    "min": "(" + level + ")^(1/(" + e[0] + " + " + e[1] + "))",
+                    "min": yMin,
                     "samplePoints": 30
                 },
                 {
                     "fn": "(" + level + "/x^(" + e[0] + "))^(1/(" + e[1] + "))",
                     "ind": "x",
-                    "min": "(" + level + ")^(1/(" + e[0] + " + " + e[1] + "))",
+                    "min": xMin,
                     "samplePoints": 30
                 }
-            ], def, graph);
+            ];
         };
         return CobbDouglasFunction;
     }(MultivariateFunction));
     KGAuthor.CobbDouglasFunction = CobbDouglasFunction;
     var LinearFunction = (function (_super) {
         __extends(LinearFunction, _super);
-        function LinearFunction() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function LinearFunction(def) {
+            var _this = _super.call(this, def) || this;
+            _this.interpolation = 'curveLinear';
+            return _this;
         }
         LinearFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[0] + ")*(" + c[0] + "))";
+            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[1] + ")*(" + c[1] + "))";
         };
-        LinearFunction.prototype.levelCurve = function (def, graph) {
+        LinearFunction.prototype.levelSet = function (def) {
             var c = this.coefficients, level = def.level || this.value(def.point);
-            def.interpolation = 'curveLinear';
-            return this.curvesFromFunctions([
-                {
-                    "fn": "(" + level + " - (" + c[1] + ")*y)/(" + c[0] + ")",
-                    "ind": "y",
-                    "samplePoints": 2
-                },
+            return [
                 {
                     "fn": "(" + level + " - (" + c[0] + ")*x)/(" + c[1] + ")",
                     "ind": "x",
                     "samplePoints": 2
                 }
-            ], def, graph);
+            ];
         };
         return LinearFunction;
     }(MultivariateFunction));
     KGAuthor.LinearFunction = LinearFunction;
     var MinFunction = (function (_super) {
         __extends(MinFunction, _super);
-        function MinFunction() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function MinFunction(def) {
+            var _this = _super.call(this, def) || this;
+            _this.interpolation = 'curveLinear';
+            return _this;
         }
         MinFunction.prototype.value = function (x) {
-            var c = this.def.coefficients;
-            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[0] + ")*(" + c[0] + ")))";
+            var c = this.coefficients;
+            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[1] + ")*(" + c[1] + ")))";
         };
-        MinFunction.prototype.levelCurve = function (def, graph) {
-            var c = this.def.coefficients, level = def.level || this.value(def.point);
-            def.interpolation = 'curveLinear';
-            return this.curvesFromFunctions([
+        MinFunction.prototype.levelSet = function (def) {
+            var c = this.coefficients, level = def.level || this.value(def.point), xMin = KGAuthor.divideDefs(level, c[0]), yMin = KGAuthor.divideDefs(level, c[1]);
+            this.fillBelowRect = {
+                x1: 0,
+                x2: xMin,
+                y1: 0,
+                y2: yMin,
+                show: def.show
+            };
+            return [
                 {
                     "fn": KGAuthor.divideDefs(level, c[1]),
                     "ind": "x",
-                    "min": KGAuthor.divideDefs(level, c[0]),
+                    "min": xMin,
                     "samplePoints": 2
                 }, {
                     "fn": KGAuthor.divideDefs(level, c[0]),
                     "ind": "y",
-                    "min": KGAuthor.divideDefs(level, c[1]),
+                    "min": yMin,
                     "samplePoints": 2
                 }
-            ], def, graph);
+            ];
         };
         return MinFunction;
     }(MultivariateFunction));
@@ -523,7 +639,7 @@ var KGAuthor;
         __extends(EconBudgetLine, _super);
         function EconBudgetLine(def, graph) {
             var _this = this;
-            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2);
+            var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2), priceRatio = KGAuthor.divideDefs(def.p1, def.p2);
             def.a = [xIntercept, 0];
             def.b = [0, yIntercept];
             def.stroke = 'green';
@@ -539,24 +655,34 @@ var KGAuthor;
             var subObjects = _this.subObjects;
             if (def.handles) {
                 subObjects.push(new KGAuthor.Point({
-                    'coordinates': [xIntercept, 0],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'x',
-                            'param': KGAuthor.paramName(def.p1),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.x')
+                    coordinates: [xIntercept, 0],
+                    fill: 'green',
+                    r: 4,
+                    drag: [{
+                            directions: 'x',
+                            param: KGAuthor.paramName(def.p1),
+                            expression: KGAuthor.divideDefs(def.m, 'drag.x')
                         }]
                 }, graph));
                 subObjects.push(new KGAuthor.Point({
-                    'coordinates': [0, yIntercept],
-                    'fill': 'green',
-                    'r': 4,
-                    'drag': [{
-                            'directions': 'y',
-                            'param': KGAuthor.paramName(def.p2),
-                            'expression': KGAuthor.divideDefs(def.m, 'drag.y')
+                    coordinates: [0, yIntercept],
+                    fill: 'green',
+                    r: 4,
+                    drag: [{
+                            directions: 'y',
+                            param: KGAuthor.paramName(def.p2),
+                            expression: KGAuthor.divideDefs(def.m, 'drag.y')
                         }]
+                }, graph));
+            }
+            if (def.set) {
+                subObjects.push(new KGAuthor.Area({
+                    fill: "green",
+                    univariateFunction1: {
+                        fn: yIntercept + " - " + priceRatio + "*x",
+                        samplePoints: 2
+                    },
+                    show: def.set
                 }, graph));
             }
             return _this;
@@ -568,6 +694,18 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    function getIndifferenceCurveFunction(def) {
+        if (def.utilityFunction.type == 'CobbDouglas') {
+            return new KGAuthor.CobbDouglasFunction(def.utilityFunction.def);
+        }
+        else if (def.utilityFunction.type == 'Substitutes' || def.utilityFunction.type == 'PerfectSubstitutes') {
+            return new KGAuthor.LinearFunction(def.utilityFunction.def);
+        }
+        else if (def.utilityFunction.type == 'Complements' || def.utilityFunction.type == 'PerfectComplements') {
+            return new KGAuthor.MinFunction(def.utilityFunction.def);
+        }
+    }
+    KGAuthor.getIndifferenceCurveFunction = getIndifferenceCurveFunction;
     var EconIndifferenceCurve = (function (_super) {
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
@@ -576,21 +714,38 @@ var KGAuthor;
                 strokeWidth: 2,
                 stroke: 'purple'
             });
-            var ic = _this;
-            if (def.utilityFunction.type == 'CobbDouglas') {
-                ic.subObjects = new KGAuthor.CobbDouglasFunction(def.utilityFunction.def).levelCurve(def, graph);
-            }
-            else if (def.utilityFunction.type == 'Substitutes' || def.utilityFunction.type == 'PerfectSubstitutes') {
-                ic.subObjects = new KGAuthor.LinearFunction(def.utilityFunction.def).levelCurve(def, graph);
-            }
-            else if (def.utilityFunction.type == 'Complements' || def.utilityFunction.type == 'PerfectComplements') {
-                ic.subObjects = new KGAuthor.MinFunction(def.utilityFunction.def).levelCurve(def, graph);
-            }
+            _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
             return _this;
         }
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
+    var EconPreferredRegion = (function (_super) {
+        __extends(EconPreferredRegion, _super);
+        function EconPreferredRegion(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                fill: 'purple'
+            });
+            _this.subObjects = getIndifferenceCurveFunction(def).areaAboveLevelCurve(def, graph);
+            return _this;
+        }
+        return EconPreferredRegion;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconPreferredRegion = EconPreferredRegion;
+    var EconDispreferredRegion = (function (_super) {
+        __extends(EconDispreferredRegion, _super);
+        function EconDispreferredRegion(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                fill: 'red'
+            });
+            _this.subObjects = getIndifferenceCurveFunction(def).areaBelowLevelCurve(def, graph);
+            return _this;
+        }
+        return EconDispreferredRegion;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconDispreferredRegion = EconDispreferredRegion;
     var EconIndifferenceMap = (function (_super) {
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
@@ -743,7 +898,7 @@ var KG;
             if (typeof def.value == 'boolean') {
                 this.value = +def.value;
                 this.min = 0;
-                this.max = 1;
+                this.max = 100;
                 this.round = 1;
             }
             else {
@@ -870,14 +1025,17 @@ var KG;
             fn.scope[fn.ind] = input;
             return fn.compiledFunction.eval(fn.scope);
         };
-        UnivariateFunction.prototype.dataPoints = function (min, max) {
+        UnivariateFunction.prototype.generateData = function (min, max) {
             var fn = this, data = [];
             min = fn.min || min;
             max = fn.max || max;
             for (var i = 0; i < fn.samplePoints + 1; i++) {
                 var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
-                data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
+                if (!isNaN(output) && output != Infinity && output != -Infinity) {
+                    data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
+                }
             }
+            this.data = data;
             return data;
         };
         UnivariateFunction.prototype.update = function (force) {
@@ -1107,13 +1265,17 @@ var KG;
         // create view objects
         View.prototype.addViewObjects = function (data) {
             var view = this;
-            var clipPathRefs = {};
+            var clipPathURLs = {};
+            var defLayer = view.svg.append('defs');
+            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
             if (data.clipPaths.length > 0) {
-                // create ClipPaths, store them to refs, and add them to the SVG.
-                var defLayer_1 = view.svg.append('defs');
                 data.clipPaths.forEach(function (def) {
-                    def = view.addViewToDef(def, defLayer_1);
-                    clipPathRefs[def.name] = new KG.ClipPath(def);
+                    var clipPathURL = KG.randomString(10);
+                    var clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
+                    def.paths.forEach(function (td) {
+                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                    });
+                    clipPathURLs[def.name] = clipPathURL;
                 });
             }
             // add layers of objects
@@ -1123,7 +1285,7 @@ var KG;
                     layerTds.forEach(function (td) {
                         var def = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = clipPathRefs[def['clipPathName']];
+                            def.clipPath = clipPathURLs[def['clipPathName']];
                         }
                         def = view.addViewToDef(def, layer_1);
                         new KG[td.type](def);
@@ -1214,10 +1376,11 @@ var KG;
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
-                show: true
+                show: true,
+                inClipPath: false
             });
             KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
-            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
@@ -1249,7 +1412,7 @@ var KG;
         ViewObject.prototype.addClipPath = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
             }
             return vo;
         };
@@ -1258,7 +1421,7 @@ var KG;
             vo.interactionHandler.addTrigger(vo.rootElement);
             return vo;
         };
-        ViewObject.prototype.draw = function (layer) {
+        ViewObject.prototype.draw = function (layer, inClipPath) {
             return this;
         };
         ViewObject.prototype.redraw = function () {
@@ -1286,35 +1449,6 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ClipPath = (function (_super) {
-        __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        // create SVG elements
-        ClipPath.prototype.draw = function (layer) {
-            var cp = this;
-            var clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = clipPath.append('rect');
-            return cp;
-        };
-        // update properties
-        ClipPath.prototype.redraw = function () {
-            var cp = this;
-            var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
-            cp.rect.attr('x', Math.min(x1, x2));
-            cp.rect.attr('y', Math.min(y1, y2));
-            cp.rect.attr('width', Math.abs(x2 - x1));
-            cp.rect.attr('height', Math.abs(y2 - y1));
-            return cp;
-        };
-        return ClipPath;
-    }(KG.ViewObject));
-    KG.ClipPath = ClipPath;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -1375,6 +1509,14 @@ var KG;
         // create SVG elements
         Curve.prototype.draw = function (layer) {
             var curve = this;
+            curve.dataLine = d3.line()
+                .curve(d3[curve.interpolation])
+                .x(function (d) {
+                return curve.xScale.scale(d.x);
+            })
+                .y(function (d) {
+                return curve.yScale.scale(d.y);
+            });
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
@@ -1383,22 +1525,13 @@ var KG;
         // update properties
         Curve.prototype.redraw = function () {
             var curve = this;
-            var data = [];
             if (curve.hasOwnProperty('univariateFunction')) {
                 var fn = curve.univariateFunction.update(true);
                 if (fn.hasChanged) {
                     var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                    data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                    var dataLine = d3.line()
-                        .curve(d3[curve.interpolation])
-                        .x(function (d) {
-                        return curve.xScale.scale(d.x);
-                    })
-                        .y(function (d) {
-                        return curve.yScale.scale(d.y);
-                    });
-                    curve.dragPath.data([data]).attr('d', dataLine);
-                    curve.path.data([data]).attr('d', dataLine);
+                    fn.generateData(scale.domainMin, scale.domainMax);
+                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                    curve.path.data([fn.data]).attr('d', curve.dataLine);
                 }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
@@ -1502,6 +1635,134 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Rectangle = (function (_super) {
+        __extends(Rectangle, _super);
+        function Rectangle(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'blue',
+                opacity: 0.2
+            });
+            KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Rectangle.prototype.draw = function (layer) {
+            var rect = this;
+            if (rect.inClipPath) {
+                rect.rootElement = layer;
+            }
+            else {
+                rect.rootElement = layer.append('g');
+                rect.addClipPath().addInteraction();
+            }
+            rect.shape = rect.rootElement.append('rect');
+            //rect.interactionHandler.addTrigger(rect.rootElement);
+            return rect.addClipPath().addInteraction();
+        };
+        // update properties
+        Rectangle.prototype.redraw = function () {
+            var rect = this;
+            var x1 = rect.xScale.scale(rect.x1);
+            var y1 = rect.yScale.scale(rect.y1);
+            var x2 = rect.xScale.scale(rect.x2);
+            var y2 = rect.yScale.scale(rect.y2);
+            rect.shape
+                .attr('x', Math.min(x1, x2))
+                .attr('y', Math.min(y1, y2))
+                .attr('width', Math.abs(x2 - x1))
+                .attr('height', Math.abs(y2 - y1))
+                .attr('fill', rect.fill)
+                .style('opacity', rect.opacity);
+            return rect;
+        };
+        return Rectangle;
+    }(KG.ViewObject));
+    KG.Rectangle = Rectangle;
+})(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Area = (function (_super) {
+        __extends(Area, _super);
+        function Area(def) {
+            var _this = this;
+            var minValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMin : def.xScale.domainMin;
+            var maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
+            KG.setDefaults(def, {
+                alwaysUpdate: true,
+                interpolation: 'curveBasis',
+                ind: 'x',
+                fill: 'lightsteelblue',
+                opacity: 0.2,
+                univariateFunction2: {
+                    "fn": def.above ? maxValue : minValue,
+                    "ind": def.univariateFunction1['ind'],
+                    "min": def.univariateFunction1['min'],
+                    "max": def.univariateFunction1['max'],
+                    "samplePoints": def.univariateFunction1['samplePoints']
+                }
+            });
+            KG.setProperties(def, 'constants', ['interpolation']);
+            _this = _super.call(this, def) || this;
+            def.univariateFunction1.model = def.model;
+            def.univariateFunction2.model = def.model;
+            _this.univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1);
+            _this.univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
+            return _this;
+        }
+        // create SVG elements
+        Area.prototype.draw = function (layer) {
+            var ab = this;
+            ab.rootElement = layer.append('path');
+            ab.areaShape = d3.area()
+                .x0(function (d) {
+                return ab.xScale.scale(d[0].x);
+            })
+                .y0(function (d) {
+                return ab.yScale.scale(d[0].y);
+            })
+                .x1(function (d) {
+                return ab.xScale.scale(d[1].x);
+            })
+                .y1(function (d) {
+                return ab.yScale.scale(d[1].y);
+            });
+            ab.areaPath = ab.rootElement;
+            return ab.addClipPath();
+        };
+        // update properties
+        Area.prototype.redraw = function () {
+            var ab = this, fn1 = ab.univariateFunction1, fn2 = ab.univariateFunction2;
+            if (fn1 != undefined && fn2 != undefined) {
+                ab.updateFn(fn1);
+                ab.updateFn(fn2);
+                if (fn1.hasChanged || fn2.hasChanged) {
+                    ab.areaPath
+                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
+                        .attr('d', ab.areaShape)
+                        .style('fill', ab.fill)
+                        .style('opacity', ab.opacity);
+                }
+            }
+            return ab;
+        };
+        Area.prototype.updateFn = function (fn) {
+            var scale = (fn.ind == 'y') ? this.yScale : this.xScale;
+            fn.update(true);
+            if (fn.hasChanged) {
+                fn.generateData(scale.domainMin, scale.domainMax);
+            }
+            return false;
+        };
+        return Area;
+    }(KG.ViewObject));
+    KG.Area = Area;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var DivObject = (function (_super) {
         __extends(DivObject, _super);
         function DivObject() {
@@ -1600,7 +1861,7 @@ var KG;
         }
         Checkbox.prototype.draw = function (layer) {
             var checkbox = this;
-            checkbox.rootElement = layer.append('label');
+            checkbox.rootElement = layer.append('div').append('label');
             checkbox.inputElement = checkbox.rootElement.append('input');
             checkbox.inputElement
                 .attr('type', 'checkbox');
@@ -1624,6 +1885,42 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Radio = (function (_super) {
+        __extends(Radio, _super);
+        function Radio(def) {
+            var _this = this;
+            KG.setProperties(def, 'updatables', ['optionValue']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Radio.prototype.draw = function (layer) {
+            var radio = this;
+            radio.rootElement = layer.append('div').append('label');
+            radio.inputElement = radio.rootElement.append('input');
+            radio.inputElement
+                .attr('type', 'radio')
+                .attr('name', 'r_' + radio.param)
+                .attr('value', radio.optionValue);
+            radio.inputElement.on("change", function () {
+                radio.model.updateParam(radio.param, radio.optionValue);
+            });
+            radio.labelElement = radio.rootElement.append('span');
+            radio.labelElement.style('padding-left', '10px');
+            return radio;
+        };
+        Radio.prototype.redraw = function () {
+            var radio = this;
+            radio.inputElement.property('checked', radio.value == radio.optionValue);
+            katex.render(radio.label, radio.labelElement.node());
+            return radio;
+        };
+        return Radio;
+    }(KG.ParamControl));
+    KG.Radio = Radio;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Sidebar = (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
@@ -1632,7 +1929,7 @@ var KG;
                 title: '',
                 description: ''
             });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes']);
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios']);
             KG.setProperties(def, 'updatables', ['title', 'description']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -1748,15 +2045,17 @@ var KG;
 /// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/rectangle.ts" />
+/// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
+/// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
@@ -1789,38 +2088,17 @@ window.onresize = function () {
     });
 };
 /// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Radio = (function (_super) {
-        __extends(Radio, _super);
-        function Radio(def) {
-            var _this = this;
-            KG.setProperties(def, 'updatables', ['optionValue']);
-            _this = _super.call(this, def) || this;
-            return _this;
+var KGAuthor;
+(function (KGAuthor) {
+    var EconUtilityFunction = (function (_super) {
+        __extends(EconUtilityFunction, _super);
+        function EconUtilityFunction(def) {
+            return _super.call(this, def) || this;
         }
-        Radio.prototype.draw = function (layer) {
-            var radio = this;
-            radio.rootElement = layer.append('label');
-            radio.inputElement = radio.rootElement.append('input');
-            radio.inputElement
-                .attr('type', 'radio')
-                .attr('name', 'r_' + radio.param)
-                .attr('value', radio.optionValue);
-            radio.inputElement.on("change", function () {
-                radio.model.updateParam(radio.param, radio.optionValue);
-            });
-            radio.labelElement = radio.rootElement.append('span');
-            radio.labelElement.style('padding-left', '10px');
-            return radio;
+        EconUtilityFunction.prototype.parse = function () {
+            return {};
         };
-        Radio.prototype.redraw = function () {
-            var radio = this;
-            radio.inputElement.property('checked', radio.value == radio.optionValue);
-            katex.render(radio.label, radio.labelElement.node());
-            return radio;
-        };
-        return Radio;
-    }(KG.ParamControl));
-    KG.Radio = Radio;
-})(KG || (KG = {}));
+        return EconUtilityFunction;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.EconUtilityFunction = EconUtilityFunction;
+})(KGAuthor || (KGAuthor = {}));

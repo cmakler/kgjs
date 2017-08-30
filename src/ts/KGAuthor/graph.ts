@@ -42,55 +42,33 @@ module KGAuthor {
             g.subObjects = this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g)
             });
-
-        }
-
-        parse_self(parsedData: KG.ViewDefinition) {
-
-            const graph = this,
-                xAxis = graph.def.xAxis,
-                xScale = graph.xScaleName,
-                yAxis = graph.def.yAxis,
-                yScale = graph.yScaleName,
-                clipPath = graph.clipPathName;
-
-            parsedData.scales.push({
-                "name": xScale,
+            g.subObjects.push(new Scale({
+                "name": g.xScaleName,
                 "axis": "x",
-                "domainMin": xAxis.domain[0],
-                "domainMax": xAxis.domain[1],
-                "rangeMin": xAxis.range[0],
-                "rangeMax": xAxis.range[1]
-            });
-
-            parsedData.scales.push({
-                "name": yScale,
+                "domainMin": def.xAxis.domain[0],
+                "domainMax": def.xAxis.domain[1],
+                "rangeMin": def.xAxis.range[0],
+                "rangeMax": def.xAxis.range[1]
+            }));
+            g.subObjects.push(new Scale({
+                "name": g.yScaleName,
                 "axis": "y",
-                "domainMin": yAxis.domain[0],
-                "domainMax": yAxis.domain[1],
-                "rangeMin": yAxis.range[0],
-                "rangeMax": yAxis.range[1]
-            });
+                "domainMin": def.yAxis.domain[0],
+                "domainMax": def.yAxis.domain[1],
+                "rangeMin": def.yAxis.range[0],
+                "rangeMax": def.yAxis.range[1]
+            }));
+            g.subObjects.push(new ClipPath({
+                "name": g.clipPathName,
+                "paths": [new Rectangle({
+                    x1: def.xAxis.domain[0],
+                    x2: def.xAxis.domain[1],
+                    y1: def.yAxis.domain[0],
+                    y2: def.yAxis.domain[1],
+                    inClipPath: true
+                }, g)]
+            }, g))
 
-            parsedData.clipPaths.push({
-                "name": clipPath,
-                "paths": [
-                    {
-                        "type": "Rectangle",
-                        "def": {
-                            xScaleName: xScale,
-                            yScaleName: yScale,
-                            x1: xAxis.domain[0],
-                            x2: xAxis.domain[1],
-                            y1: yAxis.domain[0],
-                            y2: yAxis.domain[1],
-                            inClipPath: true
-                        }
-                    }
-                ]
-            });
-
-            return parsedData;
         }
     }
 
@@ -104,7 +82,7 @@ module KGAuthor {
             if (graph) {
                 this.def.xScaleName = graph.xScaleName;
                 this.def.yScaleName = graph.yScaleName;
-                this.def.clipPathName = graph.clipPathName;
+                this.def.clipPathName = def.clipPathName || graph.clipPathName;
             }
             this.subObjects = [];
         }
@@ -131,6 +109,24 @@ module KGAuthor {
             parsedData.layers[this.layer].push(this);
             return parsedData;
         }
+    }
+
+    export class ClipPath extends GraphObjectGenerator {
+
+        parse_self(parsedData: KG.ViewDefinition) {
+            delete this.def.clipPathName;
+            parsedData.clipPaths.push(this.def);
+            return parsedData;
+        }
+    }
+
+    export class Scale extends AuthoringObject {
+
+        parse_self(parsedData: KG.ViewDefinition) {
+            parsedData.scales.push(this.def);
+            return parsedData;
+        }
+
     }
 
 }
