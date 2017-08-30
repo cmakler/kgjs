@@ -7,6 +7,11 @@ module KG {
         def: any;
     }
 
+    export interface ClipPathDefinition {
+        name: string;
+        paths: TypeAndDef[];
+    }
+
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
@@ -47,7 +52,7 @@ module KG {
                 return paramData;
             });
 
-            let parsedData:ViewDefinition = {
+            let parsedData: ViewDefinition = {
                 aspectRatio: data.aspectRatio || 1,
                 params: data.params,
                 restrictions: data.restrictions,
@@ -113,14 +118,19 @@ module KG {
 
             const view = this;
 
-            let clipPathRefs = {};
+            let clipPathURLs = {};
 
+            const defLayer = view.svg.append('defs');
+
+            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
             if (data.clipPaths.length > 0) {
-                // create ClipPaths, store them to refs, and add them to the SVG.
-                const defLayer = view.svg.append('defs');
                 data.clipPaths.forEach(function (def: ClipPathDefinition) {
-                    def = view.addViewToDef(def, defLayer);
-                    clipPathRefs[def.name] = new ClipPath(def);
+                    const clipPathURL = randomString(10);
+                    const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
+                    def.paths.forEach(function (td) {
+                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                    });
+                    clipPathURLs[def.name] = clipPathURL;
                 });
             }
 
@@ -132,7 +142,7 @@ module KG {
                     layerTds.forEach(function (td) {
                         let def: ViewObjectDefinition = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = clipPathRefs[def['clipPathName']]
+                            def.clipPath = clipPathURLs[def['clipPathName']]
                         }
                         def = view.addViewToDef(def, layer);
                         new KG[td.type](def);

@@ -74,8 +74,20 @@ module KGAuthor {
 
             parsedData.clipPaths.push({
                 "name": clipPath,
-                "xScaleName": xScale,
-                "yScaleName": yScale
+                "paths": [
+                    {
+                        "type": "Rectangle",
+                        "def": {
+                            xScaleName: xScale,
+                            yScaleName: yScale,
+                            x1: xAxis.domain[0],
+                            x2: xAxis.domain[1],
+                            y1: yAxis.domain[0],
+                            y2: yAxis.domain[1],
+                            inClipPath: true
+                        }
+                    }
+                ]
             });
 
             return parsedData;

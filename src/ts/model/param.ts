@@ -53,7 +53,7 @@ module KG {
             if (typeof def.value == 'boolean') {
                 this.value = +def.value;
                 this.min = 0;
-                this.max = 1;
+                this.max = 100;
                 this.round = 1;
             } else {
                 this.value = parseFloat(def.value);

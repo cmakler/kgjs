@@ -236,8 +236,20 @@ var KGAuthor;
             });
             parsedData.clipPaths.push({
                 "name": clipPath,
-                "xScaleName": xScale,
-                "yScaleName": yScale
+                "paths": [
+                    {
+                        "type": "Rectangle",
+                        "def": {
+                            xScaleName: xScale,
+                            yScaleName: yScale,
+                            x1: xAxis.domain[0],
+                            x2: xAxis.domain[1],
+                            y1: yAxis.domain[0],
+                            y2: yAxis.domain[1],
+                            inClipPath: true
+                        }
+                    }
+                ]
             });
             return parsedData;
         };
@@ -386,6 +398,34 @@ var KGAuthor;
         return Segment;
     }(KGAuthor.GraphObject));
     KGAuthor.Segment = Segment;
+    var Rectangle = (function (_super) {
+        __extends(Rectangle, _super);
+        function Rectangle(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.type = 'Rectangle';
+            _this.layer = def.layer || 0;
+            _this.extractCoordinates('a', 'x1', 'y1');
+            _this.extractCoordinates('b', 'x2', 'y2');
+            return _this;
+        }
+        return Rectangle;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Rectangle = Rectangle;
+    var Area = (function (_super) {
+        __extends(Area, _super);
+        function Area(def, graph) {
+            var _this = this;
+            if (def.hasOwnProperty('univariateFunctions')) {
+                delete def.univariateFunctions;
+            }
+            _this = _super.call(this, def, graph) || this;
+            _this.type = 'Area';
+            _this.layer = def.layer || 0;
+            return _this;
+        }
+        return Area;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Area = Area;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -743,7 +783,7 @@ var KG;
             if (typeof def.value == 'boolean') {
                 this.value = +def.value;
                 this.min = 0;
-                this.max = 1;
+                this.max = 100;
                 this.round = 1;
             }
             else {
@@ -870,7 +910,7 @@ var KG;
             fn.scope[fn.ind] = input;
             return fn.compiledFunction.eval(fn.scope);
         };
-        UnivariateFunction.prototype.dataPoints = function (min, max) {
+        UnivariateFunction.prototype.generateData = function (min, max) {
             var fn = this, data = [];
             min = fn.min || min;
             max = fn.max || max;
@@ -878,6 +918,7 @@ var KG;
                 var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
                 data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
             }
+            this.data = data;
             return data;
         };
         UnivariateFunction.prototype.update = function (force) {
@@ -1107,13 +1148,17 @@ var KG;
         // create view objects
         View.prototype.addViewObjects = function (data) {
             var view = this;
-            var clipPathRefs = {};
+            var clipPathURLs = {};
+            var defLayer = view.svg.append('defs');
+            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
             if (data.clipPaths.length > 0) {
-                // create ClipPaths, store them to refs, and add them to the SVG.
-                var defLayer_1 = view.svg.append('defs');
                 data.clipPaths.forEach(function (def) {
-                    def = view.addViewToDef(def, defLayer_1);
-                    clipPathRefs[def.name] = new KG.ClipPath(def);
+                    var clipPathURL = KG.randomString(10);
+                    var clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
+                    def.paths.forEach(function (td) {
+                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                    });
+                    clipPathURLs[def.name] = clipPathURL;
                 });
             }
             // add layers of objects
@@ -1123,7 +1168,7 @@ var KG;
                     layerTds.forEach(function (td) {
                         var def = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = clipPathRefs[def['clipPathName']];
+                            def.clipPath = clipPathURLs[def['clipPathName']];
                         }
                         def = view.addViewToDef(def, layer_1);
                         new KG[td.type](def);
@@ -1214,10 +1259,11 @@ var KG;
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
-                show: true
+                show: true,
+                inClipPath: false
             });
             KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
-            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
@@ -1249,7 +1295,7 @@ var KG;
         ViewObject.prototype.addClipPath = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath.id + ")");
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
             }
             return vo;
         };
@@ -1258,7 +1304,7 @@ var KG;
             vo.interactionHandler.addTrigger(vo.rootElement);
             return vo;
         };
-        ViewObject.prototype.draw = function (layer) {
+        ViewObject.prototype.draw = function (layer, inClipPath) {
             return this;
         };
         ViewObject.prototype.redraw = function () {
@@ -1286,35 +1332,6 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ClipPath = (function (_super) {
-        __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        // create SVG elements
-        ClipPath.prototype.draw = function (layer) {
-            var cp = this;
-            var clipPath = layer.append('clipPath').attr('id', cp.id);
-            cp.rect = clipPath.append('rect');
-            return cp;
-        };
-        // update properties
-        ClipPath.prototype.redraw = function () {
-            var cp = this;
-            var x1 = cp.xScale.scale(cp.xScale.domainMin), y1 = cp.yScale.scale(cp.yScale.domainMin), x2 = cp.xScale.scale(cp.xScale.domainMax), y2 = cp.yScale.scale(cp.yScale.domainMax);
-            cp.rect.attr('x', Math.min(x1, x2));
-            cp.rect.attr('y', Math.min(y1, y2));
-            cp.rect.attr('width', Math.abs(x2 - x1));
-            cp.rect.attr('height', Math.abs(y2 - y1));
-            return cp;
-        };
-        return ClipPath;
-    }(KG.ViewObject));
-    KG.ClipPath = ClipPath;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -1375,6 +1392,14 @@ var KG;
         // create SVG elements
         Curve.prototype.draw = function (layer) {
             var curve = this;
+            curve.dataLine = d3.line()
+                .curve(d3[curve.interpolation])
+                .x(function (d) {
+                return curve.xScale.scale(d.x);
+            })
+                .y(function (d) {
+                return curve.yScale.scale(d.y);
+            });
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
@@ -1383,22 +1408,13 @@ var KG;
         // update properties
         Curve.prototype.redraw = function () {
             var curve = this;
-            var data = [];
             if (curve.hasOwnProperty('univariateFunction')) {
                 var fn = curve.univariateFunction.update(true);
                 if (fn.hasChanged) {
                     var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                    data = fn.dataPoints(scale.domainMin, scale.domainMax);
-                    var dataLine = d3.line()
-                        .curve(d3[curve.interpolation])
-                        .x(function (d) {
-                        return curve.xScale.scale(d.x);
-                    })
-                        .y(function (d) {
-                        return curve.yScale.scale(d.y);
-                    });
-                    curve.dragPath.data([data]).attr('d', dataLine);
-                    curve.path.data([data]).attr('d', dataLine);
+                    fn.generateData(scale.domainMin, scale.domainMax);
+                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                    curve.path.data([fn.data]).attr('d', curve.dataLine);
                 }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
@@ -1498,6 +1514,128 @@ var KG;
         return Point;
     }(KG.ViewObject));
     KG.Point = Point;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Rectangle = (function (_super) {
+        __extends(Rectangle, _super);
+        function Rectangle(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'blue',
+                opacity: 0.2
+            });
+            KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Rectangle.prototype.draw = function (layer) {
+            var rect = this;
+            if (rect.inClipPath) {
+                rect.rootElement = layer;
+            }
+            else {
+                rect.rootElement = layer.append('g');
+                rect.addClipPath().addInteraction();
+            }
+            rect.shape = rect.rootElement.append('rect');
+            //rect.interactionHandler.addTrigger(rect.rootElement);
+            return rect.addClipPath().addInteraction();
+        };
+        // update properties
+        Rectangle.prototype.redraw = function () {
+            var rect = this;
+            var x1 = rect.xScale.scale(rect.x1);
+            var y1 = rect.yScale.scale(rect.y1);
+            var x2 = rect.xScale.scale(rect.x2);
+            var y2 = rect.yScale.scale(rect.y2);
+            rect.shape
+                .attr('x', Math.min(x1, x2))
+                .attr('y', Math.min(y1, y2))
+                .attr('width', Math.abs(x2 - x1))
+                .attr('height', Math.abs(y2 - y1))
+                .attr('fill', rect.fill)
+                .style('opacity', rect.opacity);
+            return rect;
+        };
+        return Rectangle;
+    }(KG.ViewObject));
+    KG.Rectangle = Rectangle;
+})(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Area = (function (_super) {
+        __extends(Area, _super);
+        function Area(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                alwaysUpdate: true,
+                interpolation: 'curveBasis',
+                ind: 'x',
+                fill: 'lightsteelblue',
+                opacity: 0.2,
+                univariateFunction2: {
+                    "fn": "0"
+                }
+            });
+            KG.setProperties(def, 'constants', ['interpolation']);
+            _this = _super.call(this, def) || this;
+            def.univariateFunction1.model = def.model;
+            def.univariateFunction2.model = def.model;
+            _this.univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1);
+            _this.univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
+            return _this;
+        }
+        // create SVG elements
+        Area.prototype.draw = function (layer) {
+            var ab = this;
+            ab.rootElement = layer.append('g');
+            ab.areaShape = d3.area()
+                .x0(function (d) {
+                return ab.xScale.scale(d[0].x);
+            })
+                .y0(function (d) {
+                return ab.yScale.scale(d[0].y);
+            })
+                .x1(function (d) {
+                return ab.xScale.scale(d[1].x);
+            })
+                .y1(function (d) {
+                return ab.yScale.scale(d[1].y);
+            });
+            ab.areaPath = ab.rootElement.append("path");
+            return ab.addClipPath();
+        };
+        // update properties
+        Area.prototype.redraw = function () {
+            var ab = this, fn1 = ab.univariateFunction1, fn2 = ab.univariateFunction2;
+            if (fn1 != undefined && fn2 != undefined) {
+                ab.updateFn(fn1);
+                ab.updateFn(fn2);
+                if (fn1.hasChanged || fn2.hasChanged) {
+                    ab.areaPath
+                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
+                        .attr('d', ab.areaShape)
+                        .style('fill', ab.fill)
+                        .style('opacity', ab.opacity);
+                }
+            }
+            return ab;
+        };
+        Area.prototype.updateFn = function (fn) {
+            var scale = (fn.ind == 'y') ? this.yScale : this.xScale;
+            fn.update(true);
+            if (fn.hasChanged) {
+                fn.generateData(scale.domainMin, scale.domainMax);
+            }
+            return false;
+        };
+        return Area;
+    }(KG.ViewObject));
+    KG.Area = Area;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -1784,11 +1922,12 @@ var KG;
 /// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/clipPath.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/rectangle.ts" />
+/// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>

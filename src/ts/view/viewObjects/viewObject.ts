@@ -8,7 +8,7 @@ module KG {
         show?: any;
         xScale?: Scale;
         yScale?: Scale;
-        clipPath?: ClipPath;
+        clipPath?: string;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;
@@ -24,7 +24,8 @@ module KG {
     export interface IViewObject extends IUpdateListener {
         xScale: Scale;
         yScale: Scale;
-        clipPath: ClipPath;
+        clipPath: string;
+        inClipPath: boolean;
         interactionHandler: InteractionHandler;
 
         addClipPath: () => ViewObject;
@@ -44,6 +45,7 @@ module KG {
         public xScale;
         public yScale;
         public clipPath;
+        public inClipPath;
         public interactionHandler;
 
         public rootElement;
@@ -61,10 +63,11 @@ module KG {
                 interactive: true,
                 stroke: 'black',
                 strokeWidth: 1,
-                show: true
+                show: true,
+                inClipPath: false
             });
             setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
-            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate']);
+            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
 
             super(def);
 
@@ -100,7 +103,7 @@ module KG {
         addClipPath() {
             const vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', `url(#${vo.clipPath.id})`);
+                vo.rootElement.attr('clip-path', `url(#${vo.clipPath})`);
             }
             return vo;
         }
@@ -111,7 +114,7 @@ module KG {
             return vo;
         }
 
-        draw(layer: any) {
+        draw(layer: any, inClipPath?: boolean) {
             return this;
         }
 
