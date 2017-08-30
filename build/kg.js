@@ -1607,8 +1607,6 @@ var KG;
                 return ab.yScale.scale(d[1].y);
             });
             ab.areaPath = ab.rootElement.append("path");
-            ab.data1 = [];
-            ab.data2 = [];
             return ab.addClipPath();
         };
         // update properties
