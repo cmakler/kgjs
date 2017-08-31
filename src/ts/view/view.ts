@@ -30,6 +30,12 @@ module KG {
         updateDimensions: () => void;  // called on a window resize event; updates the size of the Container
     }
 
+    export let viewData = {}
+
+    export function addView(name, def) {
+        viewData[name] = def;
+    }
+
 
     export class View implements IView {
 
