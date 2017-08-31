@@ -454,17 +454,8 @@ var KGAuthor;
     KGAuthor.MathFunction = MathFunction;
     var MultivariateFunction = (function (_super) {
         __extends(MultivariateFunction, _super);
-        function MultivariateFunction(def) {
-            var _this = _super.call(this, def) || this;
-            var fn = _this;
-            fn.exponents = def.exponents;
-            fn.coefficients = def.coefficients;
-            fn.interpolation = 'curveMonotoneX';
-            if (def.hasOwnProperty('alpha')) {
-                fn.exponents = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
-                fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
-            }
-            return _this;
+        function MultivariateFunction() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         MultivariateFunction.prototype.value = function (x) {
             return '';
@@ -536,8 +527,14 @@ var KGAuthor;
     KGAuthor.MultivariateFunction = MultivariateFunction;
     var CobbDouglasFunction = (function (_super) {
         __extends(CobbDouglasFunction, _super);
-        function CobbDouglasFunction() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function CobbDouglasFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            fn.interpolation = 'curveMonotoneX';
+            if (def.hasOwnProperty('alpha')) {
+                fn.exponents = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
+            }
+            return _this;
         }
         CobbDouglasFunction.prototype.value = function (x) {
             var e = this.exponents;
@@ -574,7 +571,11 @@ var KGAuthor;
         __extends(LinearFunction, _super);
         function LinearFunction(def) {
             var _this = _super.call(this, def) || this;
+            var fn = _this;
             _this.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
+            }
             return _this;
         }
         LinearFunction.prototype.value = function (x) {
@@ -598,7 +599,11 @@ var KGAuthor;
         __extends(MinFunction, _super);
         function MinFunction(def) {
             var _this = _super.call(this, def) || this;
+            var fn = _this;
             _this.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [KGAuthor.divideDefs(0.5, def.alpha), KGAuthor.divideDefs(0.5, KGAuthor.subtractDefs(1, def.alpha))];
+            }
             return _this;
         }
         MinFunction.prototype.value = function (x) {
