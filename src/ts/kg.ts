@@ -58,16 +58,26 @@ window.addEventListener("load", function () {
 
 // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
-        const url = viewDivs[i].getAttribute('src');
+        const src = viewDivs[i].getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
-        d3.json(url, function (data) {
-            if (!data) {
-                viewDivs[i].innerHTML = "<p>oops, " + url + " doesn't seem to exist.</p>"
-            } else {
-                viewDivs[i].innerHTML = "";
-                views.push(new KG.View(viewDivs[i], data));
-            }
-        })
+
+        // first look to see if there's a definition in the KG.viewData object
+        if (KG['viewData'].hasOwnProperty(src)) {
+            viewDivs[i].innerHTML = "";
+            views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+        } else {
+
+            // then look to see if the src is available by a URL
+            d3.json(src, function (data) {
+                if (!data) {
+                    viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
+                } else {
+                    viewDivs[i].innerHTML = "";
+                    views.push(new KG.View(viewDivs[i], data));
+                }
+            })
+        }
+
     }
 });
 

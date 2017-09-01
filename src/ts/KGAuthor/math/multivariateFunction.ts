@@ -20,23 +20,14 @@ module KGAuthor {
 
     export class MultivariateFunction extends MathFunction implements IMultivariateFunction {
 
+        public alpha;
         public coefficients;
         public exponents;
         public interpolation;
         public fillBelowRect;
         public fillAboveRect;
 
-        constructor(def) {
-            super(def);
-            let fn = this;
-            fn.exponents = def.exponents;
-            fn.coefficients = def.coefficients;
-            fn.interpolation = 'curveMonotoneX';
-            if (def.hasOwnProperty('alpha')) {
-                fn.exponents = [def.alpha, subtractDefs(1, def.alpha)];
-                fn.coefficients = [def.alpha, subtractDefs(1, def.alpha)];
-            }
-        }
+
 
         value(x) {
             return '';
@@ -113,6 +104,15 @@ module KGAuthor {
 
     export class CobbDouglasFunction extends MultivariateFunction {
 
+        constructor(def) {
+            super(def);
+            let fn = this;
+            fn.interpolation = 'curveMonotoneX';
+            if (def.hasOwnProperty('alpha')) {
+                fn.exponents = [def.alpha, subtractDefs(1, def.alpha)];
+            }
+        }
+
         value(x) {
             const e = this.exponents;
             return `((${x[0]})^(${e[0]}))*((${x[1]})^(${e[1]}))`;
@@ -151,7 +151,11 @@ module KGAuthor {
 
         constructor(def) {
             super(def);
+            let fn = this;
             this.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [def.alpha, subtractDefs(1, def.alpha)];
+            }
         }
 
         value(x) {
@@ -176,7 +180,11 @@ module KGAuthor {
 
         constructor(def) {
             super(def);
+            let fn = this;
             this.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [divideDefs(0.5,def.alpha), divideDefs(0.5,subtractDefs(1, def.alpha))];
+            }
         }
 
         value(x) {
