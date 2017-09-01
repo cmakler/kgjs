@@ -3,16 +3,23 @@
 module KGAuthor {
 
     export interface AxisDefinition {
-        domain: any[]
-        range: any[]
+        min: any;
+        max: any;
         title: string;
         orient: string;
     }
 
     export interface GraphDefinition {
+        position: {
+            x: any;
+            y: any;
+            width: any;
+            height: any;
+        }
         xAxis: AxisDefinition,
         yAxis: AxisDefinition,
         objects: KG.TypeAndDef[]
+
     }
 
     export class Graph extends AuthoringObject {
@@ -28,8 +35,6 @@ module KGAuthor {
             g.xScaleName = KG.randomString(10);
             g.yScaleName = KG.randomString(10);
             g.clipPathName = KG.randomString(10);
-            g.def.xAxis.range = def.xAxis.range || [0, 1];
-            g.def.yAxis.range = def.yAxis.range || [1, 0];
 
             g.def.objects.push({
                 type: 'Axis',
@@ -45,29 +50,30 @@ module KGAuthor {
             g.subObjects.push(new Scale({
                 "name": g.xScaleName,
                 "axis": "x",
-                "domainMin": def.xAxis.domain[0],
-                "domainMax": def.xAxis.domain[1],
-                "rangeMin": def.xAxis.range[0],
-                "rangeMax": def.xAxis.range[1]
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": addDefs(def.position.x, def.position.width)
             }));
             g.subObjects.push(new Scale({
                 "name": g.yScaleName,
                 "axis": "y",
-                "domainMin": def.yAxis.domain[0],
-                "domainMax": def.yAxis.domain[1],
-                "rangeMin": def.yAxis.range[0],
-                "rangeMax": def.yAxis.range[1]
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
             }));
             g.subObjects.push(new ClipPath({
                 "name": g.clipPathName,
                 "paths": [new Rectangle({
-                    x1: def.xAxis.domain[0],
-                    x2: def.xAxis.domain[1],
-                    y1: def.yAxis.domain[0],
-                    y2: def.yAxis.domain[1],
+                    x1: def.xAxis.min,
+                    x2: def.xAxis.max,
+                    y1: def.yAxis.min,
+                    y2: def.yAxis.max,
                     inClipPath: true
                 }, g)]
             }, g))
+            console.log(g);
 
         }
     }

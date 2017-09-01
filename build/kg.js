@@ -201,8 +201,6 @@ var KGAuthor;
             g.xScaleName = KG.randomString(10);
             g.yScaleName = KG.randomString(10);
             g.clipPathName = KG.randomString(10);
-            g.def.xAxis.range = def.xAxis.range || [0, 1];
-            g.def.yAxis.range = def.yAxis.range || [1, 0];
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -217,29 +215,30 @@ var KGAuthor;
             g.subObjects.push(new Scale({
                 "name": g.xScaleName,
                 "axis": "x",
-                "domainMin": def.xAxis.domain[0],
-                "domainMax": def.xAxis.domain[1],
-                "rangeMin": def.xAxis.range[0],
-                "rangeMax": def.xAxis.range[1]
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
             }));
             g.subObjects.push(new Scale({
                 "name": g.yScaleName,
                 "axis": "y",
-                "domainMin": def.yAxis.domain[0],
-                "domainMax": def.yAxis.domain[1],
-                "rangeMin": def.yAxis.range[0],
-                "rangeMax": def.yAxis.range[1]
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
             }));
             g.subObjects.push(new ClipPath({
                 "name": g.clipPathName,
                 "paths": [new KGAuthor.Rectangle({
-                        x1: def.xAxis.domain[0],
-                        x2: def.xAxis.domain[1],
-                        y1: def.yAxis.domain[0],
-                        y2: def.yAxis.domain[1],
+                        x1: def.xAxis.min,
+                        x2: def.xAxis.max,
+                        y1: def.yAxis.min,
+                        y2: def.yAxis.max,
                         inClipPath: true
                     }, g)]
             }, g));
+            console.log(g);
             return _this;
         }
         return Graph;
@@ -511,10 +510,10 @@ var KGAuthor;
             return [
                 new KGAuthor.Rectangle({
                     clipPathName: clipPathName,
-                    x1: graph.def.xAxis.domain[0],
-                    x2: graph.def.xAxis.domain[1],
-                    y1: graph.def.yAxis.domain[0],
-                    y2: graph.def.yAxis.domain[1]
+                    x1: graph.def.xAxis.min,
+                    x2: graph.def.xAxis.max,
+                    y1: graph.def.yAxis.min,
+                    y2: graph.def.yAxis.max
                 }, graph),
                 new KGAuthor.ClipPath({
                     "name": clipPathName,
@@ -2077,13 +2076,13 @@ window.addEventListener("load", function () {
     var _loop_1 = function (i) {
         var src = viewDivs[i].getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
-        // first look to see if there is a global kg-data object
+        // first look to see if there's a definition in the KG.viewData object
         if (KG['viewData'].hasOwnProperty(src)) {
             viewDivs[i].innerHTML = "";
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         }
         else {
-            // then look to see if the src
+            // then look to see if the src is available by a URL
             d3.json(src, function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
