@@ -25,7 +25,10 @@ module KG {
 
             setDefaults(def, {
                 title: '',
-                description: ''
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: []
             });
             setProperties(def, 'constants',['sliders','checkboxes','radios']);
             setProperties(def, 'updatables',['title', 'description']);

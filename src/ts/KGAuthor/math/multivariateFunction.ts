@@ -122,7 +122,7 @@ module KGAuthor {
             const e = this.exponents,
                 level = def.level || this.value(def.point),
                 xMin = `(${level})^(1/(${e[0]} + ${e[1]}))`,
-                yMin = `(${level})^(1/(${e[0]} + ${e[1]}))`
+                yMin = `(${level})^(1/(${e[0]} + ${e[1]}))`;
             this.fillBelowRect = {
                 x1: 0,
                 x2: xMin,

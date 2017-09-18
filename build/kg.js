@@ -718,12 +718,35 @@ var KGAuthor;
                 strokeWidth: 2,
                 stroke: 'purple'
             });
-            _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            if (Array.isArray(def.utilityFunction.type)) {
+                _this.subObjects = def.utilityFunction.map(function (u) {
+                    var uDef = JSON.parse(JSON.stringify(def));
+                    uDef.utilityFunction.type = u;
+                    return getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                });
+            }
+            else {
+                _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            }
             return _this;
         }
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
+    var EconSelectableIndifferenceCurve = /** @class */ (function (_super) {
+        __extends(EconSelectableIndifferenceCurve, _super);
+        function EconSelectableIndifferenceCurve(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                strokeWidth: 2,
+                stroke: 'purple',
+                utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
+            });
+            return _this;
+        }
+        return EconSelectableIndifferenceCurve;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconSelectableIndifferenceCurve = EconSelectableIndifferenceCurve;
     var EconPreferredRegion = /** @class */ (function (_super) {
         __extends(EconPreferredRegion, _super);
         function EconPreferredRegion(def, graph) {
@@ -1937,7 +1960,10 @@ var KG;
             var _this = this;
             KG.setDefaults(def, {
                 title: '',
-                description: ''
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: []
             });
             KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios']);
             KG.setProperties(def, 'updatables', ['title', 'description']);

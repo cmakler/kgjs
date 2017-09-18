@@ -20,7 +20,28 @@ module KGAuthor {
                 strokeWidth: 2,
                 stroke: 'purple'
             });
-            this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            if (Array.isArray(def.utilityFunction.type)) {
+                this.subObjects = def.utilityFunction.map(function (u) {
+                    let uDef = JSON.parse(JSON.stringify(def));
+                    uDef.utilityFunction.type = u;
+                    return getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                })
+            } else {
+                this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            }
+        }
+    }
+
+    export class EconSelectableIndifferenceCurve extends GraphObjectGenerator {
+
+        constructor(def, graph) {
+            super(def, graph);
+            KG.setDefaults(def, {
+                strokeWidth: 2,
+                stroke: 'purple',
+                utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
+            });
+
         }
     }
 
