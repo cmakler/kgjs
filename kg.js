@@ -201,8 +201,6 @@ var KGAuthor;
             g.xScaleName = KG.randomString(10);
             g.yScaleName = KG.randomString(10);
             g.clipPathName = KG.randomString(10);
-            g.def.xAxis.range = def.xAxis.range || [0, 1];
-            g.def.yAxis.range = def.yAxis.range || [1, 0];
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -217,29 +215,30 @@ var KGAuthor;
             g.subObjects.push(new Scale({
                 "name": g.xScaleName,
                 "axis": "x",
-                "domainMin": def.xAxis.domain[0],
-                "domainMax": def.xAxis.domain[1],
-                "rangeMin": def.xAxis.range[0],
-                "rangeMax": def.xAxis.range[1]
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
             }));
             g.subObjects.push(new Scale({
                 "name": g.yScaleName,
                 "axis": "y",
-                "domainMin": def.yAxis.domain[0],
-                "domainMax": def.yAxis.domain[1],
-                "rangeMin": def.yAxis.range[0],
-                "rangeMax": def.yAxis.range[1]
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
             }));
             g.subObjects.push(new ClipPath({
                 "name": g.clipPathName,
                 "paths": [new KGAuthor.Rectangle({
-                        x1: def.xAxis.domain[0],
-                        x2: def.xAxis.domain[1],
-                        y1: def.yAxis.domain[0],
-                        y2: def.yAxis.domain[1],
+                        x1: def.xAxis.min,
+                        x2: def.xAxis.max,
+                        y1: def.yAxis.min,
+                        y2: def.yAxis.max,
                         inClipPath: true
                     }, g)]
             }, g));
+            console.log(g);
             return _this;
         }
         return Graph;
@@ -511,10 +510,10 @@ var KGAuthor;
             return [
                 new KGAuthor.Rectangle({
                     clipPathName: clipPathName,
-                    x1: graph.def.xAxis.domain[0],
-                    x2: graph.def.xAxis.domain[1],
-                    y1: graph.def.yAxis.domain[0],
-                    y2: graph.def.yAxis.domain[1]
+                    x1: graph.def.xAxis.min,
+                    x2: graph.def.xAxis.max,
+                    y1: graph.def.yAxis.min,
+                    y2: graph.def.yAxis.max
                 }, graph),
                 new KGAuthor.ClipPath({
                     "name": clipPathName,
@@ -719,12 +718,35 @@ var KGAuthor;
                 strokeWidth: 2,
                 stroke: 'purple'
             });
-            _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            if (Array.isArray(def.utilityFunction.type)) {
+                _this.subObjects = def.utilityFunction.map(function (u) {
+                    var uDef = JSON.parse(JSON.stringify(def));
+                    uDef.utilityFunction.type = u;
+                    return getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                });
+            }
+            else {
+                _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            }
             return _this;
         }
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
+    var EconSelectableIndifferenceCurve = /** @class */ (function (_super) {
+        __extends(EconSelectableIndifferenceCurve, _super);
+        function EconSelectableIndifferenceCurve(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                strokeWidth: 2,
+                stroke: 'purple',
+                utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
+            });
+            return _this;
+        }
+        return EconSelectableIndifferenceCurve;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconSelectableIndifferenceCurve = EconSelectableIndifferenceCurve;
     var EconPreferredRegion = /** @class */ (function (_super) {
         __extends(EconPreferredRegion, _super);
         function EconPreferredRegion(def, graph) {
@@ -1208,6 +1230,11 @@ var KG;
 /// <reference path='../kg.ts' />
 var KG;
 (function (KG) {
+    KG.viewData = {};
+    function addView(name, def) {
+        KG.viewData[name] = def;
+    }
+    KG.addView = addView;
     var View = /** @class */ (function () {
         function View(div, data) {
             data.params = (data.params || []).map(function (paramData) {
@@ -1781,6 +1808,52 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = this;
+            //establish property defaults
+            KG.setDefaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['fontSize']);
+            KG.setProperties(def, 'updatables', ['html']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Div.prototype.draw = function (layer) {
+            var div = this;
+            div.rootElement = layer.append('div')
+                .style('font-size', div.fontSize + 'pt')
+                .style('padding-top', '10px')
+                .style('padding-bottom', '10px');
+            return div;
+        };
+        // update properties
+        Div.prototype.redraw = function () {
+            var div = this;
+            div.rootElement.html(div.html);
+            renderMathInElement(div.rootElement.node(), {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "\\[", right: "\\]", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\(", right: "\\)", display: false }
+                ]
+            });
+            return div;
+        };
+        return Div;
+    }(KG.DivObject));
+    KG.Div = Div;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var ParamControl = /** @class */ (function (_super) {
         __extends(ParamControl, _super);
         function ParamControl(def) {
@@ -1933,9 +2006,13 @@ var KG;
             var _this = this;
             KG.setDefaults(def, {
                 title: '',
-                description: ''
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: [],
+                divs: []
             });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios']);
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
             KG.setProperties(def, 'updatables', ['title', 'description']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -1972,6 +2049,9 @@ var KG;
             });
             sidebar.radios.forEach(function (radio) {
                 new KG.Radio({ layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model });
+            });
+            sidebar.divs.forEach(function (div) {
+                new KG.Div({ layer: sidebar.rootElement, html: div.html, fontSize: 14, model: sidebar.model });
             });
             return sidebar;
         };
@@ -2058,6 +2138,7 @@ var KG;
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/div.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
@@ -2066,23 +2147,19 @@ var KG;
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
 var views = [];
-if (!window.hasOwnProperty('KGData')) {
-    var KGData = {};
-}
 // initialize the diagram from divs with class kg-container
 window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
         var src = viewDivs[i].getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
-        // first look to see if there is a global kg-data object
-        if (window.hasOwnProperty('KGData')) {
-            if (KGData.hasOwnProperty(src)) {
-                views.push(new KG.View(viewDivs[i], KGAuthor['data'][src]));
-            }
+        // first look to see if there's a definition in the KG.viewData object
+        if (KG['viewData'].hasOwnProperty(src)) {
+            viewDivs[i].innerHTML = "";
+            views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         }
         else {
-            // then look to see if the src
+            // then look to see if the src is available by a URL
             d3.json(src, function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
@@ -2106,17 +2183,54 @@ window.onresize = function () {
     });
 };
 /// <reference path="../../kg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
-    var EconUtilityFunction = /** @class */ (function (_super) {
-        __extends(EconUtilityFunction, _super);
-        function EconUtilityFunction(def) {
-            return _super.call(this, def) || this;
+var KG;
+(function (KG) {
+    var Controls = /** @class */ (function (_super) {
+        __extends(Controls, _super);
+        function Controls(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                title: '',
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: [],
+                divs: []
+            });
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
+            KG.setProperties(def, 'updatables', ['title', 'description']);
+            _this = _super.call(this, def) || this;
+            return _this;
         }
-        EconUtilityFunction.prototype.parse = function () {
-            return {};
+        // create div for text
+        Controls.prototype.draw = function (layer) {
+            var controls = this;
+            controls.rootElement = layer.append('div');
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            controls.descriptionElement = controls.rootElement.append('div');
+            var sliderTable = controls.rootElement.append('table').style('padding', '10px');
+            controls.sliders.forEach(function (slider) {
+                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
+            });
+            controls.checkboxes.forEach(function (checkbox) {
+                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
+            });
+            controls.radios.forEach(function (radio) {
+                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
+            });
+            controls.divs.forEach(function (div) {
+                new KG.Div({ layer: controls.rootElement, html: div.html, fontSize: 14, model: controls.model });
+            });
+            return controls;
         };
-        return EconUtilityFunction;
-    }(KGAuthor.AuthoringObject));
-    KGAuthor.EconUtilityFunction = EconUtilityFunction;
-})(KGAuthor || (KGAuthor = {}));
+        // update properties
+        Controls.prototype.redraw = function () {
+            var controls = this;
+            controls.titleElement.text(controls.title.toUpperCase());
+            controls.descriptionElement.text(controls.description);
+            return controls;
+        };
+        return Controls;
+    }(KG.DivObject));
+    KG.Controls = Controls;
+})(KG || (KG = {}));
