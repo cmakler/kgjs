@@ -24,8 +24,8 @@ module KGAuthor {
 
     export class Sidebar extends DivObject {
 
-        constructor(def, graph) {
-            super(def, graph);
+        constructor(def) {
+            super(def);
             this.type = 'Sidebar';
         }
 

@@ -9,6 +9,7 @@
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+/// <reference path="KGAuthor/layout.ts"/>
 
 /// <reference path="KGAuthor/math/multivariateFunction.ts"/>
 

@@ -72,7 +72,7 @@ module KGAuthor {
                     y2: def.yAxis.max,
                     inClipPath: true
                 }, g)]
-            }, g))
+            }, g));
             console.log(g);
 
         }

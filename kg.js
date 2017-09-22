@@ -335,8 +335,8 @@ var KGAuthor;
     KGAuthor.Label = Label;
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
-        function Sidebar(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+        function Sidebar(def) {
+            var _this = _super.call(this, def) || this;
             _this.type = 'Sidebar';
             return _this;
         }
@@ -2000,9 +2000,9 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Sidebar = /** @class */ (function (_super) {
-        __extends(Sidebar, _super);
-        function Sidebar(def) {
+    var Controls = /** @class */ (function (_super) {
+        __extends(Controls, _super);
+        function Controls(def) {
             var _this = this;
             KG.setDefaults(def, {
                 title: '',
@@ -2014,6 +2014,52 @@ var KG;
             });
             KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
             KG.setProperties(def, 'updatables', ['title', 'description']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Controls.prototype.draw = function (layer) {
+            var controls = this;
+            controls.rootElement = layer.append('div');
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            controls.descriptionElement = controls.rootElement.append('div');
+            var sliderTable = controls.rootElement.append('table').style('padding', '10px');
+            controls.sliders.forEach(function (slider) {
+                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
+            });
+            controls.checkboxes.forEach(function (checkbox) {
+                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
+            });
+            controls.radios.forEach(function (radio) {
+                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
+            });
+            controls.divs.forEach(function (div) {
+                new KG.Div({ layer: controls.rootElement, html: div.html, fontSize: 14, model: controls.model });
+            });
+            return controls;
+        };
+        // update properties
+        Controls.prototype.redraw = function () {
+            var controls = this;
+            controls.titleElement.text(controls.title.toUpperCase());
+            controls.descriptionElement.text(controls.description);
+            return controls;
+        };
+        return Controls;
+    }(KG.DivObject));
+    KG.Controls = Controls;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Sidebar = /** @class */ (function (_super) {
+        __extends(Sidebar, _super);
+        function Sidebar(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                controls: []
+            });
+            KG.setProperties(def, 'constants', ['controls']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2032,34 +2078,14 @@ var KG;
                 .style('left', null)
                 .style('width', null);
         };
-        Sidebar.prototype.addSlider = function (sliderDef) {
-        };
-        // create div for text
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
             sidebar.rootElement = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
-            sidebar.descriptionElement = sidebar.rootElement.append('div');
-            var sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
-            sidebar.sliders.forEach(function (slider) {
-                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model });
+            sidebar.controls.forEach(function (controlsDef) {
+                controlsDef.layer = sidebar.rootElement;
+                controlsDef.model = sidebar.model;
+                new KG.Controls(controlsDef);
             });
-            sidebar.checkboxes.forEach(function (checkbox) {
-                new KG.Checkbox({ layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model });
-            });
-            sidebar.radios.forEach(function (radio) {
-                new KG.Radio({ layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model });
-            });
-            sidebar.divs.forEach(function (div) {
-                new KG.Div({ layer: sidebar.rootElement, html: div.html, fontSize: 14, model: sidebar.model });
-            });
-            return sidebar;
-        };
-        // update properties
-        Sidebar.prototype.redraw = function () {
-            var sidebar = this;
-            sidebar.titleElement.text(sidebar.title.toUpperCase());
-            sidebar.descriptionElement.text(sidebar.description);
             return sidebar;
         };
         return Sidebar;
@@ -2143,6 +2169,7 @@ var KG;
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
+/// <reference path="view/divObjects/controls.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
@@ -2182,55 +2209,50 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Controls = /** @class */ (function (_super) {
-        __extends(Controls, _super);
-        function Controls(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                title: '',
-                description: '',
-                sliders: [],
-                checkboxes: [],
-                radios: [],
-                divs: []
-            });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
-            KG.setProperties(def, 'updatables', ['title', 'description']);
-            _this = _super.call(this, def) || this;
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Layout = /** @class */ (function (_super) {
+        __extends(Layout, _super);
+        function Layout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Layout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 2;
+            return parsedData;
+        };
+        return Layout;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Layout = Layout;
+    var SidebarLayout = /** @class */ (function (_super) {
+        __extends(SidebarLayout, _super);
+        function SidebarLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SidebarLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 1.22;
+            return parsedData;
+        };
+        return SidebarLayout;
+    }(Layout));
+    KGAuthor.SidebarLayout = SidebarLayout;
+    var OneGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(OneGraphPlusSidebar, _super);
+        function OneGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'], sidebarDef = def['sidebar'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
             return _this;
         }
-        // create div for text
-        Controls.prototype.draw = function (layer) {
-            var controls = this;
-            controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
-            controls.descriptionElement = controls.rootElement.append('div');
-            var sliderTable = controls.rootElement.append('table').style('padding', '10px');
-            controls.sliders.forEach(function (slider) {
-                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
-            });
-            controls.checkboxes.forEach(function (checkbox) {
-                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
-            });
-            controls.radios.forEach(function (radio) {
-                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
-            });
-            controls.divs.forEach(function (div) {
-                new KG.Div({ layer: controls.rootElement, html: div.html, fontSize: 14, model: controls.model });
-            });
-            return controls;
-        };
-        // update properties
-        Controls.prototype.redraw = function () {
-            var controls = this;
-            controls.titleElement.text(controls.title.toUpperCase());
-            controls.descriptionElement.text(controls.description);
-            return controls;
-        };
-        return Controls;
-    }(KG.DivObject));
-    KG.Controls = Controls;
-})(KG || (KG = {}));
+        return OneGraphPlusSidebar;
+    }(Layout));
+    KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+})(KGAuthor || (KGAuthor = {}));

@@ -18,6 +18,7 @@ module KG {
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
+        layout?: TypeAndDef;
 
         // The rest of these are usually generated
         scales?: ScaleDefinition[];
@@ -67,6 +68,12 @@ module KG {
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
             };
+
+            data.objects = data.objects || [];
+
+            if(data.hasOwnProperty ('layout')) {
+                data.objects.push(data.layout)
+            }
 
             parsedData = KGAuthor.parse(data.objects, parsedData);
 

@@ -335,8 +335,8 @@ var KGAuthor;
     KGAuthor.Label = Label;
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
-        function Sidebar(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+        function Sidebar(def) {
+            var _this = _super.call(this, def) || this;
             _this.type = 'Sidebar';
             return _this;
         }
@@ -439,6 +439,53 @@ var KGAuthor;
         return Area;
     }(KGAuthor.GraphObject));
     KGAuthor.Area = Area;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Layout = /** @class */ (function (_super) {
+        __extends(Layout, _super);
+        function Layout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Layout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 2;
+            return parsedData;
+        };
+        return Layout;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Layout = Layout;
+    var SidebarLayout = /** @class */ (function (_super) {
+        __extends(SidebarLayout, _super);
+        function SidebarLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SidebarLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 1.22;
+            return parsedData;
+        };
+        return SidebarLayout;
+    }(Layout));
+    KGAuthor.SidebarLayout = SidebarLayout;
+    var OneGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(OneGraphPlusSidebar, _super);
+        function OneGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'], sidebarDef = def['sidebar'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return OneGraphPlusSidebar;
+    }(SidebarLayout));
+    KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -1255,6 +1302,10 @@ var KG;
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
             };
+            data.objects = data.objects || [];
+            if (data.hasOwnProperty('layout')) {
+                data.objects.push(data.layout);
+            }
             parsedData = KGAuthor.parse(data.objects, parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
@@ -2142,6 +2193,7 @@ var KG;
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+/// <reference path="KGAuthor/layout.ts"/>
 /// <reference path="KGAuthor/math/multivariateFunction.ts"/>
 /// <reference path="KGAuthor/econ/budgetLine.ts"/>
 /// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
