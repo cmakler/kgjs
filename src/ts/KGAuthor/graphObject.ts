@@ -6,8 +6,46 @@ module KGAuthor {
 
         constructor(def, graph) {
             super(def, graph);
-            this.type = 'Axis';
-            this.layer = 2;
+            let a = this;
+            a.type = 'Axis';
+            a.layer = 2;
+
+            if (def.hasOwnProperty('title')) {
+                if (def.orient == 'bottom') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.min,
+                        yPixelOffset: -40
+                    }, graph))
+                }
+
+                else if (def.orient == 'left') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: graph.xScale.min,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: -40,
+                        rotate: 90
+                    }, graph))
+                }
+                else if (def.orient == 'top') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.max,
+                        yPixelOffset: 40
+                    }, graph))
+                } else {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: graph.xScale.max,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: 40,
+                        rotate: 270
+                    }, graph));
+                }
+            }
         }
 
     }
@@ -15,7 +53,7 @@ module KGAuthor {
     export class Curve extends GraphObject {
 
         constructor(def, graph) {
-            if(def.hasOwnProperty('univariateFunctions')) {
+            if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
             super(def, graph);
@@ -60,7 +98,7 @@ module KGAuthor {
             const d = this;
             d.type = 'Segment';
             d.layer = 0;
-            d.extractCoordinates('point','x1','y1');
+            d.extractCoordinates('point', 'x1', 'y1');
 
         }
 
@@ -94,7 +132,7 @@ module KGAuthor {
     export class Area extends GraphObject {
 
         constructor(def, graph) {
-            if(def.hasOwnProperty('univariateFunctions')) {
+            if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
             super(def, graph);

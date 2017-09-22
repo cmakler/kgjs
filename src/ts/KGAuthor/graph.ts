@@ -139,6 +139,15 @@ module KGAuthor {
 
     export class Scale extends AuthoringObject {
 
+        public min;
+        public max;
+
+        constructor(def) {
+            super(def);
+            this.min = def.domainMin;
+            this.max = def.domainMax;
+        }
+
         parse_self(parsedData: KG.ViewDefinition) {
             parsedData.scales.push(this.def);
             return parsedData;

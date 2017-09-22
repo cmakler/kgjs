@@ -303,8 +303,11 @@ var KGAuthor;
     KGAuthor.ClipPath = ClipPath;
     var Scale = /** @class */ (function (_super) {
         __extends(Scale, _super);
-        function Scale() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function Scale(def) {
+            var _this = _super.call(this, def) || this;
+            _this.min = def.domainMin;
+            _this.max = def.domainMax;
+            return _this;
         }
         Scale.prototype.parse_self = function (parsedData) {
             parsedData.scales.push(this.def);
@@ -357,8 +360,45 @@ var KGAuthor;
         __extends(Axis, _super);
         function Axis(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            _this.type = 'Axis';
-            _this.layer = 2;
+            var a = _this;
+            a.type = 'Axis';
+            a.layer = 2;
+            if (def.hasOwnProperty('title')) {
+                if (def.orient == 'bottom') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.min,
+                        yPixelOffset: -40
+                    }, graph));
+                }
+                else if (def.orient == 'left') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: graph.xScale.min,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: -40,
+                        rotate: 90
+                    }, graph));
+                }
+                else if (def.orient == 'top') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.max,
+                        yPixelOffset: 40
+                    }, graph));
+                }
+                else {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: graph.xScale.max,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: 40,
+                        rotate: 270
+                    }, graph));
+                }
+            }
             return _this;
         }
         return Axis;
@@ -2219,11 +2259,12 @@ var KG;
                 yPixelOffset: 0,
                 fontSize: 12,
                 align: 'center',
-                valign: 'middle'
+                valign: 'middle',
+                rotate: 0
             });
             // define constant and updatable properties
             KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2239,7 +2280,7 @@ var KG;
         // update properties
         Label.prototype.redraw = function () {
             var label = this;
-            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             katex.render(label.text, label.rootElement.node());
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
@@ -2255,7 +2296,7 @@ var KG;
                 alignDelta = width + 2;
                 label.rootElement.style('text-align', 'right');
             }
-            label.rootElement.style('left', (x - alignDelta + label.xPixelOffset) + 'px');
+            label.rootElement.style('left', (x - alignDelta) + 'px');
             // Set top pixel margin; default to centered on y coordinate
             var vAlignDelta = height * 0.5;
             // Default to centered on x coordinate
@@ -2265,7 +2306,10 @@ var KG;
             else if (this.valign == 'bottom') {
                 vAlignDelta = height;
             }
-            label.rootElement.style('top', (y - vAlignDelta - label.yPixelOffset) + 'px');
+            label.rootElement.style('top', (y - vAlignDelta) + 'px');
+            var rotate = "rotate(-" + label.rotate + "deg)";
+            label.rootElement.style('-webkit-transform', rotate)
+                .style('transform', rotate);
             return label;
         };
         return Label;

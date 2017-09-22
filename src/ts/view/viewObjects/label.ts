@@ -22,6 +22,7 @@ module KG {
         private yPixelOffset: number;
         private align: string;
         private valign: string;
+        private rotate: number;
 
         constructor(def: LabelDefinition) {
 
@@ -31,12 +32,13 @@ module KG {
                 yPixelOffset: 0,
                 fontSize: 12,
                 align: 'center',
-                valign: 'middle'
+                valign: 'middle',
+                rotate: 0
             });
 
             // define constant and updatable properties
             setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign']);
+            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
 
             super(def);
 
@@ -58,7 +60,7 @@ module KG {
         redraw() {
             let label = this;
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
-                y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+                y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             katex.render(label.text, label.rootElement.node());
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
@@ -74,7 +76,7 @@ module KG {
                 alignDelta = width + 2;
                 label.rootElement.style('text-align','right');
             }
-            label.rootElement.style('left',(x - alignDelta + label.xPixelOffset) + 'px');
+            label.rootElement.style('left',(x - alignDelta) + 'px');
 
             // Set top pixel margin; default to centered on y coordinate
             let vAlignDelta = height*0.5;
@@ -84,7 +86,12 @@ module KG {
             } else if (this.valign == 'bottom') {
                 vAlignDelta = height;
             }
-            label.rootElement.style('top',(y - vAlignDelta - label.yPixelOffset) + 'px');
+            label.rootElement.style('top',(y - vAlignDelta) + 'px');
+
+            const rotate = `rotate(-${label.rotate}deg)`;
+            label.rootElement.style('-webkit-transform', rotate)
+                    .style('transform', rotate)
+
             return label;
         }
     }
