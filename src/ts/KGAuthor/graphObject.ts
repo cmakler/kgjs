@@ -40,12 +40,28 @@ module KGAuthor {
                 delete labelDef.label;
                 KG.setDefaults(labelDef, {
                     text: def.label.text,
-                    fontSize: 8,
-                    xPixelOffset: 5,
-                    yPixelOffset: -15
+                    fontSize: 10,
+                    xPixelOffset: 2,
+                    yPixelOffset: 2,
+                    align: 'left',
+                    valign: 'bottom'
                 });
                 p.subObjects.push(new Label(labelDef, graph));
             }
+        }
+
+    }
+
+    export class Dropline extends GraphObject {
+
+        constructor(def, graph) {
+            super(def, graph);
+
+            const d = this;
+            d.type = 'Segment';
+            d.layer = 0;
+            d.extractCoordinates('point','x1','y1');
+
         }
 
     }

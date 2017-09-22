@@ -24,17 +24,43 @@ module KGAuthor {
 
     export class Graph extends AuthoringObject {
 
-        public xScaleName;
-        public yScaleName;
-        public clipPathName;
+        public xScale;
+        public yScale;
+        public clipPath;
 
         constructor(def) {
             super(def);
 
             const g = this;
-            g.xScaleName = KG.randomString(10);
-            g.yScaleName = KG.randomString(10);
-            g.clipPathName = KG.randomString(10);
+
+            g.xScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "x",
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": addDefs(def.position.x, def.position.width)
+            });
+
+            g.yScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "y",
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
+            });
+
+            g.clipPath = new ClipPath({
+                "name": KG.randomString(10),
+                "paths": [new Rectangle({
+                    x1: def.xAxis.min,
+                    x2: def.xAxis.max,
+                    y1: def.yAxis.min,
+                    y2: def.yAxis.max,
+                    inClipPath: true
+                }, g)]
+            }, g);
 
             g.def.objects.push({
                 type: 'Axis',
@@ -47,32 +73,9 @@ module KGAuthor {
             g.subObjects = this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g)
             });
-            g.subObjects.push(new Scale({
-                "name": g.xScaleName,
-                "axis": "x",
-                "domainMin": def.xAxis.min,
-                "domainMax": def.xAxis.max,
-                "rangeMin": def.position.x,
-                "rangeMax": addDefs(def.position.x, def.position.width)
-            }));
-            g.subObjects.push(new Scale({
-                "name": g.yScaleName,
-                "axis": "y",
-                "domainMin": def.yAxis.min,
-                "domainMax": def.yAxis.max,
-                "rangeMin": addDefs(def.position.y, def.position.height),
-                "rangeMax": def.position.y
-            }));
-            g.subObjects.push(new ClipPath({
-                "name": g.clipPathName,
-                "paths": [new Rectangle({
-                    x1: def.xAxis.min,
-                    x2: def.xAxis.max,
-                    y1: def.yAxis.min,
-                    y2: def.yAxis.max,
-                    inClipPath: true
-                }, g)]
-            }, g));
+            g.subObjects.push(g.xScale);
+            g.subObjects.push(g.yScale);
+            g.subObjects.push(g.clipPath);
             console.log(g);
 
         }
@@ -86,9 +89,12 @@ module KGAuthor {
         constructor(def, graph?: Graph) {
             super(def);
             if (graph) {
-                this.def.xScaleName = graph.xScaleName;
-                this.def.yScaleName = graph.yScaleName;
-                this.def.clipPathName = def.clipPathName || graph.clipPathName;
+                this.def.xScaleName = graph.xScale.name;
+                this.def.yScaleName = graph.yScale.name;
+                if(!def.inClipPath) {
+                    this.def.clipPathName = def.clipPathName || graph.clipPath.name;
+                }
+
             }
             this.subObjects = [];
         }
@@ -118,6 +124,11 @@ module KGAuthor {
     }
 
     export class ClipPath extends GraphObjectGenerator {
+
+        constructor(def, graph) {
+            def.inClipPath = true;
+            super(def, graph);
+        }
 
         parse_self(parsedData: KG.ViewDefinition) {
             delete this.def.clipPathName;

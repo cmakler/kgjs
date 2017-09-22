@@ -174,6 +174,7 @@ var KGAuthor;
     var AuthoringObject = /** @class */ (function () {
         function AuthoringObject(def) {
             this.def = def;
+            this.name = def.name;
             this.subObjects = [];
         }
         AuthoringObject.prototype.parse_self = function (parsedData) {
@@ -198,9 +199,32 @@ var KGAuthor;
         function Graph(def) {
             var _this = _super.call(this, def) || this;
             var g = _this;
-            g.xScaleName = KG.randomString(10);
-            g.yScaleName = KG.randomString(10);
-            g.clipPathName = KG.randomString(10);
+            g.xScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "x",
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
+            });
+            g.yScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "y",
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
+            });
+            g.clipPath = new ClipPath({
+                "name": KG.randomString(10),
+                "paths": [new KGAuthor.Rectangle({
+                        x1: def.xAxis.min,
+                        x2: def.xAxis.max,
+                        y1: def.yAxis.min,
+                        y2: def.yAxis.max,
+                        inClipPath: true
+                    }, g)]
+            }, g);
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -212,32 +236,9 @@ var KGAuthor;
             g.subObjects = _this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g);
             });
-            g.subObjects.push(new Scale({
-                "name": g.xScaleName,
-                "axis": "x",
-                "domainMin": def.xAxis.min,
-                "domainMax": def.xAxis.max,
-                "rangeMin": def.position.x,
-                "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
-            }));
-            g.subObjects.push(new Scale({
-                "name": g.yScaleName,
-                "axis": "y",
-                "domainMin": def.yAxis.min,
-                "domainMax": def.yAxis.max,
-                "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
-                "rangeMax": def.position.y
-            }));
-            g.subObjects.push(new ClipPath({
-                "name": g.clipPathName,
-                "paths": [new KGAuthor.Rectangle({
-                        x1: def.xAxis.min,
-                        x2: def.xAxis.max,
-                        y1: def.yAxis.min,
-                        y2: def.yAxis.max,
-                        inClipPath: true
-                    }, g)]
-            }, g));
+            g.subObjects.push(g.xScale);
+            g.subObjects.push(g.yScale);
+            g.subObjects.push(g.clipPath);
             console.log(g);
             return _this;
         }
@@ -249,9 +250,11 @@ var KGAuthor;
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
             if (graph) {
-                _this.def.xScaleName = graph.xScaleName;
-                _this.def.yScaleName = graph.yScaleName;
-                _this.def.clipPathName = def.clipPathName || graph.clipPathName;
+                _this.def.xScaleName = graph.xScale.name;
+                _this.def.yScaleName = graph.yScale.name;
+                if (!def.inClipPath) {
+                    _this.def.clipPathName = def.clipPathName || graph.clipPath.name;
+                }
             }
             _this.subObjects = [];
             return _this;
@@ -284,8 +287,11 @@ var KGAuthor;
     KGAuthor.GraphObject = GraphObject;
     var ClipPath = /** @class */ (function (_super) {
         __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function ClipPath(def, graph) {
+            var _this = this;
+            def.inClipPath = true;
+            _this = _super.call(this, def, graph) || this;
+            return _this;
         }
         ClipPath.prototype.parse_self = function (parsedData) {
             delete this.def.clipPathName;
@@ -386,9 +392,11 @@ var KGAuthor;
                 delete labelDef.label;
                 KG.setDefaults(labelDef, {
                     text: def.label.text,
-                    fontSize: 8,
-                    xPixelOffset: 5,
-                    yPixelOffset: -15
+                    fontSize: 10,
+                    xPixelOffset: 2,
+                    yPixelOffset: 2,
+                    align: 'left',
+                    valign: 'bottom'
                 });
                 p.subObjects.push(new KGAuthor.Label(labelDef, graph));
             }
@@ -397,6 +405,19 @@ var KGAuthor;
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
+    var Dropline = /** @class */ (function (_super) {
+        __extends(Dropline, _super);
+        function Dropline(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            var d = _this;
+            d.type = 'Segment';
+            d.layer = 0;
+            d.extractCoordinates('point', 'x1', 'y1');
+            return _this;
+        }
+        return Dropline;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Dropline = Dropline;
     var Segment = /** @class */ (function (_super) {
         __extends(Segment, _super);
         function Segment(def, graph) {
@@ -455,18 +476,34 @@ var KGAuthor;
         return Layout;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Layout = Layout;
-    var SidebarLayout = /** @class */ (function (_super) {
-        __extends(SidebarLayout, _super);
-        function SidebarLayout() {
+    var SquarePlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(SquarePlusSidebarLayout, _super);
+        function SquarePlusSidebarLayout() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        SidebarLayout.prototype.parse_self = function (parsedData) {
+        // creates a square within the main body of the text
+        // to make a square graph, the ratio of width to height should be 0.82
+        SquarePlusSidebarLayout.prototype.parse_self = function (parsedData) {
             parsedData.aspectRatio = 1.22;
             return parsedData;
         };
-        return SidebarLayout;
+        return SquarePlusSidebarLayout;
     }(Layout));
-    KGAuthor.SidebarLayout = SidebarLayout;
+    KGAuthor.SquarePlusSidebarLayout = SquarePlusSidebarLayout;
+    var WideRectanglePlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(WideRectanglePlusSidebarLayout, _super);
+        function WideRectanglePlusSidebarLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        // creates a rectangle, twice as wide as it is high, within the main body of the text
+        // to make a square graph, the ratio of width to height should be 0.41
+        WideRectanglePlusSidebarLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 2.44;
+            return parsedData;
+        };
+        return WideRectanglePlusSidebarLayout;
+    }(Layout));
+    KGAuthor.WideRectanglePlusSidebarLayout = WideRectanglePlusSidebarLayout;
     var OneGraphPlusSidebar = /** @class */ (function (_super) {
         __extends(OneGraphPlusSidebar, _super);
         function OneGraphPlusSidebar(def) {
@@ -484,8 +521,34 @@ var KGAuthor;
             return _this;
         }
         return OneGraphPlusSidebar;
-    }(SidebarLayout));
+    }(SquarePlusSidebarLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var TwoHorizontalGraphsPlusSidebar = /** @class */ (function (_super) {
+        __extends(TwoHorizontalGraphsPlusSidebar, _super);
+        function TwoHorizontalGraphsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'], sidebarDef = def['sidebar'];
+            leftGraphDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            rightGraphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return TwoHorizontalGraphsPlusSidebar;
+    }(WideRectanglePlusSidebarLayout));
+    KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -2154,11 +2217,13 @@ var KG;
             KG.setDefaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12
+                fontSize: 12,
+                align: 'center',
+                valign: 'middle'
             });
             // define constant and updatable properties
             KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2175,9 +2240,32 @@ var KG;
         Label.prototype.redraw = function () {
             var label = this;
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            katex.render(label.text, label.rootElement.node());
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
-            katex.render(label.text, label.rootElement.node());
+            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
+            // Set left pixel margin; default to centered on x coordinate
+            var alignDelta = width * 0.5;
+            if (label.align == 'left') {
+                alignDelta = 0;
+                label.rootElement.style('text-align', 'left');
+            }
+            else if (this.align == 'right') {
+                // move left by half the width of the div if right aligned
+                alignDelta = width + 2;
+                label.rootElement.style('text-align', 'right');
+            }
+            label.rootElement.style('left', (x - alignDelta + label.xPixelOffset) + 'px');
+            // Set top pixel margin; default to centered on y coordinate
+            var vAlignDelta = height * 0.5;
+            // Default to centered on x coordinate
+            if (this.valign == 'top') {
+                vAlignDelta = 0;
+            }
+            else if (this.valign == 'bottom') {
+                vAlignDelta = height;
+            }
+            label.rootElement.style('top', (y - vAlignDelta - label.yPixelOffset) + 'px');
             return label;
         };
         return Label;
