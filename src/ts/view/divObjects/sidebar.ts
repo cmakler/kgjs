@@ -3,9 +3,7 @@
 module KG {
 
     export interface SidebarDefinition extends ViewObjectDefinition {
-        title: string;
-        description: string;
-        sliders: any[];
+        controls: ControlsDefinition[];
     }
 
     export interface ISidebar extends IViewObject {
@@ -15,21 +13,14 @@ module KG {
 
     export class Sidebar extends ViewObject implements ISidebar {
 
-        private title;
-        private description;
-        private titleElement;
-        private descriptionElement;
         public position: 'right' | 'bottom';
 
         constructor(def: SidebarDefinition) {
 
             setDefaults(def, {
-                title: '',
-                description: ''
+                controls: []
             });
-            setProperties(def, 'constants',['sliders','checkboxes','radios']);
-            setProperties(def, 'updatables',['title', 'description']);
-
+            setProperties(def, 'constants',['controls']);
             super(def);
         }
 
@@ -50,37 +41,18 @@ module KG {
                 .style('width', null);
         }
 
-        addSlider(sliderDef) {
 
-        }
-
-        // create div for text
         draw(layer) {
             let sidebar = this;
 
             sidebar.rootElement = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
-            sidebar.descriptionElement = sidebar.rootElement.append('div');
-            const sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
-            sidebar.sliders.forEach(function (slider) {
-                new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model})
-            });
-            sidebar.checkboxes.forEach(function (checkbox) {
-                new Checkbox({layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model})
-            });
-            sidebar.radios.forEach(function (radio) {
-                new Radio({layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model})
+            sidebar.controls.forEach(function (controlsDef) {
+                controlsDef.layer = sidebar.rootElement;
+                controlsDef.model = sidebar.model;
+                new Controls(controlsDef);
             });
             return sidebar;
 
-        }
-
-        // update properties
-        redraw() {
-            let sidebar = this;
-            sidebar.titleElement.text(sidebar.title.toUpperCase());
-            sidebar.descriptionElement.text(sidebar.description);
-            return sidebar;
         }
     }
 

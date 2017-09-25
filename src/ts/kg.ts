@@ -9,6 +9,7 @@
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+/// <reference path="KGAuthor/layout.ts"/>
 
 /// <reference path="KGAuthor/math/multivariateFunction.ts"/>
 
@@ -39,12 +40,17 @@
 /// <reference path="view/viewObjects/area.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/div.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
+/// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/ggb.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
+
+declare function renderMathInElement(node,delimiters);
 
 
 // this file provides the interface with the overall web page

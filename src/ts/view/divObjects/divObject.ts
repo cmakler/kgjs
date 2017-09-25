@@ -14,8 +14,6 @@ module KG {
 
     export class DivObject extends ViewObject implements IDivObject {
 
-
-
     }
 
 }

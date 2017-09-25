@@ -8,11 +8,13 @@ module KGAuthor {
 
     export class AuthoringObject implements IAuthoringObject {
 
+        public name: any;
         public def:any;
         public subObjects: AuthoringObject[];
 
         constructor(def) {
             this.def = def;
+            this.name = def.name;
             this.subObjects = [];
         }
 

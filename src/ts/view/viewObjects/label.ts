@@ -5,9 +5,11 @@ module KG {
     export interface LabelDefinition extends ViewObjectDefinition {
         x: any;
         y: any;
+        text: string;
         xPixelOffset?: number;
         yPixelOffset?: number;
-        text: string;
+        align?: string;
+        valign?: string;
     }
 
     export class Label extends ViewObject {
@@ -16,22 +18,27 @@ module KG {
         private y: number;
         private text: string;
         private fontSize: number;
-        private element: any;
         private xPixelOffset: number;
         private yPixelOffset: number;
+        private align: string;
+        private valign: string;
+        private rotate: number;
 
-        constructor(def) {
+        constructor(def: LabelDefinition) {
 
             //establish property defaults
             setDefaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12
+                fontSize: 12,
+                align: 'center',
+                valign: 'middle',
+                rotate: 0
             });
 
             // define constant and updatable properties
-            setProperties(def, 'constants',['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            setProperties(def, 'updatables',['x', 'y', 'text']);
+            setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
 
             super(def);
 
@@ -53,10 +60,38 @@ module KG {
         redraw() {
             let label = this;
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
-                y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+                y = label.yScale.scale(label.y) - (+label.yPixelOffset);
+            katex.render(label.text, label.rootElement.node());
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
-            katex.render(label.text, label.rootElement.node());
+            const width = label.rootElement.node().clientWidth,
+                height = label.rootElement.node().clientHeight;
+            // Set left pixel margin; default to centered on x coordinate
+            let alignDelta = width*0.5;
+            if (label.align == 'left') {
+                alignDelta = 0;
+                label.rootElement.style('text-align','left');
+            } else if (this.align == 'right') {
+                // move left by half the width of the div if right aligned
+                alignDelta = width + 2;
+                label.rootElement.style('text-align','right');
+            }
+            label.rootElement.style('left',(x - alignDelta) + 'px');
+
+            // Set top pixel margin; default to centered on y coordinate
+            let vAlignDelta = height*0.5;
+            // Default to centered on x coordinate
+            if (this.valign == 'top') {
+                vAlignDelta = 0;
+            } else if (this.valign == 'bottom') {
+                vAlignDelta = height;
+            }
+            label.rootElement.style('top',(y - vAlignDelta) + 'px');
+
+            const rotate = `rotate(-${label.rotate}deg)`;
+            label.rootElement.style('-webkit-transform', rotate)
+                    .style('transform', rotate)
+
             return label;
         }
     }

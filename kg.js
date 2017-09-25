@@ -174,6 +174,7 @@ var KGAuthor;
     var AuthoringObject = /** @class */ (function () {
         function AuthoringObject(def) {
             this.def = def;
+            this.name = def.name;
             this.subObjects = [];
         }
         AuthoringObject.prototype.parse_self = function (parsedData) {
@@ -198,11 +199,32 @@ var KGAuthor;
         function Graph(def) {
             var _this = _super.call(this, def) || this;
             var g = _this;
-            g.xScaleName = KG.randomString(10);
-            g.yScaleName = KG.randomString(10);
-            g.clipPathName = KG.randomString(10);
-            g.def.xAxis.range = def.xAxis.range || [0, 1];
-            g.def.yAxis.range = def.yAxis.range || [1, 0];
+            g.xScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "x",
+                "domainMin": def.xAxis.min,
+                "domainMax": def.xAxis.max,
+                "rangeMin": def.position.x,
+                "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
+            });
+            g.yScale = new Scale({
+                "name": KG.randomString(10),
+                "axis": "y",
+                "domainMin": def.yAxis.min,
+                "domainMax": def.yAxis.max,
+                "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
+                "rangeMax": def.position.y
+            });
+            g.clipPath = new ClipPath({
+                "name": KG.randomString(10),
+                "paths": [new KGAuthor.Rectangle({
+                        x1: def.xAxis.min,
+                        x2: def.xAxis.max,
+                        y1: def.yAxis.min,
+                        y2: def.yAxis.max,
+                        inClipPath: true
+                    }, g)]
+            }, g);
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -214,32 +236,10 @@ var KGAuthor;
             g.subObjects = _this.def.objects.map(function (obj) {
                 return new KGAuthor[obj.type](obj.def, g);
             });
-            g.subObjects.push(new Scale({
-                "name": g.xScaleName,
-                "axis": "x",
-                "domainMin": def.xAxis.domain[0],
-                "domainMax": def.xAxis.domain[1],
-                "rangeMin": def.xAxis.range[0],
-                "rangeMax": def.xAxis.range[1]
-            }));
-            g.subObjects.push(new Scale({
-                "name": g.yScaleName,
-                "axis": "y",
-                "domainMin": def.yAxis.domain[0],
-                "domainMax": def.yAxis.domain[1],
-                "rangeMin": def.yAxis.range[0],
-                "rangeMax": def.yAxis.range[1]
-            }));
-            g.subObjects.push(new ClipPath({
-                "name": g.clipPathName,
-                "paths": [new KGAuthor.Rectangle({
-                        x1: def.xAxis.domain[0],
-                        x2: def.xAxis.domain[1],
-                        y1: def.yAxis.domain[0],
-                        y2: def.yAxis.domain[1],
-                        inClipPath: true
-                    }, g)]
-            }, g));
+            g.subObjects.push(g.xScale);
+            g.subObjects.push(g.yScale);
+            g.subObjects.push(g.clipPath);
+            console.log(g);
             return _this;
         }
         return Graph;
@@ -250,9 +250,11 @@ var KGAuthor;
         function GraphObjectGenerator(def, graph) {
             var _this = _super.call(this, def) || this;
             if (graph) {
-                _this.def.xScaleName = graph.xScaleName;
-                _this.def.yScaleName = graph.yScaleName;
-                _this.def.clipPathName = def.clipPathName || graph.clipPathName;
+                _this.def.xScaleName = graph.xScale.name;
+                _this.def.yScaleName = graph.yScale.name;
+                if (!def.inClipPath) {
+                    _this.def.clipPathName = def.clipPathName || graph.clipPath.name;
+                }
             }
             _this.subObjects = [];
             return _this;
@@ -285,8 +287,11 @@ var KGAuthor;
     KGAuthor.GraphObject = GraphObject;
     var ClipPath = /** @class */ (function (_super) {
         __extends(ClipPath, _super);
-        function ClipPath() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function ClipPath(def, graph) {
+            var _this = this;
+            def.inClipPath = true;
+            _this = _super.call(this, def, graph) || this;
+            return _this;
         }
         ClipPath.prototype.parse_self = function (parsedData) {
             delete this.def.clipPathName;
@@ -298,8 +303,11 @@ var KGAuthor;
     KGAuthor.ClipPath = ClipPath;
     var Scale = /** @class */ (function (_super) {
         __extends(Scale, _super);
-        function Scale() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function Scale(def) {
+            var _this = _super.call(this, def) || this;
+            _this.min = def.domainMin;
+            _this.max = def.domainMax;
+            return _this;
         }
         Scale.prototype.parse_self = function (parsedData) {
             parsedData.scales.push(this.def);
@@ -336,8 +344,8 @@ var KGAuthor;
     KGAuthor.Label = Label;
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
-        function Sidebar(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+        function Sidebar(def) {
+            var _this = _super.call(this, def) || this;
             _this.type = 'Sidebar';
             return _this;
         }
@@ -352,8 +360,45 @@ var KGAuthor;
         __extends(Axis, _super);
         function Axis(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            _this.type = 'Axis';
-            _this.layer = 2;
+            var a = _this;
+            a.type = 'Axis';
+            a.layer = 2;
+            if (def.hasOwnProperty('title')) {
+                if (def.orient == 'bottom') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.min,
+                        yPixelOffset: -40
+                    }, graph));
+                }
+                else if (def.orient == 'left') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: graph.xScale.min,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: -40,
+                        rotate: 90
+                    }, graph));
+                }
+                else if (def.orient == 'top') {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.max,
+                        yPixelOffset: 40
+                    }, graph));
+                }
+                else {
+                    a.subObjects.push(new KGAuthor.Label({
+                        text: "\\text{" + def.title + "}",
+                        x: graph.xScale.max,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: 40,
+                        rotate: 270
+                    }, graph));
+                }
+            }
             return _this;
         }
         return Axis;
@@ -387,11 +432,23 @@ var KGAuthor;
                 delete labelDef.label;
                 KG.setDefaults(labelDef, {
                     text: def.label.text,
-                    fontSize: 8,
-                    xPixelOffset: 5,
-                    yPixelOffset: -15
+                    fontSize: 10,
+                    xPixelOffset: 2,
+                    yPixelOffset: 2,
+                    align: 'left',
+                    valign: 'bottom'
                 });
                 p.subObjects.push(new KGAuthor.Label(labelDef, graph));
+            }
+            if (def.hasOwnProperty('droplines')) {
+                if (def.droplines.hasOwnProperty('vertical')) {
+                    var verticalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
+                }
+                if (def.droplines.hasOwnProperty('horizontal')) {
+                    var horizontalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));
+                }
             }
             return _this;
         }
@@ -412,6 +469,41 @@ var KGAuthor;
         return Segment;
     }(KGAuthor.GraphObject));
     KGAuthor.Segment = Segment;
+    var Dropline = /** @class */ (function (_super) {
+        __extends(Dropline, _super);
+        function Dropline(def, graph) {
+            var _this = this;
+            def.stroke = 'blue';
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return Dropline;
+    }(Segment));
+    KGAuthor.Dropline = Dropline;
+    var VerticalDropline = /** @class */ (function (_super) {
+        __extends(VerticalDropline, _super);
+        function VerticalDropline(def, graph) {
+            var _this = this;
+            def.a = [def.x, def.y];
+            def.b = [def.x, graph.yScale.min];
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return VerticalDropline;
+    }(Dropline));
+    KGAuthor.VerticalDropline = VerticalDropline;
+    var HorizontalDropline = /** @class */ (function (_super) {
+        __extends(HorizontalDropline, _super);
+        function HorizontalDropline(def, graph) {
+            var _this = this;
+            def.a = [def.x, def.y];
+            def.b = [graph.xScale.min, def.y];
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return HorizontalDropline;
+    }(Dropline));
+    KGAuthor.HorizontalDropline = HorizontalDropline;
     var Rectangle = /** @class */ (function (_super) {
         __extends(Rectangle, _super);
         function Rectangle(def, graph) {
@@ -440,6 +532,95 @@ var KGAuthor;
         return Area;
     }(KGAuthor.GraphObject));
     KGAuthor.Area = Area;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Layout = /** @class */ (function (_super) {
+        __extends(Layout, _super);
+        function Layout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Layout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 2;
+            return parsedData;
+        };
+        return Layout;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Layout = Layout;
+    var SquarePlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(SquarePlusSidebarLayout, _super);
+        function SquarePlusSidebarLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        // creates a square within the main body of the text
+        // to make a square graph, the ratio of width to height should be 0.82
+        SquarePlusSidebarLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 1.22;
+            return parsedData;
+        };
+        return SquarePlusSidebarLayout;
+    }(Layout));
+    KGAuthor.SquarePlusSidebarLayout = SquarePlusSidebarLayout;
+    var WideRectanglePlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(WideRectanglePlusSidebarLayout, _super);
+        function WideRectanglePlusSidebarLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        // creates a rectangle, twice as wide as it is high, within the main body of the text
+        // to make a square graph, the ratio of width to height should be 0.41
+        WideRectanglePlusSidebarLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 2.44;
+            return parsedData;
+        };
+        return WideRectanglePlusSidebarLayout;
+    }(Layout));
+    KGAuthor.WideRectanglePlusSidebarLayout = WideRectanglePlusSidebarLayout;
+    var OneGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(OneGraphPlusSidebar, _super);
+        function OneGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'], sidebarDef = def['sidebar'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return OneGraphPlusSidebar;
+    }(SquarePlusSidebarLayout));
+    KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var TwoHorizontalGraphsPlusSidebar = /** @class */ (function (_super) {
+        __extends(TwoHorizontalGraphsPlusSidebar, _super);
+        function TwoHorizontalGraphsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'], sidebarDef = def['sidebar'];
+            leftGraphDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            rightGraphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return TwoHorizontalGraphsPlusSidebar;
+    }(WideRectanglePlusSidebarLayout));
+    KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -511,10 +692,10 @@ var KGAuthor;
             return [
                 new KGAuthor.Rectangle({
                     clipPathName: clipPathName,
-                    x1: graph.def.xAxis.domain[0],
-                    x2: graph.def.xAxis.domain[1],
-                    y1: graph.def.yAxis.domain[0],
-                    y2: graph.def.yAxis.domain[1]
+                    x1: graph.def.xAxis.min,
+                    x2: graph.def.xAxis.max,
+                    y1: graph.def.yAxis.min,
+                    y2: graph.def.yAxis.max
                 }, graph),
                 new KGAuthor.ClipPath({
                     "name": clipPathName,
@@ -719,12 +900,35 @@ var KGAuthor;
                 strokeWidth: 2,
                 stroke: 'purple'
             });
-            _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            if (Array.isArray(def.utilityFunction.type)) {
+                _this.subObjects = def.utilityFunction.map(function (u) {
+                    var uDef = JSON.parse(JSON.stringify(def));
+                    uDef.utilityFunction.type = u;
+                    return getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                });
+            }
+            else {
+                _this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+            }
             return _this;
         }
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
+    var EconSelectableIndifferenceCurve = /** @class */ (function (_super) {
+        __extends(EconSelectableIndifferenceCurve, _super);
+        function EconSelectableIndifferenceCurve(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                strokeWidth: 2,
+                stroke: 'purple',
+                utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
+            });
+            return _this;
+        }
+        return EconSelectableIndifferenceCurve;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconSelectableIndifferenceCurve = EconSelectableIndifferenceCurve;
     var EconPreferredRegion = /** @class */ (function (_super) {
         __extends(EconPreferredRegion, _super);
         function EconPreferredRegion(def, graph) {
@@ -1208,6 +1412,11 @@ var KG;
 /// <reference path='../kg.ts' />
 var KG;
 (function (KG) {
+    KG.viewData = {};
+    function addView(name, def) {
+        KG.viewData[name] = def;
+    }
+    KG.addView = addView;
     var View = /** @class */ (function () {
         function View(div, data) {
             data.params = (data.params || []).map(function (paramData) {
@@ -1228,6 +1437,10 @@ var KG;
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
             };
+            data.objects = data.objects || [];
+            if (data.hasOwnProperty('layout')) {
+                data.objects.push(data.layout);
+            }
             parsedData = KGAuthor.parse(data.objects, parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
@@ -1781,6 +1994,52 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = this;
+            //establish property defaults
+            KG.setDefaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['fontSize']);
+            KG.setProperties(def, 'updatables', ['html']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Div.prototype.draw = function (layer) {
+            var div = this;
+            div.rootElement = layer.append('div')
+                .style('font-size', div.fontSize + 'pt')
+                .style('padding-top', '10px')
+                .style('padding-bottom', '10px');
+            return div;
+        };
+        // update properties
+        Div.prototype.redraw = function () {
+            var div = this;
+            div.rootElement.html(div.html);
+            renderMathInElement(div.rootElement.node(), {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "\\[", right: "\\]", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\(", right: "\\)", display: false }
+                ]
+            });
+            return div;
+        };
+        return Div;
+    }(KG.DivObject));
+    KG.Div = Div;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var ParamControl = /** @class */ (function (_super) {
         __extends(ParamControl, _super);
         function ParamControl(def) {
@@ -1927,16 +2186,66 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Controls = /** @class */ (function (_super) {
+        __extends(Controls, _super);
+        function Controls(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                title: '',
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: [],
+                divs: []
+            });
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
+            KG.setProperties(def, 'updatables', ['title', 'description']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Controls.prototype.draw = function (layer) {
+            var controls = this;
+            controls.rootElement = layer.append('div');
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            controls.descriptionElement = controls.rootElement.append('div');
+            var sliderTable = controls.rootElement.append('table').style('padding', '10px');
+            controls.sliders.forEach(function (slider) {
+                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
+            });
+            controls.checkboxes.forEach(function (checkbox) {
+                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
+            });
+            controls.radios.forEach(function (radio) {
+                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
+            });
+            controls.divs.forEach(function (div) {
+                new KG.Div({ layer: controls.rootElement, html: div.html, fontSize: 14, model: controls.model });
+            });
+            return controls;
+        };
+        // update properties
+        Controls.prototype.redraw = function () {
+            var controls = this;
+            controls.titleElement.text(controls.title.toUpperCase());
+            controls.descriptionElement.text(controls.description);
+            return controls;
+        };
+        return Controls;
+    }(KG.DivObject));
+    KG.Controls = Controls;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
             var _this = this;
             KG.setDefaults(def, {
-                title: '',
-                description: ''
+                controls: []
             });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios']);
-            KG.setProperties(def, 'updatables', ['title', 'description']);
+            KG.setProperties(def, 'constants', ['controls']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -1955,31 +2264,14 @@ var KG;
                 .style('left', null)
                 .style('width', null);
         };
-        Sidebar.prototype.addSlider = function (sliderDef) {
-        };
-        // create div for text
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
             sidebar.rootElement = layer.append('div').style('position', 'absolute');
-            sidebar.titleElement = sidebar.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
-            sidebar.descriptionElement = sidebar.rootElement.append('div');
-            var sliderTable = sidebar.rootElement.append('table').style('padding', '10px');
-            sidebar.sliders.forEach(function (slider) {
-                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: sidebar.model });
+            sidebar.controls.forEach(function (controlsDef) {
+                controlsDef.layer = sidebar.rootElement;
+                controlsDef.model = sidebar.model;
+                new KG.Controls(controlsDef);
             });
-            sidebar.checkboxes.forEach(function (checkbox) {
-                new KG.Checkbox({ layer: sidebar.rootElement, param: checkbox.param, label: checkbox.label, model: sidebar.model });
-            });
-            sidebar.radios.forEach(function (radio) {
-                new KG.Radio({ layer: sidebar.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: sidebar.model });
-            });
-            return sidebar;
-        };
-        // update properties
-        Sidebar.prototype.redraw = function () {
-            var sidebar = this;
-            sidebar.titleElement.text(sidebar.title.toUpperCase());
-            sidebar.descriptionElement.text(sidebar.description);
             return sidebar;
         };
         return Sidebar;
@@ -1997,11 +2289,14 @@ var KG;
             KG.setDefaults(def, {
                 xPixelOffset: 0,
                 yPixelOffset: 0,
-                fontSize: 12
+                fontSize: 12,
+                align: 'center',
+                valign: 'middle',
+                rotate: 0
             });
             // define constant and updatable properties
             KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2017,10 +2312,36 @@ var KG;
         // update properties
         Label.prototype.redraw = function () {
             var label = this;
-            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) + (+label.yPixelOffset);
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
+            katex.render(label.text, label.rootElement.node());
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
-            katex.render(label.text, label.rootElement.node());
+            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
+            // Set left pixel margin; default to centered on x coordinate
+            var alignDelta = width * 0.5;
+            if (label.align == 'left') {
+                alignDelta = 0;
+                label.rootElement.style('text-align', 'left');
+            }
+            else if (this.align == 'right') {
+                // move left by half the width of the div if right aligned
+                alignDelta = width + 2;
+                label.rootElement.style('text-align', 'right');
+            }
+            label.rootElement.style('left', (x - alignDelta) + 'px');
+            // Set top pixel margin; default to centered on y coordinate
+            var vAlignDelta = height * 0.5;
+            // Default to centered on x coordinate
+            if (this.valign == 'top') {
+                vAlignDelta = 0;
+            }
+            else if (this.valign == 'bottom') {
+                vAlignDelta = height;
+            }
+            label.rootElement.style('top', (y - vAlignDelta) + 'px');
+            var rotate = "rotate(-" + label.rotate + "deg)";
+            label.rootElement.style('-webkit-transform', rotate)
+                .style('transform', rotate);
             return label;
         };
         return Label;
@@ -2036,6 +2357,7 @@ var KG;
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
+/// <reference path="KGAuthor/layout.ts"/>
 /// <reference path="KGAuthor/math/multivariateFunction.ts"/>
 /// <reference path="KGAuthor/econ/budgetLine.ts"/>
 /// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
@@ -2058,31 +2380,29 @@ var KG;
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/div.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
+/// <reference path="view/divObjects/controls.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
 var views = [];
-if (!window.hasOwnProperty('KGData')) {
-    var KGData = {};
-}
 // initialize the diagram from divs with class kg-container
 window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
         var src = viewDivs[i].getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
-        // first look to see if there is a global kg-data object
-        if (window.hasOwnProperty('KGData')) {
-            if (KGData.hasOwnProperty(src)) {
-                views.push(new KG.View(viewDivs[i], KGAuthor['data'][src]));
-            }
+        // first look to see if there's a definition in the KG.viewData object
+        if (KG['viewData'].hasOwnProperty(src)) {
+            viewDivs[i].innerHTML = "";
+            views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         }
         else {
-            // then look to see if the src
+            // then look to see if the src is available by a URL
             d3.json(src, function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
@@ -2106,17 +2426,37 @@ window.onresize = function () {
     });
 };
 /// <reference path="../../kg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
-    var EconUtilityFunction = /** @class */ (function (_super) {
-        __extends(EconUtilityFunction, _super);
-        function EconUtilityFunction(def) {
-            return _super.call(this, def) || this;
+var KG;
+(function (KG) {
+    var GeoGebra = /** @class */ (function (_super) {
+        __extends(GeoGebra, _super);
+        function GeoGebra(def) {
+            var _this = _super.call(this, def) || this;
+            _this.applet = new GGBApplet({ filename: "/GeoGebra/graphs/" + def.path }, true);
+            return _this;
         }
-        EconUtilityFunction.prototype.parse = function () {
-            return {};
+        // create div for text
+        GeoGebra.prototype.draw = function (layer) {
+            var div = this;
+            var id = KG.randomString(10);
+            div.rootElement = layer.append('div');
+            div.rootElement.attr('id', id);
+            div.applet.inject(id);
+            return div;
         };
-        return EconUtilityFunction;
-    }(KGAuthor.AuthoringObject));
-    KGAuthor.EconUtilityFunction = EconUtilityFunction;
-})(KGAuthor || (KGAuthor = {}));
+        // update properties
+        GeoGebra.prototype.redraw = function () {
+            var div = this;
+            div.rootElement.style('left', div.xScale.rangeMin);
+            div.rootElement.style('height', div.yScale.rangeMax);
+            div.rootElement.style('width', div.xScale.extent);
+            div.rootElement.style('height', div.yScale.extent);
+            div.updatables.forEach(function (param) {
+                div.applet.getAppletObject().setValue(param, div[param]);
+            });
+            return div;
+        };
+        return GeoGebra;
+    }(KG.DivObject));
+    KG.GeoGebra = GeoGebra;
+})(KG || (KG = {}));

@@ -77,29 +77,23 @@
     {
       "type": "Graph",
       "def": {
+        "position": {
+          "x": 0.25,
+          "y": 0,
+          "width": 0.5,
+          "height": 1
+        },
         "xAxis": {
           "title": "Units of Good 1",
           "orient": "bottom",
-          "domain": [
-            0,
-            100
-          ],
-          "range": [
-            0.25,
-            0.75
-          ]
+          "min": 0,
+          "max": 100
         },
         "yAxis": {
           "title": "Units of Good 2",
           "orient": "left",
-          "domain": [
-            0,
-            100
-          ],
-          "range": [
-            1,
-            0
-          ]
+          "min": 0,
+          "max": 100
         },
         "objects": [
           {

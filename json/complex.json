@@ -13,15 +13,21 @@
     {
       "type": "Graph",
       "def": {
+        "position": {
+          "x": 0.05,
+          "y": 0.1,
+          "width": 0.4,
+          "height": 0.8
+        },
         "xAxis": {
           "orient": "bottom",
-          "domain": [-4, 4],
-          "range": [0.05, 0.45]
+          "min": -4,
+          "max": 4
         },
         "yAxis": {
           "orient": "left",
-          "domain": [-4, 4],
-          "range": [0.9, 0.1],
+          "min": -4,
+          "max": 4,
           "show": false
         },
         "objects": [
@@ -47,16 +53,22 @@
     {
       "type": "Graph",
       "def": {
+        "position": {
+          "x": 0.55,
+          "y": 0.1,
+          "width": 0.4,
+          "height": 0.8
+        },
         "xAxis": {
           "orient": "bottom",
-          "domain": [-4, 4],
-          "range": [0.55, 0.95]
+          "min": -4,
+          "max": 4
         },
         "yAxis": {
           "orient": "left",
-          "domain": [-4, 4],
-          "range": [0.9, 0.1],
-          "show": "(params.x < 0)"
+          "min": -4,
+          "max": 4,
+          "show": "params.x < 0"
         },
         "objects": [
           {

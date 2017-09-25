@@ -6,8 +6,46 @@ module KGAuthor {
 
         constructor(def, graph) {
             super(def, graph);
-            this.type = 'Axis';
-            this.layer = 2;
+            let a = this;
+            a.type = 'Axis';
+            a.layer = 2;
+
+            if (def.hasOwnProperty('title')) {
+                if (def.orient == 'bottom') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.min,
+                        yPixelOffset: -40
+                    }, graph))
+                }
+
+                else if (def.orient == 'left') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: graph.xScale.min,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: -40,
+                        rotate: 90
+                    }, graph))
+                }
+                else if (def.orient == 'top') {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        y: graph.yScale.max,
+                        yPixelOffset: 40
+                    }, graph))
+                } else {
+                    a.subObjects.push(new Label({
+                        text: `\\text{${def.title}}`,
+                        x: graph.xScale.max,
+                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        xPixelOffset: 40,
+                        rotate: 270
+                    }, graph));
+                }
+            }
         }
 
     }
@@ -15,7 +53,7 @@ module KGAuthor {
     export class Curve extends GraphObject {
 
         constructor(def, graph) {
-            if(def.hasOwnProperty('univariateFunctions')) {
+            if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
             super(def, graph);
@@ -40,15 +78,31 @@ module KGAuthor {
                 delete labelDef.label;
                 KG.setDefaults(labelDef, {
                     text: def.label.text,
-                    fontSize: 8,
-                    xPixelOffset: 5,
-                    yPixelOffset: -15
+                    fontSize: 10,
+                    xPixelOffset: 2,
+                    yPixelOffset: 2,
+                    align: 'left',
+                    valign: 'bottom'
                 });
                 p.subObjects.push(new Label(labelDef, graph));
             }
+
+            if(def.hasOwnProperty('droplines')) {
+                if(def.droplines.hasOwnProperty('vertical')) {
+                    let verticalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
+                }
+                if(def.droplines.hasOwnProperty('horizontal')) {
+                    let horizontalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));
+                }
+            }
+            
         }
 
     }
+
+
 
     export class Segment extends GraphObject {
 
@@ -59,6 +113,34 @@ module KGAuthor {
             s.layer = 1;
             s.extractCoordinates('a', 'x1', 'y1');
             s.extractCoordinates('b', 'x2', 'y2');
+        }
+
+    }
+
+    export class Dropline extends Segment {
+
+        constructor(def, graph) {
+            def.stroke = 'blue';
+            super(def, graph);
+        }
+
+    }
+
+    export class VerticalDropline extends Dropline {
+
+        constructor(def, graph) {
+            def.a = [def.x, def.y];
+            def.b = [def.x, graph.yScale.min];
+            super(def, graph);
+        }
+    }
+
+    export class HorizontalDropline extends Dropline {
+
+        constructor(def, graph) {
+            def.a = [def.x, def.y];
+            def.b = [graph.xScale.min, def.y];
+            super(def, graph);
         }
 
     }
@@ -78,7 +160,7 @@ module KGAuthor {
     export class Area extends GraphObject {
 
         constructor(def, graph) {
-            if(def.hasOwnProperty('univariateFunctions')) {
+            if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
             super(def, graph);

@@ -18,6 +18,7 @@ module KG {
         params?: ParamDefinition[];
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
+        layout?: TypeAndDef;
 
         // The rest of these are usually generated
         scales?: ScaleDefinition[];
@@ -68,8 +69,17 @@ module KG {
                 divs: data.divs || []
             };
 
+            data.objects = data.objects || [];
+
+            if(data.hasOwnProperty ('layout')) {
+                data.objects.push(data.layout)
+            }
+
+            console.log(data.objects);
+
             parsedData = KGAuthor.parse(data.objects, parsedData);
 
+            console.log(parsedData);
             let view = this;
 
             view.aspectRatio = parsedData.aspectRatio || 1;
