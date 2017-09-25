@@ -194,17 +194,12 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var PositionedObject = /** @class */ (function (_super) {
-        __extends(PositionedObject, _super);
-        function PositionedObject(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                xAxis: { min: 0, max: 1, title: '', orient: 'bottom' },
-                yAxis: { min: 0, max: 1, title: '', orient: 'left' }
-            });
-            _this = _super.call(this, def) || this;
-            var po = _this;
-            po.xScale = new Scale({
+    var Graph = /** @class */ (function (_super) {
+        __extends(Graph, _super);
+        function Graph(def) {
+            var _this = _super.call(this, def) || this;
+            var g = _this;
+            g.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
                 "domainMin": def.xAxis.min,
@@ -212,7 +207,7 @@ var KGAuthor;
                 "rangeMin": def.position.x,
                 "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
             });
-            po.yScale = new Scale({
+            g.yScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "y",
                 "domainMin": def.yAxis.min,
@@ -220,34 +215,6 @@ var KGAuthor;
                 "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
                 "rangeMax": def.position.y
             });
-            po.subObjects = [po.xScale, po.yScale];
-            return _this;
-        }
-        return PositionedObject;
-    }(KGAuthor.AuthoringObject));
-    KGAuthor.PositionedObject = PositionedObject;
-    var GeoGebraContainer = /** @class */ (function (_super) {
-        __extends(GeoGebraContainer, _super);
-        function GeoGebraContainer(def) {
-            var _this = _super.call(this, def) || this;
-            var ggb = _this;
-            ggb.subObjects.push(new KGAuthor.GeoGebraApplet({
-                xScaleName: ggb.xScale.name,
-                yScaleName: ggb.yScale.name,
-                path: def.path,
-                params: def.params
-            }, ggb));
-            console.log('GeoGebra definition:', ggb);
-            return _this;
-        }
-        return GeoGebraContainer;
-    }(PositionedObject));
-    KGAuthor.GeoGebraContainer = GeoGebraContainer;
-    var Graph = /** @class */ (function (_super) {
-        __extends(Graph, _super);
-        function Graph(def) {
-            var _this = _super.call(this, def) || this;
-            var g = _this;
             g.clipPath = new ClipPath({
                 "name": KG.randomString(10),
                 "paths": [new KGAuthor.Rectangle({
@@ -258,7 +225,6 @@ var KGAuthor;
                         inClipPath: true
                     }, g)]
             }, g);
-            g.subObjects.push(g.clipPath);
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -267,14 +233,17 @@ var KGAuthor;
                 type: 'Axis',
                 def: _this.def.yAxis
             });
-            g.def.objects.forEach(function (obj) {
-                g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
+            g.subObjects = _this.def.objects.map(function (obj) {
+                return new KGAuthor[obj.type](obj.def, g);
             });
+            g.subObjects.push(g.xScale);
+            g.subObjects.push(g.yScale);
+            g.subObjects.push(g.clipPath);
             console.log(g);
             return _this;
         }
         return Graph;
-    }(PositionedObject));
+    }(KGAuthor.AuthoringObject));
     KGAuthor.Graph = Graph;
     var GraphObjectGenerator = /** @class */ (function (_super) {
         __extends(GraphObjectGenerator, _super);
@@ -383,16 +352,6 @@ var KGAuthor;
         return Sidebar;
     }(DivObject));
     KGAuthor.Sidebar = Sidebar;
-    var GeoGebraApplet = /** @class */ (function (_super) {
-        __extends(GeoGebraApplet, _super);
-        function GeoGebraApplet(def, graph) {
-            var _this = _super.call(this, def) || this;
-            _this.type = 'GeoGebraApplet';
-            return _this;
-        }
-        return GeoGebraApplet;
-    }(DivObject));
-    KGAuthor.GeoGebraApplet = GeoGebraApplet;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -636,26 +595,6 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(SquarePlusSidebarLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
-    var GeoGebraPlusSidebar = /** @class */ (function (_super) {
-        __extends(GeoGebraPlusSidebar, _super);
-        function GeoGebraPlusSidebar(def) {
-            var _this = _super.call(this, def) || this;
-            var l = _this;
-            var ggbAppletDef = def['ggbApplet'], sidebarDef = def['sidebar'];
-            ggbAppletDef.position = {
-                "x": 0.15,
-                "y": 0.025,
-                "width": 0.738,
-                "height": 0.9
-            };
-            l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
-            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
-            console.log(l.subObjects);
-            return _this;
-        }
-        return GeoGebraPlusSidebar;
-    }(SquarePlusSidebarLayout));
-    KGAuthor.GeoGebraPlusSidebar = GeoGebraPlusSidebar;
     var TwoHorizontalGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(TwoHorizontalGraphsPlusSidebar, _super);
         function TwoHorizontalGraphsPlusSidebar(def) {
@@ -1502,9 +1441,7 @@ var KG;
             if (data.hasOwnProperty('layout')) {
                 data.objects.push(data.layout);
             }
-            console.log(data.objects);
             parsedData = KGAuthor.parse(data.objects, parsedData);
-            console.log(parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData.params, parsedData.restrictions);
@@ -2301,60 +2238,6 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var GeoGebraApplet = /** @class */ (function (_super) {
-        __extends(GeoGebraApplet, _super);
-        function GeoGebraApplet(def) {
-            var _this = this;
-            console.log('creating ggb');
-            def.params = def.params || [];
-            def.params.forEach(function (param) {
-                def[param] = 'params.' + param;
-            });
-            KG.setProperties(def, 'updatables', def.params);
-            KG.setProperties(def, 'constants', ['path']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        GeoGebraApplet.prototype.draw = function (layer) {
-            var div = this;
-            var id = KG.randomString(10);
-            div.rootElement = layer.append('div');
-            div.rootElement.style('position', 'absolute');
-            div.rootElement.attr('id', id);
-            return div;
-        };
-        // update properties
-        GeoGebraApplet.prototype.redraw = function () {
-            var div = this;
-            console.log('redrawing');
-            div.rootElement.style('left', div.xScale.scale(0) + 'px');
-            div.rootElement.style('top', div.yScale.scale(1) + 'px');
-            div.rootElement.style('width', div.xScale.extent);
-            div.rootElement.style('height', div.yScale.extent);
-            if (undefined == div.applet && div.xScale.extent > 0) {
-                div.applet = new GGBApplet({
-                    filename: "/GeoGebra/graphs/" + div.path,
-                    width: div.xScale.extent,
-                    height: div.yScale.extent
-                }, true);
-                div.applet.inject(div.rootElement.attr('id'));
-            }
-            else if (undefined != div.applet) {
-                var applet = document['ggbApplet'];
-                applet.setValue('a', div.a);
-                applet.setWidth(div.xScale.extent);
-                applet.setHeight(div.yScale.extent);
-            }
-            return div;
-        };
-        return GeoGebraApplet;
-    }(KG.ViewObject));
-    KG.GeoGebraApplet = GeoGebraApplet;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
@@ -2503,7 +2386,6 @@ var KG;
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
-/// <reference path="view/divObjects/ggb.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
@@ -2543,4 +2425,38 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
-//# sourceMappingURL=kg.js.map
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var GeoGebra = /** @class */ (function (_super) {
+        __extends(GeoGebra, _super);
+        function GeoGebra(def) {
+            var _this = _super.call(this, def) || this;
+            _this.applet = new GGBApplet({ filename: "/GeoGebra/graphs/" + def.path }, true);
+            return _this;
+        }
+        // create div for text
+        GeoGebra.prototype.draw = function (layer) {
+            var div = this;
+            var id = KG.randomString(10);
+            div.rootElement = layer.append('div');
+            div.rootElement.attr('id', id);
+            div.applet.inject(id);
+            return div;
+        };
+        // update properties
+        GeoGebra.prototype.redraw = function () {
+            var div = this;
+            div.rootElement.style('left', div.xScale.rangeMin);
+            div.rootElement.style('height', div.yScale.rangeMax);
+            div.rootElement.style('width', div.xScale.extent);
+            div.rootElement.style('height', div.yScale.extent);
+            div.updatables.forEach(function (param) {
+                div.applet.getAppletObject().setValue(param, div[param]);
+            });
+            return div;
+        };
+        return GeoGebra;
+    }(KG.DivObject));
+    KG.GeoGebra = GeoGebra;
+})(KG || (KG = {}));

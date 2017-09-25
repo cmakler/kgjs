@@ -24,6 +24,7 @@ module KG {
         public domainMax;
         public rangeMin;
         public rangeMax;
+        public extent;
 
         constructor(def: ScaleDefinition) {
             def.constants = ['rangeMin','rangeMax','axis','name'];

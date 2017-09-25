@@ -86,23 +86,23 @@ module KGAuthor {
                 });
                 p.subObjects.push(new Label(labelDef, graph));
             }
+
+            if(def.hasOwnProperty('droplines')) {
+                if(def.droplines.hasOwnProperty('vertical')) {
+                    let verticalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
+                }
+                if(def.droplines.hasOwnProperty('horizontal')) {
+                    let horizontalDroplineDef = JSON.parse(JSON.stringify(def));
+                    p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));
+                }
+            }
+            
         }
 
     }
 
-    export class Dropline extends GraphObject {
 
-        constructor(def, graph) {
-            super(def, graph);
-
-            const d = this;
-            d.type = 'Segment';
-            d.layer = 0;
-            d.extractCoordinates('point', 'x1', 'y1');
-
-        }
-
-    }
 
     export class Segment extends GraphObject {
 
@@ -113,6 +113,34 @@ module KGAuthor {
             s.layer = 1;
             s.extractCoordinates('a', 'x1', 'y1');
             s.extractCoordinates('b', 'x2', 'y2');
+        }
+
+    }
+
+    export class Dropline extends Segment {
+
+        constructor(def, graph) {
+            def.stroke = 'blue';
+            super(def, graph);
+        }
+
+    }
+
+    export class VerticalDropline extends Dropline {
+
+        constructor(def, graph) {
+            def.a = [def.x, def.y];
+            def.b = [def.x, graph.yScale.min];
+            super(def, graph);
+        }
+    }
+
+    export class HorizontalDropline extends Dropline {
+
+        constructor(def, graph) {
+            def.a = [def.x, def.y];
+            def.b = [graph.xScale.min, def.y];
+            super(def, graph);
         }
 
     }

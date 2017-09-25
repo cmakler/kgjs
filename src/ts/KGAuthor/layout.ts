@@ -44,8 +44,6 @@ module KGAuthor {
             let graphDef = def['graph'],
                 sidebarDef = def['sidebar'];
 
-
-
             graphDef.position = {
                 "x": 0.15,
                 "y": 0.025,
@@ -58,6 +56,30 @@ module KGAuthor {
 
         }
 
+    }
+
+    export class GeoGebraPlusSidebar extends SquarePlusSidebarLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let ggbAppletDef = def['ggbApplet'],
+                sidebarDef = def['sidebar'];
+
+            ggbAppletDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+            console.log(l.subObjects);
+
+        }
 
     }
 

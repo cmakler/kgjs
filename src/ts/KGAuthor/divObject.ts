@@ -31,6 +31,14 @@ module KGAuthor {
 
     }
 
+    export class GeoGebraApplet extends DivObject {
+
+        constructor(def, graph) {
+            super(def);
+            this.type = 'GeoGebraApplet';
+        }
+    }
+
 
 
 

@@ -46,6 +46,7 @@
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/ggb.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 

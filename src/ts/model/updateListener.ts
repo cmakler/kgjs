@@ -25,7 +25,7 @@ module KG {
 
     export class UpdateListener implements IUpdateListener {
 
-        private updatables: string[];
+        public updatables: string[];
         public name: string;
         public id: string;
         public def: UpdateListenerDefinition;

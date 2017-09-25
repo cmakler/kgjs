@@ -75,8 +75,11 @@ module KG {
                 data.objects.push(data.layout)
             }
 
+            console.log(data.objects);
+
             parsedData = KGAuthor.parse(data.objects, parsedData);
 
+            console.log(parsedData);
             let view = this;
 
             view.aspectRatio = parsedData.aspectRatio || 1;

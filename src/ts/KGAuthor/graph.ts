@@ -9,31 +9,36 @@ module KGAuthor {
         orient: string;
     }
 
-    export interface GraphDefinition {
+    export interface PositionedObjectDefinition {
         position: {
             x: any;
             y: any;
             width: any;
             height: any;
         }
-        xAxis: AxisDefinition,
-        yAxis: AxisDefinition,
-        objects: KG.TypeAndDef[]
+        xAxis?: AxisDefinition,
+        yAxis?: AxisDefinition,
 
     }
 
-    export class Graph extends AuthoringObject {
+    export interface GraphDefinition extends PositionedObjectDefinition {
+        objects: KG.TypeAndDef[]
+    }
 
+    export class PositionedObject extends AuthoringObject {
         public xScale;
         public yScale;
-        public clipPath;
 
         constructor(def) {
+
+            KG.setDefaults(def, {
+                xAxis: {min: 0, max: 1, title: '', orient: 'bottom'},
+                yAxis: {min: 0, max: 1, title: '', orient: 'left'}
+            });
             super(def);
 
-            const g = this;
-
-            g.xScale = new Scale({
+            const po = this;
+            po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
                 "domainMin": def.xAxis.min,
@@ -42,7 +47,7 @@ module KGAuthor {
                 "rangeMax": addDefs(def.position.x, def.position.width)
             });
 
-            g.yScale = new Scale({
+            po.yScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "y",
                 "domainMin": def.yAxis.min,
@@ -51,6 +56,34 @@ module KGAuthor {
                 "rangeMax": def.position.y
             });
 
+            po.subObjects = [po.xScale, po.yScale];
+        }
+
+    }
+
+    export class GeoGebraContainer extends PositionedObject {
+
+        constructor(def) {
+            super(def);
+            const ggb = this;
+            ggb.subObjects.push(new GeoGebraApplet({
+                    xScaleName: ggb.xScale.name,
+                    yScaleName: ggb.yScale.name,
+                    path: def.path,
+                    params: def.params
+                },ggb))
+            console.log('GeoGebra definition:', ggb)
+        }
+    }
+
+    export class Graph extends PositionedObject {
+
+        public clipPath;
+
+        constructor(def) {
+            super(def);
+
+            const g = this;
             g.clipPath = new ClipPath({
                 "name": KG.randomString(10),
                 "paths": [new Rectangle({
@@ -61,7 +94,7 @@ module KGAuthor {
                     inClipPath: true
                 }, g)]
             }, g);
-
+            g.subObjects.push(g.clipPath);
             g.def.objects.push({
                 type: 'Axis',
                 def: this.def.xAxis
@@ -70,12 +103,10 @@ module KGAuthor {
                 type: 'Axis',
                 def: this.def.yAxis
             });
-            g.subObjects = this.def.objects.map(function (obj) {
-                return new KGAuthor[obj.type](obj.def, g)
+            g.def.objects.forEach(function (obj) {
+                g.subObjects.push(new KGAuthor[obj.type](obj.def, g))
             });
-            g.subObjects.push(g.xScale);
-            g.subObjects.push(g.yScale);
-            g.subObjects.push(g.clipPath);
+
             console.log(g);
 
         }
@@ -91,7 +122,7 @@ module KGAuthor {
             if (graph) {
                 this.def.xScaleName = graph.xScale.name;
                 this.def.yScaleName = graph.yScale.name;
-                if(!def.inClipPath) {
+                if (!def.inClipPath) {
                     this.def.clipPathName = def.clipPathName || graph.clipPath.name;
                 }
 
