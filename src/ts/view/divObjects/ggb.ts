@@ -28,10 +28,10 @@ module KG {
         // create div for text
         draw(layer) {
             let div = this;
-            const id = KG.randomString(10);
+            div.id = KG.randomString(10);
             div.rootElement = layer.append('div');
             div.rootElement.style('position', 'absolute');
-            div.rootElement.attr('id', id);
+            div.rootElement.append('div').attr('id', div.id);
             return div;
         }
 
@@ -39,22 +39,25 @@ module KG {
         redraw() {
             let div = this;
             console.log('redrawing');
+            const width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)),
+                height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
             div.rootElement.style('left', div.xScale.scale(0) + 'px');
             div.rootElement.style('top', div.yScale.scale(1) + 'px');
-            div.rootElement.style('width', div.xScale.extent);
-            div.rootElement.style('height', div.yScale.extent);
+            div.rootElement.style('width', width + 'px');
+            div.rootElement.style('height', height + 'px');
             if (undefined == div.applet && div.xScale.extent > 0) {
                 div.applet = new GGBApplet({
                     filename: "/GeoGebra/graphs/" + div.path,
-                    width: div.xScale.extent,
-                    height: div.yScale.extent
+                    width: width,
+                    height: height
                 }, true);
-                div.applet.inject(div.rootElement.attr('id'));
+                div.applet.inject(div.id);
             } else if (undefined != div.applet) {
                 const applet = document['ggbApplet'];
+                console.log('setting width to ',width);
                 applet.setValue('a', div.a);
-                applet.setWidth(div.xScale.extent);
-                applet.setHeight(div.yScale.extent);
+                applet.setWidth(width);
+                applet.setHeight(height);
             }
             return div;
         }
