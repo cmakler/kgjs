@@ -656,6 +656,32 @@ var KGAuthor;
         return GeoGebraPlusSidebar;
     }(SquarePlusSidebarLayout));
     KGAuthor.GeoGebraPlusSidebar = GeoGebraPlusSidebar;
+    var GeoGebraPlusGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(GeoGebraPlusGraphPlusSidebar, _super);
+        function GeoGebraPlusGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var ggbAppletDef = def['ggbApplet'], graphDef = def['graph'], sidebarDef = def['sidebar'];
+            ggbAppletDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return GeoGebraPlusGraphPlusSidebar;
+    }(WideRectanglePlusSidebarLayout));
+    KGAuthor.GeoGebraPlusGraphPlusSidebar = GeoGebraPlusGraphPlusSidebar;
     var TwoHorizontalGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(TwoHorizontalGraphsPlusSidebar, _super);
         function TwoHorizontalGraphsPlusSidebar(def) {
@@ -930,6 +956,17 @@ var KGAuthor;
                         samplePoints: 2
                     },
                     show: def.set
+                }, graph));
+            }
+            if (def.costlier) {
+                subObjects.push(new KGAuthor.Area({
+                    fill: "red",
+                    univariateFunction1: {
+                        fn: yIntercept + " - " + priceRatio + "*x",
+                        samplePoints: 2
+                    },
+                    show: def.costlier,
+                    above: true
                 }, graph));
             }
             return _this;
@@ -2318,36 +2355,64 @@ var KG;
         // create div for text
         GeoGebraApplet.prototype.draw = function (layer) {
             var div = this;
-            div.id = KG.randomString(10);
+            var id = KG.randomString(10);
             div.rootElement = layer.append('div');
             div.rootElement.style('position', 'absolute');
-            div.rootElement.append('div').attr('id', div.id);
+            div.rootElement.append('div').attr('id', id);
+            var applet = new GGBApplet({
+                perspective: "T",
+                borderColor: "#FFFFFF",
+                dataParamId: id
+            }, true);
+            applet.setHTML5Codebase('../../../GeoGebra/HTML5/5.0/web3d/');
+            applet.inject(id);
             return div;
+        };
+        GeoGebraApplet.prototype.establishGGB = function (width, height) {
+            var div = this;
+            console.log('called establishGGB');
+            if (undefined != document['ggbApplet']) {
+                var commands = ['a = 0.5', 'u(x,y) = x^a*y^(1-a)', 'indifferenceCurves = Sequence(Curve(t,(n/t^a)^(1/(1-a)),n,t,0,60),n,5,50,5)'];
+                console.log('establishingGGB object');
+                div.applet = document['ggbApplet'];
+                commands.forEach(function (c) {
+                    div.applet.evalCommand(c);
+                });
+                div.applet.setColor('u', 197, 176, 213);
+                div.applet.setFilling('u', 0.2);
+                div.applet.setColor('indifferenceCurves', 148, 103, 189);
+                div.applet.setAxisLabels(3, "Units of Good 1", "Units of Good 2", "Utility");
+            }
+        };
+        GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
+            var div = this;
+            console.log('called updateGGB');
+            if (undefined != applet) {
+                applet.setCoordSystem(0, 50, 0, 50, 0, 50);
+                applet.setAxisSteps(3, 60, 60, 60);
+                applet.setWidth(width);
+                applet.setHeight(height);
+                applet.setValue('a', div.a);
+            }
         };
         // update properties
         GeoGebraApplet.prototype.redraw = function () {
             var div = this;
-            console.log('redrawing');
             var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
             div.rootElement.style('left', div.xScale.scale(0) + 'px');
             div.rootElement.style('top', div.yScale.scale(1) + 'px');
             div.rootElement.style('width', width + 'px');
             div.rootElement.style('height', height + 'px');
-            if (undefined == div.applet && div.xScale.extent > 0) {
-                div.applet = new GGBApplet({
-                    filename: "/GeoGebra/graphs/" + div.path,
-                    width: width,
-                    height: height
-                }, true);
-                div.applet.inject(div.id);
-            }
-            else if (undefined != div.applet) {
-                var applet = document['ggbApplet'];
-                console.log('setting width to ', width);
-                applet.setValue('a', div.a);
-                applet.setWidth(width);
-                applet.setHeight(height);
-            }
+            console.log('redrawing');
+            var checkExist = setInterval(function () {
+                if (undefined != div.applet) {
+                    div.updateGGB(div.applet, width, height);
+                    clearInterval(checkExist);
+                }
+                else {
+                    div.establishGGB(width, height);
+                }
+            }, 100); // check every 100ms
             return div;
         };
         return GeoGebraApplet;

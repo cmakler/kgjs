@@ -60,6 +60,18 @@ module KGAuthor {
                     show: def.set
                 }, graph));
             }
+
+            if (def.costlier) {
+                subObjects.push(new Area({
+                    fill: "red",
+                    univariateFunction1: {
+                        fn: `${yIntercept} - ${priceRatio}*x`,
+                        samplePoints: 2
+                    },
+                    show: def.costlier,
+                    above:true
+                }, graph));
+            }
         }
     }
 

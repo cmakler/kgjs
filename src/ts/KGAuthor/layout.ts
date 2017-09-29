@@ -83,6 +83,39 @@ module KGAuthor {
 
     }
 
+    export class GeoGebraPlusGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let ggbAppletDef = def['ggbApplet'],
+                graphDef = def['graph'],
+                sidebarDef = def['sidebar'];
+
+            ggbAppletDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new Graph(graphDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+
+
+    }
+
     export class TwoHorizontalGraphsPlusSidebar extends WideRectanglePlusSidebarLayout {
 
         constructor(def) {
