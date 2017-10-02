@@ -38,6 +38,7 @@
 /// <reference path="view/viewObjects/point.ts" />
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
+/// <reference path="view/viewObjects/ggbObject.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/div.ts" />
@@ -46,7 +47,7 @@
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
-/// <reference path="view/divObjects/ggb.ts"/>
+/// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 

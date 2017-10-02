@@ -231,13 +231,9 @@ var KGAuthor;
         function GeoGebraContainer(def) {
             var _this = _super.call(this, def) || this;
             var ggb = _this;
-            ggb.subObjects.push(new KGAuthor.GeoGebraApplet({
-                xScaleName: ggb.xScale.name,
-                yScaleName: ggb.yScale.name,
-                path: def.path,
-                params: def.params
-            }, ggb));
-            console.log('GeoGebra definition:', ggb);
+            def.xScaleName = ggb.xScale.name;
+            def.yScaleName = ggb.yScale.name;
+            ggb.subObjects.push(new KGAuthor.GeoGebraApplet(def, ggb));
             return _this;
         }
         return GeoGebraContainer;
@@ -1872,7 +1868,7 @@ var KG;
                 intercept: 0
             });
             KG.setProperties(def, 'constants', ['orient']);
-            KG.setProperties(def, 'updatables', ['ticks', 'intercept']);
+            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2078,6 +2074,46 @@ var KG;
         return Area;
     }(KG.ViewObject));
     KG.Area = Area;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var GeoGebraObject = /** @class */ (function (_super) {
+        __extends(GeoGebraObject, _super);
+        function GeoGebraObject(def) {
+            var _this = this;
+            KG.setProperties(def, 'constants', ['command', 'color']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        GeoGebraObject.prototype.establishGGB = function (applet) {
+            // from https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+            function hexToRgb(hex) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+            var obj = this;
+            console.log('sending commands to applet', applet);
+            // set command
+            var command = obj.name + " = " + obj.command;
+            console.log('sending command ', obj.name + " = " + obj.command);
+            applet.evalCommand(command);
+            if (obj.hasOwnProperty('opacity')) {
+                applet.setFilling(obj.opacity);
+            }
+            var color = hexToRgb(obj.color);
+            console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
+            if (color) {
+                applet.setColor(obj.name, color.r, color.g, color.b);
+            }
+        };
+        return GeoGebraObject;
+    }(KG.ViewObject));
+    KG.GeoGebraObject = GeoGebraObject;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -2342,14 +2378,23 @@ var KG;
         __extends(GeoGebraApplet, _super);
         function GeoGebraApplet(def) {
             var _this = this;
-            console.log('creating ggb');
-            def.params = def.params || [];
+            KG.setDefaults(def, {
+                params: [],
+                objects: [],
+                axisLabels: []
+            });
             def.params.forEach(function (param) {
                 def[param] = 'params.' + param;
             });
             KG.setProperties(def, 'updatables', def.params);
-            KG.setProperties(def, 'constants', ['path']);
+            KG.setProperties(def, 'constants', ['axes', 'params']);
             _this = _super.call(this, def) || this;
+            var div = _this;
+            div.objects = def.objects.map(function (objDef) {
+                objDef.model = def.model;
+                return new KG.GeoGebraObject(objDef);
+            });
+            console.log('created GGB javascript object ', _this);
             return _this;
         }
         // create div for text
@@ -2368,31 +2413,55 @@ var KG;
             applet.inject(id);
             return div;
         };
-        GeoGebraApplet.prototype.establishGGB = function (width, height) {
+        GeoGebraApplet.prototype.establishGGB = function () {
             var div = this;
             console.log('called establishGGB');
             if (undefined != document['ggbApplet']) {
-                var commands = ['a = 0.5', 'u(x,y) = x^a*y^(1-a)', 'indifferenceCurves = Sequence(Curve(t,(n/t^a)^(1/(1-a)),n,t,0,60),n,5,50,5)'];
-                console.log('establishingGGB object');
+                console.log('applet exists');
                 div.applet = document['ggbApplet'];
-                commands.forEach(function (c) {
-                    div.applet.evalCommand(c);
+                div.params.forEach(function (p) {
+                    var establishParamCommand = p + " = " + div.model.currentParamValues()[p];
+                    console.log('setting param using command ', establishParamCommand);
+                    div.applet.evalCommand(establishParamCommand);
                 });
-                div.applet.setColor('u', 197, 176, 213);
-                div.applet.setFilling('u', 0.2);
-                div.applet.setColor('indifferenceCurves', 148, 103, 189);
-                div.applet.setAxisLabels(3, "Units of Good 1", "Units of Good 2", "Utility");
+                div.objects.forEach(function (obj) {
+                    obj.establishGGB(div.applet);
+                });
+            }
+            else {
+                console.log('applet does not exist');
             }
         };
         GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
             var div = this;
             console.log('called updateGGB');
             if (undefined != applet) {
-                applet.setCoordSystem(0, 50, 0, 50, 0, 50);
-                applet.setAxisSteps(3, 60, 60, 60);
+                console.log('applet exists');
+                console.log('setting width to ', width);
                 applet.setWidth(width);
+                console.log('setting height to ', height);
                 applet.setHeight(height);
-                applet.setValue('a', div.a);
+                if (div.axes.length == 3) {
+                    console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
+                    applet.setCoordSystem(div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
+                    console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                }
+                else {
+                    applet.setCoordSystem(div.axes[0].scale.domainMin, div.axes[0].scale.domainMax, div.axes[1].scale.domainMin, div.axes[1].scale.domainMax);
+                    applet.setAxisSteps(2, div.axes[0].step, div.axes[1].step);
+                    applet.setAxisLabels(2, div.axes[0].label, div.axes[1].label);
+                }
+                if (div.hasOwnProperty('params')) {
+                    div.params.forEach(function (param) {
+                        applet.setValue(param, div[param]);
+                    });
+                }
+            }
+            else {
+                console.log('applet does not exist');
             }
         };
         // update properties
@@ -2410,7 +2479,7 @@ var KG;
                     clearInterval(checkExist);
                 }
                 else {
-                    div.establishGGB(width, height);
+                    div.establishGGB();
                 }
             }, 100); // check every 100ms
             return div;
@@ -2563,6 +2632,7 @@ var KG;
 /// <reference path="view/viewObjects/point.ts" />
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
+/// <reference path="view/viewObjects/ggbObject.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/div.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
@@ -2570,7 +2640,7 @@ var KG;
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
-/// <reference path="view/divObjects/ggb.ts"/>
+/// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page

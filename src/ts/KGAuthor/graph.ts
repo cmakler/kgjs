@@ -66,13 +66,9 @@ module KGAuthor {
         constructor(def) {
             super(def);
             const ggb = this;
-            ggb.subObjects.push(new GeoGebraApplet({
-                    xScaleName: ggb.xScale.name,
-                    yScaleName: ggb.yScale.name,
-                    path: def.path,
-                    params: def.params
-                },ggb))
-            console.log('GeoGebra definition:', ggb)
+            def.xScaleName = ggb.xScale.name;
+            def.yScaleName = ggb.yScale.name;
+            ggb.subObjects.push(new GeoGebraApplet(def,ggb));
         }
     }
 

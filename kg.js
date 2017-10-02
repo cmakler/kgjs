@@ -194,12 +194,17 @@ var KGAuthor;
 /// <reference path="../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Graph = /** @class */ (function (_super) {
-        __extends(Graph, _super);
-        function Graph(def) {
-            var _this = _super.call(this, def) || this;
-            var g = _this;
-            g.xScale = new Scale({
+    var PositionedObject = /** @class */ (function (_super) {
+        __extends(PositionedObject, _super);
+        function PositionedObject(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                xAxis: { min: 0, max: 1, title: '', orient: 'bottom' },
+                yAxis: { min: 0, max: 1, title: '', orient: 'left' }
+            });
+            _this = _super.call(this, def) || this;
+            var po = _this;
+            po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
                 "domainMin": def.xAxis.min,
@@ -207,7 +212,7 @@ var KGAuthor;
                 "rangeMin": def.position.x,
                 "rangeMax": KGAuthor.addDefs(def.position.x, def.position.width)
             });
-            g.yScale = new Scale({
+            po.yScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "y",
                 "domainMin": def.yAxis.min,
@@ -215,6 +220,34 @@ var KGAuthor;
                 "rangeMin": KGAuthor.addDefs(def.position.y, def.position.height),
                 "rangeMax": def.position.y
             });
+            po.subObjects = [po.xScale, po.yScale];
+            return _this;
+        }
+        return PositionedObject;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.PositionedObject = PositionedObject;
+    var GeoGebraContainer = /** @class */ (function (_super) {
+        __extends(GeoGebraContainer, _super);
+        function GeoGebraContainer(def) {
+            var _this = _super.call(this, def) || this;
+            var ggb = _this;
+            ggb.subObjects.push(new KGAuthor.GeoGebraApplet({
+                xScaleName: ggb.xScale.name,
+                yScaleName: ggb.yScale.name,
+                path: def.path,
+                params: def.params
+            }, ggb));
+            console.log('GeoGebra definition:', ggb);
+            return _this;
+        }
+        return GeoGebraContainer;
+    }(PositionedObject));
+    KGAuthor.GeoGebraContainer = GeoGebraContainer;
+    var Graph = /** @class */ (function (_super) {
+        __extends(Graph, _super);
+        function Graph(def) {
+            var _this = _super.call(this, def) || this;
+            var g = _this;
             g.clipPath = new ClipPath({
                 "name": KG.randomString(10),
                 "paths": [new KGAuthor.Rectangle({
@@ -225,6 +258,7 @@ var KGAuthor;
                         inClipPath: true
                     }, g)]
             }, g);
+            g.subObjects.push(g.clipPath);
             g.def.objects.push({
                 type: 'Axis',
                 def: _this.def.xAxis
@@ -233,17 +267,14 @@ var KGAuthor;
                 type: 'Axis',
                 def: _this.def.yAxis
             });
-            g.subObjects = _this.def.objects.map(function (obj) {
-                return new KGAuthor[obj.type](obj.def, g);
+            g.def.objects.forEach(function (obj) {
+                g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
             });
-            g.subObjects.push(g.xScale);
-            g.subObjects.push(g.yScale);
-            g.subObjects.push(g.clipPath);
             console.log(g);
             return _this;
         }
         return Graph;
-    }(KGAuthor.AuthoringObject));
+    }(PositionedObject));
     KGAuthor.Graph = Graph;
     var GraphObjectGenerator = /** @class */ (function (_super) {
         __extends(GraphObjectGenerator, _super);
@@ -352,6 +383,16 @@ var KGAuthor;
         return Sidebar;
     }(DivObject));
     KGAuthor.Sidebar = Sidebar;
+    var GeoGebraApplet = /** @class */ (function (_super) {
+        __extends(GeoGebraApplet, _super);
+        function GeoGebraApplet(def, graph) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'GeoGebraApplet';
+            return _this;
+        }
+        return GeoGebraApplet;
+    }(DivObject));
+    KGAuthor.GeoGebraApplet = GeoGebraApplet;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -595,6 +636,52 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(SquarePlusSidebarLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var GeoGebraPlusSidebar = /** @class */ (function (_super) {
+        __extends(GeoGebraPlusSidebar, _super);
+        function GeoGebraPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var ggbAppletDef = def['ggbApplet'], sidebarDef = def['sidebar'];
+            ggbAppletDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            console.log(l.subObjects);
+            return _this;
+        }
+        return GeoGebraPlusSidebar;
+    }(SquarePlusSidebarLayout));
+    KGAuthor.GeoGebraPlusSidebar = GeoGebraPlusSidebar;
+    var GeoGebraPlusGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(GeoGebraPlusGraphPlusSidebar, _super);
+        function GeoGebraPlusGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var ggbAppletDef = def['ggbApplet'], graphDef = def['graph'], sidebarDef = def['sidebar'];
+            ggbAppletDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return GeoGebraPlusGraphPlusSidebar;
+    }(WideRectanglePlusSidebarLayout));
+    KGAuthor.GeoGebraPlusGraphPlusSidebar = GeoGebraPlusGraphPlusSidebar;
     var TwoHorizontalGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(TwoHorizontalGraphsPlusSidebar, _super);
         function TwoHorizontalGraphsPlusSidebar(def) {
@@ -869,6 +956,17 @@ var KGAuthor;
                         samplePoints: 2
                     },
                     show: def.set
+                }, graph));
+            }
+            if (def.costlier) {
+                subObjects.push(new KGAuthor.Area({
+                    fill: "red",
+                    univariateFunction1: {
+                        fn: yIntercept + " - " + priceRatio + "*x",
+                        samplePoints: 2
+                    },
+                    show: def.costlier,
+                    above: true
                 }, graph));
             }
             return _this;
@@ -1441,7 +1539,9 @@ var KG;
             if (data.hasOwnProperty('layout')) {
                 data.objects.push(data.layout);
             }
+            console.log(data.objects);
             parsedData = KGAuthor.parse(data.objects, parsedData);
+            console.log(parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData.params, parsedData.restrictions);
@@ -2238,6 +2338,100 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var GeoGebraApplet = /** @class */ (function (_super) {
+        __extends(GeoGebraApplet, _super);
+        function GeoGebraApplet(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                params: [],
+                commands: [],
+                styles: [],
+                axisLabels: []
+            });
+            def.params = def.params || [];
+            def.params.forEach(function (param) {
+                def[param] = 'params.' + param;
+            });
+            KG.setProperties(def, 'updatables', def.params);
+            KG.setProperties(def, 'constants', ['axisLabels', 'commands', 'styles']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        GeoGebraApplet.prototype.draw = function (layer) {
+            var div = this;
+            var id = KG.randomString(10);
+            div.rootElement = layer.append('div');
+            div.rootElement.style('position', 'absolute');
+            div.rootElement.append('div').attr('id', id);
+            var applet = new GGBApplet({
+                perspective: "T",
+                borderColor: "#FFFFFF",
+                dataParamId: id
+            }, true);
+            applet.setHTML5Codebase('../../../GeoGebra/HTML5/5.0/web3d/');
+            applet.inject(id);
+            return div;
+        };
+        GeoGebraApplet.prototype.establishGGB = function (width, height) {
+            var div = this;
+            console.log('called establishGGB');
+            if (undefined != document['ggbApplet']) {
+                var commands = ['a = 0.5', 'u(x,y) = x^a*y^(1-a)', 'indifferenceCurves = Sequence(Curve(t,(n/t^a)^(1/(1-a)),n,t,0,60),n,5,50,5)'];
+                console.log('establishingGGB object');
+                div.applet = document['ggbApplet'];
+                div.params.forEach(function (p) {
+                    var establishParamCommand = p + " = " + div.model.currentParamValues()[p];
+                    console.log('setting param using command ', establishParamCommand);
+                    div.applet.evalCommand(establishParamCommand);
+                });
+                div.commands.forEach(function (c) {
+                    div.applet.evalCommand(c);
+                });
+                div.applet.setColor('u', 197, 176, 213);
+                div.applet.setFilling('u', 0.2);
+                div.applet.setColor('indifferenceCurves', 148, 103, 189);
+                div.applet.setAxisLabels(3, "Units of Good 1", "Units of Good 2", "Utility");
+            }
+        };
+        GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
+            var div = this;
+            console.log('called updateGGB');
+            if (undefined != applet) {
+                applet.setCoordSystem(0, 50, 0, 50, 0, 50);
+                applet.setAxisSteps(3, 60, 60, 60);
+                applet.setWidth(width);
+                applet.setHeight(height);
+                applet.setValue('a', div.a);
+            }
+        };
+        // update properties
+        GeoGebraApplet.prototype.redraw = function () {
+            var div = this;
+            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
+            div.rootElement.style('left', div.xScale.scale(0) + 'px');
+            div.rootElement.style('top', div.yScale.scale(1) + 'px');
+            div.rootElement.style('width', width + 'px');
+            div.rootElement.style('height', height + 'px');
+            console.log('redrawing');
+            var checkExist = setInterval(function () {
+                if (undefined != div.applet) {
+                    div.updateGGB(div.applet, width, height);
+                    clearInterval(checkExist);
+                }
+                else {
+                    div.establishGGB(width, height);
+                }
+            }, 100); // check every 100ms
+            return div;
+        };
+        return GeoGebraApplet;
+    }(KG.ViewObject));
+    KG.GeoGebraApplet = GeoGebraApplet;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
@@ -2386,6 +2580,7 @@ var KG;
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/ggb.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page
@@ -2428,35 +2623,44 @@ window.onresize = function () {
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var GeoGebra = /** @class */ (function (_super) {
-        __extends(GeoGebra, _super);
-        function GeoGebra(def) {
-            var _this = _super.call(this, def) || this;
-            _this.applet = new GGBApplet({ filename: "/GeoGebra/graphs/" + def.path }, true);
+    var GeoGebraObject = /** @class */ (function (_super) {
+        __extends(GeoGebraObject, _super);
+        function GeoGebraObject(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'blue',
+                opacity: 1,
+                stroke: 'white',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 6.5
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
+            _this = _super.call(this, def) || this;
             return _this;
         }
-        // create div for text
-        GeoGebra.prototype.draw = function (layer) {
-            var div = this;
-            var id = KG.randomString(10);
-            div.rootElement = layer.append('div');
-            div.rootElement.attr('id', id);
-            div.applet.inject(id);
-            return div;
+        // create SVG elements
+        GeoGebraObject.prototype.draw = function (layer) {
+            var p = this;
+            p.rootElement = layer.append('g'); // SVG group
+            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.rootElement.append('circle');
+            //p.addClipPath()
+            return p.addInteraction();
         };
         // update properties
-        GeoGebra.prototype.redraw = function () {
-            var div = this;
-            div.rootElement.style('left', div.xScale.rangeMin);
-            div.rootElement.style('height', div.yScale.rangeMax);
-            div.rootElement.style('width', div.xScale.extent);
-            div.rootElement.style('height', div.yScale.extent);
-            div.updatables.forEach(function (param) {
-                div.applet.getAppletObject().setValue(param, div[param]);
-            });
-            return div;
+        GeoGebraObject.prototype.redraw = function () {
+            var p = this;
+            p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
+            p.circle.attr('r', p.r);
+            p.circle.style('fill', p.fill);
+            p.circle.style('opacity', p.opacity);
+            p.circle.style('stroke', p.stroke);
+            p.circle.style('stroke-width', p.strokeWidth + "px");
+            p.circle.style('stroke-opacity', p.strokeOpacity);
+            return p;
         };
-        return GeoGebra;
-    }(KG.DivObject));
-    KG.GeoGebra = GeoGebra;
+        return GeoGebraObject;
+    }(KG.ViewObject));
+    KG.GeoGebraObject = GeoGebraObject;
 })(KG || (KG = {}));

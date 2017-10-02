@@ -8,13 +8,15 @@ module KG {
         orient: 'top' | 'bottom' | 'left' | 'right';
         intercept?: any;
         ticks?: any;
+        label?: string;
     }
 
     export class Axis extends ViewObject {
 
         private orient: 'top' | 'bottom' | 'left' | 'right';
         private intercept: any;
-        private ticks;
+        public ticks;
+        public label;
 
         constructor(def: AxisDefinition) {
 
@@ -24,7 +26,7 @@ module KG {
             });
 
             setProperties(def,'constants',['orient']);
-            setProperties(def, 'updatables',['ticks', 'intercept']);
+            setProperties(def, 'updatables',['ticks', 'intercept', 'label']);
 
             super(def);
 
