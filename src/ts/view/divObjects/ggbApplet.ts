@@ -19,6 +19,7 @@ module KG {
         private applet;
         private objects: GeoGebraObject[];
         private axes: Axis[];
+        private axesEstablished: boolean;
 
         constructor(def: GeoGebraAppletDefinition) {
             setDefaults(def, {
@@ -38,6 +39,7 @@ module KG {
                 return new GeoGebraObject(objDef)
             });
             console.log('created GGB javascript object ', this)
+            div.axesEstablished = false;
         }
 
         // create div for text
@@ -48,6 +50,7 @@ module KG {
             div.rootElement.style('position', 'absolute');
             div.rootElement.append('div').attr('id', id);
             let applet = new GGBApplet({
+                allowStyleBar: true,
                 perspective: "T",
                 borderColor: "#FFFFFF",
                 dataParamId: id
@@ -57,7 +60,7 @@ module KG {
             return div;
         }
 
-        establishGGB() {
+        establishGGB(width, height) {
             let div = this;
             console.log('called establishGGB');
             if (undefined != document['ggbApplet']) {
@@ -71,8 +74,7 @@ module KG {
                 div.objects.forEach(function (obj) {
                     obj.establishGGB(div.applet);
                 });
-
-
+                div.updateGGB(div.applet, width, height);
             }
             else {
                 console.log('applet does not exist')
@@ -95,10 +97,15 @@ module KG {
                     applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
                     console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
+                    applet.setColor('zAxis', 0, 0, 0);
                 } else {
                     applet.setCoordSystem(div.axes[0].scale.domainMin, div.axes[0].scale.domainMax, div.axes[1].scale.domainMin, div.axes[1].scale.domainMax);
                     applet.setAxisSteps(2, div.axes[0].step, div.axes[1].step);
                     applet.setAxisLabels(2, div.axes[0].label, div.axes[1].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
                 }
 
                 if (div.hasOwnProperty('params')) {
@@ -127,7 +134,7 @@ module KG {
                     div.updateGGB(div.applet, width, height);
                     clearInterval(checkExist);
                 } else {
-                    div.establishGGB();
+                    div.establishGGB(width, height);
                 }
             }, 100); // check every 100ms
             return div;
