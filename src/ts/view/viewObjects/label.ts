@@ -26,6 +26,19 @@ module KG {
 
         constructor(def: LabelDefinition) {
 
+            if(def.x == 'AXIS') {
+                def.x = 0;
+                def.align = 'right';
+                def.xPixelOffset = -6;
+            }
+
+            if(def.y == 'AXIS') {
+                def.y = 0;
+                def.yPixelOffset = -14;
+            }
+
+
+
             //establish property defaults
             setDefaults(def, {
                 xPixelOffset: 0,
@@ -51,6 +64,7 @@ module KG {
             label.rootElement = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
+                .style('background-color', 'white')
                 .style('font-size', label.fontSize + 'pt');
 
             return label.addInteraction();
@@ -61,7 +75,9 @@ module KG {
             let label = this;
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
                 y = label.yScale.scale(label.y) - (+label.yPixelOffset);
-            katex.render(label.text, label.rootElement.node());
+            if(undefined != label.text) {
+                katex.render(label.text.toString(), label.rootElement.node());
+            }
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
             const width = label.rootElement.node().clientWidth,
@@ -71,7 +87,7 @@ module KG {
             if (label.align == 'left') {
                 alignDelta = 0;
                 label.rootElement.style('text-align','left');
-            } else if (this.align == 'right') {
+            } else if (label.align == 'right') {
                 // move left by half the width of the div if right aligned
                 alignDelta = width + 2;
                 label.rootElement.style('text-align','right');
@@ -81,9 +97,9 @@ module KG {
             // Set top pixel margin; default to centered on y coordinate
             let vAlignDelta = height*0.5;
             // Default to centered on x coordinate
-            if (this.valign == 'top') {
+            if (label.valign == 'top') {
                 vAlignDelta = 0;
-            } else if (this.valign == 'bottom') {
+            } else if (label.valign == 'bottom') {
                 vAlignDelta = height;
             }
             label.rootElement.style('top',(y - vAlignDelta) + 'px');
