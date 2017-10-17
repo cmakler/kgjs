@@ -27,7 +27,16 @@ module KGAuthor {
         public fillBelowRect;
         public fillAboveRect;
 
-
+        constructor(def) {
+            super(def);
+            let fn = this;
+            if(def.hasOwnProperty('exponents')) {
+                fn.exponents = def.exponents;
+            }
+            if(def.hasOwnProperty('coefficients')) {
+                fn.coefficients = def.coefficients;
+            }
+        }
 
         value(x) {
             return '';
@@ -77,14 +86,15 @@ module KGAuthor {
             fns.forEach(function (fn) {
                 let areaDef = JSON.parse(JSON.stringify(def));
                 areaDef.univariateFunction1 = fn;
-                areaDef.inClipPath = true;
                 areaDef.above = true;
                 objs.push(new Area(areaDef, graph));
             });
             if (fn.fillAboveRect) {
+                fn.fillAboveRect.fill = def.fill;
+                fn.fillAboveRect.inClipPath = true;
                 objs.push(new Rectangle(fn.fillAboveRect,graph));
             }
-            const clipPathName = KG.randomString(10)
+            const clipPathName = KG.randomString(10);
             return [
                 new Rectangle({
                     clipPathName: clipPathName,
@@ -141,6 +151,95 @@ module KGAuthor {
                     "fn": `(${level}/x^(${e[0]}))^(1/(${e[1]}))`,
                     "ind": "x",
                     "min": xMin,
+                    "samplePoints": 30
+                }
+            ]
+        }
+    }
+
+    export class QuasilinearFunction extends MultivariateFunction {
+
+        constructor(def) {
+            super(def);
+            let fn = this;
+            fn.interpolation = 'curveMonotoneX';
+        }
+
+        value(x) {
+            const c = this.coefficients;
+            return `(0.5*(${c[0]}*log(${x[0]})+${x[1]}))`;
+        }
+
+        levelSet(def) {
+            const c = this.coefficients,
+                level = def.level || this.value(def.point);
+            return [
+                {
+                    "fn": `(2*(${level})-${c[0]}*log(x))`,
+                    "ind": "x",
+                    "samplePoints": 100
+                }
+            ]
+        }
+    }
+
+    export class CES extends MultivariateFunction {
+
+        public r;
+
+        constructor(def) {
+            super(def);
+            let fn = this;
+            fn.interpolation = 'curveMonotoneX';
+            fn.r = def.r;
+        }
+
+
+
+
+    }
+
+    export class EllipseFunction extends MultivariateFunction {
+
+        constructor(def) {
+            super(def);
+            let fn = this;
+            fn.interpolation = 'curveMonotoneX';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [def.alpha, subtractDefs(1, def.alpha)];
+            }
+        }
+
+        value(x) {
+            const c = this.coefficients;
+            return `(${c[0]})*(${x[0]})^2+(${c[1]})*(${x[1]})^2`;
+        }
+
+        levelSet(def) {
+
+            const c = this.coefficients,
+                level = def.level || this.value(def.point),
+                max = `((${level})/(${c[0]}+${c[1]}))^(0.5)`;
+            this.fillAboveRect = {
+                x1: max,
+                x2: 50,
+                y1: max,
+                y2: 50,
+                show: def.show
+            };
+            return [
+                {
+                    "fn": `((${level}-(${c[1]})*y*y)/(${c[0]}))^(0.5)`,
+                    "ind": "y",
+                    "min": 0,
+                    "max": max,
+                    "samplePoints": 30
+                },
+                {
+                    "fn": `((${level}-(${c[0]})*x*x)/(${c[1]}))^(0.5)`,
+                    "ind": "x",
+                    "min": 0,
+                    "max": max,
                     "samplePoints": 30
                 }
             ]
