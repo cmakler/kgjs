@@ -10,10 +10,18 @@ module KG {
     export class GeoGebraObject extends ViewObject {
 
         private command;
+        private color;
+        private lineThickness;
 
         constructor(def: GeoGebraObjectDefinition) {
 
-            setProperties(def, 'constants', ['command','color']);
+            setDefaults(def, {
+                color: '#999999',
+                lineThickness: 1,
+                lineStyle: 0
+            });
+
+            setProperties(def, 'constants', ['command', 'color', 'lineThickness', 'lineStyle']);
             super(def);
         }
 
@@ -35,16 +43,18 @@ module KG {
 
             // set command
             const command = obj.name + " = " + obj.command;
-            console.log('sending command ',obj.name + " = " + obj.command);
+            console.log('sending command ', obj.name + " = " + obj.command);
             applet.evalCommand(command);
             if (obj.hasOwnProperty('opacity')) {
                 applet.setFilling(obj.opacity);
             }
             const color = hexToRgb(obj.color);
-            console.log('sending command setColor(',obj.name,', ',color.r,',',color.g,', ',color.b,')' );
-            if (color) {
-                applet.setColor(obj.name, color.r, color.g, color.b);
-            }
+            console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
+            applet.setColor(obj.name, color.r, color.g, color.b);
+            console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
+            applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
+            console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
+            applet.setLineStyle(obj.name, obj.lineStyle);
 
         }
     }
