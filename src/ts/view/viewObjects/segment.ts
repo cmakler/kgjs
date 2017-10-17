@@ -53,6 +53,12 @@ module KG {
             segment.line.attr("y2", y2);
             segment.line.attr("stroke", stroke);
             segment.line.attr('stroke-width', strokeWidth);
+            if(segment.lineStyle == 'dashed') {
+                segment.line.style('stroke-dashArray','10,10');
+            }
+            if(segment.lineStyle == 'dotted') {
+                segment.line.style('stroke-dashArray','1,2');
+            }
             return segment;
         }
     }
