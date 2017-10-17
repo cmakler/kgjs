@@ -198,10 +198,9 @@ var KGAuthor;
         __extends(PositionedObject, _super);
         function PositionedObject(def) {
             var _this = this;
-            KG.setDefaults(def, {
-                xAxis: { min: 0, max: 1, title: '', orient: 'bottom' },
-                yAxis: { min: 0, max: 1, title: '', orient: 'left' }
-            });
+            KG.setDefaults(def, { xAxis: {}, yAxis: {} });
+            KG.setDefaults(def.xAxis, { min: 0, max: 10, title: '', orient: 'bottom' });
+            KG.setDefaults(def.yAxis, { min: 0, max: 10, title: '', orient: 'left' });
             _this = _super.call(this, def) || this;
             var po = _this;
             po.xScale = new Scale({
@@ -255,11 +254,11 @@ var KGAuthor;
                     }, g)]
             }, g);
             g.subObjects.push(g.clipPath);
-            g.def.objects.push({
+            g.def.objects.unshift({
                 type: 'Axis',
                 def: _this.def.xAxis
             });
-            g.def.objects.push({
+            g.def.objects.unshift({
                 type: 'Axis',
                 def: _this.def.yAxis
             });
@@ -364,6 +363,7 @@ var KGAuthor;
         function Label(def, graph) {
             var _this = _super.call(this, def, graph) || this;
             _this.type = 'Label';
+            _this.extractCoordinates();
             return _this;
         }
         return Label;
@@ -441,6 +441,37 @@ var KGAuthor;
         return Axis;
     }(KGAuthor.GraphObject));
     KGAuthor.Axis = Axis;
+    var Grid = /** @class */ (function (_super) {
+        __extends(Grid, _super);
+        function Grid(def, graph) {
+            var _this = this;
+            def = def || {};
+            _this = _super.call(this, def, graph) || this;
+            KG.setDefaults(def, {
+                strokeWidth: 1,
+                stroke: 'lightgrey',
+                lineStyle: 'dotted',
+                layer: 0,
+                xStep: 1,
+                yStep: 1
+            });
+            var g = _this;
+            g.subObjects = [];
+            for (var i = 0; i < 10; i++) {
+                var x = KGAuthor.multiplyDefs(i, def.xStep), y = KGAuthor.multiplyDefs(i, def.yStep);
+                var gxDef = JSON.parse(JSON.stringify(def)), gyDef = JSON.parse(JSON.stringify(def));
+                gxDef.a = [x, graph.yScale.min];
+                gxDef.b = [x, graph.yScale.max];
+                gyDef.a = [graph.xScale.min, y];
+                gyDef.b = [graph.xScale.max, y];
+                g.subObjects.push(new Segment(gxDef, graph));
+                g.subObjects.push(new Segment(gyDef, graph));
+            }
+            return _this;
+        }
+        return Grid;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.Grid = Grid;
     var Curve = /** @class */ (function (_super) {
         __extends(Curve, _super);
         function Curve(def, graph) {
@@ -470,8 +501,8 @@ var KGAuthor;
                 KG.setDefaults(labelDef, {
                     text: def.label.text,
                     fontSize: 10,
-                    xPixelOffset: 2,
-                    yPixelOffset: 2,
+                    xPixelOffset: 4,
+                    yPixelOffset: 3,
                     align: 'left',
                     valign: 'bottom'
                 });
@@ -480,11 +511,27 @@ var KGAuthor;
             if (def.hasOwnProperty('droplines')) {
                 if (def.droplines.hasOwnProperty('vertical')) {
                     var verticalDroplineDef = JSON.parse(JSON.stringify(def));
+                    verticalDroplineDef.stroke = def.fill;
                     p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
+                    var xAxisLabelDef = JSON.parse(JSON.stringify(def));
+                    xAxisLabelDef.y = 'AXIS';
+                    KG.setDefaults(xAxisLabelDef, {
+                        text: def.droplines.vertical,
+                        fontSize: 10
+                    });
+                    p.subObjects.push(new KGAuthor.Label(xAxisLabelDef, graph));
                 }
                 if (def.droplines.hasOwnProperty('horizontal')) {
                     var horizontalDroplineDef = JSON.parse(JSON.stringify(def));
+                    horizontalDroplineDef.stroke = def.fill;
                     p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));
+                    var yAxisLabelDef = JSON.parse(JSON.stringify(def));
+                    yAxisLabelDef.x = 'AXIS';
+                    KG.setDefaults(yAxisLabelDef, {
+                        text: def.droplines.horizontal,
+                        fontSize: 10
+                    });
+                    p.subObjects.push(new KGAuthor.Label(yAxisLabelDef, graph));
                 }
             }
             return _this;
@@ -510,7 +557,7 @@ var KGAuthor;
         __extends(Dropline, _super);
         function Dropline(def, graph) {
             var _this = this;
-            def.stroke = 'blue';
+            def.lineStyle = 'dotted';
             _this = _super.call(this, def, graph) || this;
             return _this;
         }
@@ -585,6 +632,37 @@ var KGAuthor;
         return Layout;
     }(KGAuthor.AuthoringObject));
     KGAuthor.Layout = Layout;
+    var SquareLayout = /** @class */ (function (_super) {
+        __extends(SquareLayout, _super);
+        function SquareLayout() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        // creates a square layout (aspect ratio of 1)
+        SquareLayout.prototype.parse_self = function (parsedData) {
+            parsedData.aspectRatio = 1.22;
+            return parsedData;
+        };
+        return SquareLayout;
+    }(Layout));
+    KGAuthor.SquareLayout = SquareLayout;
+    var OneGraph = /** @class */ (function (_super) {
+        __extends(OneGraph, _super);
+        function OneGraph(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            return _this;
+        }
+        return OneGraph;
+    }(SquareLayout));
+    KGAuthor.OneGraph = OneGraph;
     var SquarePlusSidebarLayout = /** @class */ (function (_super) {
         __extends(SquarePlusSidebarLayout, _super);
         function SquarePlusSidebarLayout() {
@@ -599,6 +677,57 @@ var KGAuthor;
         return SquarePlusSidebarLayout;
     }(Layout));
     KGAuthor.SquarePlusSidebarLayout = SquarePlusSidebarLayout;
+    var TwoHorizontalGraphs = /** @class */ (function (_super) {
+        __extends(TwoHorizontalGraphs, _super);
+        function TwoHorizontalGraphs(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'];
+            leftGraphDef.position = {
+                "x": 0.05,
+                "y": 0.025,
+                "width": 0.45,
+                "height": 0.9
+            };
+            rightGraphDef.position = {
+                "x": 0.55,
+                "y": 0.025,
+                "width": 0.45,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
+            return _this;
+        }
+        return TwoHorizontalGraphs;
+    }(Layout));
+    KGAuthor.TwoHorizontalGraphs = TwoHorizontalGraphs;
+    var TwoVerticalGraphsPlusSidebar = /** @class */ (function (_super) {
+        __extends(TwoVerticalGraphsPlusSidebar, _super);
+        function TwoVerticalGraphsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'], sidebarDef = def['sidebar'];
+            topGraphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.4
+            };
+            bottomGraphDef.position = {
+                "x": 0.15,
+                "y": 0.525,
+                "width": 0.738,
+                "height": 0.4
+            };
+            l.subObjects.push(new KGAuthor.Graph(topGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(bottomGraphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return TwoVerticalGraphsPlusSidebar;
+    }(SquarePlusSidebarLayout));
+    KGAuthor.TwoVerticalGraphsPlusSidebar = TwoVerticalGraphsPlusSidebar;
     var WideRectanglePlusSidebarLayout = /** @class */ (function (_super) {
         __extends(WideRectanglePlusSidebarLayout, _super);
         function WideRectanglePlusSidebarLayout() {
@@ -646,12 +775,36 @@ var KGAuthor;
             };
             l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
             l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
-            console.log(l.subObjects);
             return _this;
         }
         return GeoGebraPlusSidebar;
     }(SquarePlusSidebarLayout));
     KGAuthor.GeoGebraPlusSidebar = GeoGebraPlusSidebar;
+    var GeoGebraPlusGraph = /** @class */ (function (_super) {
+        __extends(GeoGebraPlusGraph, _super);
+        function GeoGebraPlusGraph(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var ggbAppletDef = def['ggbApplet'], graphDef = def['graph'];
+            ggbAppletDef.position = {
+                "x": 0.05,
+                "y": 0.025,
+                "width": 0.45,
+                "height": 0.9
+            };
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.2,
+                "width": 0.3,
+                "height": 0.6
+            };
+            l.subObjects.push(new KGAuthor.GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            return _this;
+        }
+        return GeoGebraPlusGraph;
+    }(Layout));
+    KGAuthor.GeoGebraPlusGraph = GeoGebraPlusGraph;
     var GeoGebraPlusGraphPlusSidebar = /** @class */ (function (_super) {
         __extends(GeoGebraPlusGraphPlusSidebar, _super);
         function GeoGebraPlusGraphPlusSidebar(def) {
@@ -718,8 +871,16 @@ var KGAuthor;
     KGAuthor.MathFunction = MathFunction;
     var MultivariateFunction = /** @class */ (function (_super) {
         __extends(MultivariateFunction, _super);
-        function MultivariateFunction() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function MultivariateFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            if (def.hasOwnProperty('exponents')) {
+                fn.exponents = def.exponents;
+            }
+            if (def.hasOwnProperty('coefficients')) {
+                fn.coefficients = def.coefficients;
+            }
+            return _this;
         }
         MultivariateFunction.prototype.value = function (x) {
             return '';
@@ -764,11 +925,12 @@ var KGAuthor;
             fns.forEach(function (fn) {
                 var areaDef = JSON.parse(JSON.stringify(def));
                 areaDef.univariateFunction1 = fn;
-                areaDef.inClipPath = true;
                 areaDef.above = true;
                 objs.push(new KGAuthor.Area(areaDef, graph));
             });
             if (fn.fillAboveRect) {
+                fn.fillAboveRect.fill = def.fill;
+                fn.fillAboveRect.inClipPath = true;
                 objs.push(new KGAuthor.Rectangle(fn.fillAboveRect, graph));
             }
             var clipPathName = KG.randomString(10);
@@ -831,6 +993,87 @@ var KGAuthor;
         return CobbDouglasFunction;
     }(MultivariateFunction));
     KGAuthor.CobbDouglasFunction = CobbDouglasFunction;
+    var QuasilinearFunction = /** @class */ (function (_super) {
+        __extends(QuasilinearFunction, _super);
+        function QuasilinearFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            fn.interpolation = 'curveMonotoneX';
+            return _this;
+        }
+        QuasilinearFunction.prototype.value = function (x) {
+            var c = this.coefficients;
+            return "(0.5*(" + c[0] + "*log(" + x[0] + ")+" + x[1] + "))";
+        };
+        QuasilinearFunction.prototype.levelSet = function (def) {
+            var c = this.coefficients, level = def.level || this.value(def.point);
+            return [
+                {
+                    "fn": "(2*(" + level + ")-" + c[0] + "*log(x))",
+                    "ind": "x",
+                    "samplePoints": 100
+                }
+            ];
+        };
+        return QuasilinearFunction;
+    }(MultivariateFunction));
+    KGAuthor.QuasilinearFunction = QuasilinearFunction;
+    var CES = /** @class */ (function (_super) {
+        __extends(CES, _super);
+        function CES(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            fn.interpolation = 'curveMonotoneX';
+            fn.r = def.r;
+            return _this;
+        }
+        return CES;
+    }(MultivariateFunction));
+    KGAuthor.CES = CES;
+    var EllipseFunction = /** @class */ (function (_super) {
+        __extends(EllipseFunction, _super);
+        function EllipseFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            fn.interpolation = 'curveMonotoneX';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
+            }
+            return _this;
+        }
+        EllipseFunction.prototype.value = function (x) {
+            var c = this.coefficients;
+            return "(" + c[0] + ")*(" + x[0] + ")^2+(" + c[1] + ")*(" + x[1] + ")^2";
+        };
+        EllipseFunction.prototype.levelSet = function (def) {
+            var c = this.coefficients, level = def.level || this.value(def.point), max = "((" + level + ")/(" + c[0] + "+" + c[1] + "))^(0.5)";
+            this.fillAboveRect = {
+                x1: max,
+                x2: 50,
+                y1: max,
+                y2: 50,
+                show: def.show
+            };
+            return [
+                {
+                    "fn": "((" + level + "-(" + c[1] + ")*y*y)/(" + c[0] + "))^(0.5)",
+                    "ind": "y",
+                    "min": 0,
+                    "max": max,
+                    "samplePoints": 30
+                },
+                {
+                    "fn": "((" + level + "-(" + c[0] + ")*x*x)/(" + c[1] + "))^(0.5)",
+                    "ind": "x",
+                    "min": 0,
+                    "max": max,
+                    "samplePoints": 30
+                }
+            ];
+        };
+        return EllipseFunction;
+    }(MultivariateFunction));
+    KGAuthor.EllipseFunction = EllipseFunction;
     var LinearFunction = /** @class */ (function (_super) {
         __extends(LinearFunction, _super);
         function LinearFunction(def) {
@@ -912,6 +1155,7 @@ var KGAuthor;
             def.a = [xIntercept, 0];
             def.b = [0, yIntercept];
             def.stroke = 'green';
+            def.strokeWidth = 2;
             def.label = { text: 'BL' };
             if (def.draggable) {
                 def.drag = [{
@@ -949,7 +1193,8 @@ var KGAuthor;
                     fill: "green",
                     univariateFunction1: {
                         fn: yIntercept + " - " + priceRatio + "*x",
-                        samplePoints: 2
+                        samplePoints: 2,
+                        max: xIntercept
                     },
                     show: def.set
                 }, graph));
@@ -984,6 +1229,12 @@ var KGAuthor;
         else if (def.utilityFunction.type == 'Complements' || def.utilityFunction.type == 'PerfectComplements') {
             return new KGAuthor.MinFunction(def.utilityFunction.def);
         }
+        else if (def.utilityFunction.type == 'Concave') {
+            return new KGAuthor.EllipseFunction(def.utilityFunction.def);
+        }
+        else if (def.utilityFunction.type == 'Quasilinear') {
+            return new KGAuthor.QuasilinearFunction(def.utilityFunction.def);
+        }
     }
     KGAuthor.getIndifferenceCurveFunction = getIndifferenceCurveFunction;
     var EconIndifferenceCurve = /** @class */ (function (_super) {
@@ -992,7 +1243,8 @@ var KGAuthor;
             var _this = _super.call(this, def, graph) || this;
             KG.setDefaults(def, {
                 strokeWidth: 2,
-                stroke: 'purple'
+                stroke: 'purple',
+                layer: 1
             });
             if (Array.isArray(def.utilityFunction.type)) {
                 _this.subObjects = def.utilityFunction.map(function (u) {
@@ -1016,6 +1268,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple',
+                layer: 1,
                 utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
             });
             return _this;
@@ -1692,9 +1945,10 @@ var KG;
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true,
-                inClipPath: false
+                inClipPath: false,
+                lineStyle: 'solid'
             });
-            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
+            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
             _this = _super.call(this, def) || this;
             var vo = _this;
@@ -1798,6 +2052,12 @@ var KG;
             segment.line.attr("y2", y2);
             segment.line.attr("stroke", stroke);
             segment.line.attr('stroke-width', strokeWidth);
+            if (segment.lineStyle == 'dashed') {
+                segment.line.style('stroke-dashArray', '10,10');
+            }
+            if (segment.lineStyle == 'dotted') {
+                segment.line.style('stroke-dashArray', '1,2');
+            }
             return segment;
         };
         return Segment;
@@ -1916,7 +2176,7 @@ var KG;
                 stroke: 'white',
                 strokeWidth: 1,
                 strokeOpacity: 1,
-                r: 6.5
+                r: 6
             });
             KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
             _this = _super.call(this, def) || this;
@@ -2082,7 +2342,12 @@ var KG;
         __extends(GeoGebraObject, _super);
         function GeoGebraObject(def) {
             var _this = this;
-            KG.setProperties(def, 'constants', ['command', 'color']);
+            KG.setDefaults(def, {
+                color: '#999999',
+                lineThickness: 1,
+                lineStyle: 0
+            });
+            KG.setProperties(def, 'constants', ['command', 'color', 'lineThickness', 'lineStyle']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -2107,9 +2372,11 @@ var KG;
             }
             var color = hexToRgb(obj.color);
             console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
-            if (color) {
-                applet.setColor(obj.name, color.r, color.g, color.b);
-            }
+            applet.setColor(obj.name, color.r, color.g, color.b);
+            console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')');
+            applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
+            console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')');
+            applet.setLineStyle(obj.name, obj.lineStyle);
         };
         return GeoGebraObject;
     }(KG.ViewObject));
@@ -2343,7 +2610,7 @@ var KG;
         Controls.prototype.draw = function (layer) {
             var controls = this;
             controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt');
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 0);
             controls.descriptionElement = controls.rootElement.append('div');
             var sliderTable = controls.rootElement.append('table').style('padding', '10px');
             controls.sliders.forEach(function (slider) {
@@ -2395,6 +2662,7 @@ var KG;
                 return new KG.GeoGebraObject(objDef);
             });
             console.log('created GGB javascript object ', _this);
+            div.axesEstablished = false;
             return _this;
         }
         // create div for text
@@ -2405,6 +2673,7 @@ var KG;
             div.rootElement.style('position', 'absolute');
             div.rootElement.append('div').attr('id', id);
             var applet = new GGBApplet({
+                allowStyleBar: true,
                 perspective: "T",
                 borderColor: "#FFFFFF",
                 dataParamId: id
@@ -2413,7 +2682,7 @@ var KG;
             applet.inject(id);
             return div;
         };
-        GeoGebraApplet.prototype.establishGGB = function () {
+        GeoGebraApplet.prototype.establishGGB = function (width, height) {
             var div = this;
             console.log('called establishGGB');
             if (undefined != document['ggbApplet']) {
@@ -2427,6 +2696,7 @@ var KG;
                 div.objects.forEach(function (obj) {
                     obj.establishGGB(div.applet);
                 });
+                div.updateGGB(div.applet, width, height);
             }
             else {
                 console.log('applet does not exist');
@@ -2448,11 +2718,16 @@ var KG;
                     applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
                     console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
+                    applet.setColor('zAxis', 0, 0, 0);
                 }
                 else {
                     applet.setCoordSystem(div.axes[0].scale.domainMin, div.axes[0].scale.domainMax, div.axes[1].scale.domainMin, div.axes[1].scale.domainMax);
                     applet.setAxisSteps(2, div.axes[0].step, div.axes[1].step);
                     applet.setAxisLabels(2, div.axes[0].label, div.axes[1].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
                 }
                 if (div.hasOwnProperty('params')) {
                     div.params.forEach(function (param) {
@@ -2479,7 +2754,7 @@ var KG;
                     clearInterval(checkExist);
                 }
                 else {
-                    div.establishGGB();
+                    div.establishGGB(width, height);
                 }
             }, 100); // check every 100ms
             return div;
@@ -2538,6 +2813,15 @@ var KG;
         __extends(Label, _super);
         function Label(def) {
             var _this = this;
+            if (def.x == 'AXIS') {
+                def.x = 0;
+                def.align = 'right';
+                def.xPixelOffset = -6;
+            }
+            if (def.y == 'AXIS') {
+                def.y = 0;
+                def.yPixelOffset = -14;
+            }
             //establish property defaults
             KG.setDefaults(def, {
                 xPixelOffset: 0,
@@ -2559,6 +2843,7 @@ var KG;
             label.rootElement = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
+                .style('background-color', 'white')
                 .style('font-size', label.fontSize + 'pt');
             return label.addInteraction();
         };
@@ -2566,7 +2851,9 @@ var KG;
         Label.prototype.redraw = function () {
             var label = this;
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
-            katex.render(label.text, label.rootElement.node());
+            if (undefined != label.text) {
+                katex.render(label.text.toString(), label.rootElement.node());
+            }
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
             var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
@@ -2576,7 +2863,7 @@ var KG;
                 alignDelta = 0;
                 label.rootElement.style('text-align', 'left');
             }
-            else if (this.align == 'right') {
+            else if (label.align == 'right') {
                 // move left by half the width of the div if right aligned
                 alignDelta = width + 2;
                 label.rootElement.style('text-align', 'right');
@@ -2585,10 +2872,10 @@ var KG;
             // Set top pixel margin; default to centered on y coordinate
             var vAlignDelta = height * 0.5;
             // Default to centered on x coordinate
-            if (this.valign == 'top') {
+            if (label.valign == 'top') {
                 vAlignDelta = 0;
             }
-            else if (this.valign == 'bottom') {
+            else if (label.valign == 'bottom') {
                 vAlignDelta = height;
             }
             label.rootElement.style('top', (y - vAlignDelta) + 'px');
