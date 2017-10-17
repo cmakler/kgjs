@@ -26,7 +26,7 @@ module KG {
                 stroke: 'white',
                 strokeWidth: 1,
                 strokeOpacity: 1,
-                r: 6.5
+                r: 6
             });
             setProperties(def, 'updatables',['x', 'y', 'r']);
             super(def);
