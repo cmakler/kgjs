@@ -2,6 +2,8 @@
 
 module KGAuthor {
 
+    import setDefaults = KG.setDefaults;
+
     export interface AxisDefinition {
         min: any;
         max: any;
@@ -31,10 +33,10 @@ module KGAuthor {
 
         constructor(def) {
 
-            KG.setDefaults(def, {
-                xAxis: {min: 0, max: 1, title: '', orient: 'bottom'},
-                yAxis: {min: 0, max: 1, title: '', orient: 'left'}
-            });
+            KG.setDefaults(def,{xAxis: {},yAxis:{}});
+            KG.setDefaults(def.xAxis, {min: 0, max: 10, title: '', orient: 'bottom'});
+            KG.setDefaults(def.yAxis, {min: 0, max: 10, title: '', orient: 'left'});
+
             super(def);
 
             const po = this;
@@ -91,11 +93,11 @@ module KGAuthor {
                 }, g)]
             }, g);
             g.subObjects.push(g.clipPath);
-            g.def.objects.push({
+            g.def.objects.unshift({
                 type: 'Axis',
                 def: this.def.xAxis
             });
-            g.def.objects.push({
+            g.def.objects.unshift({
                 type: 'Axis',
                 def: this.def.yAxis
             });

@@ -18,6 +18,7 @@ module KGAuthor {
         constructor(def, graph) {
             super(def, graph);
             this.type = 'Label';
+            this.extractCoordinates();
         }
 
     }

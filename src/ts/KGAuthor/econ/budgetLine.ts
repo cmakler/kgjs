@@ -13,6 +13,7 @@ module KGAuthor {
             def.a = [xIntercept, 0];
             def.b = [0, yIntercept];
             def.stroke = 'green';
+            def.strokeWidth = 2;
             def.label = {text: 'BL'};
 
             if (def.draggable) {
@@ -55,7 +56,8 @@ module KGAuthor {
                     fill: "green",
                     univariateFunction1: {
                         fn: `${yIntercept} - ${priceRatio}*x`,
-                        samplePoints: 2
+                        samplePoints: 2,
+                        max: xIntercept
                     },
                     show: def.set
                 }, graph));

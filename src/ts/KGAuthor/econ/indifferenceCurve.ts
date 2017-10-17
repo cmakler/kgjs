@@ -9,6 +9,10 @@ module KGAuthor {
             return new KGAuthor.LinearFunction(def.utilityFunction.def)
         } else if (def.utilityFunction.type == 'Complements' || def.utilityFunction.type == 'PerfectComplements') {
             return new KGAuthor.MinFunction(def.utilityFunction.def)
+        } else if (def.utilityFunction.type == 'Concave') {
+            return new KGAuthor.EllipseFunction(def.utilityFunction.def)
+        } else if (def.utilityFunction.type == 'Quasilinear') {
+            return new KGAuthor.QuasilinearFunction(def.utilityFunction.def)
         }
     }
 
@@ -18,7 +22,8 @@ module KGAuthor {
             super(def, graph);
             KG.setDefaults(def, {
                 strokeWidth: 2,
-                stroke: 'purple'
+                stroke: 'purple',
+                layer: 1
             });
             if (Array.isArray(def.utilityFunction.type)) {
                 this.subObjects = def.utilityFunction.map(function (u) {
@@ -39,6 +44,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 strokeWidth: 2,
                 stroke: 'purple',
+                layer: 1,
                 utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
             });
 
