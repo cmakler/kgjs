@@ -38,6 +38,7 @@ module KG {
         stroke: string;
         strokeWidth: string;
         strokeOpacity: string;
+        lineStyle: string;
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
@@ -56,6 +57,7 @@ module KG {
         public stroke;
         public strokeWidth;
         public strokeOpacity;
+        public lineStyle;
 
         constructor(def: ViewObjectDefinition) {
             setDefaults(def, {
@@ -64,9 +66,10 @@ module KG {
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true,
-                inClipPath: false
+                inClipPath: false,
+                lineStyle: 'solid'
             });
-            setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show']);
+            setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
 
             super(def);
