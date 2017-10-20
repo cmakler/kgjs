@@ -14,6 +14,13 @@ module KG {
         interactive?: boolean;
         alwaysUpdate?: boolean;
 
+        fill?: string;
+        opacity?: string;
+        stroke?: string;
+        strokeWidth?: string;
+        strokeOpacity?: string;
+        lineStyle?: string;
+
         // the following are used in the JSON definition but replaced by objects before creation
         xScaleName?: string;
         yScaleName?: string;

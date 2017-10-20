@@ -2,19 +2,45 @@
 
 module KGAuthor {
 
+    import setDefaults = KG.setDefaults;
+
+    export interface EconBudgetLineDefinition {
+        p1?: string | number;
+        p2?: string | number;
+        m?: string | number;
+        point?: (string|number)[];
+        label?: string;
+    }
+
     export class EconBudgetLine extends Segment {
 
+        public p1;
+        public p2;
+        public m;
+        public xIntercept;
+        public yIntercept;
+        private xInterceptPoint;
+        private yInterceptPoint;
+        private budgetSetArea;
+        private costlierArea;
+
         constructor(def, graph) {
+
+            // may define income either by income m or value of endowment point
+            def.m = def.m || addDefs(multiplyDefs(def.p1,def.point[0]),multiplyDefs(def.p2,def.point[1]));
 
             const xIntercept = divideDefs(def.m, def.p1),
                 yIntercept = divideDefs(def.m, def.p2),
                 priceRatio = divideDefs(def.p1, def.p2);
 
-            def.a = [xIntercept, 0];
-            def.b = [0, yIntercept];
-            def.stroke = 'green';
-            def.strokeWidth = 2;
-            def.label = {text: 'BL'};
+            KG.setDefaults(def, {
+                a: [xIntercept, 0],
+                b: [0, yIntercept],
+                stroke: 'green',
+                strokeWidth: 2,
+                label: 'BL',
+                lineStyle: 'solid'
+            });
 
             if (def.draggable) {
                 def.drag = [{
@@ -26,33 +52,39 @@ module KGAuthor {
 
             super(def, graph);
 
-            const subObjects = this.subObjects;
+            let bl = this;
 
-            if (def.handles) {
-                subObjects.push(new Point({
+            bl.p1 = def.p1;
+            bl.p2 = def.p2;
+            bl.m = def.m;
+            bl.xIntercept = xIntercept;
+            bl.yIntercept = yIntercept;
+
+
+            if (graph) {
+                const subObjects = bl.subObjects;
+
+                bl.xInterceptPoint = new Point({
                     coordinates: [xIntercept, 0],
-                    fill: 'green',
+                    fill: def.stroke,
                     r: 4,
                     drag: [{
                         directions: 'x',
                         param: paramName(def.p1),
                         expression: divideDefs(def.m, 'drag.x')
                     }]
-                }, graph));
-                subObjects.push(new Point({
+                }, graph);
+                bl.yInterceptPoint = new Point({
                     coordinates: [0, yIntercept],
-                    fill: 'green',
+                    fill: def.stroke,
                     r: 4,
                     drag: [{
                         directions: 'y',
                         param: paramName(def.p2),
                         expression: divideDefs(def.m, 'drag.y')
                     }]
-                }, graph));
-            }
-
-            if (def.set) {
-                subObjects.push(new Area({
+                }, graph);
+                bl.budgetSetArea = new Area({
                     fill: "green",
                     univariateFunction1: {
                         fn: `${yIntercept} - ${priceRatio}*x`,
@@ -60,22 +92,32 @@ module KGAuthor {
                         max: xIntercept
                     },
                     show: def.set
-                }, graph));
-            }
-
-            if (def.costlier) {
-                subObjects.push(new Area({
+                }, graph);
+                bl.costlierArea = new Area({
                     fill: "red",
                     univariateFunction1: {
                         fn: `${yIntercept} - ${priceRatio}*x`,
                         samplePoints: 2
                     },
                     show: def.costlier,
-                    above:true
-                }, graph));
+                    above: true
+                }, graph);
+
+                if (def.handles) {
+                    subObjects.push(bl.xInterceptPoint);
+                    subObjects.push(bl.yInterceptPoint);
+                }
+
+                if (def.set) {
+                    subObjects.push(bl.budgetSetArea);
+                }
+
+                if (def.costlier) {
+                    subObjects.push(bl.costlierArea);
+                }
             }
+
         }
     }
-
 
 }

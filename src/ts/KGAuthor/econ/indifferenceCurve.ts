@@ -2,19 +2,7 @@
 
 module KGAuthor {
 
-    export function getIndifferenceCurveFunction(def) {
-        if (def.utilityFunction.type == 'CobbDouglas') {
-            return new KGAuthor.CobbDouglasFunction(def.utilityFunction.def)
-        } else if (def.utilityFunction.type == 'Substitutes' || def.utilityFunction.type == 'PerfectSubstitutes') {
-            return new KGAuthor.LinearFunction(def.utilityFunction.def)
-        } else if (def.utilityFunction.type == 'Complements' || def.utilityFunction.type == 'PerfectComplements') {
-            return new KGAuthor.MinFunction(def.utilityFunction.def)
-        } else if (def.utilityFunction.type == 'Concave') {
-            return new KGAuthor.EllipseFunction(def.utilityFunction.def)
-        } else if (def.utilityFunction.type == 'Quasilinear') {
-            return new KGAuthor.QuasilinearFunction(def.utilityFunction.def)
-        }
-    }
+
 
     export class EconIndifferenceCurve extends GraphObjectGenerator {
 
@@ -29,25 +17,11 @@ module KGAuthor {
                 this.subObjects = def.utilityFunction.map(function (u) {
                     let uDef = JSON.parse(JSON.stringify(def));
                     uDef.utilityFunction.type = u;
-                    return getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                    return getUtilityFunction(def.utilityFunction).levelCurve(def, graph);
                 })
             } else {
-                this.subObjects = getIndifferenceCurveFunction(def).levelCurve(def, graph);
+                this.subObjects = getUtilityFunction(def.utilityFunction).levelCurve(def, graph);
             }
-        }
-    }
-
-    export class EconSelectableIndifferenceCurve extends GraphObjectGenerator {
-
-        constructor(def, graph) {
-            super(def, graph);
-            KG.setDefaults(def, {
-                strokeWidth: 2,
-                stroke: 'purple',
-                layer: 1,
-                utilityFunctions: ['CobbDouglas', 'Substitutes', 'Complements']
-            });
-
         }
     }
 
@@ -58,7 +32,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 fill: 'purple'
             });
-            this.subObjects = getIndifferenceCurveFunction(def).areaAboveLevelCurve(def, graph);
+            this.subObjects = getUtilityFunction(def.utilityFunction).areaAboveLevelCurve(def, graph);
         }
 
     }
@@ -70,7 +44,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 fill: 'red'
             });
-            this.subObjects = getIndifferenceCurveFunction(def).areaBelowLevelCurve(def, graph);
+            this.subObjects = getUtilityFunction(def.utilityFunction).areaBelowLevelCurve(def, graph);
         }
 
     }

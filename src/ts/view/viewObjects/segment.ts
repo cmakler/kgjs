@@ -7,20 +7,29 @@ module KG {
         y1: any;
         x2: any;
         y2: any;
+        xScale2?: Scale;
+        yScale2?: Scale;
     }
 
     export class Segment extends ViewObject {
+
+        private xScale2: Scale;
+        private yScale2: Scale;
 
         private x1;
         private y1;
         private x2;
         private y2;
 
-        private g;
         private dragLine;
         private line;
 
         constructor(def: SegmentDefinition) {
+            setDefaults(def, {
+                xScale2: def.xScale,
+                yScale2: def.yScale
+            });
+            setProperties(def,'constants',['xScale2','yScale2']);
             setProperties(def, 'updatables',['x1', 'y1', 'x2', 'y2']);
             super(def);
         }
@@ -39,8 +48,8 @@ module KG {
             let segment = this;
             const x1 = segment.xScale.scale(segment.x1),
                 x2 = segment.xScale.scale(segment.x2),
-                y1 = segment.yScale.scale(segment.y1),
-                y2 = segment.yScale.scale(segment.y2),
+                y1 = segment.yScale2.scale(segment.y1),
+                y2 = segment.yScale2.scale(segment.y2),
                 stroke = segment.stroke,
                 strokeWidth = segment.strokeWidth;
             segment.dragLine.attr("x1", x1);

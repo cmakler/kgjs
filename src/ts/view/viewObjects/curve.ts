@@ -3,7 +3,8 @@
 module KG {
 
     export interface CurveDefinition extends ViewObjectDefinition {
-        univariateFunction: UnivariateFunctionDefinition;
+        univariateFunction?: UnivariateFunctionDefinition;
+        parametricFunction?: ParametricFunctionDefinition;
     }
 
     export class Curve extends ViewObject {
@@ -14,6 +15,7 @@ module KG {
         private path;
         private interpolation;
         private univariateFunction: UnivariateFunction;
+        private parametricFunction: ParametricFunction;
 
         constructor(def: CurveDefinition) {
 
@@ -21,10 +23,17 @@ module KG {
                 alwaysUpdate: true,
                 interpolation: 'curveBasis'
             });
-            setProperties(def, 'constants',['interpolation']);
+            setProperties(def, 'constants', ['interpolation']);
             super(def);
-            def.univariateFunction.model = def.model;
-            this.univariateFunction = new UnivariateFunction(def.univariateFunction)
+            let curve = this;
+            if (def.hasOwnProperty('univariateFunction')) {
+                def.univariateFunction.model = def.model;
+                curve.univariateFunction = new UnivariateFunction(def.univariateFunction)
+            } else if (def.hasOwnProperty('parametricFunction')) {
+                def.parametricFunction.model = def.model;
+                curve.parametricFunction = new ParametricFunction(def.parametricFunction)
+            }
+
         }
 
         // create SVG elements
@@ -32,13 +41,13 @@ module KG {
             let curve = this;
 
             curve.dataLine = d3.line()
-                        .curve(d3[curve.interpolation])
-                        .x(function (d: any) {
-                            return curve.xScale.scale(d.x)
-                        })
-                        .y(function (d: any) {
-                            return curve.yScale.scale(d.y)
-                        });
+                .curve(d3[curve.interpolation])
+                .x(function (d: any) {
+                    return curve.xScale.scale(d.x)
+                })
+                .y(function (d: any) {
+                    return curve.yScale.scale(d.y)
+                });
 
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
@@ -57,9 +66,17 @@ module KG {
                     curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
                     curve.path.data([fn.data]).attr('d', curve.dataLine);
                 }
+            }
+            if (curve.hasOwnProperty('parametricFunction')) {
+                    const fn = curve.parametricFunction.update(true);
+                    if (fn.hasChanged) {
+                        fn.generateData();
+                        curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                        curve.path.data([fn.data]).attr('d', curve.dataLine);
+                    }
+                }
                 curve.path.attr('stroke', curve.stroke);
                 curve.path.attr('stroke-width', curve.strokeWidth);
-            }
             return curve;
         }
     }

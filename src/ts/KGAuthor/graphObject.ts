@@ -74,8 +74,8 @@ module KGAuthor {
                 gxDef.b = [x, graph.yScale.max];
                 gyDef.a = [graph.xScale.min, y];
                 gyDef.b = [graph.xScale.max, y];
-                g.subObjects.push(new Segment(gxDef,graph));
-                g.subObjects.push(new Segment(gyDef,graph));
+                g.subObjects.push(new Segment(gxDef, graph));
+                g.subObjects.push(new Segment(gyDef, graph));
             }
 
         }
@@ -94,9 +94,21 @@ module KGAuthor {
 
     }
 
+    export interface PointDefinition extends GraphObjectDefinition {
+        label?: LabelDefinition;
+        x?: any;
+        y?: any;
+        coordinates?: any[];
+        droplines?: { horizontal?: string; vertical?: string };
+        r?: any;
+    }
+
     export class Point extends GraphObject {
 
-        constructor(def, graph) {
+        public x;
+        public y;
+
+        constructor(def: PointDefinition, graph) {
             super(def, graph);
 
             const p = this;
@@ -165,6 +177,14 @@ module KGAuthor {
 
     }
 
+    export class CrossGraphSegment extends Segment {
+
+        constructor(def, graph) {
+            def.xScale2Name = '';
+            super(def,graph);
+        }
+    }
+
     export class Dropline extends Segment {
 
         constructor(def, graph) {
@@ -177,20 +197,35 @@ module KGAuthor {
     export class VerticalDropline extends Dropline {
 
         constructor(def, graph) {
-            def.a = [def.x, def.y];
-            def.b = [def.x, graph.yScale.min];
+            def.a = [def.x, graph.yScale.min];
+            def.b = [def.x, def.y];
             super(def, graph);
+        }
+    }
+
+    export class CrossGraphVerticalDropline extends VerticalDropline {
+
+        constructor(def, graph) {
+            def.xScale2Name = '';
+            super(def,graph);
         }
     }
 
     export class HorizontalDropline extends Dropline {
 
         constructor(def, graph) {
-            def.a = [def.x, def.y];
-            def.b = [graph.xScale.min, def.y];
+            def.a = [graph.xScale.min, def.y];
+            def.b = [def.x, def.y];
             super(def, graph);
         }
+    }
 
+    export class CrossGraphHorizontalDropline extends HorizontalDropline {
+
+        constructor(def, graph) {
+            def.xScale2Name = '';
+            super(def,graph);
+        }
     }
 
     export class Rectangle extends GraphObject {

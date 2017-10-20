@@ -11,10 +11,11 @@
 /// <reference path="KGAuthor/graphObject.ts"/>
 /// <reference path="KGAuthor/layout.ts"/>
 
-/// <reference path="KGAuthor/math/multivariateFunction.ts"/>
-
 /// <reference path="KGAuthor/econ/budgetLine.ts"/>
+/// <reference path="KGAuthor/econ/utilityFunction.ts"/>
 /// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
+/// <reference path="KGAuthor/econ/optimalBundle.ts"/>
+/// <reference path="KGAuthor/econ/demandCurve.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
@@ -22,6 +23,7 @@
 /// <reference path="model/updateListener.ts" />
 
 /// <reference path="math/univariateFunction.ts" />
+/// <reference path="math/parametricFunction.ts" />
 
 /// <reference path="controller/listeners/listener.ts" />
 /// <reference path="controller/listeners/dragListener.ts" />

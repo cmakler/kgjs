@@ -5,7 +5,7 @@ __author__ = 'cmakler'
 
 bundles = [
     {
-        "name": "kg.0.1.2.js",
+        "name": "kg.0.1.3.js",
         "dest_directories": ['../econgraphs/static/js/', '../kg-authoring/static/'],
         "order": [
             "build/lib/kg-lib.js",
@@ -13,7 +13,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.1.2.css",
+        "name": "kg.0.1.3.css",
         "dest_directories": ['../econgraphs/static/css/', '../kg-authoring/static/'],
         "order": [
             "build/lib/kg-lib.css",
@@ -21,7 +21,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.1.2.css",
+        "name": "kg-tufte.0.1.3.css",
         "dest_directories": ['../econgraphs/static/css/', '../kg-authoring/static/'],
         "order": [
             "build/lib/kg-tufte.css",

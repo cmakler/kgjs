@@ -2,20 +2,33 @@
 
 module KGAuthor {
 
+    export interface DivObjectDefinition extends GraphObjectDefinition {
+
+    }
+
     export class DivObject extends GraphObject {
 
-        public type: string;
-
-        parse_self(parsedData: KG.ViewDefinition) {
+        parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.divs.push(this);
             return parsedData;
         }
     }
 
+    export interface LabelDefinition extends DivObjectDefinition {
+        text: string;
+        x?: any;
+        y?: any;
+        coordinates?: any[];
+        fontSize?: number;
+        xPixelOffset?: number;
+        yPixelOffset?: number;
+        rotate?: number;
+        align?: string;
+    }
 
     export class Label extends DivObject {
 
-        constructor(def, graph) {
+        constructor(def:LabelDefinition, graph) {
             super(def, graph);
             this.type = 'Label';
             this.extractCoordinates();
@@ -23,18 +36,26 @@ module KGAuthor {
 
     }
 
+    export interface SidebarDefinition extends DivObjectDefinition {
+
+    }
+
     export class Sidebar extends DivObject {
 
-        constructor(def) {
+        constructor(def:SidebarDefinition) {
             super(def);
             this.type = 'Sidebar';
         }
 
     }
 
+    export interface GeoGebraAppletDefinition extends DivObjectDefinition {
+
+    }
+
     export class GeoGebraApplet extends DivObject {
 
-        constructor(def, graph) {
+        constructor(def: GeoGebraAppletDefinition, graph) {
             super(def);
             this.type = 'GeoGebraApplet';
         }

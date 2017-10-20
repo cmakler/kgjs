@@ -6,10 +6,12 @@ module KG {
         x: any;
         y: any;
         text: string;
+        fontSize?: number;
         xPixelOffset?: number;
         yPixelOffset?: number;
         align?: string;
         valign?: string;
+        rotate?: number;
     }
 
     export class Label extends ViewObject {

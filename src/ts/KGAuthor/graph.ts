@@ -33,7 +33,7 @@ module KGAuthor {
 
         constructor(def) {
 
-            KG.setDefaults(def,{xAxis: {},yAxis:{}});
+            KG.setDefaults(def, {xAxis: {}, yAxis: {}});
             KG.setDefaults(def.xAxis, {min: 0, max: 10, title: '', orient: 'bottom'});
             KG.setDefaults(def.yAxis, {min: 0, max: 10, title: '', orient: 'left'});
 
@@ -66,11 +66,13 @@ module KGAuthor {
     export class GeoGebraContainer extends PositionedObject {
 
         constructor(def) {
+            def.xAxis = {min: 0, max: 1};
+            def.yAxis = {min: 0, max: 1};
             super(def);
             const ggb = this;
             def.xScaleName = ggb.xScale.name;
             def.yScaleName = ggb.yScale.name;
-            ggb.subObjects.push(new GeoGebraApplet(def,ggb));
+            ggb.subObjects.push(new GeoGebraApplet(def, ggb));
         }
     }
 
@@ -110,6 +112,10 @@ module KGAuthor {
         }
     }
 
+    export interface GraphObjectGeneratorDefinition extends AuthoringObjectDefinition {
+
+    }
+
     export class GraphObjectGenerator extends AuthoringObject {
 
         public def: any;
@@ -132,13 +138,29 @@ module KGAuthor {
             coordinatesKey = coordinatesKey || 'coordinates';
             xKey = xKey || 'x';
             yKey = yKey || 'y';
-            let def = this.def;
-            if (def.hasOwnProperty(coordinatesKey)) {
+            let obj = this,
+                def = this.def;
+            if (def.hasOwnProperty(coordinatesKey) && def[coordinatesKey] != undefined) {
                 def[xKey] = def[coordinatesKey][0].toString();
                 def[yKey] = def[coordinatesKey][1].toString();
+                obj[xKey] = def[coordinatesKey][0].toString();
+                obj[yKey] = def[coordinatesKey][1].toString();
                 delete def[coordinatesKey];
             }
         }
+    }
+
+    export interface GraphObjectDefinition extends GraphObjectGeneratorDefinition {
+        type?: string;
+        layer?: number;
+        fill?: string;
+        opacity?: string;
+        stroke?: string;
+        strokeWidth?: string;
+        strokeOpacity?: string;
+        lineStyle?: string;
+        drag?: any;
+        click?: any;
     }
 
     export class GraphObject extends GraphObjectGenerator {
@@ -146,7 +168,7 @@ module KGAuthor {
         public type: string;
         public layer: number;
 
-        parse_self(parsedData: KG.ViewDefinition) {
+        parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.layers[this.layer].push(this);
             return parsedData;
         }
@@ -159,7 +181,7 @@ module KGAuthor {
             super(def, graph);
         }
 
-        parse_self(parsedData: KG.ViewDefinition) {
+        parseSelf(parsedData: KG.ViewDefinition) {
             delete this.def.clipPathName;
             parsedData.clipPaths.push(this.def);
             return parsedData;
@@ -177,7 +199,7 @@ module KGAuthor {
             this.max = def.domainMax;
         }
 
-        parse_self(parsedData: KG.ViewDefinition) {
+        parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.scales.push(this.def);
             return parsedData;
         }

@@ -4,7 +4,7 @@ module KGAuthor {
 
     export class Layout extends AuthoringObject {
 
-        parse_self(parsedData) {
+        parseSelf(parsedData) {
             parsedData.aspectRatio = 2;
             return parsedData;
         }
@@ -15,7 +15,7 @@ module KGAuthor {
 
         // creates a square layout (aspect ratio of 1)
 
-        parse_self(parsedData) {
+        parseSelf(parsedData) {
             parsedData.aspectRatio = 1.22;
             return parsedData;
         }
@@ -45,7 +45,7 @@ module KGAuthor {
         // creates a square within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.82
 
-        parse_self(parsedData) {
+        parseSelf(parsedData) {
             parsedData.aspectRatio = 1.22;
             return parsedData;
         }
@@ -106,9 +106,16 @@ module KGAuthor {
                 "height": 0.4
             };
 
-            l.subObjects.push(new Graph(topGraphDef));
-            l.subObjects.push(new Graph(bottomGraphDef));
-            l.subObjects.push(new Sidebar(sidebarDef));
+            const topGraph = new Graph(topGraphDef),
+                bottomGraph = new Graph(bottomGraphDef),
+                sidebar = new Sidebar(sidebarDef);
+
+            topGraph.subObjects.forEach(function(obj) {obj.addSecondGraph(bottomGraph)});
+            bottomGraph.subObjects.forEach(function(obj) {obj.addSecondGraph(topGraph)});
+
+            l.subObjects.push(topGraph);
+            l.subObjects.push(bottomGraph);
+            l.subObjects.push(sidebar);
 
         }
 
@@ -119,7 +126,7 @@ module KGAuthor {
         // creates a rectangle, twice as wide as it is high, within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.41
 
-        parse_self(parsedData) {
+        parseSelf(parsedData) {
             parsedData.aspectRatio = 2.44;
             return parsedData;
         }
@@ -259,9 +266,13 @@ module KGAuthor {
                 "height": 0.9
             };
 
-            l.subObjects.push(new Graph(leftGraphDef));
-            l.subObjects.push(new Graph(rightGraphDef));
-            l.subObjects.push(new Sidebar(sidebarDef));
+            const leftGraph = new Graph(leftGraphDef),
+                rightGraph = new Graph(rightGraphDef),
+                sidebar = new Sidebar(sidebarDef);
+
+            l.subObjects.push(leftGraph);
+            l.subObjects.push(rightGraph);
+            l.subObjects.push(sidebar);
 
         }
 

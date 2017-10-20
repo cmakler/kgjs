@@ -2,12 +2,15 @@
 
 module KGAuthor {
 
+    import UnivariateFunctionDefinition = KG.UnivariateFunctionDefinition;
+    import ParametricFunctionDefinition = KG.ParametricFunctionDefinition;
+
     export function parse(data: KG.TypeAndDef[], parsedData) {
         data.forEach(function (obj) {
-            if(KGAuthor.hasOwnProperty(obj.type)) {
+            if (KGAuthor.hasOwnProperty(obj.type)) {
                 parsedData = new KGAuthor[obj.type](obj.def).parse(parsedData);
             } else {
-                console.log("Sorry, there's no ",obj.type," object type in KGAuthor. Maybe you have a typo?")
+                console.log("Sorry, there's no ", obj.type, " object type in KGAuthor. Maybe you have a typo?")
             }
         });
         return parsedData;
@@ -41,6 +44,10 @@ module KGAuthor {
         } else {
             return str;
         }
+    }
+
+    export function negativeDef(def) {
+        return (typeof def == 'number') ? (-1) * def : "(-" + getDefinitionProperty(def) + ")"
     }
 
     export function binaryFunction(def1, def2, fn) {
@@ -93,5 +100,19 @@ module KGAuthor {
     export function paramName(def) {
         return def.replace('params.', '');
     }
+
+    export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
+        return fns.map(function (fn) {
+            let curveDef = JSON.parse(JSON.stringify(def));
+            if(fn.hasOwnProperty('parametric')) {
+                curveDef.parametricFunction = fn;
+            } else {
+                curveDef.univariateFunction = fn;
+            }
+
+            return new Curve(curveDef, graph);
+        })
+    }
+
 
 }
