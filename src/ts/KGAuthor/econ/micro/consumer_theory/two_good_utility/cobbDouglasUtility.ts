@@ -42,6 +42,29 @@ module KGAuthor {
             const a = this.alpha;
             return [multiplyDefs(a, budgetLine.xIntercept), multiplyDefs(subtractDefs(1, a), budgetLine.yIntercept)]
         }
+
+        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
+            const e = this.exponents,
+                ratio = multiplyDefs(
+                    divideDefs(prices[0],prices[1]),
+                    divideDefs(e[1],e[0])
+                ),
+                scale = addDefs(e[0],e[1]),
+                scaledLevel = raiseDefToDef(level,divideDefs(1,scale));
+
+            return [
+                divideDefs(
+                    scaledLevel,
+                    raiseDefToDef(ratio,divideDefs(e[1],scale))
+                ),
+                multiplyDefs(
+                    scaledLevel,
+                    raiseDefToDef(ratio,divideDefs(e[0],scale))
+                )
+            ]
+
+
+        }
     }
 
 }

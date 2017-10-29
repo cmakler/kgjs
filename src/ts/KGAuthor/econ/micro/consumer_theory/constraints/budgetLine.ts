@@ -29,6 +29,8 @@ module KGAuthor {
 
         constructor(def, graph) {
 
+            def = setStrokeColor(def);
+
             // may define income either by income m or value of endowment point
             def.m = def.m || addDefs(multiplyDefs(def.p1,def.point[0]),multiplyDefs(def.p2,def.point[1]));
 

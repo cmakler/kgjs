@@ -168,6 +168,15 @@ module KGAuthor {
 
         public type: string;
         public layer: number;
+        public color: any;
+
+        constructor(def, graph) {
+            super(def,graph);
+            let g = this;
+            if(def.hasOwnProperty('color')) {
+                g.color = def.color;
+            }
+        }
 
         parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.layers[this.layer].push(this);

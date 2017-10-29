@@ -32,8 +32,8 @@ module KGAuthor {
         constructor(def:LabelDefinition, graph) {
             if(def.hasOwnProperty('position')) {
                 if(def.position.toLowerCase() == 'bl') {
-                    def.xPixelOffset = 4;
-                    def.yPixelOffset = 3;
+                    def.xPixelOffset = 5;
+                    def.yPixelOffset = 10;
                     def.align = 'left';
                 }
                 if(def.position.toLowerCase() == 'tr') {

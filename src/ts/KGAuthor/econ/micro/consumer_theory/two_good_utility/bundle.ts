@@ -5,6 +5,7 @@ module KGAuthor {
     export interface BundleDefinition extends PointDefinition {
         utilityFunction?: KG.TypeAndDef,
         showIndifferenceCurve?: string,
+        indifferenceCurveColor?: string,
         showPreferred?: string;
         showDispreferred?: string;
         indifferenceCurveLabel: LabelDefinition;
@@ -24,9 +25,10 @@ module KGAuthor {
 
         constructor(def: BundleDefinition, graph) {
 
+            setFillColor(def);
+
             KG.setDefaults(def, {
                 name: KG.randomString(10),
-                fill: 'colors.utility',
                 label: {text: 'X'},
                 indifferenceCurveLabel: {text: 'U'},
                 droplines: {
@@ -43,12 +45,16 @@ module KGAuthor {
             const bundle = this;
 
             bundle.utilityFunction = extractUtilityFunction(def);
+            this.subObjects.push(bundle.utilityFunction);
 
             let indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+            delete indifferenceCurveDef.stroke;
+            delete indifferenceCurveDef.color;
             indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
                 label: def.indifferenceCurveLabel,
                 level: "calcs." + bundle.name + ".level",
-                show: def.showIndifferenceCurve
+                show: def.showIndifferenceCurve,
+                color: def.indifferenceCurveColor || 'colors.utility'
             });
             this.subObjects.push(new EconIndifferenceCurve(indifferenceCurveDef, graph))
 

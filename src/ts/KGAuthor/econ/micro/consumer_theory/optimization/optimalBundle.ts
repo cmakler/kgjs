@@ -38,6 +38,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 coordinates: coords,
                 label: {text: 'X^*'},
+                color: bl.color,
                 indifferenceCurveLabel: {text: 'U^*'},
                 budgetLineLabel: {text: 'BL'},
                 droplines: {
@@ -157,6 +158,8 @@ module KGAuthor {
             def.budgetLine.p1 = p1;
             def.budgetLine.p2 = p2;
             def.budgetLine.m = u.expenditure(level, [p1, p2]);
+
+            def.coordinates = u.lowestCostBundle(level, [p1,p2]);
 
             delete def.budgetLineObject;
             super(def, graph);

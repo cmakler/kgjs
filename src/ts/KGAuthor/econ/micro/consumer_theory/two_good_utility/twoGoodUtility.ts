@@ -10,6 +10,7 @@ module KGAuthor {
         optimalBundle: (budgetLine: EconBudgetLine) => any[];
         lagrangeBundle: (budgetLine: EconBudgetLine) => any[];
         cornerCondition: (budgetLine: EconBudgetLine) => string;
+        lowestCostBundle: (level: (string | number), prices: (string | number)[]) => false | any[];
 
         levelSet: (def: any, graph: Graph) => KG.UnivariateFunctionDefinition[];
         levelCurve: (def: any, graph: Graph) => Curve[];
@@ -19,11 +20,9 @@ module KGAuthor {
 
         indirectUtility: (income: (string | number), prices: (string | number)[]) => any;
         expenditure: (level: (string | number), prices: (string | number)[]) => any;
-        lowestCostBundle: (level: (string | number), prices: (string | number)[]) => false | any[];
-        costOfLowestCostBundle: (level: (string | number), prices: (string | number)[]) => any;
     }
 
-    export class UtilityFunction implements IUtilityFunction {
+    export class UtilityFunction extends AuthoringObject implements IUtilityFunction {
 
         public alpha;
         public coefficients;
@@ -33,6 +32,10 @@ module KGAuthor {
         public fillAboveRect;
 
         constructor(def) {
+            KG.setDefaults(def,{
+                name: KG.randomString(10)
+            });
+            super(def);
             let fn = this;
             fn.interpolation = 'curveMonotoneX';
             if (def.hasOwnProperty('alpha')) {
@@ -139,6 +142,10 @@ module KGAuthor {
             return [];
         }
 
+        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
+            return [];// defined at the subclass level
+        }
+
         priceOfferFunction(budgetLine: EconBudgetLine, good: number, min: number, max: number, graph) {
             const u = this,
                 blDef = (good == 1) ? {p1: 't', p2: budgetLine.p2, m: budgetLine.m} : {
@@ -196,23 +203,10 @@ module KGAuthor {
         }
 
         expenditure(level: (string | number), prices: (string | number)[]) {
-            return false; // defined at subclass level
-        }
-
-        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
-            const u = this, m = u.expenditure(level, prices);
-            if (m) {
-                return u.optimalBundle(new EconBudgetLine({p1: prices[0], p2: prices[1], m: m}, null))
-            } else {
-                return false;
-            }
-
-        }
-
-        costOfLowestCostBundle(level: (string | number), prices: (string | number)[]) {
             const b = this.lowestCostBundle(level, prices);
             return addDefs(multiplyDefs(b[0], prices[0]), multiplyDefs(b[1], prices[1]));
         }
+
 
     }
 

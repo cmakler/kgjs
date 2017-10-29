@@ -131,7 +131,10 @@ module KG {
             param.update(newValue);
             // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
-                let valid = true;
+
+                //restrictions aren't working right now
+
+                /*let valid = true;
                 model.restrictions.forEach(function (r) {
                     if (!r.valid(model)) {
                         valid = false
@@ -141,7 +144,9 @@ module KG {
                     model.update(false);
                 } else {
                     param.update(oldValue);
-                }
+                }*/
+
+                model.update(false);
             }
         }
 
@@ -164,6 +169,7 @@ module KG {
             const model = this;
             model.currentParamValues = model.evalParams();
             model.currentCalcValues = model.evalObject(model.calcs);
+            console.log('calcs',model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
                 listener.update(force)

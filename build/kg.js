@@ -392,8 +392,13 @@ var KGAuthor;
     KGAuthor.GraphObjectGenerator = GraphObjectGenerator;
     var GraphObject = /** @class */ (function (_super) {
         __extends(GraphObject, _super);
-        function GraphObject() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function GraphObject(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            var g = _this;
+            if (def.hasOwnProperty('color')) {
+                g.color = def.color;
+            }
+            return _this;
         }
         GraphObject.prototype.parseSelf = function (parsedData) {
             parsedData.layers[this.layer].push(this);
@@ -455,8 +460,8 @@ var KGAuthor;
             var _this = this;
             if (def.hasOwnProperty('position')) {
                 if (def.position.toLowerCase() == 'bl') {
-                    def.xPixelOffset = 4;
-                    def.yPixelOffset = 3;
+                    def.xPixelOffset = 5;
+                    def.yPixelOffset = 10;
                     def.align = 'left';
                 }
                 if (def.position.toLowerCase() == 'tr') {
@@ -1009,6 +1014,7 @@ var KGAuthor;
         __extends(EconBudgetLine, _super);
         function EconBudgetLine(def, graph) {
             var _this = this;
+            def = KGAuthor.setStrokeColor(def);
             // may define income either by income m or value of endowment point
             def.m = def.m || KGAuthor.addDefs(KGAuthor.multiplyDefs(def.p1, def.point[0]), KGAuthor.multiplyDefs(def.p2, def.point[1]));
             var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2), priceRatio = KGAuthor.divideDefs(def.p1, def.p2);
@@ -1094,9 +1100,15 @@ var KGAuthor;
 /// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
-    var UtilityFunction = /** @class */ (function () {
+    var UtilityFunction = /** @class */ (function (_super) {
+        __extends(UtilityFunction, _super);
         function UtilityFunction(def) {
-            var fn = this;
+            var _this = this;
+            KG.setDefaults(def, {
+                name: KG.randomString(10)
+            });
+            _this = _super.call(this, def) || this;
+            var fn = _this;
             fn.interpolation = 'curveMonotoneX';
             if (def.hasOwnProperty('alpha')) {
                 fn.alpha = def.alpha;
@@ -1111,6 +1123,7 @@ var KGAuthor;
                 fn.coefficients = def.coefficients;
                 fn.alpha = KGAuthor.divideDefs(fn.coefficients[0], KGAuthor.addDefs(fn.coefficients[0], fn.coefficients[1]));
             }
+            return _this;
         }
         UtilityFunction.prototype.value = function (x) {
             return null;
@@ -1196,6 +1209,9 @@ var KGAuthor;
         UtilityFunction.prototype.optimalBundle = function (budgetLine) {
             return [];
         };
+        UtilityFunction.prototype.lowestCostBundle = function (level, prices) {
+            return []; // defined at the subclass level
+        };
         UtilityFunction.prototype.priceOfferFunction = function (budgetLine, good, min, max, graph) {
             var u = this, blDef = (good == 1) ? { p1: 't', p2: budgetLine.p2, m: budgetLine.m } : {
                 p1: budgetLine.p1,
@@ -1244,23 +1260,11 @@ var KGAuthor;
             return this.extractLevel({ budgetLine: { p1: prices[0], p2: prices[1], m: income } });
         };
         UtilityFunction.prototype.expenditure = function (level, prices) {
-            return false; // defined at subclass level
-        };
-        UtilityFunction.prototype.lowestCostBundle = function (level, prices) {
-            var u = this, m = u.expenditure(level, prices);
-            if (m) {
-                return u.optimalBundle(new KGAuthor.EconBudgetLine({ p1: prices[0], p2: prices[1], m: m }, null));
-            }
-            else {
-                return false;
-            }
-        };
-        UtilityFunction.prototype.costOfLowestCostBundle = function (level, prices) {
             var b = this.lowestCostBundle(level, prices);
             return KGAuthor.addDefs(KGAuthor.multiplyDefs(b[0], prices[0]), KGAuthor.multiplyDefs(b[1], prices[1]));
         };
         return UtilityFunction;
-    }());
+    }(KGAuthor.AuthoringObject));
     KGAuthor.UtilityFunction = UtilityFunction;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../../eg.ts"/>
@@ -1302,6 +1306,13 @@ var KGAuthor;
         CobbDouglasFunction.prototype.optimalBundle = function (budgetLine) {
             var a = this.alpha;
             return [KGAuthor.multiplyDefs(a, budgetLine.xIntercept), KGAuthor.multiplyDefs(KGAuthor.subtractDefs(1, a), budgetLine.yIntercept)];
+        };
+        CobbDouglasFunction.prototype.lowestCostBundle = function (level, prices) {
+            var e = this.exponents, ratio = KGAuthor.multiplyDefs(KGAuthor.divideDefs(prices[0], prices[1]), KGAuthor.divideDefs(e[1], e[0])), scale = KGAuthor.addDefs(e[0], e[1]), scaledLevel = KGAuthor.raiseDefToDef(level, KGAuthor.divideDefs(1, scale));
+            return [
+                KGAuthor.divideDefs(scaledLevel, KGAuthor.raiseDefToDef(ratio, KGAuthor.divideDefs(e[1], scale))),
+                KGAuthor.multiplyDefs(scaledLevel, KGAuthor.raiseDefToDef(ratio, KGAuthor.divideDefs(e[0], scale)))
+            ];
         };
         return CobbDouglasFunction;
     }(KGAuthor.UtilityFunction));
@@ -1404,26 +1415,19 @@ var KGAuthor;
             }
             return _this;
         }
+        CES.prototype.parseSelf = function (parsedData) {
+            var u = this, a = KGAuthor.getDefinitionProperty(u.alpha), r = KGAuthor.getDefinitionProperty(u.r), b = KGAuthor.subtractDefs(1, u.alpha);
+            parsedData.calcs[u.name] = {
+                xFunction: 'foo'
+            };
+            return parsedData;
+        };
         CES.prototype.value = function (x) {
             var c = this.coefficients, r = this.r;
-            return KGAuthor.raiseDefToDef(KGAuthor.addDefs(KGAuthor.multiplyDefs(c[0], KGAuthor.raiseDefToDef(x[0], r)), KGAuthor.multiplyDefs(c[1], KGAuthor.raiseDefToDef(x[1], r))), KGAuthor.divideDefs(1, r));
+            return "((params.r == 0) ? (" + KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(x[0], c[0]), KGAuthor.raiseDefToDef(x[1], c[1])) + ") : (" + KGAuthor.raiseDefToDef(KGAuthor.addDefs(KGAuthor.multiplyDefs(c[0], KGAuthor.raiseDefToDef(x[0], r)), KGAuthor.multiplyDefs(c[1], KGAuthor.raiseDefToDef(x[1], r))), KGAuthor.divideDefs(1, r)) + "))";
         };
         CES.prototype.levelSet = function (def) {
             var u = this, a = KGAuthor.getDefinitionProperty(u.alpha), r = KGAuthor.getDefinitionProperty(u.r), b = KGAuthor.subtractDefs(1, u.alpha), level = this.extractLevel(def);
-            var rZeroLevel;
-            if (def.hasOwnProperty('level') && def.level != undefined) {
-                rZeroLevel = level;
-            }
-            else if (def.hasOwnProperty('point') && def.point != undefined) {
-                rZeroLevel = KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(def.point[0], a), KGAuthor.raiseDefToDef(def.point[1], b));
-            }
-            else if (def.hasOwnProperty('budgetLine')) {
-                var bl = new KGAuthor.EconBudgetLine(def.budgetLine, null);
-                rZeroLevel = KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.multiplyDefs(a, bl.xIntercept), a), KGAuthor.raiseDefToDef(KGAuthor.multiplyDefs(b, bl.yIntercept), b));
-            }
-            else {
-                console.log('must provide either a level, point, or budget line to draw an indifference curve');
-            }
             this.fillBelowRect = {
                 x1: 0,
                 x2: level,
@@ -1433,13 +1437,13 @@ var KGAuthor;
             };
             return [
                 {
-                    "fn": "((" + r + " == 0) ? (" + rZeroLevel + "/x^(" + a + "))^(1/(" + b + ")) : ((" + level + "^" + r + " - " + a + "*x^" + r + ")/" + b + ")^(1/" + r + "))",
+                    "fn": "((" + r + " == 0) ? (" + level + "/x^(" + a + "))^(1/(" + b + ")) : ((" + level + "^" + r + " - " + a + "*x^" + r + ")/" + b + ")^(1/" + r + "))",
                     "ind": "x",
                     "min": level,
                     "samplePoints": 60
                 },
                 {
-                    "fn": "((" + r + " == 0) ? (" + rZeroLevel + "/y^(" + b + "))^(1/(" + a + ")) : ((" + level + "^" + r + " - " + b + "*y^" + r + ")/" + a + ")^(1/" + r + "))",
+                    "fn": "((" + r + " == 0) ? (" + level + "/y^( " + b + "))^(1/(" + a + ")) : ((" + level + "^" + r + " - " + b + "*y^" + r + ")/" + a + ")^(1/" + r + "))",
                     "ind": "y",
                     "min": level,
                     "samplePoints": 60
@@ -1451,9 +1455,20 @@ var KGAuthor;
             var s = this.s, oneMinusS = KGAuthor.subtractDefs(1, s), a = this.alpha, oneMinusA = KGAuthor.subtractDefs(1, a), theta = KGAuthor.divideDefs(budgetLine.m, KGAuthor.addDefs(KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(a, s), KGAuthor.raiseDefToDef(budgetLine.p1, oneMinusS)), KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(oneMinusA, s), KGAuthor.raiseDefToDef(budgetLine.p2, oneMinusS)))), optimalX1 = "(" + this.r + " == 0) ? " + KGAuthor.multiplyDefs(a, budgetLine.xIntercept) + " : " + KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.divideDefs(a, budgetLine.p1), s), theta), optimalX2 = "(" + this.r + " == 0) ? " + KGAuthor.multiplyDefs(oneMinusA, budgetLine.yIntercept) + " : " + KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.divideDefs(oneMinusA, budgetLine.p2), s), theta);
             return [optimalX1, optimalX2];
         };
-        CES.prototype.expenditure = function (level, prices) {
-            var s = this.s, oneMinusS = KGAuthor.subtractDefs(1, s), a = this.alpha, oneMinusA = KGAuthor.subtractDefs(1, a);
-            return KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.addDefs(KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(a, s), KGAuthor.raiseDefToDef(prices[0], oneMinusS)), KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(oneMinusA, s), KGAuthor.raiseDefToDef(prices[1], oneMinusS))), KGAuthor.divideDefs(1, oneMinusS)), level);
+        CES.prototype.denominator = function (p1, p2) {
+            var a1 = this.alpha, a2 = KGAuthor.subtractDefs(1, a1), r = this.r, pOverA1 = KGAuthor.divideDefs(p1, a1), pOverA2 = KGAuthor.divideDefs(p2, a2), oneOverR = KGAuthor.divideDefs(1, r), rOverRminusOne = KGAuthor.divideDefs(r, KGAuthor.subtractDefs(r, 1));
+            return KGAuthor.raiseDefToDef(KGAuthor.addDefs(KGAuthor.multiplyDefs(a1, KGAuthor.raiseDefToDef(pOverA1, rOverRminusOne)), KGAuthor.multiplyDefs(a2, KGAuthor.raiseDefToDef(pOverA2, rOverRminusOne))), oneOverR);
+        };
+        // see http://personal.stthomas.edu/csmarcott/ec418/ces_cost_minimization.pdf
+        CES.prototype.lowestCostBundle = function (level, prices) {
+            var a1 = this.alpha, a2 = KGAuthor.subtractDefs(1, a1), p1 = prices[0], p2 = prices[1], r = this.r, pOverA1 = KGAuthor.divideDefs(p1, a1), pOverA2 = KGAuthor.divideDefs(p2, a2), oneOverRminusOne = KGAuthor.divideDefs(1, KGAuthor.subtractDefs(r, 1)), denominator = this.denominator(p1, p2), numerator1 = KGAuthor.raiseDefToDef(pOverA1, oneOverRminusOne), numerator2 = KGAuthor.raiseDefToDef(pOverA2, oneOverRminusOne);
+            console.log('denominator', denominator);
+            console.log('numerator1', numerator1);
+            console.log('numerator2', numerator2);
+            return [
+                KGAuthor.divideDefs(KGAuthor.multiplyDefs(level, numerator1), denominator),
+                KGAuthor.divideDefs(KGAuthor.multiplyDefs(level, numerator2), denominator)
+            ];
         };
         return CES;
     }(KGAuthor.UtilityFunction));
@@ -1648,9 +1663,9 @@ var KGAuthor;
         __extends(EconBundle, _super);
         function EconBundle(def, graph) {
             var _this = this;
+            KGAuthor.setFillColor(def);
             KG.setDefaults(def, {
                 name: KG.randomString(10),
-                fill: 'colors.utility',
                 label: { text: 'X' },
                 indifferenceCurveLabel: { text: 'U' },
                 droplines: {
@@ -1664,11 +1679,15 @@ var KGAuthor;
             _this = _super.call(this, def, graph) || this;
             var bundle = _this;
             bundle.utilityFunction = extractUtilityFunction(def);
+            _this.subObjects.push(bundle.utilityFunction);
             var indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+            delete indifferenceCurveDef.stroke;
+            delete indifferenceCurveDef.color;
             indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
                 label: def.indifferenceCurveLabel,
                 level: "calcs." + bundle.name + ".level",
-                show: def.showIndifferenceCurve
+                show: def.showIndifferenceCurve,
+                color: def.indifferenceCurveColor || 'colors.utility'
             });
             _this.subObjects.push(new KGAuthor.EconIndifferenceCurve(indifferenceCurveDef, graph));
             return _this;
@@ -1710,6 +1729,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 coordinates: coords,
                 label: { text: 'X^*' },
+                color: bl.color,
                 indifferenceCurveLabel: { text: 'U^*' },
                 budgetLineLabel: { text: 'BL' },
                 droplines: {
@@ -1797,6 +1817,7 @@ var KGAuthor;
             def.budgetLine.p1 = p1;
             def.budgetLine.p2 = p2;
             def.budgetLine.m = u.expenditure(level, [p1, p2]);
+            def.coordinates = u.lowestCostBundle(level, [p1, p2]);
             delete def.budgetLineObject;
             _this = _super.call(this, def, graph) || this;
             return _this;
@@ -1999,18 +2020,19 @@ var KG;
             param.update(newValue);
             // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
-                var valid_1 = true;
+                //restrictions aren't working right now
+                /*let valid = true;
                 model.restrictions.forEach(function (r) {
                     if (!r.valid(model)) {
-                        valid_1 = false;
+                        valid = false
                     }
                 });
-                if (valid_1) {
+                if (valid) {
                     model.update(false);
-                }
-                else {
+                } else {
                     param.update(oldValue);
-                }
+                }*/
+                model.update(false);
             }
         };
         // method exposed to viewObjects to allow them to toggle a binary param
@@ -2028,6 +2050,7 @@ var KG;
             var model = this;
             model.currentParamValues = model.evalParams();
             model.currentCalcValues = model.evalObject(model.calcs);
+            console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
                 listener.update(force);

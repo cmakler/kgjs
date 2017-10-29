@@ -21,10 +21,21 @@ module KGAuthor {
             }
         }
 
+        parseSelf(parsedData) {
+            const u = this,
+                a = getDefinitionProperty(u.alpha),
+                r = getDefinitionProperty(u.r),
+                b = subtractDefs(1, u.alpha);
+            parsedData.calcs[u.name] = {
+                xFunction: 'foo'
+            }
+            return parsedData;
+        }
+
         value(x) {
             const c = this.coefficients,
                 r = this.r;
-            return raiseDefToDef(addDefs(multiplyDefs(c[0], raiseDefToDef(x[0], r)), multiplyDefs(c[1], raiseDefToDef(x[1], r))), divideDefs(1, r));
+            return "((params.r == 0) ? (" + multiplyDefs(raiseDefToDef(x[0], c[0]), raiseDefToDef(x[1], c[1])) + ") : (" + raiseDefToDef(addDefs(multiplyDefs(c[0], raiseDefToDef(x[0], r)), multiplyDefs(c[1], raiseDefToDef(x[1], r))), divideDefs(1, r)) + "))";
         }
 
         levelSet(def) {
@@ -33,17 +44,6 @@ module KGAuthor {
                 r = getDefinitionProperty(u.r),
                 b = subtractDefs(1, u.alpha),
                 level = this.extractLevel(def);
-            let rZeroLevel;
-            if (def.hasOwnProperty('level') && def.level != undefined) {
-                rZeroLevel = level;
-            } else if (def.hasOwnProperty('point') && def.point != undefined) {
-                rZeroLevel = multiplyDefs(raiseDefToDef(def.point[0], a), raiseDefToDef(def.point[1], b));
-            } else if (def.hasOwnProperty('budgetLine')) {
-                const bl = new EconBudgetLine(def.budgetLine, null);
-                rZeroLevel = multiplyDefs(raiseDefToDef(multiplyDefs(a, bl.xIntercept), a), raiseDefToDef(multiplyDefs(b, bl.yIntercept), b));
-            } else {
-                console.log('must provide either a level, point, or budget line to draw an indifference curve')
-            }
 
             this.fillBelowRect = {
                 x1: 0,
@@ -54,13 +54,13 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `((${r} == 0) ? (${rZeroLevel}/x^(${a}))^(1/(${b})) : ((${level}^${r} - ${a}*x^${r})/${b})^(1/${r}))`,
+                    "fn": `((${r} == 0) ? (${level}/x^(${a}))^(1/(${b})) : ((${level}^${r} - ${a}*x^${r})/${b})^(1/${r}))`,
                     "ind": "x",
                     "min": level,
                     "samplePoints": 60
                 },
                 {
-                    "fn": `((${r} == 0) ? (${rZeroLevel}/y^(${b}))^(1/(${a})) : ((${level}^${r} - ${b}*y^${r})/${a})^(1/${r}))`,
+                    "fn": `((${r} == 0) ? (${level}/y^( ${b}))^(1/(${a})) : ((${level}^${r} - ${b}*y^${r})/${a})^(1/${r}))`,
                     "ind": "y",
                     "min": level,
                     "samplePoints": 60
@@ -79,20 +79,56 @@ module KGAuthor {
                 optimalX2 = `(${this.r} == 0) ? ${multiplyDefs(oneMinusA, budgetLine.yIntercept)} : ${multiplyDefs(raiseDefToDef(divideDefs(oneMinusA, budgetLine.p2), s), theta)}`;
             return [optimalX1, optimalX2];
         }
-        
-        expenditure(level:(string|number), prices: (string|number)[]) {
-            const s = this.s,
-                oneMinusS = subtractDefs(1, s),
-                a = this.alpha,
-                oneMinusA = subtractDefs(1, a);
 
-            return multiplyDefs(raiseDefToDef(
-                addDefs(
-                    multiplyDefs(raiseDefToDef(a, s), raiseDefToDef(prices[0], oneMinusS)),
-                    multiplyDefs(raiseDefToDef(oneMinusA, s), raiseDefToDef(prices[1], oneMinusS))
-                ),divideDefs(1,oneMinusS)
-            ),level);
+        denominator(p1, p2) {
+            const a1 = this.alpha,
+                a2 = subtractDefs(1, a1),
+                r = this.r,
+                pOverA1 = divideDefs(p1, a1),
+                pOverA2 = divideDefs(p2, a2),
+                oneOverR = divideDefs(1, r),
+                rOverRminusOne = divideDefs(r, subtractDefs(r, 1));
 
+            return raiseDefToDef(addDefs(
+                multiplyDefs(
+                    a1,
+                    raiseDefToDef(pOverA1, rOverRminusOne)
+                ),
+                multiplyDefs(
+                    a2,
+                    raiseDefToDef(pOverA2, rOverRminusOne)
+                )
+            ), oneOverR)
+        }
+
+        // see http://personal.stthomas.edu/csmarcott/ec418/ces_cost_minimization.pdf
+        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
+            const a1 = this.alpha,
+                a2 = subtractDefs(1, a1),
+                p1 = prices[0],
+                p2 = prices[1],
+                r = this.r,
+                pOverA1 = divideDefs(p1, a1),
+                pOverA2 = divideDefs(p2, a2),
+                oneOverRminusOne = divideDefs(1, subtractDefs(r, 1)),
+                denominator = this.denominator(p1,p2),
+                numerator1 = raiseDefToDef(pOverA1, oneOverRminusOne),
+                numerator2 = raiseDefToDef(pOverA2, oneOverRminusOne);
+
+            console.log('denominator', denominator);
+            console.log('numerator1', numerator1);
+            console.log('numerator2', numerator2);
+
+
+            return [
+                divideDefs(
+                    multiplyDefs(level, numerator1),
+                    denominator
+                ),
+                divideDefs(
+                    multiplyDefs(level, numerator2),
+                    denominator
+                )]
         }
 
 
