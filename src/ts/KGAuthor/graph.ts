@@ -153,6 +153,7 @@ module KGAuthor {
     export interface GraphObjectDefinition extends GraphObjectGeneratorDefinition {
         type?: string;
         layer?: number;
+        color?: string;
         fill?: string;
         opacity?: string;
         stroke?: string;

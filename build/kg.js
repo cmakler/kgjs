@@ -155,6 +155,10 @@ var KGAuthor;
         return binaryFunction(def1, def2, '*');
     }
     KGAuthor.multiplyDefs = multiplyDefs;
+    function averageDefs(def1, def2) {
+        return "(0.5*" + addDefs(def1, def2) + ")";
+    }
+    KGAuthor.averageDefs = averageDefs;
     function squareDef(def) {
         return binaryFunction(def, def, '*');
     }
@@ -184,6 +188,22 @@ var KGAuthor;
         });
     }
     KGAuthor.curvesFromFunctions = curvesFromFunctions;
+    // allow author to set fill color either by "color" attribute or "fill" attribute
+    function setFillColor(def) {
+        return KG.setDefaults(def, {
+            color: def.fill,
+            fill: def.color
+        });
+    }
+    KGAuthor.setFillColor = setFillColor;
+    // allow author to set stroke color either by "color" attribute or "stroke" attribute
+    function setStrokeColor(def) {
+        return KG.setDefaults(def, {
+            color: def.stroke,
+            stroke: def.color
+        });
+    }
+    KGAuthor.setStrokeColor = setStrokeColor;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -217,6 +237,45 @@ var KGAuthor;
         return AuthoringObject;
     }());
     KGAuthor.AuthoringObject = AuthoringObject;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var setDefaults = KG.setDefaults;
+    var Schema = /** @class */ (function (_super) {
+        __extends(Schema, _super);
+        function Schema(def) {
+            var _this = this;
+            var palette = {
+                blue: 'd3.schemeCategory20c[0]',
+                orange: 'd3.schemeCategory20c[4]',
+                green: 'd3.schemeCategory20c[8]',
+                purple: 'd3.schemeCategory20c[12]',
+                grey: 'd3.schemeCategory20c[16]',
+                olive: 'd3.schemeCategory20b[4]',
+                brown: 'd3.schemeCategory20b[8]',
+                red: 'd3.schemeCategory20[6]',
+                magenta: 'd3.schemeCategory20b[16]'
+            };
+            for (var color in def.colors) {
+                var colorName = def.colors[color];
+                if (palette.hasOwnProperty(colorName)) {
+                    def.colors[color] = palette[colorName];
+                }
+            }
+            def.colors = setDefaults(def.colors || {}, palette);
+            _this = _super.call(this, def) || this;
+            _this.colors = def.colors;
+            return _this;
+        }
+        Schema.prototype.parseSelf = function (parsedData) {
+            var colors = this.colors;
+            parsedData.colors = setDefaults(parsedData.colors || {}, colors);
+            return parsedData;
+        };
+        return Schema;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.Schema = Schema;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KGAuthor;
@@ -393,7 +452,20 @@ var KGAuthor;
     var Label = /** @class */ (function (_super) {
         __extends(Label, _super);
         function Label(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
+            if (def.hasOwnProperty('position')) {
+                if (def.position.toLowerCase() == 'bl') {
+                    def.xPixelOffset = 4;
+                    def.yPixelOffset = 3;
+                    def.align = 'left';
+                }
+                if (def.position.toLowerCase() == 'tr') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = -12;
+                    def.align = 'right';
+                }
+            }
+            _this = _super.call(this, def, graph) || this;
             _this.type = 'Label';
             _this.extractCoordinates();
             return _this;
@@ -436,7 +508,7 @@ var KGAuthor;
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
-                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        x: KGAuthor.averageDefs(graph.xScale.min, graph.xScale.max),
                         y: graph.yScale.min,
                         yPixelOffset: -40
                     }, graph));
@@ -445,7 +517,7 @@ var KGAuthor;
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
-                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
                         xPixelOffset: -40,
                         rotate: 90
                     }, graph));
@@ -453,7 +525,7 @@ var KGAuthor;
                 else if (def.orient == 'top') {
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
-                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        x: KGAuthor.averageDefs(graph.xScale.min, graph.xScale.max),
                         y: graph.yScale.max,
                         yPixelOffset: 40
                     }, graph));
@@ -462,7 +534,7 @@ var KGAuthor;
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.max,
-                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
                         xPixelOffset: 40,
                         rotate: 270
                     }, graph));
@@ -508,6 +580,7 @@ var KGAuthor;
         __extends(Curve, _super);
         function Curve(def, graph) {
             var _this = this;
+            def = KGAuthor.setStrokeColor(def);
             if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
@@ -522,7 +595,9 @@ var KGAuthor;
     var Point = /** @class */ (function (_super) {
         __extends(Point, _super);
         function Point(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
+            def = KGAuthor.setFillColor(def);
+            _this = _super.call(this, def, graph) || this;
             var p = _this;
             p.type = 'Point';
             p.layer = 3;
@@ -530,13 +605,11 @@ var KGAuthor;
             if (def.hasOwnProperty('label')) {
                 var labelDef = JSON.parse(JSON.stringify(def));
                 delete labelDef.label;
-                KG.setDefaults(labelDef, {
-                    text: def.label.text,
+                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(labelDef, {
                     fontSize: 10,
-                    xPixelOffset: 4,
-                    yPixelOffset: 3,
-                    align: 'left',
-                    valign: 'bottom'
+                    position: 'bl',
+                    color: def.color
                 });
                 p.subObjects.push(new KGAuthor.Label(labelDef, graph));
             }
@@ -574,7 +647,9 @@ var KGAuthor;
     var Segment = /** @class */ (function (_super) {
         __extends(Segment, _super);
         function Segment(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            _this = _super.call(this, def, graph) || this;
             var s = _this;
             s.type = 'Segment';
             s.layer = 1;
@@ -927,7 +1002,7 @@ var KGAuthor;
     }(WideRectanglePlusSidebarLayout));
     KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
     var EconBudgetLine = /** @class */ (function (_super) {
@@ -940,7 +1015,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 a: [xIntercept, 0],
                 b: [0, yIntercept],
-                stroke: 'green',
+                stroke: 'colors.budget',
                 strokeWidth: 2,
                 label: 'BL',
                 lineStyle: 'solid'
@@ -982,7 +1057,7 @@ var KGAuthor;
                         }]
                 }, graph);
                 bl.budgetSetArea = new KGAuthor.Area({
-                    fill: "green",
+                    fill: "colors.budget",
                     univariateFunction1: {
                         fn: yIntercept + " - " + priceRatio + "*x",
                         samplePoints: 2,
@@ -991,7 +1066,7 @@ var KGAuthor;
                     show: def.set
                 }, graph);
                 bl.costlierArea = new KGAuthor.Area({
-                    fill: "red",
+                    fill: "colors.costlier",
                     univariateFunction1: {
                         fn: yIntercept + " - " + priceRatio + "*x",
                         samplePoints: 2
@@ -1016,7 +1091,7 @@ var KGAuthor;
     }(KGAuthor.Segment));
     KGAuthor.EconBudgetLine = EconBudgetLine;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
     var UtilityFunction = /** @class */ (function () {
@@ -1072,6 +1147,7 @@ var KGAuthor;
                 objs.push(new KGAuthor.Area(areaDef, graph));
             });
             if (fn.fillBelowRect) {
+                fn.fillBelowRect.show = def.show;
                 fn.fillBelowRect.fill = def.fill;
                 objs.push(new KGAuthor.Rectangle(fn.fillBelowRect, graph));
             }
@@ -1090,6 +1166,7 @@ var KGAuthor;
                 objs.push(new KGAuthor.Area(areaDef, graph));
             });
             if (fn.fillAboveRect) {
+                fn.fillAboveRect.show = def.show;
                 fn.fillAboveRect.fill = def.fill;
                 fn.fillAboveRect.inClipPath = true;
                 objs.push(new KGAuthor.Rectangle(fn.fillAboveRect, graph));
@@ -1101,7 +1178,8 @@ var KGAuthor;
                     x1: graph.def.xAxis.min,
                     x2: graph.def.xAxis.max,
                     y1: graph.def.yAxis.min,
-                    y2: graph.def.yAxis.max
+                    y2: graph.def.yAxis.max,
+                    show: def.show
                 }, graph),
                 new KGAuthor.ClipPath({
                     "name": clipPathName,
@@ -1162,9 +1240,32 @@ var KGAuthor;
         UtilityFunction.prototype.quantityDemanded = function (budgetLine, good) {
             return this.optimalBundle(budgetLine)[good - 1];
         };
+        UtilityFunction.prototype.indirectUtility = function (income, prices) {
+            return this.extractLevel({ budgetLine: { p1: prices[0], p2: prices[1], m: income } });
+        };
+        UtilityFunction.prototype.expenditure = function (level, prices) {
+            return false; // defined at subclass level
+        };
+        UtilityFunction.prototype.lowestCostBundle = function (level, prices) {
+            var u = this, m = u.expenditure(level, prices);
+            if (m) {
+                return u.optimalBundle(new KGAuthor.EconBudgetLine({ p1: prices[0], p2: prices[1], m: m }, null));
+            }
+            else {
+                return false;
+            }
+        };
+        UtilityFunction.prototype.costOfLowestCostBundle = function (level, prices) {
+            var b = this.lowestCostBundle(level, prices);
+            return KGAuthor.addDefs(KGAuthor.multiplyDefs(b[0], prices[0]), KGAuthor.multiplyDefs(b[1], prices[1]));
+        };
         return UtilityFunction;
     }());
     KGAuthor.UtilityFunction = UtilityFunction;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
     var CobbDouglasFunction = /** @class */ (function (_super) {
         __extends(CobbDouglasFunction, _super);
         function CobbDouglasFunction() {
@@ -1203,41 +1304,90 @@ var KGAuthor;
             return [KGAuthor.multiplyDefs(a, budgetLine.xIntercept), KGAuthor.multiplyDefs(KGAuthor.subtractDefs(1, a), budgetLine.yIntercept)];
         };
         return CobbDouglasFunction;
-    }(UtilityFunction));
+    }(KGAuthor.UtilityFunction));
     KGAuthor.CobbDouglasFunction = CobbDouglasFunction;
-    var QuasilinearFunction = /** @class */ (function (_super) {
-        __extends(QuasilinearFunction, _super);
-        function QuasilinearFunction() {
-            return _super !== null && _super.apply(this, arguments) || this;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var MinFunction = /** @class */ (function (_super) {
+        __extends(MinFunction, _super);
+        function MinFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            fn.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [KGAuthor.divideDefs(0.5, def.alpha), KGAuthor.divideDefs(0.5, KGAuthor.subtractDefs(1, def.alpha))];
+            }
+            return _this;
         }
-        QuasilinearFunction.prototype.value = function (x) {
+        MinFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return "(0.5*(" + c[0] + "*log(" + x[0] + ")+" + x[1] + "))";
+            console.log('foo');
+            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[1] + ")*(" + c[1] + ")))";
         };
-        QuasilinearFunction.prototype.levelSet = function (def) {
-            var c = this.coefficients, level = def.level || this.value(def.point);
+        MinFunction.prototype.levelSet = function (def) {
+            var c = this.coefficients, level = def.level || this.value(def.point), xMin = KGAuthor.divideDefs(level, c[0]), yMin = KGAuthor.divideDefs(level, c[1]);
+            this.fillBelowRect = {
+                x1: 0,
+                x2: xMin,
+                y1: 0,
+                y2: yMin,
+                show: def.show
+            };
             return [
                 {
-                    "fn": "(2*(" + level + ")-" + c[0] + "*log(x))",
+                    "fn": KGAuthor.divideDefs(level, c[1]),
                     "ind": "x",
-                    "samplePoints": 100
+                    "min": xMin,
+                    "samplePoints": 2
+                }, {
+                    "fn": KGAuthor.divideDefs(level, c[0]),
+                    "ind": "y",
+                    "min": yMin,
+                    "samplePoints": 2
                 }
             ];
         };
-        QuasilinearFunction.prototype.cornerCondition = function (budgetLine) {
-            return "(" + this.lagrangeBundle(budgetLine)[1] + " < 0)";
-        };
-        QuasilinearFunction.prototype.lagrangeBundle = function (budgetLine) {
+        return MinFunction;
+    }(KGAuthor.UtilityFunction));
+    KGAuthor.MinFunction = MinFunction;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var LinearFunction = /** @class */ (function (_super) {
+        __extends(LinearFunction, _super);
+        function LinearFunction(def) {
+            var _this = _super.call(this, def) || this;
+            var fn = _this;
+            _this.interpolation = 'curveLinear';
+            if (def.hasOwnProperty('alpha')) {
+                fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
+            }
+            return _this;
+        }
+        LinearFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return [KGAuthor.divideDefs(KGAuthor.multiplyDefs(c[0], budgetLine.p2), budgetLine.p1), KGAuthor.subtractDefs(budgetLine.yIntercept, c[0])];
+            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[1] + ")*(" + c[1] + "))";
         };
-        QuasilinearFunction.prototype.optimalBundle = function (budgetLine) {
-            var lagr = this.lagrangeBundle(budgetLine), cornerCondition = this.cornerCondition(budgetLine);
-            return [cornerCondition + " ? " + budgetLine.xIntercept + " : " + lagr[0], cornerCondition + " ? 0 : " + lagr[1]];
+        LinearFunction.prototype.levelSet = function (def) {
+            var c = this.coefficients, level = def.level || this.value(def.point);
+            return [
+                {
+                    "fn": "(" + level + " - (" + c[0] + ")*x)/(" + c[1] + ")",
+                    "ind": "x",
+                    "samplePoints": 2
+                }
+            ];
         };
-        return QuasilinearFunction;
-    }(UtilityFunction));
-    KGAuthor.QuasilinearFunction = QuasilinearFunction;
+        return LinearFunction;
+    }(KGAuthor.UtilityFunction));
+    KGAuthor.LinearFunction = LinearFunction;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
     var CES = /** @class */ (function (_super) {
         __extends(CES, _super);
         function CES(def) {
@@ -1301,19 +1451,27 @@ var KGAuthor;
             var s = this.s, oneMinusS = KGAuthor.subtractDefs(1, s), a = this.alpha, oneMinusA = KGAuthor.subtractDefs(1, a), theta = KGAuthor.divideDefs(budgetLine.m, KGAuthor.addDefs(KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(a, s), KGAuthor.raiseDefToDef(budgetLine.p1, oneMinusS)), KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(oneMinusA, s), KGAuthor.raiseDefToDef(budgetLine.p2, oneMinusS)))), optimalX1 = "(" + this.r + " == 0) ? " + KGAuthor.multiplyDefs(a, budgetLine.xIntercept) + " : " + KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.divideDefs(a, budgetLine.p1), s), theta), optimalX2 = "(" + this.r + " == 0) ? " + KGAuthor.multiplyDefs(oneMinusA, budgetLine.yIntercept) + " : " + KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.divideDefs(oneMinusA, budgetLine.p2), s), theta);
             return [optimalX1, optimalX2];
         };
+        CES.prototype.expenditure = function (level, prices) {
+            var s = this.s, oneMinusS = KGAuthor.subtractDefs(1, s), a = this.alpha, oneMinusA = KGAuthor.subtractDefs(1, a);
+            return KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(KGAuthor.addDefs(KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(a, s), KGAuthor.raiseDefToDef(prices[0], oneMinusS)), KGAuthor.multiplyDefs(KGAuthor.raiseDefToDef(oneMinusA, s), KGAuthor.raiseDefToDef(prices[1], oneMinusS))), KGAuthor.divideDefs(1, oneMinusS)), level);
+        };
         return CES;
-    }(UtilityFunction));
+    }(KGAuthor.UtilityFunction));
     KGAuthor.CES = CES;
-    var EllipseFunction = /** @class */ (function (_super) {
-        __extends(EllipseFunction, _super);
-        function EllipseFunction() {
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var ConcaveUtility = /** @class */ (function (_super) {
+        __extends(ConcaveUtility, _super);
+        function ConcaveUtility() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        EllipseFunction.prototype.value = function (x) {
+        ConcaveUtility.prototype.value = function (x) {
             var c = this.coefficients;
             return "(" + c[0] + ")*(" + x[0] + ")^2+(" + c[1] + ")*(" + x[1] + ")^2";
         };
-        EllipseFunction.prototype.levelSet = function (def) {
+        ConcaveUtility.prototype.levelSet = function (def) {
             var c = this.coefficients, level = def.level || this.value(def.point), max = "((" + level + ")/(" + c[0] + "+" + c[1] + "))^(0.5)";
             this.fillAboveRect = {
                 x1: max,
@@ -1339,78 +1497,50 @@ var KGAuthor;
                 }
             ];
         };
-        return EllipseFunction;
-    }(UtilityFunction));
-    KGAuthor.EllipseFunction = EllipseFunction;
-    var LinearFunction = /** @class */ (function (_super) {
-        __extends(LinearFunction, _super);
-        function LinearFunction(def) {
-            var _this = _super.call(this, def) || this;
-            var fn = _this;
-            _this.interpolation = 'curveLinear';
-            if (def.hasOwnProperty('alpha')) {
-                fn.coefficients = [def.alpha, KGAuthor.subtractDefs(1, def.alpha)];
-            }
-            return _this;
+        return ConcaveUtility;
+    }(KGAuthor.UtilityFunction));
+    KGAuthor.ConcaveUtility = ConcaveUtility;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var QuasilinearFunction = /** @class */ (function (_super) {
+        __extends(QuasilinearFunction, _super);
+        function QuasilinearFunction() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
-        LinearFunction.prototype.value = function (x) {
+        QuasilinearFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return "((" + x[0] + ")*(" + c[0] + ")+(" + x[1] + ")*(" + c[1] + "))";
+            return "(0.5*(" + c[0] + "*log(" + x[0] + ")+" + x[1] + "))";
         };
-        LinearFunction.prototype.levelSet = function (def) {
+        QuasilinearFunction.prototype.levelSet = function (def) {
             var c = this.coefficients, level = def.level || this.value(def.point);
             return [
                 {
-                    "fn": "(" + level + " - (" + c[0] + ")*x)/(" + c[1] + ")",
+                    "fn": "(2*(" + level + ")-" + c[0] + "*log(x))",
                     "ind": "x",
-                    "samplePoints": 2
+                    "samplePoints": 100
                 }
             ];
         };
-        return LinearFunction;
-    }(UtilityFunction));
-    KGAuthor.LinearFunction = LinearFunction;
-    var MinFunction = /** @class */ (function (_super) {
-        __extends(MinFunction, _super);
-        function MinFunction(def) {
-            var _this = _super.call(this, def) || this;
-            var fn = _this;
-            fn.interpolation = 'curveLinear';
-            if (def.hasOwnProperty('alpha')) {
-                fn.coefficients = [KGAuthor.divideDefs(0.5, def.alpha), KGAuthor.divideDefs(0.5, KGAuthor.subtractDefs(1, def.alpha))];
-            }
-            return _this;
-        }
-        MinFunction.prototype.value = function (x) {
+        QuasilinearFunction.prototype.cornerCondition = function (budgetLine) {
+            return "(" + this.lagrangeBundle(budgetLine)[1] + " < 0)";
+        };
+        QuasilinearFunction.prototype.lagrangeBundle = function (budgetLine) {
             var c = this.coefficients;
-            return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[1] + ")*(" + c[1] + ")))";
+            return [KGAuthor.divideDefs(KGAuthor.multiplyDefs(c[0], budgetLine.p2), budgetLine.p1), KGAuthor.subtractDefs(budgetLine.yIntercept, c[0])];
         };
-        MinFunction.prototype.levelSet = function (def) {
-            var c = this.coefficients, level = def.level || this.value(def.point), xMin = KGAuthor.divideDefs(level, c[0]), yMin = KGAuthor.divideDefs(level, c[1]);
-            this.fillBelowRect = {
-                x1: 0,
-                x2: xMin,
-                y1: 0,
-                y2: yMin,
-                show: def.show
-            };
-            return [
-                {
-                    "fn": KGAuthor.divideDefs(level, c[1]),
-                    "ind": "x",
-                    "min": xMin,
-                    "samplePoints": 2
-                }, {
-                    "fn": KGAuthor.divideDefs(level, c[0]),
-                    "ind": "y",
-                    "min": yMin,
-                    "samplePoints": 2
-                }
-            ];
+        QuasilinearFunction.prototype.optimalBundle = function (budgetLine) {
+            var lagr = this.lagrangeBundle(budgetLine), cornerCondition = this.cornerCondition(budgetLine);
+            return [cornerCondition + " ? " + budgetLine.xIntercept + " : " + lagr[0], cornerCondition + " ? 0 : " + lagr[1]];
         };
-        return MinFunction;
-    }(UtilityFunction));
-    KGAuthor.MinFunction = MinFunction;
+        return QuasilinearFunction;
+    }(KGAuthor.UtilityFunction));
+    KGAuthor.QuasilinearFunction = QuasilinearFunction;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
     function getUtilityFunction(def) {
         if (def.type == 'CobbDouglas') {
             return new KGAuthor.CobbDouglasFunction(def.def);
@@ -1422,7 +1552,7 @@ var KGAuthor;
             return new KGAuthor.MinFunction(def.def);
         }
         else if (def.type == 'Concave') {
-            return new KGAuthor.EllipseFunction(def.def);
+            return new KGAuthor.ConcaveUtility(def.def);
         }
         else if (def.type == 'Quasilinear') {
             return new KGAuthor.QuasilinearFunction(def.def);
@@ -1433,59 +1563,53 @@ var KGAuthor;
     }
     KGAuthor.getUtilityFunction = getUtilityFunction;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
     var EconIndifferenceCurve = /** @class */ (function (_super) {
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
             KG.setDefaults(def, {
                 strokeWidth: 2,
-                stroke: 'purple',
-                layer: 1
+                color: 'colors.utility',
+                layer: 1,
+                showPreferred: false,
+                showDispreferred: false,
+                includeAreas: true
             });
+            _this = _super.call(this, def, graph) || this;
+            var curve = _this;
+            var utilityFunction = KGAuthor.extractUtilityFunction(def);
             if (Array.isArray(def.utilityFunction.type)) {
-                _this.subObjects = def.utilityFunction.map(function (u) {
+                curve.subObjects = def.utilityFunction.map(function (u) {
                     var uDef = JSON.parse(JSON.stringify(def));
                     uDef.utilityFunction.type = u;
-                    return KGAuthor.getUtilityFunction(def.utilityFunction).levelCurve(def, graph);
+                    return utilityFunction.levelCurve(uDef, graph);
                 });
             }
             else {
-                _this.subObjects = KGAuthor.getUtilityFunction(def.utilityFunction).levelCurve(def, graph);
+                curve.subObjects = utilityFunction.levelCurve(def, graph);
+                if (def.includeAreas) {
+                    if (!!def.showPreferred) {
+                        var preferredDef = JSON.parse(JSON.stringify(def));
+                        preferredDef.fill = 'colors.preferred';
+                        preferredDef.show = def.showPreferred;
+                        curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
+                    }
+                    if (!!def.showDispreferred) {
+                        var dispreferredDef = JSON.parse(JSON.stringify(def));
+                        dispreferredDef.fill = 'colors.dispreferred';
+                        dispreferredDef.show = def.showDispreferred;
+                        curve.subObjects = curve.subObjects.concat(utilityFunction.areaBelowLevelCurve(dispreferredDef, graph));
+                    }
+                }
             }
             return _this;
         }
         return EconIndifferenceCurve;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceCurve = EconIndifferenceCurve;
-    var EconPreferredRegion = /** @class */ (function (_super) {
-        __extends(EconPreferredRegion, _super);
-        function EconPreferredRegion(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            KG.setDefaults(def, {
-                fill: 'purple'
-            });
-            _this.subObjects = KGAuthor.getUtilityFunction(def.utilityFunction).areaAboveLevelCurve(def, graph);
-            return _this;
-        }
-        return EconPreferredRegion;
-    }(KGAuthor.GraphObjectGenerator));
-    KGAuthor.EconPreferredRegion = EconPreferredRegion;
-    var EconDispreferredRegion = /** @class */ (function (_super) {
-        __extends(EconDispreferredRegion, _super);
-        function EconDispreferredRegion(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            KG.setDefaults(def, {
-                fill: 'red'
-            });
-            _this.subObjects = KGAuthor.getUtilityFunction(def.utilityFunction).areaBelowLevelCurve(def, graph);
-            return _this;
-        }
-        return EconDispreferredRegion;
-    }(KGAuthor.GraphObjectGenerator));
-    KGAuthor.EconDispreferredRegion = EconDispreferredRegion;
     var EconIndifferenceMap = /** @class */ (function (_super) {
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
@@ -1497,6 +1621,7 @@ var KGAuthor;
             });
             _this.subObjects = def.levels.map(function (level) {
                 var icDef = JSON.parse(JSON.stringify(def));
+                icDef.includeAreas = false;
                 delete icDef.levels;
                 if (Array.isArray(level)) {
                     icDef.point = level;
@@ -1512,51 +1637,95 @@ var KGAuthor;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconIndifferenceMap = EconIndifferenceMap;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
-    function extractBudgetLine(def, graph) {
-        return def.budgetLineObject || new KGAuthor.EconBudgetLine(def.budgetLine, graph);
-    }
-    KGAuthor.extractBudgetLine = extractBudgetLine;
     function extractUtilityFunction(def) {
         return def.utilityFunctionObject || KGAuthor.getUtilityFunction(def.utilityFunction);
     }
     KGAuthor.extractUtilityFunction = extractUtilityFunction;
+    var EconBundle = /** @class */ (function (_super) {
+        __extends(EconBundle, _super);
+        function EconBundle(def, graph) {
+            var _this = this;
+            KG.setDefaults(def, {
+                name: KG.randomString(10),
+                fill: 'colors.utility',
+                label: { text: 'X' },
+                indifferenceCurveLabel: { text: 'U' },
+                droplines: {
+                    vertical: "x_1",
+                    horizontal: "x_2"
+                },
+                showIndifferenceCurve: false,
+                showPreferred: false,
+                showDispreferred: false
+            });
+            _this = _super.call(this, def, graph) || this;
+            var bundle = _this;
+            bundle.utilityFunction = extractUtilityFunction(def);
+            var indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+            indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
+                label: def.indifferenceCurveLabel,
+                level: "calcs." + bundle.name + ".level",
+                show: def.showIndifferenceCurve
+            });
+            _this.subObjects.push(new KGAuthor.EconIndifferenceCurve(indifferenceCurveDef, graph));
+            return _this;
+        }
+        EconBundle.prototype.parseSelf = function (parsedData) {
+            var bundle = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[bundle.name] = {
+                x: bundle.x,
+                y: bundle.y,
+                level: bundle.utilityFunction.value([bundle.x, bundle.y])
+            };
+            return parsedData;
+        };
+        return EconBundle;
+    }(KGAuthor.Point));
+    KGAuthor.EconBundle = EconBundle;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    function extractBudgetLine(def, graph) {
+        if (def.hasOwnProperty('budgetLineObject')) {
+            return def.budgetLineObject;
+        }
+        if (def.hasOwnProperty('budgetLine')) {
+            var budgetDef = JSON.parse(JSON.stringify(def.budgetLine));
+            budgetDef.show = def.showBudgetLine;
+            return new KGAuthor.EconBudgetLine(budgetDef, graph);
+        }
+        console.log('tried to instantiate a budget line without either a budget line def or object');
+    }
+    KGAuthor.extractBudgetLine = extractBudgetLine;
     var EconOptimalBundle = /** @class */ (function (_super) {
         __extends(EconOptimalBundle, _super);
         function EconOptimalBundle(def, graph) {
             var _this = this;
-            var bl = extractBudgetLine(def, graph), u = extractUtilityFunction(def), coords = u.optimalBundle(bl);
+            var bl = extractBudgetLine(def, graph), u = KGAuthor.extractUtilityFunction(def), coords = u.optimalBundle(bl);
             KG.setDefaults(def, {
                 coordinates: coords,
-                fill: 'purple',
                 label: { text: 'X^*' },
-                indifferenceCurveLabel: { text: 'U' },
+                indifferenceCurveLabel: { text: 'U^*' },
                 budgetLineLabel: { text: 'BL' },
                 droplines: {
                     vertical: "x_1^*",
                     horizontal: "x_2^*"
                 },
-                showIndifferenceCurve: false,
-                showBudgetLine: false
+                showIndifferenceCurve: true,
+                showBudgetLine: true
             });
             _this = _super.call(this, def, graph) || this;
-            var point = _this;
-            if (def.showIndifferenceCurve) {
-                var indifferenceCurveDef = JSON.parse(JSON.stringify(def));
-                delete indifferenceCurveDef.budgetLine;
-                indifferenceCurveDef.label = def.indifferenceCurveLabel;
-                indifferenceCurveDef.point = coords;
-                point.subObjects.push(new KGAuthor.EconIndifferenceCurve(indifferenceCurveDef, graph));
-            }
-            if (def.showBudgetLine) {
-                point.subObjects.push(bl);
-            }
+            _this.level = u.value(coords);
+            _this.subObjects.push(bl);
             return _this;
         }
         return EconOptimalBundle;
-    }(KGAuthor.Point));
+    }(KGAuthor.EconBundle));
     KGAuthor.EconOptimalBundle = EconOptimalBundle;
     var EconLagrangeBundle = /** @class */ (function (_super) {
         __extends(EconLagrangeBundle, _super);
@@ -1580,11 +1749,29 @@ var KGAuthor;
         return EconLagrangeBundle;
     }(KGAuthor.Point));
     KGAuthor.EconLagrangeBundle = EconLagrangeBundle;
+    var LowestCostBundle = /** @class */ (function (_super) {
+        __extends(LowestCostBundle, _super);
+        function LowestCostBundle(def, graph) {
+            var _this = this;
+            var u = KGAuthor.extractUtilityFunction(def), p1 = def.prices[0], p2 = def.prices[1], m = u.expenditure(def.level, def.prices);
+            delete def.prices;
+            delete def.level;
+            def.budgetLine = {
+                p1: p1,
+                p2: p2,
+                m: m
+            };
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return LowestCostBundle;
+    }(EconOptimalBundle));
+    KGAuthor.LowestCostBundle = LowestCostBundle;
     var EconSlutskyBundle = /** @class */ (function (_super) {
         __extends(EconSlutskyBundle, _super);
         function EconSlutskyBundle(def, graph) {
             var _this = this;
-            var bl = extractBudgetLine(def, graph), u = extractUtilityFunction(def);
+            var bl = extractBudgetLine(def, graph), u = KGAuthor.extractUtilityFunction(def);
             def.budgetLine = def.budgetLine || {};
             if (def.hasOwnProperty('p1')) {
                 def.budgetLine.p1 = def.p1;
@@ -1602,8 +1789,23 @@ var KGAuthor;
         return EconSlutskyBundle;
     }(EconOptimalBundle));
     KGAuthor.EconSlutskyBundle = EconSlutskyBundle;
+    var EconHicksBundle = /** @class */ (function (_super) {
+        __extends(EconHicksBundle, _super);
+        function EconHicksBundle(def, graph) {
+            var _this = this;
+            var bl = extractBudgetLine(def, graph), u = KGAuthor.extractUtilityFunction(def), p1 = def.hasOwnProperty('p1') ? def.p1 : def.budgetLine.p1, p2 = def.hasOwnProperty('p2') ? def.p2 : def.budgetLine.p2, level = u.value(u.optimalBundle(bl));
+            def.budgetLine.p1 = p1;
+            def.budgetLine.p2 = p2;
+            def.budgetLine.m = u.expenditure(level, [p1, p2]);
+            delete def.budgetLineObject;
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return EconHicksBundle;
+    }(EconOptimalBundle));
+    KGAuthor.EconHicksBundle = EconHicksBundle;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
     var EconDemandCurve = /** @class */ (function (_super) {
@@ -1612,7 +1814,7 @@ var KGAuthor;
             var _this = this;
             var u = KGAuthor.getUtilityFunction(def.utilityFunction), bl = new KGAuthor.EconBudgetLine(def.budgetLine, graph);
             KG.setDefaults(def, {
-                stroke: 'blue',
+                stroke: 'colors.demand',
                 strokeWidth: 2
             });
             _this = _super.call(this, def, graph) || this;
@@ -1630,7 +1832,7 @@ var KGAuthor;
                 var u = KGAuthor.getUtilityFunction(def.utilityFunction), bl = new KGAuthor.EconBudgetLine(def.budgetLine, graph);
                 KG.setDefaults(def, {
                     coordinates: [u.quantityDemanded(bl, def.good), bl['p' + def.good]],
-                    fill: 'blue',
+                    fill: 'colors.demand',
                     label: { text: "x_" + def.good + "(p_" + def.good + "|p_" + (3 - def.good) + ",m)" },
                     droplines: { vertical: "x_" + def.good + "^*" }
                 });
@@ -1650,7 +1852,7 @@ var KGAuthor;
             var _this = this;
             var u = KGAuthor.getUtilityFunction(def.utilityFunction), bl = new KGAuthor.EconBudgetLine(def.budgetLine, graph);
             KG.setDefaults(def, {
-                stroke: 'blue',
+                stroke: 'colors.offer',
                 strokeWidth: 2
             });
             _this = _super.call(this, def, graph) || this;
@@ -1661,44 +1863,110 @@ var KGAuthor;
     }(KGAuthor.GraphObjectGenerator));
     KGAuthor.EconPriceOfferCurve = EconPriceOfferCurve;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts"/>
+/* MICRO */
+/* Consumer Theory */
+/// <reference path="micro/consumer_theory/constraints/budgetLine.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/twoGoodUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/cobbDouglasUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/complementsUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/substitutesUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/cesUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/concaveUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/quasilinearUtility.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/utilitySelector.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/indifferenceCurve.ts"/>
+/// <reference path="micro/consumer_theory/two_good_utility/bundle.ts"/>
+/// <reference path="micro/consumer_theory/optimization/optimalBundle.ts"/>
+/// <reference path="micro/consumer_theory/optimization/demandCurve.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconSchema = /** @class */ (function (_super) {
+        __extends(EconSchema, _super);
+        function EconSchema(def) {
+            var _this = this;
+            def.colors = {
+                utility: 'purple',
+                dispreferred: 'red',
+                preferred: 'purple',
+                offer: 'blue',
+                demand: 'blue',
+                budget: 'green',
+                costlier: 'red',
+                production: 'blue',
+                marginalCost: 'orange',
+                supply: 'orange',
+                price: 'grey'
+            };
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return EconSchema;
+    }(KGAuthor.Schema));
+    KGAuthor.EconSchema = EconSchema;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts" />
 var KG;
 (function (KG) {
     var Model = /** @class */ (function () {
-        function Model(params, restrictions) {
+        function Model(parsedData) {
             var model = this;
-            model.params = params.map(function (def) {
+            model.params = parsedData.params.map(function (def) {
                 return new KG.Param(def);
             });
-            model.restrictions = (restrictions || []).map(function (def) {
+            model.calcs = parsedData.calcs;
+            model.colors = parsedData.colors;
+            model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new KG.Restriction(def);
             });
             model.updateListeners = [];
+            model.currentParamValues = model.evalParams();
+            model.currentCalcValues = model.evalObject(model.calcs);
+            model.currentColors = model.evalObject(model.colors);
         }
         Model.prototype.addUpdateListener = function (updateListener) {
             this.updateListeners.push(updateListener);
             return this;
         };
-        Model.prototype.currentParamValues = function () {
+        Model.prototype.evalParams = function () {
             var p = {};
             this.params.forEach(function (param) {
                 p[param.name] = param.value;
             });
             return p;
         };
+        Model.prototype.evalObject = function (obj) {
+            var model = this;
+            var newObj = {};
+            for (var stringOrObj in obj) {
+                var def = obj[stringOrObj];
+                if (typeof def === 'string') {
+                    newObj[stringOrObj] = model.eval(def);
+                }
+                else {
+                    newObj[stringOrObj] = model.evalObject(def);
+                }
+            }
+            return newObj;
+        };
         // the model serves as a model, and can evaluate expressions within the context of that model
         Model.prototype.eval = function (name) {
+            var model = this;
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
                 //console.log('interpreted ', name, 'as a number.');
                 return parseFloat(name);
             }
-            // collect current parameter values in a params object
-            var params = this.currentParamValues();
+            // collect current values in a scope object
+            var scope = {
+                params: model.currentParamValues,
+                calcs: model.currentCalcValues,
+                colors: model.currentColors
+            };
             // try to evaluate using mathjs
             try {
                 var compiledMath = math.compile(name);
-                var result = compiledMath.eval({ params: params });
+                var result = compiledMath.eval(scope);
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
@@ -1736,7 +2004,6 @@ var KG;
                     if (!r.valid(model)) {
                         valid_1 = false;
                     }
-                    ;
                 });
                 if (valid_1) {
                     model.update(false);
@@ -1758,7 +2025,11 @@ var KG;
             this.updateParam(name, param.value < param.max ? param.value++ : 0);
         };
         Model.prototype.update = function (force) {
-            this.updateListeners.forEach(function (listener) {
+            var model = this;
+            model.currentParamValues = model.evalParams();
+            model.currentCalcValues = model.evalObject(model.calcs);
+            model.currentColors = model.evalObject(model.colors);
+            model.updateListeners.forEach(function (listener) {
                 listener.update(force);
             });
         };
@@ -1911,7 +2182,13 @@ var KG;
         }
         UnivariateFunction.prototype.eval = function (input) {
             var fn = this;
-            fn.scope = fn.scope || { params: fn.model.currentParamValues() };
+            // collect current values in a scope object
+            var scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            fn.scope = fn.scope || scope;
             fn.scope[fn.ind] = input;
             return fn.compiledFunction.eval(fn.scope);
         };
@@ -1930,7 +2207,11 @@ var KG;
         };
         UnivariateFunction.prototype.update = function (force) {
             var fn = _super.prototype.update.call(this, force);
-            fn.scope = { params: fn.model.currentParamValues() };
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
             return fn;
         };
         return UnivariateFunction;
@@ -1958,7 +2239,7 @@ var KG;
         }
         ParametricFunction.prototype.eval = function (input) {
             var fn = this;
-            fn.scope = fn.scope || { params: fn.model.currentParamValues() };
+            fn.scope = fn.scope || { params: fn.model.currentParamValues };
             fn.scope.t = input;
             return { x: fn.xCompiledFunction.eval(fn.scope), y: fn.yCompiledFunction.eval(fn.scope) };
         };
@@ -1977,7 +2258,7 @@ var KG;
         };
         ParametricFunction.prototype.update = function (force) {
             var fn = _super.prototype.update.call(this, force);
-            fn.scope = { params: fn.model.currentParamValues() };
+            fn.scope = { params: fn.model.currentParamValues };
             return fn;
         };
         return ParametricFunction;
@@ -2102,7 +2383,7 @@ var KG;
                 element.on("click", function () {
                     if (d3.event.defaultPrevented)
                         return; //dragged)
-                    handler.scope.params = handler.model.currentParamValues();
+                    handler.scope.params = handler.model.currentParamValues;
                     handler.clickListeners.forEach(function (d) {
                         d.onChange(handler.scope);
                     });
@@ -2112,7 +2393,7 @@ var KG;
             if (handler.dragListeners.length > 0) {
                 element.call(d3.drag()
                     .on('start', function () {
-                    handler.scope.params = handler.model.currentParamValues();
+                    handler.scope.params = handler.model.currentParamValues;
                     handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
                     handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
                 })
@@ -2157,7 +2438,9 @@ var KG;
             });
             var parsedData = {
                 aspectRatio: data.aspectRatio || 1,
-                params: data.params,
+                params: data.params || [],
+                calcs: data.calcs || {},
+                colors: data.colors || {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 scales: data.scales || [],
@@ -2168,12 +2451,14 @@ var KG;
             if (data.hasOwnProperty('layout')) {
                 data.objects.push(data.layout);
             }
-            console.log(data.objects);
+            if (data.hasOwnProperty('schema')) {
+                data.objects.push({ type: data.schema, def: {} });
+            }
             parsedData = KGAuthor.parse(data.objects, parsedData);
             console.log(parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
-            view.model = new KG.Model(parsedData.params, parsedData.restrictions);
+            view.model = new KG.Model(parsedData);
             // create scales
             view.scales = parsedData.scales.map(function (def) {
                 def.model = view.model;
@@ -2382,9 +2667,23 @@ var KG;
                 vo.rootElement.style('display', show ? null : 'none');
             }
         };
+        ViewObject.prototype.onGraph = function () {
+            var vo = this;
+            if (vo.hasOwnProperty('x')) {
+                if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+                    return false;
+                }
+            }
+            if (vo.hasOwnProperty('y')) {
+                if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+                    return false;
+                }
+            }
+            return true;
+        };
         ViewObject.prototype.update = function (force) {
             var vo = _super.prototype.update.call(this, force);
-            if (vo.show) {
+            if (vo.show && vo.onGraph()) {
                 vo.displayElement(true);
                 if (vo.hasChanged || vo.alwaysUpdate) {
                     vo.redraw();
@@ -2528,7 +2827,7 @@ var KG;
                 intercept: 0
             });
             KG.setProperties(def, 'constants', ['orient']);
-            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label']);
+            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label', 'min', 'max']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -3089,7 +3388,7 @@ var KG;
                 console.log('applet exists');
                 div.applet = document['ggbApplet'];
                 div.params.forEach(function (p) {
-                    var establishParamCommand = p + " = " + div.model.currentParamValues()[p];
+                    var establishParamCommand = p + " = " + div.model.currentParamValues[p];
                     console.log('setting param using command ', establishParamCommand);
                     div.applet.evalCommand(establishParamCommand);
                 });
@@ -3229,11 +3528,12 @@ var KG;
                 fontSize: 12,
                 align: 'center',
                 valign: 'middle',
-                rotate: 0
+                rotate: 0,
+                color: 'black'
             });
             // define constant and updatable properties
             KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -3250,6 +3550,7 @@ var KG;
         // update properties
         Label.prototype.redraw = function () {
             var label = this;
+            label.rootElement.style('color', label.color);
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
                 katex.render(label.text.toString(), label.rootElement.node());
@@ -3294,15 +3595,12 @@ var KG;
 /// <reference path="lib/underscore.ts"/>
 /// <reference path="KGAuthor/parsingFunctions.ts"/>
 /// <reference path="KGAuthor/authoringObject.ts"/>
+/// <reference path="KGAuthor/schema.ts"/>
 /// <reference path="KGAuthor/graph.ts"/>
 /// <reference path="KGAuthor/divObject.ts"/>
 /// <reference path="KGAuthor/graphObject.ts"/>
 /// <reference path="KGAuthor/layout.ts"/>
-/// <reference path="KGAuthor/econ/budgetLine.ts"/>
-/// <reference path="KGAuthor/econ/utilityFunction.ts"/>
-/// <reference path="KGAuthor/econ/indifferenceCurve.ts"/>
-/// <reference path="KGAuthor/econ/optimalBundle.ts"/>
-/// <reference path="KGAuthor/econ/demandCurve.ts"/>
+/// <reference path="KGAuthor/econ/eg.ts"/>
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />
 /// <reference path="model/restriction.ts" />

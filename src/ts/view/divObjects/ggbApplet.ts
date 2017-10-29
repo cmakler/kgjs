@@ -67,7 +67,7 @@ module KG {
                 console.log('applet exists');
                 div.applet = document['ggbApplet'];
                 div.params.forEach(function (p) {
-                    const establishParamCommand = p + " = " + div.model.currentParamValues()[p];
+                    const establishParamCommand = p + " = " + div.model.currentParamValues[p];
                     console.log('setting param using command ', establishParamCommand);
                     div.applet.evalCommand(establishParamCommand)
                 });

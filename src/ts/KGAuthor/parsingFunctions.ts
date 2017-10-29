@@ -85,6 +85,10 @@ module KGAuthor {
         return binaryFunction(def1, def2, '*');
     }
 
+    export function averageDefs(def1, def2) {
+        return "(0.5*" + addDefs(def1, def2) + ")";
+    }
+
     export function squareDef(def) {
         return binaryFunction(def, def, '*');
     }
@@ -104,7 +108,7 @@ module KGAuthor {
     export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
         return fns.map(function (fn) {
             let curveDef = JSON.parse(JSON.stringify(def));
-            if(fn.hasOwnProperty('parametric')) {
+            if (fn.hasOwnProperty('parametric')) {
                 curveDef.parametricFunction = fn;
             } else {
                 curveDef.univariateFunction = fn;
@@ -112,6 +116,22 @@ module KGAuthor {
 
             return new Curve(curveDef, graph);
         })
+    }
+
+    // allow author to set fill color either by "color" attribute or "fill" attribute
+    export function setFillColor(def) {
+        return KG.setDefaults(def, {
+            color: def.fill,
+            fill: def.color
+        });
+    }
+
+    // allow author to set stroke color either by "color" attribute or "stroke" attribute
+    export function setStrokeColor(def) {
+        return KG.setDefaults(def, {
+            color: def.stroke,
+            stroke: def.color
+        });
     }
 
 

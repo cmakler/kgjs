@@ -60,7 +60,7 @@ module KG {
             if (handler.clickListeners.length > 0) {
                 element.on("click", function () {
                     if (d3.event.defaultPrevented) return; //dragged)
-                    handler.scope.params = handler.model.currentParamValues();
+                    handler.scope.params = handler.model.currentParamValues;
                     handler.clickListeners.forEach(function (d) {
                         d.onChange(handler.scope)
                     });
@@ -71,7 +71,7 @@ module KG {
             if (handler.dragListeners.length > 0) {
                 element.call(d3.drag()
                     .on('start', function () {
-                        handler.scope.params = handler.model.currentParamValues();
+                        handler.scope.params = handler.model.currentParamValues;
                         handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
                         handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
                     })

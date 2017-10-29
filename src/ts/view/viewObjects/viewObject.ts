@@ -14,6 +14,7 @@ module KG {
         interactive?: boolean;
         alwaysUpdate?: boolean;
 
+        color?: string;
         fill?: string;
         opacity?: string;
         stroke?: string;
@@ -139,9 +140,25 @@ module KG {
             }
         }
 
+        onGraph() {
+            const vo = this;
+            if(vo.hasOwnProperty('x')) {
+                if(vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+                    return false;
+                }
+            }
+            if(vo.hasOwnProperty('y')) {
+                if(vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+                    return false;
+                }
+            }
+            return true;
+
+        }
+
         update(force) {
             let vo = super.update(force);
-            if (vo.show) {
+            if (vo.show && vo.onGraph()) {
                 vo.displayElement(true);
                 if (vo.hasChanged || vo.alwaysUpdate) {
                     vo.redraw();

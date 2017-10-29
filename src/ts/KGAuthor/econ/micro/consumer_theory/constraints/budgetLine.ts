@@ -1,4 +1,4 @@
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 
 module KGAuthor {
 
@@ -10,6 +10,9 @@ module KGAuthor {
         m?: string | number;
         point?: (string|number)[];
         label?: string;
+        set?: string;
+        costlier?: string;
+
     }
 
     export class EconBudgetLine extends Segment {
@@ -36,7 +39,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 a: [xIntercept, 0],
                 b: [0, yIntercept],
-                stroke: 'green',
+                stroke: 'colors.budget',
                 strokeWidth: 2,
                 label: 'BL',
                 lineStyle: 'solid'
@@ -85,7 +88,7 @@ module KGAuthor {
                     }]
                 }, graph);
                 bl.budgetSetArea = new Area({
-                    fill: "green",
+                    fill: "colors.budget",
                     univariateFunction1: {
                         fn: `${yIntercept} - ${priceRatio}*x`,
                         samplePoints: 2,
@@ -94,7 +97,7 @@ module KGAuthor {
                     show: def.set
                 }, graph);
                 bl.costlierArea = new Area({
-                    fill: "red",
+                    fill: "colors.costlier",
                     univariateFunction1: {
                         fn: `${yIntercept} - ${priceRatio}*x`,
                         samplePoints: 2

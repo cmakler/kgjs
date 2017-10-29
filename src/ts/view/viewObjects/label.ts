@@ -48,12 +48,13 @@ module KG {
                 fontSize: 12,
                 align: 'center',
                 valign: 'middle',
-                rotate: 0
+                rotate: 0,
+                color: 'black'
             });
 
             // define constant and updatable properties
             setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate']);
+            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate','color']);
 
             super(def);
 
@@ -67,7 +68,7 @@ module KG {
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
                 .style('background-color', 'white')
-                .style('font-size', label.fontSize + 'pt');
+                .style('font-size', label.fontSize + 'pt')
 
             return label.addInteraction();
         }
@@ -75,6 +76,9 @@ module KG {
         // update properties
         redraw() {
             let label = this;
+
+            label.rootElement.style('color',label.color);
+
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
                 y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if(undefined != label.text) {

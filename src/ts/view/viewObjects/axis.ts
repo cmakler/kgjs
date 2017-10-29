@@ -26,7 +26,7 @@ module KG {
             });
 
             setProperties(def,'constants',['orient']);
-            setProperties(def, 'updatables',['ticks', 'intercept', 'label']);
+            setProperties(def, 'updatables',['ticks', 'intercept', 'label','min','max']);
 
             super(def);
 
