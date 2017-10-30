@@ -24,11 +24,24 @@ module KGAuthor {
         yPixelOffset?: number;
         rotate?: number;
         align?: string;
+        position?: string;
     }
 
     export class Label extends DivObject {
 
         constructor(def:LabelDefinition, graph) {
+            if(def.hasOwnProperty('position')) {
+                if(def.position.toLowerCase() == 'bl') {
+                    def.xPixelOffset = 5;
+                    def.yPixelOffset = 10;
+                    def.align = 'left';
+                }
+                if(def.position.toLowerCase() == 'tr') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = -12;
+                    def.align = 'right';
+                }
+            }
             super(def, graph);
             this.type = 'Label';
             this.extractCoordinates();
@@ -55,7 +68,7 @@ module KGAuthor {
 
     export class GeoGebraApplet extends DivObject {
 
-        constructor(def: GeoGebraAppletDefinition, graph) {
+        constructor(def: GeoGebraAppletDefinition) {
             super(def);
             this.type = 'GeoGebraApplet';
         }

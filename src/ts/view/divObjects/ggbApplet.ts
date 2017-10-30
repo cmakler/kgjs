@@ -38,7 +38,7 @@ module KG {
                 objDef.model = def.model;
                 return new GeoGebraObject(objDef)
             });
-            console.log('created GGB javascript object ', this)
+            //console.log('created GGB javascript object ', this)
             div.axesEstablished = false;
         }
 
@@ -55,20 +55,20 @@ module KG {
                 borderColor: "#FFFFFF",
                 dataParamId: id
             }, true);
-            applet.setHTML5Codebase('../../../GeoGebra/HTML5/5.0/web3d/');
+            applet.setHTML5Codebase('../../../../GeoGebra/HTML5/5.0/web3d/');
             applet.inject(id);
             return div;
         }
 
         establishGGB(width, height) {
             let div = this;
-            console.log('called establishGGB');
+            //console.log('called establishGGB');
             if (undefined != document['ggbApplet']) {
-                console.log('applet exists');
+                //console.log('applet exists');
                 div.applet = document['ggbApplet'];
                 div.params.forEach(function (p) {
-                    const establishParamCommand = p + " = " + div.model.currentParamValues()[p];
-                    console.log('setting param using command ', establishParamCommand);
+                    const establishParamCommand = p + " = " + div.model.currentParamValues[p];
+                    //console.log('setting param using command ', establishParamCommand);
                     div.applet.evalCommand(establishParamCommand)
                 });
                 div.objects.forEach(function (obj) {
@@ -77,7 +77,7 @@ module KG {
                 div.updateGGB(div.applet, width, height);
             }
             else {
-                console.log('applet does not exist')
+                //console.log('applet does not exist')
             }
         }
 
@@ -85,17 +85,17 @@ module KG {
             const div = this;
             console.log('called updateGGB');
             if (undefined != applet) {
-                console.log('applet exists');
-                console.log('setting width to ', width);
+                //console.log('applet exists');
+                //console.log('setting width to ', width);
                 applet.setWidth(width);
-                console.log('setting height to ', height);
+                //console.log('setting height to ', height);
                 applet.setHeight(height);
                 if (div.axes.length == 3) {
-                    console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max)
+                    //console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max)
                     applet.setCoordSystem(div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
-                    console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    //console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
                     applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
-                    console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    //console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setColor('xAxis', 0, 0, 0);
                     applet.setColor('yAxis', 0, 0, 0);
@@ -115,7 +115,7 @@ module KG {
                 }
             }
             else {
-                console.log('applet does not exist')
+                //console.log('applet does not exist')
             }
         }
 
@@ -128,7 +128,7 @@ module KG {
             div.rootElement.style('top', div.yScale.scale(1) + 'px');
             div.rootElement.style('width', width + 'px');
             div.rootElement.style('height', height + 'px');
-            console.log('redrawing');
+            //console.log('redrawing');
             let checkExist = setInterval(function () {
                 if (undefined != div.applet) {
                     div.updateGGB(div.applet, width, height);

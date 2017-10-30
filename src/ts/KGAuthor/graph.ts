@@ -72,7 +72,7 @@ module KGAuthor {
             const ggb = this;
             def.xScaleName = ggb.xScale.name;
             def.yScaleName = ggb.yScale.name;
-            ggb.subObjects.push(new GeoGebraApplet(def, ggb));
+            ggb.subObjects.push(new GeoGebraApplet(def));
         }
     }
 
@@ -153,6 +153,7 @@ module KGAuthor {
     export interface GraphObjectDefinition extends GraphObjectGeneratorDefinition {
         type?: string;
         layer?: number;
+        color?: string;
         fill?: string;
         opacity?: string;
         stroke?: string;
@@ -167,6 +168,15 @@ module KGAuthor {
 
         public type: string;
         public layer: number;
+        public color: any;
+
+        constructor(def, graph?) {
+            super(def,graph);
+            let g = this;
+            if(def.hasOwnProperty('color')) {
+                g.color = def.color;
+            }
+        }
 
         parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.layers[this.layer].push(this);

@@ -1,4 +1,4 @@
-/// <reference path="../../kg.ts" />
+/// <reference path="../../../eg.ts"/>
 
 module KGAuthor {
 
@@ -12,7 +12,7 @@ module KGAuthor {
             const u = getUtilityFunction(def.utilityFunction),
                 bl = new EconBudgetLine(def.budgetLine, graph);
             KG.setDefaults(def, {
-                stroke: 'blue',
+                stroke: 'colors.demand',
                 strokeWidth: 2
             });
             super(def, graph);
@@ -28,7 +28,7 @@ module KGAuthor {
                     bl = new EconBudgetLine(def.budgetLine, graph);
                 KG.setDefaults(def, {
                     coordinates: [u.quantityDemanded(bl,def.good),bl['p'+def.good]],
-                    fill: 'blue',
+                    fill: 'colors.demand',
                     label: {text: `x_${def.good}(p_${def.good}|p_${3-def.good},m)`},
                     droplines: {vertical: `x_${def.good}^*`}
                 });
@@ -53,7 +53,7 @@ module KGAuthor {
             const u = getUtilityFunction(def.utilityFunction),
                 bl = new EconBudgetLine(def.budgetLine, graph);
             KG.setDefaults(def, {
-                stroke: 'blue',
+                stroke: 'colors.offer',
                 strokeWidth: 2
             });
             super(def, graph);

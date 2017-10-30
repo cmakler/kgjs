@@ -39,21 +39,21 @@ module KG {
 
             const obj = this;
 
-            console.log('sending commands to applet', applet);
+            //console.log('sending commands to applet', applet);
 
             // set command
             const command = obj.name + " = " + obj.command;
-            console.log('sending command ', obj.name + " = " + obj.command);
+            //console.log('sending command ', obj.name + " = " + obj.command);
             applet.evalCommand(command);
             if (obj.hasOwnProperty('opacity')) {
                 applet.setFilling(obj.opacity);
             }
             const color = hexToRgb(obj.color);
-            console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
+            //console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
             applet.setColor(obj.name, color.r, color.g, color.b);
-            console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
+            //console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
             applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
-            console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
+            //console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
             applet.setLineStyle(obj.name, obj.lineStyle);
 
         }

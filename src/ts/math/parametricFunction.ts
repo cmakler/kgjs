@@ -44,7 +44,7 @@ module KG {
 
         eval(input) {
             let fn = this;
-            fn.scope = fn.scope || {params: fn.model.currentParamValues()};
+            fn.scope = fn.scope || {params: fn.model.currentParamValues};
             fn.scope.t = input;
             return {x: fn.xCompiledFunction.eval(fn.scope), y: fn.yCompiledFunction.eval(fn.scope)};
         }
@@ -68,7 +68,7 @@ module KG {
 
         update(force) {
             let fn = super.update(force);
-            fn.scope = {params: fn.model.currentParamValues()};
+            fn.scope = {params: fn.model.currentParamValues};
             return fn;
         }
 

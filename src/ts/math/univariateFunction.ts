@@ -39,7 +39,13 @@ module KG {
 
         eval(input) {
             let fn = this;
-            fn.scope = fn.scope || {params: fn.model.currentParamValues()};
+            // collect current values in a scope object
+            const scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            fn.scope = fn.scope || scope;
             fn.scope[fn.ind] = input;
             return fn.compiledFunction.eval(fn.scope);
         }
@@ -63,7 +69,11 @@ module KG {
 
         update(force) {
             let fn = super.update(force);
-            fn.scope = {params: fn.model.currentParamValues()};
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
             return fn;
         }
 

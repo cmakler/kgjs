@@ -15,7 +15,10 @@ module KG {
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
+        schema?: string;
         params?: ParamDefinition[];
+        calcs: {};
+        colors: {};
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
         layout?: TypeAndDef;
@@ -61,7 +64,9 @@ module KG {
 
             let parsedData: ViewDefinition = {
                 aspectRatio: data.aspectRatio || 1,
-                params: data.params,
+                params: data.params || [],
+                calcs: data.calcs || {},
+                colors: data.colors || {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 scales: data.scales || [],
@@ -75,7 +80,9 @@ module KG {
                 data.objects.push(data.layout)
             }
 
-            console.log(data.objects);
+            if(data.hasOwnProperty ('schema')) {
+                data.objects.push({type: data.schema, def: {}})
+            }
 
             parsedData = KGAuthor.parse(data.objects, parsedData);
 
@@ -83,7 +90,7 @@ module KG {
             let view = this;
 
             view.aspectRatio = parsedData.aspectRatio || 1;
-            view.model = new KG.Model(parsedData.params, parsedData.restrictions);
+            view.model = new KG.Model(parsedData);
 
             // create scales
             view.scales = parsedData.scales.map(function (def: ScaleDefinition) {

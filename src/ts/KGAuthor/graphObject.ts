@@ -2,6 +2,8 @@
 
 module KGAuthor {
 
+    import setDefaults = KG.setDefaults;
+
     export class Axis extends GraphObject {
 
         constructor(def, graph) {
@@ -14,7 +16,7 @@ module KGAuthor {
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
-                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        x: averageDefs(graph.xScale.min,graph.xScale.max),
                         y: graph.yScale.min,
                         yPixelOffset: -40
                     }, graph))
@@ -24,7 +26,7 @@ module KGAuthor {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.min,
-                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        y: averageDefs(graph.yScale.min,graph.yScale.max),
                         xPixelOffset: -40,
                         rotate: 90
                     }, graph))
@@ -32,7 +34,7 @@ module KGAuthor {
                 else if (def.orient == 'top') {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
-                        x: 0.5 * (graph.xScale.min + graph.xScale.max),
+                        x: averageDefs(graph.xScale.min,graph.xScale.max),
                         y: graph.yScale.max,
                         yPixelOffset: 40
                     }, graph))
@@ -40,7 +42,7 @@ module KGAuthor {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.max,
-                        y: 0.5 * (graph.yScale.min + graph.yScale.max),
+                        y: averageDefs(graph.yScale.min,graph.yScale.max),
                         xPixelOffset: 40,
                         rotate: 270
                     }, graph));
@@ -84,12 +86,29 @@ module KGAuthor {
     export class Curve extends GraphObject {
 
         constructor(def, graph) {
+            def = setStrokeColor(def);
             if (def.hasOwnProperty('univariateFunctions')) {
                 delete def.univariateFunctions;
             }
             super(def, graph);
             this.type = 'Curve';
             this.layer = def.layer || 1;
+        }
+
+    }
+
+    export class Line extends Curve {
+
+        constructor(def, graph) {
+
+            const intercept = subtractDefs(def.point[1],multiplyDefs(def.slope,def.point[0]));
+
+            def.univariateFunction = {
+                fn: `${intercept} + (${def.slope})*x`,
+                samplePoints: 2
+            };
+
+            super(def, graph);
         }
 
     }
@@ -109,6 +128,9 @@ module KGAuthor {
         public y;
 
         constructor(def: PointDefinition, graph) {
+
+            def = setFillColor(def);
+
             super(def, graph);
 
             const p = this;
@@ -119,13 +141,11 @@ module KGAuthor {
             if (def.hasOwnProperty('label')) {
                 let labelDef = JSON.parse(JSON.stringify(def));
                 delete labelDef.label;
-                KG.setDefaults(labelDef, {
-                    text: def.label.text,
+                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(labelDef, {
                     fontSize: 10,
-                    xPixelOffset: 4,
-                    yPixelOffset: 3,
-                    align: 'left',
-                    valign: 'bottom'
+                    position: 'bl',
+                    color: def.color
                 });
                 p.subObjects.push(new Label(labelDef, graph));
             }
@@ -167,6 +187,7 @@ module KGAuthor {
     export class Segment extends GraphObject {
 
         constructor(def, graph) {
+            def = setStrokeColor(def);
             super(def, graph);
             const s = this;
             s.type = 'Segment';

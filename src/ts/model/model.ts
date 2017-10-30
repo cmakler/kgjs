@@ -6,25 +6,39 @@ module KG {
         //params: any; // object with string names and Param values; e.g., "yA" : (Param object)
         //updateListeners: UpdateListener[];
         eval: (name: string) => any;
-        currentParamValues: () => {};
         addUpdateListener: (updateListener: UpdateListener) => Model;
     }
 
     export class Model implements IModel {
 
-        private params: Param[];
         private restrictions: Restriction[];
         private updateListeners: UpdateListener[];
 
-        constructor(params: ParamDefinition[], restrictions?: RestrictionDefinition[]) {
+        // objects that store definitions of params, calcs, and colors
+        private params: Param[];
+        private calcs: {};
+        private colors: {};
+
+        // objects that store current realized values of params, calcs, and colors
+        public currentParamValues: {};
+        public currentCalcValues: {};
+        public currentColors: {};
+
+        constructor(parsedData) {
             let model = this;
-            model.params = params.map(function (def) {
+            model.params = parsedData.params.map(function (def) {
                 return new Param(def)
             });
-            model.restrictions = (restrictions || []).map(function (def) {
+            model.calcs = parsedData.calcs;
+            model.colors = parsedData.colors;
+            model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new Restriction(def)
             });
             model.updateListeners = [];
+
+            model.currentParamValues = model.evalParams();
+            model.currentCalcValues = model.evalObject(model.calcs);
+            model.currentColors = model.evalObject(model.colors);
         }
 
         addUpdateListener(updateListener: UpdateListener) {
@@ -32,7 +46,7 @@ module KG {
             return this;
         }
 
-        currentParamValues() {
+        evalParams() {
             let p: any = {};
             this.params.forEach(function (param) {
                 p[param.name] = param.value;
@@ -40,8 +54,24 @@ module KG {
             return p;
         }
 
+        evalObject(obj: {}) {
+            const model = this;
+            let newObj = {};
+            for (const stringOrObj in obj) {
+                const def = obj[stringOrObj];
+                if (typeof def === 'string') {
+                    newObj[stringOrObj] = model.eval(def)
+                } else {
+                    newObj[stringOrObj] = model.evalObject(def)
+                }
+            }
+            return newObj;
+        }
+
         // the model serves as a model, and can evaluate expressions within the context of that model
         eval(name: string) {
+
+            const model = this;
 
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -49,17 +79,26 @@ module KG {
                 return parseFloat(name);
             }
 
-            // collect current parameter values in a params object
-            let params = this.currentParamValues();
+            // collect current values in a scope object
+            const params = model.currentParamValues,
+                calcs = model.currentCalcValues,
+                colors = model.currentColors;
+
 
             // try to evaluate using mathjs
             try {
                 const compiledMath = math.compile(name);
-                let result = compiledMath.eval({params: params});
+                let result = compiledMath.eval({
+                        params: params,
+                        calcs: calcs,
+                        colors: colors
+                    });
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
-            catch (err) {
+
+            catch
+                (err) {
 
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
@@ -89,7 +128,7 @@ module KG {
         }
 
 
-        // method exposed to viewObjects to allow them to try to change a parameter
+// method exposed to viewObjects to allow them to try to change a parameter
         updateParam(name: string, newValue: any) {
             let model = this,
                 param = model.getParam(name);
@@ -97,38 +136,47 @@ module KG {
             param.update(newValue);
             // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
+
+                //restrictions aren't working right now
+
                 let valid = true;
                 model.restrictions.forEach(function (r) {
                     if (!r.valid(model)) {
                         valid = false
                     }
-                    ;
                 });
                 if (valid) {
                     model.update(false);
                 } else {
                     param.update(oldValue);
                 }
+
+                model.update(false);
             }
         }
 
 
-        // method exposed to viewObjects to allow them to toggle a binary param
+// method exposed to viewObjects to allow them to toggle a binary param
         toggleParam(name: string) {
             const currentValue = this.getParam(name).value;
             this.updateParam(name, !currentValue);
         }
 
-        // method exposed to viewObjects to allow them to cycle a discrete param
-        // increments by 1 if below max value, otherwise sets to zero
-        cycleParam(name:string) {
+// method exposed to viewObjects to allow them to cycle a discrete param
+// increments by 1 if below max value, otherwise sets to zero
+        cycleParam(name: string) {
             const param = this.getParam(name);
-            this.updateParam(name, param.value < param.max ? param.value++ : 0 );
+            this.updateParam(name, param.value < param.max ? param.value++ : 0);
         }
 
 
         update(force: boolean) {
-            this.updateListeners.forEach(function (listener) {
+            const model = this;
+            model.currentParamValues = model.evalParams();
+            model.currentCalcValues = model.evalObject(model.calcs);
+            console.log('calcs', model.currentCalcValues);
+            model.currentColors = model.evalObject(model.colors);
+            model.updateListeners.forEach(function (listener) {
                 listener.update(force)
             });
         }
