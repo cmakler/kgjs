@@ -27,17 +27,31 @@ module KGAuthor {
     export class EconSchema extends Schema {
         constructor(def) {
             def.colors = {
+
+                // consumer theory
                 utility: 'purple',
+                mrs: 'blue',
                 dispreferred: 'red',
                 preferred: 'purple',
                 offer: 'blue',
+                incomeOffer: 'orange',
                 demand: 'blue',
                 budget: 'green',
                 costlier: 'red',
+
+                // producer theory
                 production: 'blue',
                 marginalCost: 'orange',
                 supply: 'orange',
-                price: 'grey'
+
+                // equilibrium
+                price: 'grey',
+
+                // macro
+                consumption: 'blue',
+                depreciation: "red",
+                savings: "green",
+                tax: 'red'
             };
             super(def);
 

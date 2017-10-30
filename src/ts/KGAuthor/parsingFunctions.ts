@@ -120,6 +120,13 @@ module KGAuthor {
 
     // allow author to set fill color either by "color" attribute or "fill" attribute
     export function setFillColor(def) {
+        if (def.open) {
+            def.fill = 'white';
+            return KG.setDefaults(def, {
+                color: def.stroke,
+                stroke: def.color
+            });
+        }
         return KG.setDefaults(def, {
             color: def.fill,
             fill: def.color

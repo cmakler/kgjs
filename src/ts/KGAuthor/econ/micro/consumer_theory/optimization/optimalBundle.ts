@@ -3,12 +3,6 @@
 module KGAuthor {
 
     export interface OptimalBundleDefinition extends BundleDefinition {
-        budgetLine?: EconBudgetLineDefinition,
-        showBudgetLine?: boolean,
-        budgetLineLabel: LabelDefinition
-
-        // these are used if an object representing the budget line or utility function already exists
-        budgetLineObject?: EconBudgetLine,
 
     }
 
@@ -53,12 +47,10 @@ module KGAuthor {
 
             this.level = u.value(coords);
 
-            this.subObjects.push(bl);
-
         }
     }
 
-    export class EconLagrangeBundle extends Point {
+    export class EconLagrangeBundle extends EconOptimalBundle {
 
         constructor(def: OptimalBundleDefinition, graph) {
             if (def.hasOwnProperty('utilityFunction') && def.hasOwnProperty('budgetLine')) {
@@ -66,7 +58,7 @@ module KGAuthor {
                     bl = new EconBudgetLine(def.budgetLine, graph);
                 KG.setDefaults(def, {
                     coordinates: u.lagrangeBundle(bl),
-                    fill: 'orange',
+                    color: 'colors.incomeOffer',
                     show: u.cornerCondition(bl),
                     label: {text: 'X^*_L'}
                 });

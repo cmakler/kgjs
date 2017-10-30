@@ -72,7 +72,7 @@ module KGAuthor {
             const ggb = this;
             def.xScaleName = ggb.xScale.name;
             def.yScaleName = ggb.yScale.name;
-            ggb.subObjects.push(new GeoGebraApplet(def, ggb));
+            ggb.subObjects.push(new GeoGebraApplet(def));
         }
     }
 
@@ -170,7 +170,7 @@ module KGAuthor {
         public layer: number;
         public color: any;
 
-        constructor(def, graph) {
+        constructor(def, graph?) {
             super(def,graph);
             let g = this;
             if(def.hasOwnProperty('color')) {

@@ -190,6 +190,13 @@ var KGAuthor;
     KGAuthor.curvesFromFunctions = curvesFromFunctions;
     // allow author to set fill color either by "color" attribute or "fill" attribute
     function setFillColor(def) {
+        if (def.open) {
+            def.fill = 'white';
+            return KG.setDefaults(def, {
+                color: def.stroke,
+                stroke: def.color
+            });
+        }
         return KG.setDefaults(def, {
             color: def.fill,
             fill: def.color
@@ -321,7 +328,7 @@ var KGAuthor;
             var ggb = _this;
             def.xScaleName = ggb.xScale.name;
             def.yScaleName = ggb.yScale.name;
-            ggb.subObjects.push(new KGAuthor.GeoGebraApplet(def, ggb));
+            ggb.subObjects.push(new KGAuthor.GeoGebraApplet(def));
             return _this;
         }
         return GeoGebraContainer;
@@ -490,7 +497,7 @@ var KGAuthor;
     KGAuthor.Sidebar = Sidebar;
     var GeoGebraApplet = /** @class */ (function (_super) {
         __extends(GeoGebraApplet, _super);
-        function GeoGebraApplet(def, graph) {
+        function GeoGebraApplet(def) {
             var _this = _super.call(this, def) || this;
             _this.type = 'GeoGebraApplet';
             return _this;
@@ -597,6 +604,21 @@ var KGAuthor;
         return Curve;
     }(KGAuthor.GraphObject));
     KGAuthor.Curve = Curve;
+    var Line = /** @class */ (function (_super) {
+        __extends(Line, _super);
+        function Line(def, graph) {
+            var _this = this;
+            var intercept = KGAuthor.subtractDefs(def.point[1], KGAuthor.multiplyDefs(def.slope, def.point[0]));
+            def.univariateFunction = {
+                fn: intercept + " + (" + def.slope + ")*x",
+                samplePoints: 2
+            };
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return Line;
+    }(Curve));
+    KGAuthor.Line = Line;
     var Point = /** @class */ (function (_super) {
         __extends(Point, _super);
         function Point(def, graph) {
@@ -1526,13 +1548,13 @@ var KGAuthor;
         }
         QuasilinearFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            return "(0.5*(" + c[0] + "*log(" + x[0] + ")+" + x[1] + "))";
+            return "(" + c[0] + "*log(" + x[0] + ")+" + x[1] + ")";
         };
         QuasilinearFunction.prototype.levelSet = function (def) {
-            var c = this.coefficients, level = def.level || this.value(def.point);
+            var c = this.coefficients, level = this.extractLevel(def);
             return [
                 {
-                    "fn": "(2*(" + level + ")-" + c[0] + "*log(x))",
+                    "fn": "((" + level + ")-(" + c[0] + ")*log(x))",
                     "ind": "x",
                     "samplePoints": 100
                 }
@@ -1547,7 +1569,7 @@ var KGAuthor;
         };
         QuasilinearFunction.prototype.optimalBundle = function (budgetLine) {
             var lagr = this.lagrangeBundle(budgetLine), cornerCondition = this.cornerCondition(budgetLine);
-            return [cornerCondition + " ? " + budgetLine.xIntercept + " : " + lagr[0], cornerCondition + " ? 0 : " + lagr[1]];
+            return ["(" + cornerCondition + " ? " + budgetLine.xIntercept + " : " + lagr[0] + ")", "(" + cornerCondition + " ? 0 : " + lagr[1] + ")"];
         };
         return QuasilinearFunction;
     }(KGAuthor.UtilityFunction));
@@ -1557,23 +1579,25 @@ var KGAuthor;
 var KGAuthor;
 (function (KGAuthor) {
     function getUtilityFunction(def) {
-        if (def.type == 'CobbDouglas') {
-            return new KGAuthor.CobbDouglasFunction(def.def);
-        }
-        else if (def.type == 'Substitutes' || def.type == 'PerfectSubstitutes') {
-            return new KGAuthor.LinearFunction(def.def);
-        }
-        else if (def.type == 'Complements' || def.type == 'PerfectComplements') {
-            return new KGAuthor.MinFunction(def.def);
-        }
-        else if (def.type == 'Concave') {
-            return new KGAuthor.ConcaveUtility(def.def);
-        }
-        else if (def.type == 'Quasilinear') {
-            return new KGAuthor.QuasilinearFunction(def.def);
-        }
-        else if (def.type == 'CES') {
-            return new KGAuthor.CES(def.def);
+        if (def != undefined) {
+            if (def.type == 'CobbDouglas') {
+                return new KGAuthor.CobbDouglasFunction(def.def);
+            }
+            else if (def.type == 'Substitutes' || def.type == 'PerfectSubstitutes') {
+                return new KGAuthor.LinearFunction(def.def);
+            }
+            else if (def.type == 'Complements' || def.type == 'PerfectComplements') {
+                return new KGAuthor.MinFunction(def.def);
+            }
+            else if (def.type == 'Concave') {
+                return new KGAuthor.ConcaveUtility(def.def);
+            }
+            else if (def.type == 'Quasilinear') {
+                return new KGAuthor.QuasilinearFunction(def.def);
+            }
+            else if (def.type == 'CES') {
+                return new KGAuthor.CES(def.def);
+            }
         }
     }
     KGAuthor.getUtilityFunction = getUtilityFunction;
@@ -1663,7 +1687,6 @@ var KGAuthor;
         __extends(EconBundle, _super);
         function EconBundle(def, graph) {
             var _this = this;
-            KGAuthor.setFillColor(def);
             KG.setDefaults(def, {
                 name: KG.randomString(10),
                 label: { text: 'X' },
@@ -1674,22 +1697,30 @@ var KGAuthor;
                 },
                 showIndifferenceCurve: false,
                 showPreferred: false,
-                showDispreferred: false
+                showDispreferred: false,
+                color: "colors.utility"
             });
+            KGAuthor.setFillColor(def);
             _this = _super.call(this, def, graph) || this;
             var bundle = _this;
+            var budgetLine = KGAuthor.extractBudgetLine(def, graph);
+            if (budgetLine) {
+                _this.subObjects.push(budgetLine);
+            }
             bundle.utilityFunction = extractUtilityFunction(def);
-            _this.subObjects.push(bundle.utilityFunction);
-            var indifferenceCurveDef = JSON.parse(JSON.stringify(def));
-            delete indifferenceCurveDef.stroke;
-            delete indifferenceCurveDef.color;
-            indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
-                label: def.indifferenceCurveLabel,
-                level: "calcs." + bundle.name + ".level",
-                show: def.showIndifferenceCurve,
-                color: def.indifferenceCurveColor || 'colors.utility'
-            });
-            _this.subObjects.push(new KGAuthor.EconIndifferenceCurve(indifferenceCurveDef, graph));
+            if (bundle.utilityFunction) {
+                _this.subObjects.push(bundle.utilityFunction);
+                var indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+                delete indifferenceCurveDef.stroke;
+                delete indifferenceCurveDef.color;
+                indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
+                    label: def.indifferenceCurveLabel,
+                    level: "calcs." + bundle.name + ".level",
+                    show: def.showIndifferenceCurve,
+                    color: def.indifferenceCurveColor || 'colors.utility'
+                });
+                _this.subObjects.push(new KGAuthor.EconIndifferenceCurve(indifferenceCurveDef, graph));
+            }
             return _this;
         }
         EconBundle.prototype.parseSelf = function (parsedData) {
@@ -1698,7 +1729,7 @@ var KGAuthor;
             parsedData.calcs[bundle.name] = {
                 x: bundle.x,
                 y: bundle.y,
-                level: bundle.utilityFunction.value([bundle.x, bundle.y])
+                level: bundle.utilityFunction ? bundle.utilityFunction.value([bundle.x, bundle.y]) : ''
             };
             return parsedData;
         };
@@ -1741,7 +1772,6 @@ var KGAuthor;
             });
             _this = _super.call(this, def, graph) || this;
             _this.level = u.value(coords);
-            _this.subObjects.push(bl);
             return _this;
         }
         return EconOptimalBundle;
@@ -1755,7 +1785,7 @@ var KGAuthor;
                 var u = KGAuthor.getUtilityFunction(def.utilityFunction), bl = new KGAuthor.EconBudgetLine(def.budgetLine, graph);
                 KG.setDefaults(def, {
                     coordinates: u.lagrangeBundle(bl),
-                    fill: 'orange',
+                    color: 'colors.incomeOffer',
                     show: u.cornerCondition(bl),
                     label: { text: 'X^*_L' }
                 });
@@ -1767,7 +1797,7 @@ var KGAuthor;
             return _this;
         }
         return EconLagrangeBundle;
-    }(KGAuthor.Point));
+    }(EconOptimalBundle));
     KGAuthor.EconLagrangeBundle = EconLagrangeBundle;
     var LowestCostBundle = /** @class */ (function (_super) {
         __extends(LowestCostBundle, _super);
@@ -1907,17 +1937,27 @@ var KGAuthor;
         function EconSchema(def) {
             var _this = this;
             def.colors = {
+                // consumer theory
                 utility: 'purple',
+                mrs: 'blue',
                 dispreferred: 'red',
                 preferred: 'purple',
                 offer: 'blue',
+                incomeOffer: 'orange',
                 demand: 'blue',
                 budget: 'green',
                 costlier: 'red',
+                // producer theory
                 production: 'blue',
                 marginalCost: 'orange',
                 supply: 'orange',
-                price: 'grey'
+                // equilibrium
+                price: 'grey',
+                // macro
+                consumption: 'blue',
+                depreciation: "red",
+                savings: "green",
+                tax: 'red'
             };
             _this = _super.call(this, def) || this;
             return _this;
@@ -1979,15 +2019,15 @@ var KG;
                 return parseFloat(name);
             }
             // collect current values in a scope object
-            var scope = {
-                params: model.currentParamValues,
-                calcs: model.currentCalcValues,
-                colors: model.currentColors
-            };
+            var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors;
             // try to evaluate using mathjs
             try {
                 var compiledMath = math.compile(name);
-                var result = compiledMath.eval(scope);
+                var result = compiledMath.eval({
+                    params: params,
+                    calcs: calcs,
+                    colors: colors
+                });
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
@@ -2021,17 +2061,18 @@ var KG;
             // if param has changed, check to make sure the change is val
             if (oldValue != param.value) {
                 //restrictions aren't working right now
-                /*let valid = true;
+                var valid_1 = true;
                 model.restrictions.forEach(function (r) {
                     if (!r.valid(model)) {
-                        valid = false
+                        valid_1 = false;
                     }
                 });
-                if (valid) {
+                if (valid_1) {
                     model.update(false);
-                } else {
+                }
+                else {
                     param.update(oldValue);
-                }*/
+                }
                 model.update(false);
             }
         };
@@ -3084,20 +3125,20 @@ var KG;
                 } : null;
             }
             var obj = this;
-            console.log('sending commands to applet', applet);
+            //console.log('sending commands to applet', applet);
             // set command
             var command = obj.name + " = " + obj.command;
-            console.log('sending command ', obj.name + " = " + obj.command);
+            //console.log('sending command ', obj.name + " = " + obj.command);
             applet.evalCommand(command);
             if (obj.hasOwnProperty('opacity')) {
                 applet.setFilling(obj.opacity);
             }
             var color = hexToRgb(obj.color);
-            console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
+            //console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
             applet.setColor(obj.name, color.r, color.g, color.b);
-            console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')');
+            //console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
             applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
-            console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')');
+            //console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
             applet.setLineStyle(obj.name, obj.lineStyle);
         };
         return GeoGebraObject;
@@ -3383,7 +3424,7 @@ var KG;
                 objDef.model = def.model;
                 return new KG.GeoGebraObject(objDef);
             });
-            console.log('created GGB javascript object ', _this);
+            //console.log('created GGB javascript object ', this)
             div.axesEstablished = false;
             return _this;
         }
@@ -3400,19 +3441,19 @@ var KG;
                 borderColor: "#FFFFFF",
                 dataParamId: id
             }, true);
-            applet.setHTML5Codebase('../../../GeoGebra/HTML5/5.0/web3d/');
+            applet.setHTML5Codebase('../../../../GeoGebra/HTML5/5.0/web3d/');
             applet.inject(id);
             return div;
         };
         GeoGebraApplet.prototype.establishGGB = function (width, height) {
             var div = this;
-            console.log('called establishGGB');
+            //console.log('called establishGGB');
             if (undefined != document['ggbApplet']) {
-                console.log('applet exists');
+                //console.log('applet exists');
                 div.applet = document['ggbApplet'];
                 div.params.forEach(function (p) {
                     var establishParamCommand = p + " = " + div.model.currentParamValues[p];
-                    console.log('setting param using command ', establishParamCommand);
+                    //console.log('setting param using command ', establishParamCommand);
                     div.applet.evalCommand(establishParamCommand);
                 });
                 div.objects.forEach(function (obj) {
@@ -3421,24 +3462,24 @@ var KG;
                 div.updateGGB(div.applet, width, height);
             }
             else {
-                console.log('applet does not exist');
+                //console.log('applet does not exist')
             }
         };
         GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
             var div = this;
             console.log('called updateGGB');
             if (undefined != applet) {
-                console.log('applet exists');
-                console.log('setting width to ', width);
+                //console.log('applet exists');
+                //console.log('setting width to ', width);
                 applet.setWidth(width);
-                console.log('setting height to ', height);
+                //console.log('setting height to ', height);
                 applet.setHeight(height);
                 if (div.axes.length == 3) {
-                    console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
+                    //console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max)
                     applet.setCoordSystem(div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
-                    console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    //console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
                     applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
-                    console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    //console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
                     applet.setColor('xAxis', 0, 0, 0);
                     applet.setColor('yAxis', 0, 0, 0);
@@ -3458,7 +3499,7 @@ var KG;
                 }
             }
             else {
-                console.log('applet does not exist');
+                //console.log('applet does not exist')
             }
         };
         // update properties
@@ -3469,7 +3510,7 @@ var KG;
             div.rootElement.style('top', div.yScale.scale(1) + 'px');
             div.rootElement.style('width', width + 'px');
             div.rootElement.style('height', height + 'px');
-            console.log('redrawing');
+            //console.log('redrawing');
             var checkExist = setInterval(function () {
                 if (undefined != div.applet) {
                     div.updateGGB(div.applet, width, height);

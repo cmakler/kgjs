@@ -10,8 +10,13 @@ module KGAuthor {
         showDispreferred?: string;
         indifferenceCurveLabel: LabelDefinition;
 
+        budgetLine?: EconBudgetLineDefinition,
+        showBudgetLine?: boolean,
+        budgetLineLabel: LabelDefinition
+
         // this are used if an object representing the utility function already exists
-        utilityFunctionObject?: UtilityFunction,
+        utilityFunctionObject?: UtilityFunction;
+        budgetLineObject?: EconBudgetLine;
 
     }
 
@@ -25,8 +30,6 @@ module KGAuthor {
 
         constructor(def: BundleDefinition, graph) {
 
-            setFillColor(def);
-
             KG.setDefaults(def, {
                 name: KG.randomString(10),
                 label: {text: 'X'},
@@ -37,26 +40,38 @@ module KGAuthor {
                 },
                 showIndifferenceCurve: false,
                 showPreferred: false,
-                showDispreferred: false
+                showDispreferred: false,
+                color: "colors.utility"
             });
+
+            setFillColor(def);
 
             super(def, graph);
 
             const bundle = this;
 
-            bundle.utilityFunction = extractUtilityFunction(def);
-            this.subObjects.push(bundle.utilityFunction);
 
-            let indifferenceCurveDef = JSON.parse(JSON.stringify(def));
-            delete indifferenceCurveDef.stroke;
-            delete indifferenceCurveDef.color;
-            indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
-                label: def.indifferenceCurveLabel,
-                level: "calcs." + bundle.name + ".level",
-                show: def.showIndifferenceCurve,
-                color: def.indifferenceCurveColor || 'colors.utility'
-            });
-            this.subObjects.push(new EconIndifferenceCurve(indifferenceCurveDef, graph))
+            const budgetLine = extractBudgetLine(def, graph);
+            if (budgetLine) {
+                this.subObjects.push(budgetLine);
+            }
+
+            bundle.utilityFunction = extractUtilityFunction(def);
+            if (bundle.utilityFunction) {
+                this.subObjects.push(bundle.utilityFunction);
+
+                let indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+                delete indifferenceCurveDef.stroke;
+                delete indifferenceCurveDef.color;
+                indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
+                    label: def.indifferenceCurveLabel,
+                    level: "calcs." + bundle.name + ".level",
+                    show: def.showIndifferenceCurve,
+                    color: def.indifferenceCurveColor || 'colors.utility'
+                });
+                this.subObjects.push(new EconIndifferenceCurve(indifferenceCurveDef, graph))
+            }
+
 
         }
 
@@ -66,8 +81,9 @@ module KGAuthor {
             parsedData.calcs[bundle.name] = {
                 x: bundle.x,
                 y: bundle.y,
-                level: bundle.utilityFunction.value([bundle.x,bundle.y])
+                level: bundle.utilityFunction ? bundle.utilityFunction.value([bundle.x, bundle.y]) : ''
             };
+
             return parsedData;
         }
     }
