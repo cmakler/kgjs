@@ -151,6 +151,10 @@ var KGAuthor;
         return binaryFunction(def1, def2, '/');
     }
     KGAuthor.divideDefs = divideDefs;
+    function invertDef(def) {
+        return binaryFunction(1, def, '/');
+    }
+    KGAuthor.invertDef = invertDef;
     function multiplyDefs(def1, def2) {
         return binaryFunction(def1, def2, '*');
     }
@@ -172,7 +176,12 @@ var KGAuthor;
     }
     KGAuthor.raiseDefToDef = raiseDefToDef;
     function paramName(def) {
-        return def.replace('params.', '');
+        if (typeof (def) == 'string') {
+            return def.replace('params.', '');
+        }
+        else {
+            return def;
+        }
     }
     KGAuthor.paramName = paramName;
     function curvesFromFunctions(fns, def, graph) {
@@ -1048,7 +1057,7 @@ var KGAuthor;
                 label: 'BL',
                 lineStyle: 'solid'
             });
-            if (def.draggable) {
+            if (def.draggable && typeof (def.m) == 'string') {
                 def.drag = [{
                         'directions': 'xy',
                         'param': KGAuthor.paramName(def.m),
@@ -1064,26 +1073,32 @@ var KGAuthor;
             bl.yIntercept = yIntercept;
             if (graph) {
                 var subObjects = bl.subObjects;
-                bl.xInterceptPoint = new KGAuthor.Point({
+                var xInterceptPointDef = {
                     coordinates: [xIntercept, 0],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+                if (def.draggable && typeof (def.p1) == 'string') {
+                    xInterceptPointDef['drag'] = [{
                             directions: 'x',
                             param: KGAuthor.paramName(def.p1),
                             expression: KGAuthor.divideDefs(def.m, 'drag.x')
-                        }]
-                }, graph);
-                bl.yInterceptPoint = new KGAuthor.Point({
+                        }];
+                }
+                bl.xInterceptPoint = new KGAuthor.Point(xInterceptPointDef, graph);
+                var yInterceptPointDef = {
                     coordinates: [0, yIntercept],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+                if (def.draggable && typeof (def.p2) == 'string') {
+                    yInterceptPointDef['drag'] = [{
                             directions: 'y',
                             param: KGAuthor.paramName(def.p2),
                             expression: KGAuthor.divideDefs(def.m, 'drag.y')
-                        }]
-                }, graph);
+                        }];
+                }
+                bl.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
                 bl.budgetSetArea = new KGAuthor.Area({
                     fill: "colors.budget",
                     univariateFunction1: {
@@ -1382,6 +1397,17 @@ var KGAuthor;
                 }
             ];
         };
+        MinFunction.prototype.optimalBundle = function (budgetLine) {
+            var good1perBundle = KGAuthor.invertDef(this.coefficients[0]), good2perBundle = KGAuthor.invertDef(this.coefficients[1]), bundles = KGAuthor.divideDefs(budgetLine.m, KGAuthor.addDefs(KGAuthor.multiplyDefs(budgetLine.p1, good1perBundle), KGAuthor.multiplyDefs(budgetLine.p2, good2perBundle)));
+            return [KGAuthor.multiplyDefs(good1perBundle, bundles), KGAuthor.multiplyDefs(good2perBundle, bundles)];
+        };
+        MinFunction.prototype.lowestCostBundle = function (level, prices) {
+            var a = this.coefficients[0], b = this.coefficients[1];
+            return [
+                KGAuthor.divideDefs(level, a),
+                KGAuthor.divideDefs(level, b)
+            ];
+        };
         return MinFunction;
     }(KGAuthor.UtilityFunction));
     KGAuthor.MinFunction = MinFunction;
@@ -1609,13 +1635,18 @@ var KGAuthor;
         __extends(EconIndifferenceCurve, _super);
         function EconIndifferenceCurve(def, graph) {
             var _this = this;
+            if (def.inMap) {
+                def.strokeWidth = 1;
+                def.stroke = 'lightgrey';
+                def.layer = 0;
+            }
             KG.setDefaults(def, {
                 strokeWidth: 2,
                 color: 'colors.utility',
                 layer: 1,
                 showPreferred: false,
                 showDispreferred: false,
-                includeAreas: true
+                inMap: false
             });
             _this = _super.call(this, def, graph) || this;
             var curve = _this;
@@ -1629,7 +1660,7 @@ var KGAuthor;
             }
             else {
                 curve.subObjects = utilityFunction.levelCurve(def, graph);
-                if (def.includeAreas) {
+                if (!def.inMap) {
                     if (!!def.showPreferred) {
                         var preferredDef = JSON.parse(JSON.stringify(def));
                         preferredDef.fill = 'colors.preferred';
@@ -1653,14 +1684,9 @@ var KGAuthor;
         __extends(EconIndifferenceMap, _super);
         function EconIndifferenceMap(def, graph) {
             var _this = _super.call(this, def, graph) || this;
-            KG.setDefaults(def, {
-                strokeWidth: 1,
-                stroke: 'lightgrey',
-                layer: 0
-            });
             _this.subObjects = def.levels.map(function (level) {
                 var icDef = JSON.parse(JSON.stringify(def));
-                icDef.includeAreas = false;
+                icDef.inMap = true;
                 delete icDef.levels;
                 if (Array.isArray(level)) {
                     icDef.point = level;
@@ -2771,7 +2797,8 @@ var KG;
             var _this = this;
             KG.setDefaults(def, {
                 xScale2: def.xScale,
-                yScale2: def.yScale
+                yScale2: def.yScale,
+                strokeWidth: 2
             });
             KG.setProperties(def, 'constants', ['xScale2', 'yScale2']);
             KG.setProperties(def, 'updatables', ['x1', 'y1', 'x2', 'y2']);
@@ -2821,7 +2848,8 @@ var KG;
             var _this = this;
             KG.setDefaults(def, {
                 alwaysUpdate: true,
-                interpolation: 'curveBasis'
+                interpolation: 'curveBasis',
+                strokeWidth: 2
             });
             KG.setProperties(def, 'constants', ['interpolation']);
             _this = _super.call(this, def) || this;

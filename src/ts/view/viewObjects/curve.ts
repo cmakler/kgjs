@@ -21,7 +21,8 @@ module KG {
 
             setDefaults(def, {
                 alwaysUpdate: true,
-                interpolation: 'curveBasis'
+                interpolation: 'curveBasis',
+                strokeWidth: 2
             });
             setProperties(def, 'constants', ['interpolation']);
             super(def);

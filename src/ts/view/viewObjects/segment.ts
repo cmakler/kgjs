@@ -27,7 +27,8 @@ module KG {
         constructor(def: SegmentDefinition) {
             setDefaults(def, {
                 xScale2: def.xScale,
-                yScale2: def.yScale
+                yScale2: def.yScale,
+                strokeWidth: 2
             });
             setProperties(def,'constants',['xScale2','yScale2']);
             setProperties(def, 'updatables',['x1', 'y1', 'x2', 'y2']);

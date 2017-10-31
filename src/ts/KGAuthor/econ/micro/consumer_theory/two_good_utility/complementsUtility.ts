@@ -46,6 +46,28 @@ module KGAuthor {
                 }
             ];
         }
+
+        optimalBundle(budgetLine: EconBudgetLine) {
+            const good1perBundle = invertDef(this.coefficients[0]),
+                good2perBundle = invertDef(this.coefficients[1]),
+                bundles = divideDefs(budgetLine.m, addDefs(
+                    multiplyDefs(budgetLine.p1, good1perBundle),
+                    multiplyDefs(budgetLine.p2, good2perBundle)
+                ));
+            return [multiplyDefs(good1perBundle, bundles), multiplyDefs(good2perBundle, bundles)]
+        }
+
+        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
+            const a = this.coefficients[0],
+                b = this.coefficients[1];
+
+            return [
+                divideDefs(level, a),
+                divideDefs(level, b)
+            ]
+
+
+        }
     }
 
 }

@@ -81,6 +81,10 @@ module KGAuthor {
         return binaryFunction(def1, def2, '/');
     }
 
+    export function invertDef(def) {
+        return binaryFunction(1, def, '/');
+    }
+
     export function multiplyDefs(def1, def2) {
         return binaryFunction(def1, def2, '*');
     }
@@ -102,7 +106,11 @@ module KGAuthor {
     }
 
     export function paramName(def) {
-        return def.replace('params.', '');
+        if(typeof(def) == 'string') {
+            return def.replace('params.', '');
+        } else {
+            return def
+        }
     }
 
     export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
