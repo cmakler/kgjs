@@ -945,7 +945,7 @@ var KGAuthor;
                 label: 'BL',
                 lineStyle: 'solid'
             });
-            if (def.draggable) {
+            if (def.draggable && typeof (def.m) == 'string') {
                 def.drag = [{
                         'directions': 'xy',
                         'param': KGAuthor.paramName(def.m),
@@ -961,26 +961,32 @@ var KGAuthor;
             bl.yIntercept = yIntercept;
             if (graph) {
                 var subObjects = bl.subObjects;
-                bl.xInterceptPoint = new KGAuthor.Point({
+                var xInterceptPointDef = {
                     coordinates: [xIntercept, 0],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+                if (def.draggable && typeof (def.p1) == 'string') {
+                    xInterceptPointDef['drag'] = [{
                             directions: 'x',
                             param: KGAuthor.paramName(def.p1),
                             expression: KGAuthor.divideDefs(def.m, 'drag.x')
-                        }]
-                }, graph);
-                bl.yInterceptPoint = new KGAuthor.Point({
+                        }];
+                }
+                bl.xInterceptPoint = new KGAuthor.Point(xInterceptPointDef, graph);
+                var yInterceptPointDef = {
                     coordinates: [0, yIntercept],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+                if (def.draggable && typeof (def.p2) == 'string') {
+                    yInterceptPointDef['drag'] = [{
                             directions: 'y',
                             param: KGAuthor.paramName(def.p2),
                             expression: KGAuthor.divideDefs(def.m, 'drag.y')
-                        }]
-                }, graph);
+                        }];
+                }
+                bl.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
                 bl.budgetSetArea = new KGAuthor.Area({
                     fill: "green",
                     univariateFunction1: {
@@ -1442,7 +1448,7 @@ var KGAuthor;
             var _this = _super.call(this, def, graph) || this;
             KG.setDefaults(def, {
                 strokeWidth: 2,
-                stroke: 'purple',
+                color: 'colors.utility',
                 layer: 1
             });
             if (Array.isArray(def.utilityFunction.type)) {

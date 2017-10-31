@@ -10,7 +10,7 @@ module KGAuthor {
             super(def, graph);
             KG.setDefaults(def, {
                 strokeWidth: 2,
-                stroke: 'purple',
+                color: 'colors.utility',
                 layer: 1
             });
             if (Array.isArray(def.utilityFunction.type)) {

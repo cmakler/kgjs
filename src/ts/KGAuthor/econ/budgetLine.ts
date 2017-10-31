@@ -42,7 +42,7 @@ module KGAuthor {
                 lineStyle: 'solid'
             });
 
-            if (def.draggable) {
+            if (def.draggable && typeof(def.m) == 'string') {
                 def.drag = [{
                     'directions': 'xy',
                     'param': paramName(def.m),
@@ -64,26 +64,38 @@ module KGAuthor {
             if (graph) {
                 const subObjects = bl.subObjects;
 
-                bl.xInterceptPoint = new Point({
+                let xInterceptPointDef = {
                     coordinates: [xIntercept, 0],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+
+                if(def.draggable && typeof(def.p1) == 'string') {
+                    xInterceptPointDef['drag'] = [{
                         directions: 'x',
                         param: paramName(def.p1),
                         expression: divideDefs(def.m, 'drag.x')
                     }]
-                }, graph);
-                bl.yInterceptPoint = new Point({
+                }
+
+                bl.xInterceptPoint = new Point(xInterceptPointDef, graph);
+
+                let yInterceptPointDef = {
                     coordinates: [0, yIntercept],
                     fill: def.stroke,
-                    r: 4,
-                    drag: [{
+                    r: 4
+                };
+
+                if(def.draggable && typeof(def.p2) == 'string') {
+                    yInterceptPointDef['drag'] = [{
                         directions: 'y',
                         param: paramName(def.p2),
                         expression: divideDefs(def.m, 'drag.y')
                     }]
-                }, graph);
+                }
+
+                bl.yInterceptPoint = new Point(yInterceptPointDef, graph);
+
                 bl.budgetSetArea = new Area({
                     fill: "green",
                     univariateFunction1: {
@@ -93,6 +105,7 @@ module KGAuthor {
                     },
                     show: def.set
                 }, graph);
+
                 bl.costlierArea = new Area({
                     fill: "red",
                     univariateFunction1: {
