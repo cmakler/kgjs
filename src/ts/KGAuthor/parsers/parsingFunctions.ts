@@ -1,4 +1,4 @@
-/// <reference path="../kg.ts" />
+/// <reference path="../kgAuthor.ts" />
 
 module KGAuthor {
 
@@ -115,7 +115,7 @@ module KGAuthor {
 
     export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
         return fns.map(function (fn) {
-            let curveDef = JSON.parse(JSON.stringify(def));
+            let curveDef = copyJSON(def);
             if (fn.hasOwnProperty('parametric')) {
                 curveDef.parametricFunction = fn;
             } else {
@@ -147,6 +147,11 @@ module KGAuthor {
             color: def.stroke,
             stroke: def.color
         });
+    }
+
+    // create a fresh copy of a JSON object
+    export function copyJSON(def){
+        return copyJSON(def)
     }
 
 

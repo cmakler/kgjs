@@ -40,12 +40,14 @@ module KGAuthor {
             fn.interpolation = 'curveMonotoneX';
             if (def.hasOwnProperty('alpha')) {
                 fn.alpha = def.alpha;
-                fn.exponents = [def.alpha, subtractDefs(1, def.alpha)];
-                fn.coefficients = [def.alpha, subtractDefs(1, def.alpha)];
+                fn.exponents = def.exponents || [def.alpha, subtractDefs(1, def.alpha)];
+                fn.coefficients = def.coefficients || [def.alpha, subtractDefs(1, def.alpha)];
             } else if (def.hasOwnProperty('exponents')) {
                 fn.exponents = def.exponents;
                 fn.alpha = divideDefs(fn.exponents[0], addDefs(fn.exponents[0], fn.exponents[1]));
+                fn.coefficients = def.coefficients;
             } else if (def.hasOwnProperty('coefficients')) {
+                fn.exponents = def.exponents;
                 fn.coefficients = def.coefficients;
                 fn.alpha = divideDefs(fn.coefficients[0], addDefs(fn.coefficients[0], fn.coefficients[1]));
             }
@@ -83,7 +85,7 @@ module KGAuthor {
             const fns = fn.levelSet(def);
             let objs = [];
             fns.forEach(function (fn) {
-                let areaDef = JSON.parse(JSON.stringify(def));
+                let areaDef = copyJSON(def);
                 areaDef.univariateFunction1 = fn;
                 objs.push(new Area(areaDef, graph));
             });
@@ -102,7 +104,7 @@ module KGAuthor {
             const fns = fn.levelSet(def);
             let objs = [];
             fns.forEach(function (fn) {
-                let areaDef = JSON.parse(JSON.stringify(def));
+                let areaDef = copyJSON(def);
                 areaDef.univariateFunction1 = fn;
                 areaDef.above = true;
                 objs.push(new Area(areaDef, graph));

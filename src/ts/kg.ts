@@ -4,15 +4,7 @@
 
 /// <reference path="lib/underscore.ts"/>
 
-/// <reference path="KGAuthor/parsingFunctions.ts"/>
-/// <reference path="KGAuthor/authoringObject.ts"/>
-/// <reference path="KGAuthor/schema.ts"/>
-/// <reference path="KGAuthor/graph.ts"/>
-/// <reference path="KGAuthor/divObject.ts"/>
-/// <reference path="KGAuthor/graphObject.ts"/>
-/// <reference path="KGAuthor/layout.ts"/>
-
-/// <reference path="KGAuthor/econ/eg.ts"/>
+/// <reference path="KGAuthor/kgAuthor.ts"/>
 
 /// <reference path="model/model.ts"/>
 /// <reference path="model/param.ts" />

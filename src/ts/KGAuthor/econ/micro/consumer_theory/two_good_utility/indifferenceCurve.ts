@@ -25,7 +25,7 @@ module KGAuthor {
             const utilityFunction = extractUtilityFunction(def);
             if (Array.isArray(def.utilityFunction.type)) {
                 curve.subObjects = def.utilityFunction.map(function (u) {
-                    let uDef = JSON.parse(JSON.stringify(def));
+                    let uDef = copyJSON(def);
                     uDef.utilityFunction.type = u;
                     return utilityFunction.levelCurve(uDef, graph);
                 })
@@ -34,13 +34,13 @@ module KGAuthor {
 
                 if (!def.inMap) {
                     if (!!def.showPreferred) {
-                        let preferredDef = JSON.parse(JSON.stringify(def));
+                        let preferredDef = copyJSON(def);
                         preferredDef.fill = 'colors.preferred';
                         preferredDef.show = def.showPreferred;
                         curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                     }
                     if (!!def.showDispreferred) {
-                        let dispreferredDef = JSON.parse(JSON.stringify(def));
+                        let dispreferredDef = copyJSON(def);
                         dispreferredDef.fill = 'colors.dispreferred';
                         dispreferredDef.show = def.showDispreferred;
                         curve.subObjects = curve.subObjects.concat(utilityFunction.areaBelowLevelCurve(dispreferredDef, graph));
@@ -56,7 +56,7 @@ module KGAuthor {
         constructor(def, graph) {
             super(def, graph);
             this.subObjects = def.levels.map(function (level) {
-                let icDef = JSON.parse(JSON.stringify(def));
+                let icDef = copyJSON(def);
                 icDef.inMap = true;
                 delete icDef.levels;
                 if (Array.isArray(level)) {

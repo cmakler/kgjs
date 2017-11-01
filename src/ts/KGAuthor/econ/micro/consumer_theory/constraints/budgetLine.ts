@@ -2,8 +2,6 @@
 
 module KGAuthor {
 
-    import setDefaults = KG.setDefaults;
-
     export interface EconBudgetLineDefinition {
         p1?: string | number;
         p2?: string | number;

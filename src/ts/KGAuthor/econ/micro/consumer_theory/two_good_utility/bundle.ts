@@ -60,7 +60,7 @@ module KGAuthor {
             if (bundle.utilityFunction) {
                 this.subObjects.push(bundle.utilityFunction);
 
-                let indifferenceCurveDef = JSON.parse(JSON.stringify(def));
+                let indifferenceCurveDef = copyJSON(def);
                 delete indifferenceCurveDef.stroke;
                 delete indifferenceCurveDef.color;
                 indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {

@@ -1,18 +1,6 @@
-/// <reference path="../kg.ts" />
+/// <reference path="../../kg.ts" />
 
 module KGAuthor {
-
-    export interface DivObjectDefinition extends GraphObjectDefinition {
-
-    }
-
-    export class DivObject extends GraphObject {
-
-        parseSelf(parsedData: KG.ViewDefinition) {
-            parsedData.divs.push(this);
-            return parsedData;
-        }
-    }
 
     export interface LabelDefinition extends DivObjectDefinition {
         text: string;
@@ -47,31 +35,6 @@ module KGAuthor {
             this.extractCoordinates();
         }
 
-    }
-
-    export interface SidebarDefinition extends DivObjectDefinition {
-
-    }
-
-    export class Sidebar extends DivObject {
-
-        constructor(def:SidebarDefinition) {
-            super(def);
-            this.type = 'Sidebar';
-        }
-
-    }
-
-    export interface GeoGebraAppletDefinition extends DivObjectDefinition {
-
-    }
-
-    export class GeoGebraApplet extends DivObject {
-
-        constructor(def: GeoGebraAppletDefinition) {
-            super(def);
-            this.type = 'GeoGebraApplet';
-        }
     }
 
 

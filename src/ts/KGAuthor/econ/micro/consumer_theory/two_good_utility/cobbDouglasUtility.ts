@@ -6,13 +6,15 @@ module KGAuthor {
     export class CobbDouglasFunction extends UtilityFunction {
 
         value(x) {
-            const e = this.exponents;
-            return `((${x[0]})^(${e[0]}))*((${x[1]})^(${e[1]}))`;
+            const e = this.exponents,
+                scalar = this.coefficients.length == 1 ? this.coefficients[0] : 1;
+            return `(${scalar}*(${x[0]})^(${e[0]}))*((${x[1]})^(${e[1]}))`;
         }
 
         levelSet(def) {
             const e = this.exponents,
-                level = this.extractLevel(def),
+                scalar = this.coefficients.length == 1 ? this.coefficients[0] : 1,
+                level = divideDefs(this.extractLevel(def),scalar),
                 xMin = `(${level})^(1/(${e[0]} + ${e[1]}))`,
                 yMin = `(${level})^(1/(${e[0]} + ${e[1]}))`;
             this.fillBelowRect = {
@@ -24,13 +26,13 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `(${level}/y^(${e[1]}))^(1/(${e[0]}))`,
+                    "fn": `((${level})/y^(${e[1]}))^(1/(${e[0]}))`,
                     "ind": "y",
                     "min": yMin,
                     "samplePoints": 30
                 },
                 {
-                    "fn": `(${level}/x^(${e[0]}))^(1/(${e[1]}))`,
+                    "fn": `((${level})/x^(${e[0]}))^(1/(${e[1]}))`,
                     "ind": "x",
                     "min": xMin,
                     "samplePoints": 30

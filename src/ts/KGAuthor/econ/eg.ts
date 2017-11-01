@@ -1,4 +1,4 @@
-/// <reference path="../../kg.ts"/>
+/// <reference path="../kgAuthor.ts" />
 
 
 /* MICRO */
@@ -43,6 +43,8 @@ module KGAuthor {
                 production: 'blue',
                 marginalCost: 'orange',
                 supply: 'orange',
+                shortRun: 'red',
+                longRun: 'orange',
 
                 // equilibrium
                 price: 'grey',

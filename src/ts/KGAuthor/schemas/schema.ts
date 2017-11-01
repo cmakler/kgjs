@@ -1,8 +1,6 @@
-/// <reference path="../kg.ts" />
+/// <reference path="../kgAuthor.ts" />
 
 module KGAuthor {
-
-    import setDefaults = KG.setDefaults;
 
     export class Schema extends AuthoringObject {
 
@@ -29,7 +27,7 @@ module KGAuthor {
                 }
             }
 
-            def.colors = setDefaults(def.colors || {}, palette);
+            def.colors = KG.setDefaults(def.colors || {}, palette);
 
             super(def);
 
@@ -39,7 +37,7 @@ module KGAuthor {
 
         parseSelf(parsedData: KG.ViewDefinition) {
             const colors = this.colors;
-            parsedData.colors = setDefaults(parsedData.colors || {}, colors);
+            parsedData.colors = KG.setDefaults(parsedData.colors || {}, colors);
             return parsedData;
         }
     }
