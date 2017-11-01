@@ -151,7 +151,7 @@ module KGAuthor {
 
     // create a fresh copy of a JSON object
     export function copyJSON(def){
-        return copyJSON(def)
+        return JSON.parse(JSON.stringify(def));
     }
 
 
