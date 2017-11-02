@@ -54,13 +54,13 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `((${r} == 0) ? (${level}/x^(${a}))^(1/(${b})) : ((${level}^${r} - ${a}*x^${r})/${b})^(1/${r}))`,
+                    "fn": `((${r} == 0) ? (${level}/(x)^(${a}))^(1/(${b})) : ((${level}^${r} - ${a}*(x)^${r})/${b})^(1/${r}))`,
                     "ind": "x",
                     "min": level,
                     "samplePoints": 60
                 },
                 {
-                    "fn": `((${r} == 0) ? (${level}/y^( ${b}))^(1/(${a})) : ((${level}^${r} - ${b}*y^${r})/${a})^(1/${r}))`,
+                    "fn": `((${r} == 0) ? (${level}/(y)^( ${b}))^(1/(${a})) : ((${level}^${r} - ${b}*(y)^${r})/${a})^(1/${r}))`,
                     "ind": "y",
                     "min": level,
                     "samplePoints": 60

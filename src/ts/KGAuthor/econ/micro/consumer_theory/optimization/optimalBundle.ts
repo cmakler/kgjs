@@ -6,17 +6,7 @@ module KGAuthor {
 
     }
 
-    export function extractBudgetLine(def, graph) {
-        if(def.hasOwnProperty('budgetLineObject')) {
-            return def.budgetLineObject;
-        }
-        if (def.hasOwnProperty('budgetLine')) {
-            let budgetDef = JSON.parse(JSON.stringify(def.budgetLine));
-            budgetDef.show = def.showBudgetLine;
-            return new EconBudgetLine(budgetDef, graph);
-        }
-        console.log('tried to instantiate a budget line without either a budget line def or object')
-    }
+
 
     export class EconOptimalBundle extends EconBundle {
 
@@ -33,14 +23,11 @@ module KGAuthor {
                 coordinates: coords,
                 label: {text: 'X^*'},
                 color: bl.color,
-                indifferenceCurveLabel: {text: 'U^*'},
-                budgetLineLabel: {text: 'BL'},
                 droplines: {
                     vertical: "x_1^*",
                     horizontal: "x_2^*"
                 },
-                showIndifferenceCurve: true,
-                showBudgetLine: true
+                indifferenceCurve: {}
             });
 
             super(def, graph);
@@ -126,6 +113,10 @@ module KGAuthor {
                 delete def.budgetLine.m;
             }
 
+            def.budgetLine.label = KG.setDefaults(def.budgetLine.label || {}, {
+                text: "BL_D"
+            });
+
             def.budgetLine.point = u.optimalBundle(bl);
 
             delete def.budgetLineObject;
@@ -150,6 +141,10 @@ module KGAuthor {
             def.budgetLine.p1 = p1;
             def.budgetLine.p2 = p2;
             def.budgetLine.m = u.expenditure(level, [p1, p2]);
+
+            def.budgetLine.label = KG.setDefaults(def.budgetLine.label || {}, {
+                text: "BL_C"
+            })
 
             def.coordinates = u.lowestCostBundle(level, [p1,p2]);
 

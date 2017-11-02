@@ -89,8 +89,9 @@ module KGAuthor {
         return binaryFunction(def1, def2, '*');
     }
 
-    export function averageDefs(def1, def2) {
-        return "(0.5*" + addDefs(def1, def2) + ")";
+    export function averageDefs(def1, def2, weight?) {
+        weight = weight || 0.5;
+        return addDefs(multiplyDefs(weight,def1),multiplyDefs(subtractDefs(1,weight),def2));
     }
 
     export function squareDef(def) {
@@ -106,7 +107,7 @@ module KGAuthor {
     }
 
     export function paramName(def) {
-        if(typeof(def) == 'string') {
+        if (typeof(def) == 'string') {
             return def.replace('params.', '');
         } else {
             return def
@@ -121,7 +122,6 @@ module KGAuthor {
             } else {
                 curveDef.univariateFunction = fn;
             }
-
             return new Curve(curveDef, graph);
         })
     }
@@ -150,9 +150,11 @@ module KGAuthor {
     }
 
     // create a fresh copy of a JSON object
-    export function copyJSON(def){
+    export function copyJSON(def) {
         return JSON.parse(JSON.stringify(def));
     }
 
-
+    export function replaceVariable(target, search, replacement) {
+        return target.split(search).join(replacement);
+    }
 }

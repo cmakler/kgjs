@@ -2,13 +2,38 @@
 
 module KGAuthor {
 
+    export function extractIndifferenceCurve(def, graph) {
+        if (def.hasOwnProperty('indifferenceCurveObject')) {
+            return def.indifferenceCurveObject;
+        }
+        if (def.hasOwnProperty('indifferenceCurve')) {
+            let indifferenceCurveDef = copyJSON(def.indifferenceCurve);
+            indifferenceCurveDef.show = indifferenceCurveDef.show || def.show;
+            return new EconIndifferenceCurve(indifferenceCurveDef, graph);
+        }
+        console.log('tried to instantiate a budget line without either a budget line def or object')
+    }
+
+    export interface IndifferenceCurveDefinition extends CurveDefinition {
+        utilityFunction?: KG.TypeAndDef,
+        showPreferred?: string;
+        showDispreferred?: string;
+        inMap?: boolean;
+        showMapLevels?: boolean;
+        level: string | number;
+
+        // this are used if an object representing the utility function already exists
+        utilityFunctionObject?: UtilityFunction;
+
+    }
+
 
     export class EconIndifferenceCurve extends GraphObjectGenerator {
 
-        constructor(def, graph) {
-            if(def.inMap) {
+        constructor(def: IndifferenceCurveDefinition, graph) {
+            if (def.inMap) {
                 def.strokeWidth = 1;
-                def.stroke = 'lightgrey';
+                def.color = 'lightgrey';
                 def.layer = 0;
             }
 
@@ -18,35 +43,47 @@ module KGAuthor {
                 layer: 1,
                 showPreferred: false,
                 showDispreferred: false,
-                inMap: false
+                inMap: false,
+                showMapLevels: false
             });
+
+            if (def.inMap) {
+                if (def.showMapLevels) {
+                    def.label = KG.setDefaults(def.label || {}, {
+                        fontSize: 8,
+                        x: multiplyDefs(0.98, graph.xScale.max),
+                        text: `${def.level}.toFixed(0)`,
+                        color: def.color,
+                        bgcolor: def.inMap ? null : "white"
+                    });
+                }
+            } else {
+                def.label = KG.setDefaults(def.label || {}, {
+                    x: multiplyDefs(0.95, graph.xScale.max),
+                    text: "U",
+                    color: def.color
+                });
+            }
+
+
             super(def, graph);
             let curve = this;
             const utilityFunction = extractUtilityFunction(def);
-            if (Array.isArray(def.utilityFunction.type)) {
-                curve.subObjects = def.utilityFunction.map(function (u) {
-                    let uDef = copyJSON(def);
-                    uDef.utilityFunction.type = u;
-                    return utilityFunction.levelCurve(uDef, graph);
-                })
-            } else {
-                curve.subObjects = utilityFunction.levelCurve(def, graph);
+            curve.subObjects = curve.subObjects.concat(utilityFunction.levelCurve(def, graph));
 
-                if (!def.inMap) {
-                    if (!!def.showPreferred) {
-                        let preferredDef = copyJSON(def);
-                        preferredDef.fill = 'colors.preferred';
-                        preferredDef.show = def.showPreferred;
-                        curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
-                    }
-                    if (!!def.showDispreferred) {
-                        let dispreferredDef = copyJSON(def);
-                        dispreferredDef.fill = 'colors.dispreferred';
-                        dispreferredDef.show = def.showDispreferred;
-                        curve.subObjects = curve.subObjects.concat(utilityFunction.areaBelowLevelCurve(dispreferredDef, graph));
-                    }
+            if (!def.inMap) {
+                if (!!def.showPreferred) {
+                    let preferredDef = copyJSON(def);
+                    preferredDef.fill = 'colors.preferred';
+                    preferredDef.show = def.showPreferred;
+                    curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }
-
+                if (!!def.showDispreferred) {
+                    let dispreferredDef = copyJSON(def);
+                    dispreferredDef.fill = 'colors.dispreferred';
+                    dispreferredDef.show = def.showDispreferred;
+                    curve.subObjects = curve.subObjects.concat(utilityFunction.areaBelowLevelCurve(dispreferredDef, graph));
+                }
             }
         }
     }

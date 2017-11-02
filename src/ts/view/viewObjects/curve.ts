@@ -69,15 +69,21 @@ module KG {
                 }
             }
             if (curve.hasOwnProperty('parametricFunction')) {
-                    const fn = curve.parametricFunction.update(true);
-                    if (fn.hasChanged) {
-                        fn.generateData();
-                        curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
-                        curve.path.data([fn.data]).attr('d', curve.dataLine);
-                    }
+                const fn = curve.parametricFunction.update(true);
+                if (fn.hasChanged) {
+                    fn.generateData();
+                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                    curve.path.data([fn.data]).attr('d', curve.dataLine);
                 }
-                curve.path.attr('stroke', curve.stroke);
-                curve.path.attr('stroke-width', curve.strokeWidth);
+            }
+            curve.path.attr('stroke', curve.stroke);
+            curve.path.attr('stroke-width', curve.strokeWidth);
+            if (curve.lineStyle == 'dashed') {
+                curve.path.style('stroke-dashArray', '10,10');
+            }
+            if (curve.lineStyle == 'dotted') {
+                curve.path.style('stroke-dashArray', '1,2');
+            }
             return curve;
         }
     }

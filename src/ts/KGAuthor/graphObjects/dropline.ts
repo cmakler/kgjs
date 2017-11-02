@@ -6,6 +6,7 @@ module KGAuthor {
 
         constructor(def, graph) {
             def.lineStyle = 'dotted';
+            delete def.label;
             super(def, graph);
         }
 

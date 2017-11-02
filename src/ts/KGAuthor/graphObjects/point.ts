@@ -34,7 +34,8 @@ module KGAuthor {
                 labelDef = KG.setDefaults(labelDef, {
                     fontSize: 10,
                     position: 'bl',
-                    color: def.color
+                    color: def.color,
+                    bgcolor: null
                 });
                 p.subObjects.push(new Label(labelDef, graph));
             }
@@ -42,27 +43,24 @@ module KGAuthor {
             if (def.hasOwnProperty('droplines')) {
                 if (def.droplines.hasOwnProperty('vertical')) {
                     let verticalDroplineDef = copyJSON(def);
-                    verticalDroplineDef.stroke = def.fill;
                     p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
-
                     let xAxisLabelDef = copyJSON(def);
                     xAxisLabelDef.y = 'AXIS';
                     KG.setDefaults(xAxisLabelDef, {
                         text: def.droplines.vertical,
-                        fontSize: 10
+                        fontSize: 12
                     });
                     p.subObjects.push(new Label(xAxisLabelDef, graph));
                 }
                 if (def.droplines.hasOwnProperty('horizontal')) {
                     let horizontalDroplineDef = copyJSON(def);
-                    horizontalDroplineDef.stroke = def.fill;
                     p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));
 
                     let yAxisLabelDef = copyJSON(def);
                     yAxisLabelDef.x = 'AXIS';
                     KG.setDefaults(yAxisLabelDef, {
                         text: def.droplines.horizontal,
-                        fontSize: 10
+                        fontSize: 12
                     });
                     p.subObjects.push(new Label(yAxisLabelDef, graph));
                 }

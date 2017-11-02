@@ -26,13 +26,13 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `((${level})/y^(${e[1]}))^(1/(${e[0]}))`,
+                    "fn": `((${level})/(y)^(${e[1]}))^(1/(${e[0]}))`,
                     "ind": "y",
                     "min": yMin,
                     "samplePoints": 30
                 },
                 {
-                    "fn": `((${level})/x^(${e[0]}))^(1/(${e[1]}))`,
+                    "fn": `((${level})/(x)^(${e[0]}))^(1/(${e[1]}))`,
                     "ind": "x",
                     "min": xMin,
                     "samplePoints": 30

@@ -7,10 +7,10 @@ module KGAuthor {
         layer?: number;
         color?: string;
         fill?: string;
-        opacity?: string;
+        opacity?: string | number;
         stroke?: string;
-        strokeWidth?: string;
-        strokeOpacity?: string;
+        strokeWidth?: string | number;
+        strokeOpacity?: string | number;
         lineStyle?: string;
         drag?: any;
         click?: any;

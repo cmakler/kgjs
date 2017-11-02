@@ -150,9 +150,9 @@ module KGAuthor {
 
         priceOfferFunction(budgetLine: EconBudgetLine, good: number, min: number, max: number, graph) {
             const u = this,
-                blDef = (good == 1) ? {p1: 't', p2: budgetLine.p2, m: budgetLine.m} : {
+                blDef = (good == 1) ? {p1: '(t)', p2: budgetLine.p2, m: budgetLine.m} : {
                     p1: budgetLine.p1,
-                    p2: 't',
+                    p2: '(t)',
                     m: budgetLine.m
                 },
                 optimalBundle = u.optimalBundle(new EconBudgetLine(blDef, graph));
@@ -176,9 +176,9 @@ module KGAuthor {
 
         demandFunction(budgetLine: EconBudgetLine, good: number, graph) {
             const u = this,
-                blDef = (good == 1) ? {p1: 'y', p2: budgetLine.p2, m: budgetLine.m} : {
+                blDef = (good == 1) ? {p1: '(y)', p2: budgetLine.p2, m: budgetLine.m} : {
                     p1: budgetLine.p1,
-                    p2: 'y',
+                    p2: '(y)',
                     m: budgetLine.m
                 };
             return [

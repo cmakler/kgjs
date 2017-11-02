@@ -25,6 +25,8 @@ module KG {
         private align: string;
         private valign: string;
         private rotate: number;
+        private color: string;
+        private bgcolor: string;
 
         constructor(def: LabelDefinition) {
 
@@ -49,12 +51,13 @@ module KG {
                 align: 'center',
                 valign: 'middle',
                 rotate: 0,
-                color: 'black'
+                color: 'black',
+                bgcolor: 'white'
             });
 
             // define constant and updatable properties
             setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate','color']);
+            setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate','color','bgcolor']);
 
             super(def);
 
@@ -67,8 +70,10 @@ module KG {
             label.rootElement = layer.append('div')
                 .attr('class', 'draggable')
                 .style('position', 'absolute')
-                .style('background-color', 'white')
                 .style('font-size', label.fontSize + 'pt')
+                .style('text-align','center')
+                .style('padding-left','3px')
+                .style('padding-right','3px')
 
             return label.addInteraction();
         }
@@ -77,7 +82,8 @@ module KG {
         redraw() {
             let label = this;
 
-            label.rootElement.style('color',label.color);
+            label.rootElement.style('color',label.color).style('background-color', label.bgcolor)
+                ;
 
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
                 y = label.yScale.scale(label.y) - (+label.yPixelOffset);
@@ -92,11 +98,9 @@ module KG {
             let alignDelta = width*0.5;
             if (label.align == 'left') {
                 alignDelta = 0;
-                label.rootElement.style('text-align','left');
             } else if (label.align == 'right') {
                 // move left by half the width of the div if right aligned
-                alignDelta = width + 2;
-                label.rootElement.style('text-align','right');
+                alignDelta = width;
             }
             label.rootElement.style('left',(x - alignDelta) + 'px');
 
@@ -112,7 +116,7 @@ module KG {
 
             const rotate = `rotate(-${label.rotate}deg)`;
             label.rootElement.style('-webkit-transform', rotate)
-                    .style('transform', rotate)
+                    .style('transform', rotate);
 
             return label;
         }

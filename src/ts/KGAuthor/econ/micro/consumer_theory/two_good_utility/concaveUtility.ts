@@ -24,14 +24,14 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `((${level}-(${c[1]})*y*y)/(${c[0]}))^(0.5)`,
+                    "fn": `((${level}-(${c[1]})*(y)*(y))/(${c[0]}))^(0.5)`,
                     "ind": "y",
                     "min": 0,
                     "max": max,
                     "samplePoints": 30
                 },
                 {
-                    "fn": `((${level}-(${c[0]})*x*x)/(${c[1]}))^(0.5)`,
+                    "fn": `((${level}-(${c[0]})*(x)*(x))/(${c[1]}))^(0.5)`,
                     "ind": "x",
                     "min": 0,
                     "max": max,

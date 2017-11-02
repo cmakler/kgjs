@@ -24,7 +24,7 @@ module KGAuthor {
                 level = def.level || this.value(def.point);
             return [
                 {
-                    "fn": `(${level} - (${c[0]})*x)/(${c[1]})`,
+                    "fn": `(${level} - (${c[0]})*(x))/(${c[1]})`,
                     "ind": "x",
                     "samplePoints": 2
                 }

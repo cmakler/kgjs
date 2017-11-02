@@ -4,7 +4,7 @@ module KGAuthor {
 
     export interface BundleDefinition extends PointDefinition {
         utilityFunction?: KG.TypeAndDef,
-        showIndifferenceCurve?: string,
+        indifferenceCurve?: IndifferenceCurveDefinition
         indifferenceCurveColor?: string,
         showPreferred?: string;
         showDispreferred?: string;
@@ -33,14 +33,10 @@ module KGAuthor {
             KG.setDefaults(def, {
                 name: KG.randomString(10),
                 label: {text: 'X'},
-                indifferenceCurveLabel: {text: 'U'},
                 droplines: {
                     vertical: "x_1",
                     horizontal: "x_2"
                 },
-                showIndifferenceCurve: false,
-                showPreferred: false,
-                showDispreferred: false,
                 color: "colors.utility"
             });
 
@@ -50,28 +46,21 @@ module KGAuthor {
 
             const bundle = this;
 
-
             const budgetLine = extractBudgetLine(def, graph);
             if (budgetLine) {
-                this.subObjects.push(budgetLine);
+                bundle.subObjects.push(budgetLine);
             }
 
             bundle.utilityFunction = extractUtilityFunction(def);
             if (bundle.utilityFunction) {
-                this.subObjects.push(bundle.utilityFunction);
+                bundle.subObjects.push(bundle.utilityFunction);
+                if (def.hasOwnProperty('indifferenceCurve')) {
+                    def.indifferenceCurve.level = `calcs.${bundle.name}.level`;
+                    def.indifferenceCurve.utilityFunction = def.utilityFunction;
+                    bundle.subObjects.push(extractIndifferenceCurve(def, graph));
+                }
 
-                let indifferenceCurveDef = copyJSON(def);
-                delete indifferenceCurveDef.stroke;
-                delete indifferenceCurveDef.color;
-                indifferenceCurveDef = KG.setDefaults(indifferenceCurveDef, {
-                    label: def.indifferenceCurveLabel,
-                    level: "calcs." + bundle.name + ".level",
-                    show: def.showIndifferenceCurve,
-                    color: def.indifferenceCurveColor || 'colors.utility'
-                });
-                this.subObjects.push(new EconIndifferenceCurve(indifferenceCurveDef, graph))
             }
-
 
         }
 

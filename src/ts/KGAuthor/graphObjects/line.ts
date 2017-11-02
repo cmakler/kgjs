@@ -9,7 +9,7 @@ module KGAuthor {
             const intercept = subtractDefs(def.point[1],multiplyDefs(def.slope,def.point[0]));
 
             def.univariateFunction = {
-                fn: `${intercept} + (${def.slope})*x`,
+                fn: `${intercept} + (${def.slope})*(x)`,
                 samplePoints: 2
             };
 

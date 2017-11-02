@@ -29,6 +29,12 @@ module KGAuthor {
                     def.yPixelOffset = -12;
                     def.align = 'right';
                 }
+                if(def.position.toLowerCase() == 't') {
+                    def.yPixelOffset = -15;
+                }
+                if(def.position.toLowerCase() == 'b') {
+                    def.yPixelOffset = 12;
+                }
             }
             super(def, graph);
             this.type = 'Label';

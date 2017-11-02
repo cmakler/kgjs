@@ -33,7 +33,10 @@ module KG {
                 value = model.eval(r.expression),
                 min = model.eval(r.min),
                 max = model.eval(r.max);
-            return (value >= min && value <= max);
+
+            // restrictions aren't working right now
+            return true;
+            //return (value >= min && value <= max);
         }
 
     }

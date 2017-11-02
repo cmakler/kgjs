@@ -2,14 +2,28 @@
 
 module KGAuthor {
 
+    export function extractBudgetLine(def, graph) {
+        if (def.hasOwnProperty('budgetLineObject')) {
+            return def.budgetLineObject;
+        }
+        if (def.hasOwnProperty('budgetLine')) {
+            let budgetDef = JSON.parse(JSON.stringify(def.budgetLine));
+            budgetDef.show = budgetDef.show || def.show;
+            return new EconBudgetLine(budgetDef, graph);
+        }
+        console.log('tried to instantiate a budget line without either a budget line def or object')
+    }
+
     export interface EconBudgetLineDefinition {
         p1?: string | number;
         p2?: string | number;
         m?: string | number;
-        point?: (string|number)[];
+        point?: (string | number)[];
         label?: string;
         set?: string;
         costlier?: string;
+        xInterceptLabel?: string;
+        yInterceptLabel?: string;
 
     }
 
@@ -30,18 +44,25 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             // may define income either by income m or value of endowment point
-            def.m = def.m || addDefs(multiplyDefs(def.p1,def.point[0]),multiplyDefs(def.p2,def.point[1]));
+            def.m = def.m || addDefs(multiplyDefs(def.p1, def.point[0]), multiplyDefs(def.p2, def.point[1]));
 
             const xIntercept = divideDefs(def.m, def.p1),
                 yIntercept = divideDefs(def.m, def.p2),
                 priceRatio = divideDefs(def.p1, def.p2);
 
+            if (def.inMap) {
+                def.strokeWidth = 1;
+                def.lineStyle = 'dotted';
+                def.layer = 0;
+                def.handles = false;
+                def.draggable = false;
+            }
+
             KG.setDefaults(def, {
                 a: [xIntercept, 0],
                 b: [0, yIntercept],
-                stroke: 'colors.budget',
+                color: 'colors.budget',
                 strokeWidth: 2,
-                label: 'BL',
                 lineStyle: 'solid'
             });
 
@@ -51,6 +72,13 @@ module KGAuthor {
                     'param': paramName(def.m),
                     'expression': addDefs(multiplyDefs('drag.x', def.p1), multiplyDefs('drag.y', def.p2))
                 }]
+            }
+
+            if (!def.inMap) {
+                def.label = KG.setDefaults(def.label || {}, {
+                    text: "BL",
+                    location: 0.9
+                });
             }
 
             super(def, graph);
@@ -67,18 +95,25 @@ module KGAuthor {
             if (graph) {
                 const subObjects = bl.subObjects;
 
+
                 let xInterceptPointDef = {
                     coordinates: [xIntercept, 0],
                     fill: def.stroke,
                     r: 4
                 };
 
-                if(def.draggable && typeof(def.p1) == 'string') {
+                if (def.draggable && typeof(def.p1) == 'string') {
                     xInterceptPointDef['drag'] = [{
                         directions: 'x',
                         param: paramName(def.p1),
                         expression: divideDefs(def.m, 'drag.x')
                     }]
+                }
+
+                if (def.hasOwnProperty('xInterceptLabel')) {
+                    xInterceptPointDef['droplines'] = {
+                        vertical: def.xInterceptLabel
+                    }
                 }
 
                 bl.xInterceptPoint = new Point(xInterceptPointDef, graph);
@@ -89,12 +124,18 @@ module KGAuthor {
                     r: 4
                 };
 
-                if(def.draggable && typeof(def.p2) == 'string') {
+                if (def.draggable && typeof(def.p2) == 'string') {
                     yInterceptPointDef['drag'] = [{
                         directions: 'y',
                         param: paramName(def.p2),
                         expression: divideDefs(def.m, 'drag.y')
                     }]
+                }
+
+                if (def.hasOwnProperty('yInterceptLabel')) {
+                    yInterceptPointDef['droplines'] = {
+                        horizontal: def.yInterceptLabel
+                    }
                 }
 
                 bl.yInterceptPoint = new Point(yInterceptPointDef, graph);
