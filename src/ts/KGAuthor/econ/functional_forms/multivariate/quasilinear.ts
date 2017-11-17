@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class QuasilinearFunction extends UtilityFunction {
+    export class QuasilinearFunction extends EconMultivariateFunction {
 
         value(x) {
             const c = this.coefficients;

@@ -11,8 +11,12 @@
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
 
-/// <reference path="graphObjects/graphObjectGenerator.ts"/>
-/// <reference path="graphObjects/clipPath.ts"/>
+/// <reference path="defObjects/graphObjectGenerator.ts"/>
+/// <reference path="defObjects/defObject.ts"/>
+/// <reference path="defObjects/clipPath.ts"/>
+/// <reference path="defObjects/marker.ts"/>
+/// <reference path="defObjects/arrowDef.ts"/>
+
 /// <reference path="graphObjects/graphObject.ts"/>
 /// <reference path="graphObjects/axis.ts"/>
 /// <reference path="graphObjects/grid.ts"/>

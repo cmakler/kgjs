@@ -69,7 +69,7 @@ module KG {
 
             ab.areaPath = ab.rootElement;
 
-            return ab.addClipPath();
+            return ab.addClipPathAndArrows();
         }
 
         // update properties

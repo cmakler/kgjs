@@ -56,7 +56,7 @@ window.addEventListener("load", function () {
 
 // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
-        const src = viewDivs[i].getAttribute('src');
+        let src = viewDivs[i].getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
 
         // first look to see if there's a definition in the KG.viewData object
@@ -64,7 +64,7 @@ window.addEventListener("load", function () {
             viewDivs[i].innerHTML = "";
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         } else {
-
+            src += "?update=true";
             // then look to see if the src is available by a URL
             d3.json(src, function (data) {
                 if (!data) {

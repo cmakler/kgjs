@@ -15,7 +15,7 @@ module KGAuthor {
     export class VerticalDropline extends Dropline {
 
         constructor(def, graph) {
-            def.a = [def.x, graph.yScale.min];
+            def.a = [def.x, graph.xScale.intercept];
             def.b = [def.x, def.y];
             super(def, graph);
         }
@@ -32,7 +32,7 @@ module KGAuthor {
     export class HorizontalDropline extends Dropline {
 
         constructor(def, graph) {
-            def.a = [graph.xScale.min, def.y];
+            def.a = [graph.yScale.intercept, def.y];
             def.b = [def.x, def.y];
             super(def, graph);
         }

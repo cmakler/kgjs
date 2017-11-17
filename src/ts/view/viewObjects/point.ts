@@ -38,7 +38,7 @@ module KG {
             p.rootElement = layer.append('g'); // SVG group
             p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.rootElement.append('circle');
-            //p.addClipPath()
+            //p.addClipPathAndArrows()
             return p.addInteraction();
         }
 

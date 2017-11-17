@@ -2,6 +2,11 @@
 
 module KGAuthor {
 
+    export interface SegmentDefinition extends GraphObjectDefinition {
+        startArrow: boolean;
+        endArrow: boolean;
+    }
+
 
     export class Segment extends GraphObject {
 
@@ -9,9 +14,19 @@ module KGAuthor {
         public x2;
         public y1;
         public y2;
+        public startArrow;
+        public endArrow;
 
         constructor(def, graph) {
             def = setStrokeColor(def);
+
+            if (def.hasOwnProperty('startArrow')) {
+                def.startArrowName = graph.getStartArrowName(def.color)
+            }
+            if (def.hasOwnProperty('endArrow')) {
+                def.endArrowName = graph.getEndArrowName(def.color)
+            }
+
             super(def, graph);
             const s = this;
             s.type = 'Segment';

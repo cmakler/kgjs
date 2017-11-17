@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class ConcaveUtility extends UtilityFunction {
+    export class ConcaveFunction extends EconMultivariateFunction {
 
         value(x) {
             const c = this.coefficients;

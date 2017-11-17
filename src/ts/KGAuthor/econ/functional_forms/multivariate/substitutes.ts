@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class LinearFunction extends UtilityFunction {
+    export class LinearFunction extends EconMultivariateFunction {
 
         constructor(def) {
             super(def);

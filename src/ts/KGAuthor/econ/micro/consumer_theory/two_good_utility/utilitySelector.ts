@@ -12,11 +12,11 @@ module KGAuthor {
             } else if (def.type == 'Complements' || def.type == 'PerfectComplements') {
                 return new KGAuthor.MinFunction(def.def)
             } else if (def.type == 'Concave') {
-                return new KGAuthor.ConcaveUtility(def.def)
+                return new KGAuthor.ConcaveFunction(def.def)
             } else if (def.type == 'Quasilinear') {
                 return new KGAuthor.QuasilinearFunction(def.def)
-            } else if (def.type == 'CES') {
-                return new KGAuthor.CES(def.def)
+            } else if (def.type == 'CESFunction') {
+                return new KGAuthor.CESFunction(def.def)
             }
         }
     }

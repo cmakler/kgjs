@@ -53,7 +53,7 @@ module KG {
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
-            return curve.addClipPath().addInteraction();
+            return curve.addClipPathAndArrows().addInteraction();
         }
 
         // update properties

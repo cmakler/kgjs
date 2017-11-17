@@ -7,11 +7,11 @@ module KGAuthor {
     }
 
 
-
     export class EconOptimalBundle extends EconBundle {
 
         public budgetLine;
         public level;
+        public cost;
 
         constructor(def: OptimalBundleDefinition, graph) {
 
@@ -76,11 +76,11 @@ module KGAuthor {
             delete def.prices;
             delete def.level;
 
-            def.budgetLine = {
+            def.budgetLine = KG.setDefaults(def.budgetLine || {}, {
                 p1: p1,
                 p2: p2,
                 m: m
-            };
+            });
 
             super(def, graph);
         }
@@ -144,9 +144,38 @@ module KGAuthor {
 
             def.budgetLine.label = KG.setDefaults(def.budgetLine.label || {}, {
                 text: "BL_C"
-            })
+            });
 
-            def.coordinates = u.lowestCostBundle(level, [p1,p2]);
+            def.coordinates = u.lowestCostBundle(level, [p1, p2]);
+
+            delete def.budgetLineObject;
+            super(def, graph);
+        }
+
+    }
+
+    export interface ShortRunProductionBundleDefinition extends LowestCostBundleDefinition {
+        capital: any;
+    }
+
+    export class EconShortRunProductionBundle extends EconBundle {
+
+        constructor(def: ShortRunProductionBundleDefinition, graph) {
+
+            const u = extractUtilityFunction(def),
+                p1 = def.prices[0],
+                p2 = def.prices[1];
+
+            def.coordinates = [u.laborRequirement(def.level,def.capital), def.capital];
+
+            def.budgetLine = KG.setDefaults(def.budgetLine || {}, {
+                p1: p1,
+                p2: p2
+            });
+
+            def.budgetLine.label = KG.setDefaults(def.budgetLine.label || {}, {
+                text: "c_s(y)"
+            });
 
             delete def.budgetLineObject;
             super(def, graph);

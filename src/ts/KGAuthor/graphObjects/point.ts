@@ -4,6 +4,7 @@ module KGAuthor {
 
     export interface PointDefinition extends GraphObjectDefinition {
         label?: LabelDefinition;
+        draggable?: boolean;
         x?: any;
         y?: any;
         coordinates?: any[];
@@ -20,12 +21,28 @@ module KGAuthor {
 
             def = setFillColor(def);
 
+
             super(def, graph);
 
             const p = this;
             p.type = 'Point';
             p.layer = 3;
             p.extractCoordinates();
+
+            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
+                def.drag = [
+                    {
+                        'directions': 'x',
+                        'param': paramName(def.x),
+                        'expression': addDefs(def.x, 'drag.dx')
+                    },
+                    {
+                        'directions': 'y',
+                        'param': paramName(def.y),
+                        'expression': addDefs(def.y, 'drag.dy')
+                    }
+                ]
+            }
 
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);

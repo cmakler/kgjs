@@ -9,6 +9,19 @@ module KGAuthor {
         if (def.hasOwnProperty('budgetLine')) {
             let budgetDef = JSON.parse(JSON.stringify(def.budgetLine));
             budgetDef.show = budgetDef.show || def.show;
+            if(!budgetDef.hasOwnProperty('m')) {
+                if(def.hasOwnProperty('point') && def.point.length == 2) {
+                    budgetDef.point = def.point;
+                }
+                if(def.hasOwnProperty('coordinates') && def.coordinates.length == 2) {
+                    budgetDef.point = def.coordinates;
+                }
+                if(def.hasOwnProperty('x') && def.hasOwnProperty('y')) {
+                    budgetDef.x = def.x;
+                    budgetDef.y = def.y;
+                }
+            }
+            budgetDef.color = budgetDef.color || def.color;
             return new EconBudgetLine(budgetDef, graph);
         }
         console.log('tried to instantiate a budget line without either a budget line def or object')
@@ -44,7 +57,14 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             // may define income either by income m or value of endowment point
-            def.m = def.m || addDefs(multiplyDefs(def.p1, def.point[0]), multiplyDefs(def.p2, def.point[1]));
+            if(!def.hasOwnProperty('m')) {
+                if(def.hasOwnProperty('point') && def.point.length == 2) {
+                    def.m = addDefs(multiplyDefs(def.p1, def.point[0]), multiplyDefs(def.p2, def.point[1]))
+                }
+                if(def.hasOwnProperty('x') && def.hasOwnProperty('y')) {
+                    def.m = addDefs(multiplyDefs(def.p1, def.x), multiplyDefs(def.p2, def.y))
+                }
+            }
 
             const xIntercept = divideDefs(def.m, def.p1),
                 yIntercept = divideDefs(def.m, def.p2),
@@ -174,6 +194,12 @@ module KGAuthor {
                 }
             }
 
+        }
+
+        cost(bundle:EconBundle) {
+            const c = `((${this.p1})*(${bundle.x}) + (${this.p2})*(${bundle.y}))`;
+            console.log(c);
+            return c;
         }
     }
 
