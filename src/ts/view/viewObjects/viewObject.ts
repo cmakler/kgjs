@@ -9,6 +9,8 @@ module KG {
         xScale?: Scale;
         yScale?: Scale;
         clipPath?: string;
+        startArrow?: string;
+        endArrow?: string;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;
@@ -33,10 +35,10 @@ module KG {
         xScale: Scale;
         yScale: Scale;
         clipPath: string;
-        inClipPath: boolean;
+        inDef: boolean;
         interactionHandler: InteractionHandler;
 
-        addClipPath: () => ViewObject;
+        addClipPathAndArrows: () => ViewObject;
         addInteraction: () => ViewObject;
         draw: (layer: any) => ViewObject;
         redraw: () => ViewObject;
@@ -47,6 +49,8 @@ module KG {
         strokeWidth: string;
         strokeOpacity: string;
         lineStyle: string;
+        startArrow: string;
+        endArrow: string;
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
@@ -54,10 +58,13 @@ module KG {
         public xScale;
         public yScale;
         public clipPath;
-        public inClipPath;
+        public startArrow;
+        public endArrow;
+        public inDef;
         public interactionHandler;
 
         public rootElement;
+        public markedElement;
         public alwaysUpdate: boolean;
 
         public fill;
@@ -74,11 +81,11 @@ module KG {
                 stroke: 'black',
                 strokeWidth: 1,
                 show: true,
-                inClipPath: false,
+                inDef: false,
                 lineStyle: 'solid'
             });
-            setProperties(def, 'updatables',['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            setProperties(def, 'constants',['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inClipPath']);
+            setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
+            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inDef']);
 
             super(def);
 
@@ -111,10 +118,16 @@ module KG {
             }
         }
 
-        addClipPath() {
+        addClipPathAndArrows() {
             const vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
                 vo.rootElement.attr('clip-path', `url(#${vo.clipPath})`);
+            }
+            if (vo.hasOwnProperty('endArrow') && vo.endArrow != undefined) {
+                vo.markedElement.attr("marker-end", `url(#${vo.endArrow})`)
+            }
+            if (vo.hasOwnProperty('startArrow') && vo.endArrow != undefined) {
+                vo.markedElement.attr("marker-start", `url(#${vo.startArrow})`)
             }
             return vo;
         }
@@ -125,7 +138,7 @@ module KG {
             return vo;
         }
 
-        draw(layer: any, inClipPath?: boolean) {
+        draw(layer: any, inDef ?: boolean) {
             return this;
         }
 
@@ -142,13 +155,13 @@ module KG {
 
         onGraph() {
             const vo = this;
-            if(vo.hasOwnProperty('x')) {
-                if(vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+            if (vo.hasOwnProperty('x')) {
+                if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
                     return false;
                 }
             }
-            if(vo.hasOwnProperty('y')) {
-                if(vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+            if (vo.hasOwnProperty('y')) {
+                if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
                     return false;
                 }
             }

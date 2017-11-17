@@ -23,7 +23,7 @@ module KGAuthor {
         level: string | number;
 
         // this are used if an object representing the utility function already exists
-        utilityFunctionObject?: UtilityFunction;
+        utilityFunctionObject?: EconMultivariateFunction;
 
     }
 

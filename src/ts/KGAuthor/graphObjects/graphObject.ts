@@ -23,6 +23,9 @@ module KGAuthor {
         public color: any;
 
         constructor(def, graph?) {
+            KG.setDefaults(def,{
+                name: KG.randomString(10)
+            });
             super(def,graph);
             let g = this;
             if(def.hasOwnProperty('color')) {

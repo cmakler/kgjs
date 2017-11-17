@@ -29,16 +29,16 @@ module KG {
         // create SVG elements
         draw(layer) {
             let rect = this;
-            if(rect.inClipPath){
+            if(rect.inDef){
                 rect.rootElement = layer;
             } else {
                 rect.rootElement = layer.append('g');
-                rect.addClipPath().addInteraction();
+                rect.addClipPathAndArrows().addInteraction();
             }
             rect.shape = rect.rootElement.append('rect');
 
             //rect.interactionHandler.addTrigger(rect.rootElement);
-            return rect.addClipPath().addInteraction();
+            return rect.addClipPathAndArrows().addInteraction();
         }
 
         // update properties

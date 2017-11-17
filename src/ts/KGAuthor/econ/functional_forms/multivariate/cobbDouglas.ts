@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class CobbDouglasFunction extends UtilityFunction {
+    export class CobbDouglasFunction extends EconMultivariateFunction {
 
         value(x) {
             const e = this.exponents,
@@ -65,7 +65,11 @@ module KGAuthor {
                 )
             ]
 
+        }
 
+        laborRequirement(level, capital) {
+            const e = this.exponents;
+            return `((${level})/(${capital})^(${e[1]}))^(1/(${e[0]}))`
         }
     }
 

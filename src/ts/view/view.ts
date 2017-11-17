@@ -12,6 +12,14 @@ module KG {
         paths: TypeAndDef[];
     }
 
+    export interface MarkerDefinition {
+        name: string;
+        refX: number;
+        maskPath: string;
+        arrowPath: string;
+        color: string;
+    }
+
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
@@ -26,6 +34,7 @@ module KG {
         // The rest of these are usually generated
         scales?: ScaleDefinition[];
         clipPaths?: ClipPathDefinition[];
+        markers?: MarkerDefinition[];
         layers?: TypeAndDef[][];
         divs?: TypeAndDef[];
     }
@@ -69,6 +78,7 @@ module KG {
                 colors: data.colors || {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
+                markers: data.markers || [],
                 scales: data.scales || [],
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
@@ -76,11 +86,11 @@ module KG {
 
             data.objects = data.objects || [];
 
-            if(data.hasOwnProperty ('layout')) {
+            if (data.hasOwnProperty('layout')) {
                 data.objects.push(data.layout)
             }
 
-            if(data.hasOwnProperty ('schema')) {
+            if (data.hasOwnProperty('schema')) {
                 data.objects.push({type: data.schema, def: {}})
             }
 
@@ -141,7 +151,7 @@ module KG {
 
             const view = this;
 
-            let clipPathURLs = {};
+            let defURLS = {};
 
             const defLayer = view.svg.append('defs');
 
@@ -153,7 +163,31 @@ module KG {
                     def.paths.forEach(function (td) {
                         new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                     });
-                    clipPathURLs[def.name] = clipPathURL;
+                    defURLS[def.name] = clipPathURL;
+                });
+            }
+
+            // create Markers, generate their URLs, and add their paths to the SVG defs element.
+            if (data.markers.length > 0) {
+                data.markers.forEach(function (def: MarkerDefinition) {
+                    const markerURL = randomString(10);
+                    const markerLayer = defLayer.append('marker')
+                        .attr('id', markerURL)
+                        .attr("refX", def.refX)
+                        .attr("refY", 6)
+                        .attr("markerWidth", 13)
+                        .attr("markerHeight", 13)
+                        .attr("orient", "auto")
+                        .attr("markerUnits", "userSpaceOnUse");
+
+                    markerLayer.append("svg:path")
+                        .attr("d", def.maskPath)
+                        .attr("fill", "white");
+
+                    markerLayer.append("svg:path")
+                        .attr("d", def.arrowPath)
+                        .attr("fill", view.model.eval(def.color));
+                    defURLS[def.name] = markerURL;
                 });
             }
 
@@ -165,7 +199,13 @@ module KG {
                     layerTds.forEach(function (td) {
                         let def: ViewObjectDefinition = td.def;
                         if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = clipPathURLs[def['clipPathName']]
+                            def.clipPath = defURLS[def['clipPathName']]
+                        }
+                        if (def.hasOwnProperty('startArrowName')) {
+                            def.startArrow = defURLS[def['startArrowName']]
+                        }
+                        if (def.hasOwnProperty('endArrowName')) {
+                            def.endArrow = defURLS[def['endArrowName']]
                         }
                         def = view.addViewToDef(def, layer);
                         new KG[td.type](def);

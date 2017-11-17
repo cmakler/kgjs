@@ -4,6 +4,7 @@ module KG {
 
     export interface UnivariateFunctionDefinition extends ViewObjectDefinition {
         fn: string;
+        yFn?: string;
         ind?: string;
         samplePoints?: any;
     }
@@ -16,6 +17,8 @@ module KG {
     export class UnivariateFunction extends UpdateListener implements IUnivariateFunction {
 
         private fn;
+        private yFn;
+        private yCompiledFunction;
         private scope;
         private compiledFunction;
         public ind;
@@ -30,11 +33,14 @@ module KG {
                 ind: 'x',
                 samplePoints: 50
             });
-            setProperties(def, 'constants', ['samplePoints', 'ind', 'fn']);
-            setProperties(def, 'updatables', ['min', 'max']);
+            setProperties(def, 'constants', ['samplePoints', 'fn', 'yFn']);
+            setProperties(def, 'updatables', ['min', 'max', 'ind']);
             super(def);
 
             this.compiledFunction = math.compile(def.fn);
+            if(def.hasOwnProperty('yFn')) {
+                this.yCompiledFunction = math.compile(def.yFn);
+            }
         }
 
         eval(input) {
@@ -47,7 +53,11 @@ module KG {
             };
             fn.scope = fn.scope || scope;
             fn.scope[fn.ind] = input;
-            return fn.compiledFunction.eval(fn.scope);
+            if(fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
+                return fn.yCompiledFunction.eval(fn.scope)
+            } else {
+                return fn.compiledFunction.eval(fn.scope);
+            }
         }
 
         generateData(min, max) {

@@ -15,7 +15,7 @@ module KGAuthor {
         budgetLineLabel: LabelDefinition
 
         // this are used if an object representing the utility function already exists
-        utilityFunctionObject?: UtilityFunction;
+        utilityFunctionObject?: EconMultivariateFunction;
         budgetLineObject?: EconBudgetLine;
 
     }
@@ -26,12 +26,12 @@ module KGAuthor {
 
     export class EconBundle extends Point {
 
-        public utilityFunction: UtilityFunction;
+        public utilityFunction: EconMultivariateFunction;
+        public budgetLine: EconBudgetLine;
 
         constructor(def: BundleDefinition, graph) {
 
             KG.setDefaults(def, {
-                name: KG.randomString(10),
                 label: {text: 'X'},
                 droplines: {
                     vertical: "x_1",
@@ -46,9 +46,9 @@ module KGAuthor {
 
             const bundle = this;
 
-            const budgetLine = extractBudgetLine(def, graph);
-            if (budgetLine) {
-                bundle.subObjects.push(budgetLine);
+            bundle.budgetLine = extractBudgetLine(def, graph);
+            if (bundle.budgetLine) {
+                bundle.subObjects.push(bundle.budgetLine);
             }
 
             bundle.utilityFunction = extractUtilityFunction(def);
@@ -70,7 +70,8 @@ module KGAuthor {
             parsedData.calcs[bundle.name] = {
                 x: bundle.x,
                 y: bundle.y,
-                level: bundle.utilityFunction ? bundle.utilityFunction.value([bundle.x, bundle.y]) : ''
+                level: bundle.utilityFunction ? bundle.utilityFunction.value([bundle.x, bundle.y]) : '',
+                cost: bundle.budgetLine ? bundle.budgetLine.cost(bundle) : ''
             };
 
             return parsedData;

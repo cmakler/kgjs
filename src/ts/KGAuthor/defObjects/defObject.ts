@@ -2,10 +2,10 @@
 
 module KGAuthor {
 
-    export class ClipPath extends GraphObjectGenerator {
+    export class DefObject extends GraphObjectGenerator {
 
         constructor(def, graph) {
-            def.inClipPath = true;
+            def.inDef = true;
             super(def, graph);
         }
 

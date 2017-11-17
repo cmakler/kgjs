@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class MinFunction extends UtilityFunction {
+    export class MinFunction extends EconMultivariateFunction {
 
         constructor(def) {
             super(def);

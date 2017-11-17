@@ -1,28 +1,32 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export interface IUtilityFunction {
+    export interface IMultivariateFunction {
 
         value: (x: any[]) => any;
+
+        levelSet: (def: any, graph: Graph) => KG.UnivariateFunctionDefinition[];
+        levelCurve: (def: any, graph: Graph) => Curve[];
+
+        // used for consumer theory
 
         optimalBundle: (budgetLine: EconBudgetLine) => any[];
         lagrangeBundle: (budgetLine: EconBudgetLine) => any[];
         cornerCondition: (budgetLine: EconBudgetLine) => string;
         lowestCostBundle: (level: (string | number), prices: (string | number)[]) => false | any[];
 
-        levelSet: (def: any, graph: Graph) => KG.UnivariateFunctionDefinition[];
-        levelCurve: (def: any, graph: Graph) => Curve[];
-
         demandFunction: (budgetLine: EconBudgetLine, good: number, graph: Graph) => KG.UnivariateFunctionDefinition[];
         demandCurve: (budgetLine: EconBudgetLine, good: number, def: any, graph: Graph) => Curve[];
 
         indirectUtility: (income: (string | number), prices: (string | number)[]) => any;
         expenditure: (level: (string | number), prices: (string | number)[]) => any;
+
+
     }
 
-    export class UtilityFunction extends AuthoringObject implements IUtilityFunction {
+    export class EconMultivariateFunction extends AuthoringObject implements IMultivariateFunction {
 
         public alpha;
         public coefficients;
@@ -112,7 +116,7 @@ module KGAuthor {
             if (fn.fillAboveRect) {
                 fn.fillAboveRect.show = def.show;
                 fn.fillAboveRect.fill = def.fill;
-                fn.fillAboveRect.inClipPath = true;
+                fn.fillAboveRect.inDef = true;
                 objs.push(new Rectangle(fn.fillAboveRect, graph));
             }
             const clipPathName = KG.randomString(10);
@@ -207,6 +211,10 @@ module KGAuthor {
         expenditure(level: (string | number), prices: (string | number)[]) {
             const b = this.lowestCostBundle(level, prices);
             return addDefs(multiplyDefs(b[0], prices[0]), multiplyDefs(b[1], prices[1]));
+        }
+
+        laborRequirement(level: (string | number), capital: (string | number)) {
+            // defined at subclass level
         }
 
 

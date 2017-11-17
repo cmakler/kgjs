@@ -13,11 +13,16 @@ module KGAuthor {
 
         public min;
         public max;
+        public intercept;
 
         constructor(def) {
+            KG.setDefaults(def, {
+                intercept: 0
+            });
             super(def);
             this.min = def.domainMin;
             this.max = def.domainMax;
+            this.intercept = def.intercept;
         }
 
         parseSelf(parsedData: KG.ViewDefinition) {

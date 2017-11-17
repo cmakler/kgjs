@@ -30,7 +30,7 @@ module KG {
                 yScale2: def.yScale,
                 strokeWidth: 2
             });
-            setProperties(def,'constants',['xScale2','yScale2']);
+            setProperties(def,'constants',['xScale2','yScale2','startArrow','endArrow']);
             setProperties(def, 'updatables',['x1', 'y1', 'x2', 'y2']);
             super(def);
         }
@@ -41,7 +41,8 @@ module KG {
             segment.rootElement = layer.append('g');
             segment.dragLine = segment.rootElement.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
             segment.line = segment.rootElement.append('line');
-            return segment.addClipPath().addInteraction();
+            segment.markedElement = segment.line;
+            return segment.addClipPathAndArrows().addInteraction();
         }
 
         // update properties

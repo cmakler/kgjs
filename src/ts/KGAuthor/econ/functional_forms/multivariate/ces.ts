@@ -1,9 +1,9 @@
-/// <reference path="../../../eg.ts"/>
+/// <reference path="../../eg.ts"/>
 
 
 module KGAuthor {
 
-    export class CES extends UtilityFunction {
+    export class CESFunction extends EconMultivariateFunction {
 
         public r;
         public s;
