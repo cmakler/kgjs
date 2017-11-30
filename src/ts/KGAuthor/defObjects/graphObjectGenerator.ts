@@ -31,7 +31,6 @@ module KGAuthor {
             let obj = this,
                 def = this.def;
             if (def.hasOwnProperty(coordinatesKey) && def[coordinatesKey] != undefined) {
-                console.log(def);
                 def[xKey] = def[coordinatesKey][0].toString();
                 def[yKey] = def[coordinatesKey][1].toString();
                 obj[xKey] = def[coordinatesKey][0].toString();

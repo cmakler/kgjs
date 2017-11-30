@@ -14,7 +14,7 @@ module KG {
         inject: (id: string) => void;
     }
 
-    export class GeoGebraApplet extends ViewObject {
+    export class GeoGebraApplet extends PositionedDiv {
 
         private applet;
         private objects: GeoGebraObject[];
@@ -44,10 +44,8 @@ module KG {
 
         // create div for text
         draw(layer) {
-            let div = this;
+            let div = super.draw(layer);
             const id = KG.randomString(10);
-            div.rootElement = layer.append('div');
-            div.rootElement.style('position', 'absolute');
             div.rootElement.append('div').attr('id', id);
             let applet = new GGBApplet({
                 allowStyleBar: true,
@@ -121,14 +119,9 @@ module KG {
 
         // update properties
         redraw() {
-            let div = this;
+            let div = super.redraw();
             const width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)),
                 height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
-            div.rootElement.style('left', div.xScale.scale(0) + 'px');
-            div.rootElement.style('top', div.yScale.scale(1) + 'px');
-            div.rootElement.style('width', width + 'px');
-            div.rootElement.style('height', height + 'px');
-            //console.log('redrawing');
             let checkExist = setInterval(function () {
                 if (undefined != div.applet) {
                     div.updateGGB(div.applet, width, height);

@@ -119,6 +119,8 @@ module KG {
 
             view.addViewObjects(parsedData);
 
+            console.log('parsedData: ',parsedData);
+
         }
 
         // add view information (model, layer, scales) to an object

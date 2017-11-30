@@ -1,5 +1,6 @@
 /// <reference path="../../kg.ts" />
 
+
 module KG {
 
     export interface ControlsDefinition extends DivObjectDefinition {
@@ -52,7 +53,12 @@ module KG {
                 new Radio({layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model})
             });
             controls.divs.forEach(function (div) {
-                new Div({layer: controls.rootElement, html: div.html, fontSize: 14, model: controls.model})
+                div = setDefaults(div,{
+                    layer: controls.rootElement,
+                    model: controls.model,
+                    fontSize: 14
+                });
+                new Div(div)
             });
             return controls;
 
@@ -61,7 +67,9 @@ module KG {
         // update properties
         redraw() {
             let controls = this;
-            controls.titleElement.text(controls.title.toUpperCase());
+            if(controls.title.length > 0){
+                controls.titleElement.text(controls.title.toUpperCase());
+            }
             controls.descriptionElement.text(controls.description);
             return controls;
         }

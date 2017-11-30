@@ -32,6 +32,7 @@
 /// <reference path="view/viewObjects/ggbObject.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/positionedDiv.ts" />
 /// <reference path="view/divObjects/div.ts" />
 /// <reference path="view/divObjects/paramControl.ts"/>
 /// <reference path="view/divObjects/slider.ts"/>
@@ -64,8 +65,8 @@ window.addEventListener("load", function () {
             viewDivs[i].innerHTML = "";
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         } else {
-            src += "?update=true";
             // then look to see if the src is available by a URL
+            src += "?update=true"; //force update - JSON is often cached
             d3.json(src, function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"

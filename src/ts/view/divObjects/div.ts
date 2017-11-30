@@ -34,7 +34,7 @@ module KG {
             div.rootElement = layer.append('div')
                 .style('font-size', div.fontSize + 'pt')
                 .style('padding-top', '10px')
-                .style('padding-bottom','10px');
+                .style('padding-bottom', '10px');
 
             return div;
         }
@@ -42,15 +42,19 @@ module KG {
         // update properties
         redraw() {
             let div = this;
-            div.rootElement.html(div.html);
-            renderMathInElement(div.rootElement.node(), {
-                delimiters: [
-                    {left: "$$", right: "$$", display: true},
-                    {left: "\\[", right: "\\]", display: true},
-                    {left: "$", right: "$", display: false},
-                    {left: "\\(", right: "\\)", display: false}
-                ]
-            });
+            if (div.show) {
+                div.rootElement.html(div.html);
+                renderMathInElement(div.rootElement.node(), {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "\\[", right: "\\]", display: true},
+                        {left: "$", right: "$", display: false},
+                        {left: "\\(", right: "\\)", display: false}
+                    ]
+                });
+            } else {
+                div.rootElement.html(null);
+            }
             return div;
         }
     }

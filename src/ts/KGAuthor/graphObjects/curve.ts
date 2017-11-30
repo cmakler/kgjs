@@ -4,6 +4,8 @@ module KGAuthor {
 
     export interface CurveDefinition extends GraphObjectDefinition {
         label?: LabelDefinition
+        univariateFunction?: KG.UnivariateFunctionDefinition;
+        parametricFunction?: KG.ParametricFunctionDefinition;
     }
 
     export class Curve extends GraphObject {

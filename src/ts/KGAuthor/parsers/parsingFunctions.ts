@@ -70,14 +70,29 @@ module KGAuthor {
     }
 
     export function addDefs(def1, def2) {
+        if(def1 == 0) {
+            return def2;
+        }
+        if(def2 == 0) {
+            return def1;
+        }
         return binaryFunction(def1, def2, '+');
     }
 
     export function subtractDefs(def1, def2) {
+        if(def2 == 0) {
+            return def1;
+        }
         return binaryFunction(def1, def2, '-');
     }
 
     export function divideDefs(def1, def2) {
+        if(def1 == 0) {
+            return 0;
+        }
+        if(def2 == 1) {
+            return def1;
+        }
         return binaryFunction(def1, def2, '/');
     }
 
@@ -86,6 +101,15 @@ module KGAuthor {
     }
 
     export function multiplyDefs(def1, def2) {
+        if(def1 == 0 || def2 == 0) {
+            return 0;
+        }
+        if(def1 == 1) {
+            return def2;
+        }
+        if(def2 == 1) {
+            return def1;
+        }
         return binaryFunction(def1, def2, '*');
     }
 

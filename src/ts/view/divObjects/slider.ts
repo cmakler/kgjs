@@ -42,7 +42,8 @@ module KG {
                 .style('border', 'none')
                 .style('background', 'none')
                 .style('padding-left', '5px')
-                .style('font-family', 'KaTeX_Main');
+                .style('font-family', 'KaTeX_Main')
+                .style('width','70px');
             slider.numberInput.on("input", function () {
                 slider.model.updateParam(slider.param, +this.value)
             });

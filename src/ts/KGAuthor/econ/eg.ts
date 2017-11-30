@@ -25,8 +25,12 @@
 /// <reference path="micro/consumer_theory/optimization/demandCurve.ts"/>
 
 /* Producer Theory */
+/// <reference path="micro/producer_theory/oneInputProductionFunction.ts"/>
 
-/// <reference path="micro/producer_theory/linearDemand.ts"/>
+/* Equilibrium */
+
+/// <reference path="micro/equilibrium/linearDemand.ts"/>
+/// <reference path="micro/equilibrium/ppf.ts"/>
 
 module KGAuthor {
     export class EconSchema extends Schema {

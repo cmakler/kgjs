@@ -5,10 +5,10 @@ module KG {
     export interface ParametricFunctionDefinition extends ViewObjectDefinition {
         xFunction: string;
         yFunction: string;
-        min: any;
-        max: any;
+        min?: any;
+        max?: any;
         samplePoints?: any;
-        parametric: boolean;
+        parametric?: boolean;
     }
 
     export interface IParametricFunction {
@@ -52,8 +52,12 @@ module KG {
         generateData(min?, max?) {
             let fn = this,
                 data = [];
-            min = fn.min || min;
-            max = fn.max || max;
+            if(undefined != fn.min) {
+                min = fn.min;
+            }
+            if(undefined != fn.max) {
+                max = fn.max;
+            }
             for (let i = 0; i < fn.samplePoints + 1; i++) {
                 let a = i / fn.samplePoints,
                     input = a * min + (1 - a) * max,

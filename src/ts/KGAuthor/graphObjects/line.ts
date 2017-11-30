@@ -70,6 +70,20 @@ module KGAuthor {
                 yIntercept = 0;
             }
 
+            else if(def.hasOwnProperty('yIntercept')) {
+                invSlope = Infinity;
+                xIntercept = null;
+                yIntercept = def.yIntercept;
+                slope = 0;
+            }
+
+            else if(def.hasOwnProperty('xIntercept')) {
+                invSlope = 0;
+                xIntercept = def.xIntercept;
+                yIntercept = null;
+                slope = Infinity;
+            }
+
             else {
                 xIntercept = 0;
                 yIntercept = 0;
