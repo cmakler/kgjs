@@ -115,7 +115,11 @@ module KGAuthor {
         parseSelf(parsedData) {
             let ppf = this;
             parsedData = super.parseSelf(parsedData);
-            parsedData.calcs[ppf.name] = {};
+            parsedData.calcs[ppf.name] = {
+                coefficient: ppf.coefficient,
+                exponent: ppf.exponent,
+                curve: ppf.f('(x)')
+            };
 
             return parsedData;
         }

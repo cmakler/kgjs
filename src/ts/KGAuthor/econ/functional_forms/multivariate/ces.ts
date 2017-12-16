@@ -21,21 +21,10 @@ module KGAuthor {
             }
         }
 
-        parseSelf(parsedData) {
-            const u = this,
-                a = getDefinitionProperty(u.alpha),
-                r = getDefinitionProperty(u.r),
-                b = subtractDefs(1, u.alpha);
-            parsedData.calcs[u.name] = {
-                xFunction: 'foo'
-            }
-            return parsedData;
-        }
-
         value(x) {
             const c = this.coefficients,
                 r = this.r;
-            return "((params.r == 0) ? (" + multiplyDefs(raiseDefToDef(x[0], c[0]), raiseDefToDef(x[1], c[1])) + ") : (" + raiseDefToDef(addDefs(multiplyDefs(c[0], raiseDefToDef(x[0], r)), multiplyDefs(c[1], raiseDefToDef(x[1], r))), divideDefs(1, r)) + "))";
+            return raiseDefToDef(addDefs(multiplyDefs(c[0], raiseDefToDef(x[0], r)), multiplyDefs(c[1], raiseDefToDef(x[1], r))), divideDefs(1, r));
         }
 
         levelSet(def) {
@@ -54,16 +43,14 @@ module KGAuthor {
             };
             return [
                 {
-                    "fn": `((${r} == 0) ? (${level}/(x)^(${a}))^(1/(${b})) : ((${level}^${r} - ${a}*(x)^${r})/${b})^(1/${r}))`,
-                    "ind": "x",
-                    "min": level,
-                    "samplePoints": 60
+                    fn: `((${level}^${r} - ${a}*(x)^${r})/${b})^(1/${r})`,
+                    ind: "x",
+                    min: level
                 },
                 {
-                    "fn": `((${r} == 0) ? (${level}/(y)^( ${b}))^(1/(${a})) : ((${level}^${r} - ${b}*(y)^${r})/${a})^(1/${r}))`,
-                    "ind": "y",
-                    "min": level,
-                    "samplePoints": 60
+                    fn: `((${level}^${r} - ${b}*(y)^${r})/${a})^(1/${r})`,
+                    ind: "y",
+                    min: level
                 }
             ]
         }
@@ -75,8 +62,8 @@ module KGAuthor {
                 a = this.alpha,
                 oneMinusA = subtractDefs(1, a),
                 theta = divideDefs(budgetLine.m, addDefs(multiplyDefs(raiseDefToDef(a, s), raiseDefToDef(budgetLine.p1, oneMinusS)), multiplyDefs(raiseDefToDef(oneMinusA, s), raiseDefToDef(budgetLine.p2, oneMinusS)))),
-                optimalX1 = `(${this.r} == 0) ? ${multiplyDefs(a, budgetLine.xIntercept)} : ${multiplyDefs(raiseDefToDef(divideDefs(a, budgetLine.p1), s), theta)}`,
-                optimalX2 = `(${this.r} == 0) ? ${multiplyDefs(oneMinusA, budgetLine.yIntercept)} : ${multiplyDefs(raiseDefToDef(divideDefs(oneMinusA, budgetLine.p2), s), theta)}`;
+                optimalX1 = multiplyDefs(raiseDefToDef(divideDefs(a, budgetLine.p1), s), theta),
+                optimalX2 = multiplyDefs(raiseDefToDef(divideDefs(oneMinusA, budgetLine.p2), s), theta);
             return [optimalX1, optimalX2];
         }
 
@@ -114,11 +101,6 @@ module KGAuthor {
                 denominator = this.denominator(p1,p2),
                 numerator1 = raiseDefToDef(pOverA1, oneOverRminusOne),
                 numerator2 = raiseDefToDef(pOverA2, oneOverRminusOne);
-
-            console.log('denominator', denominator);
-            console.log('numerator1', numerator1);
-            console.log('numerator2', numerator2);
-
 
             return [
                 divideDefs(

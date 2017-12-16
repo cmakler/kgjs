@@ -65,7 +65,7 @@ module KGAuthor {
                 coefficient: fn1coeff,
                 exponent: def.curvature
             }), fn2 = new EconOneInputProductionFunction({
-                name: def.name + '_prodFn1',
+                name: def.name + '_prodFn2',
                 coefficient: fn2coeff,
                 exponent: def.curvature
             });
@@ -98,6 +98,9 @@ module KGAuthor {
             ppf.prodFn1 = fn1;
             ppf.prodFn2 = fn2;
 
+            ppf.subObjects.push(fn1);
+            ppf.subObjects.push(fn2);
+
             ppf.L1 = def.L1;
             ppf.L2 = subtractDefs(def.labor, def.L1);
             ppf.y1 = ppf.prodFn1.f(ppf.L1);
@@ -119,6 +122,7 @@ module KGAuthor {
                 ppf.optimalL2 = multiplyDefs(divideDefs(1, addDefs(1, theta)), ppf.labor);
 
             }
+
 
             ppf.optimaly1 = ppf.prodFn1.f(ppf.optimalL1);
             ppf.optimaly2 = ppf.prodFn2.f(ppf.optimalL2);

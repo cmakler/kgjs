@@ -141,6 +141,9 @@ module KGAuthor {
     export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
         return fns.map(function (fn) {
             let curveDef = copyJSON(def);
+            if (fn.hasOwnProperty('show')) {
+                curveDef.show = fn.show;
+            }
             if (fn.hasOwnProperty('parametric')) {
                 curveDef.parametricFunction = fn;
             } else {

@@ -49,7 +49,6 @@ module KGAuthor {
 
             // look to see if there is already a marker of that name and type
             g.subObjects.forEach(function (obj) {
-                console.log('existing subobject, ', obj);
                 if (obj.hasOwnProperty('color') && obj['color'] == lookup.color && obj.hasOwnProperty('markerType') && obj['markerType'] == lookup.markerType) {
                     name = obj.name;
                     found = true;

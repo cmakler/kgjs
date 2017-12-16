@@ -14,7 +14,7 @@ module KG {
 
     export class InteractionHandler extends UpdateListener implements IInteractionHandler {
 
-        private scope: { params: any, drag: any };
+        private scope: { params: any, calcs: any, colors: any, drag: any };
         private viewObject: ViewObject;
         private dragListeners: DragListener[];
         private clickListeners: ClickListener[];
@@ -22,10 +22,10 @@ module KG {
 
         constructor(def: InteractionHandlerDefinition) {
             setDefaults(def, {dragListeners: [], clickListeners: []});
-            setProperties(def, 'constants',["viewObject","dragListeners", "clickListeners"]);
+            setProperties(def, 'constants', ["viewObject", "dragListeners", "clickListeners"]);
             super(def);
             this.update(true);
-            this.scope = {params: {}, drag: {}}
+            this.scope = {params: {}, calcs: {}, colors: {}, drag: {}}
         }
 
         update(force) {
@@ -61,6 +61,8 @@ module KG {
                 element.on("click", function () {
                     if (d3.event.defaultPrevented) return; //dragged)
                     handler.scope.params = handler.model.currentParamValues;
+                    handler.scope.calcs = handler.model.currentCalcValues;
+                    handler.scope.colors = handler.model.currentColors;
                     handler.clickListeners.forEach(function (d) {
                         d.onChange(handler.scope)
                     });
@@ -72,6 +74,8 @@ module KG {
                 element.call(d3.drag()
                     .on('start', function () {
                         handler.scope.params = handler.model.currentParamValues;
+                        handler.scope.calcs = handler.model.currentCalcValues;
+                        handler.scope.colors = handler.model.currentColors;
                         handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
                         handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
                     })

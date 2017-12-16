@@ -2,40 +2,27 @@
 
 module KG {
 
-    export interface ParametricFunctionDefinition extends ViewObjectDefinition {
+    export interface ParametricFunctionDefinition extends MathFunctionDefinition {
         xFunction: string;
         yFunction: string;
-        min?: any;
-        max?: any;
-        samplePoints?: any;
-        parametric?: boolean;
     }
 
-    export interface IParametricFunction {
+    export interface IParametricFunction extends IMathFunction {
         eval: (input: number) => { x: number, y: number };
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
-    export class ParametricFunction extends UpdateListener implements IParametricFunction {
+    export class ParametricFunction extends MathFunction implements IParametricFunction {
 
-        private scope;
         private xCompiledFunction;
         private yCompiledFunction;
-        public ind;
-        private samplePoints;
-        private min;
-        private max;
-        public data;
 
         constructor(def: ParametricFunctionDefinition) {
 
             setDefaults(def, {
                 min: 0,
-                max: 10,
-                samplePoints: 50
+                max: 10
             });
-            setProperties(def, 'constants', ['samplePoints']);
-            setProperties(def, 'updatables', ['min', 'max']);
             super(def);
 
             this.xCompiledFunction = math.compile(def.xFunction);

@@ -97,7 +97,7 @@ module KG {
 
         updateFn(fn) {
             const scale = (fn.ind == 'y') ? this.yScale : this.xScale;
-            fn.update(true);
+            fn.update(false);
             if (fn.hasChanged) {
                 fn.generateData(scale.domainMin, scale.domainMax);
             }
