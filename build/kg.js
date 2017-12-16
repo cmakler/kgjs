@@ -2121,6 +2121,7 @@ var KGAuthor;
         function EconBudgetLine(def, graph) {
             var _this = this;
             def = KGAuthor.setStrokeColor(def);
+            def.name = def.name || 'BL' + KG.randomString(5);
             // may define income either by income m or value of endowment point
             if (!def.hasOwnProperty('m')) {
                 if (def.hasOwnProperty('point') && def.point.length == 2) {
@@ -2139,8 +2140,8 @@ var KGAuthor;
                 def.draggable = false;
             }
             KG.setDefaults(def, {
-                a: [xIntercept, 0],
-                b: [0, yIntercept],
+                a: ["calcs." + def.name + ".xIntercept", 0],
+                b: [0, "calcs." + def.name + ".yIntercept"],
                 color: 'colors.budget',
                 strokeWidth: 2,
                 lineStyle: 'solid'
@@ -3462,8 +3463,8 @@ var KG;
                 max: 10
             });
             _this = _super.call(this, def) || this;
-            _this.xCompiledFunction = math.compile(def.xFunction);
-            _this.yCompiledFunction = math.compile(def.yFunction);
+            _this.xFunctionStringDef = def.xFunction;
+            _this.yFunctionStringDef = def.yFunction;
             return _this;
         }
         ParametricFunction.prototype.eval = function (input) {
@@ -3491,7 +3492,24 @@ var KG;
         };
         ParametricFunction.prototype.update = function (force) {
             var fn = _super.prototype.update.call(this, force);
-            fn.scope = { params: fn.model.currentParamValues };
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            var originalXFunctionString = fn.xFunctionString;
+            if (originalXFunctionString != fn.updateFunctionString(fn.xFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.xFunctionString = fn.updateFunctionString(fn.xFunctionStringDef, fn.scope);
+                fn.xCompiledFunction = math.compile(fn.xFunctionString);
+            }
+            var originalYFunctionString = fn.yFunctionString;
+            if (originalYFunctionString != fn.updateFunctionString(fn.yFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.yFunctionString = fn.updateFunctionString(fn.yFunctionStringDef, fn.scope);
+                fn.yCompiledFunction = math.compile(fn.yFunctionString);
+            }
             return fn;
         };
         return ParametricFunction;

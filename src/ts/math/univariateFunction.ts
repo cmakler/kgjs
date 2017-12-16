@@ -24,8 +24,6 @@ module KG {
         public ind;
         public fnStringDef;
         public yFnStringDef;
-        private fnString;
-        private yFnString;
 
         constructor(def: UnivariateFunctionDefinition) {
 

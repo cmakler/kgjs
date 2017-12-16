@@ -14,6 +14,10 @@ module KG {
 
     export class ParametricFunction extends MathFunction implements IParametricFunction {
 
+        private xFunctionString;
+        private yFunctionString;
+        private xFunctionStringDef;
+        private yFunctionStringDef;
         private xCompiledFunction;
         private yCompiledFunction;
 
@@ -25,8 +29,8 @@ module KG {
             });
             super(def);
 
-            this.xCompiledFunction = math.compile(def.xFunction);
-            this.yCompiledFunction = math.compile(def.yFunction);
+            this.xFunctionStringDef = def.xFunction;
+            this.yFunctionStringDef = def.yFunction;
         }
 
         eval(input) {
@@ -59,7 +63,24 @@ module KG {
 
         update(force) {
             let fn = super.update(force);
-            fn.scope = {params: fn.model.currentParamValues};
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            const originalXFunctionString = fn.xFunctionString;
+            if (originalXFunctionString != fn.updateFunctionString(fn.xFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.xFunctionString = fn.updateFunctionString(fn.xFunctionStringDef, fn.scope);
+                fn.xCompiledFunction = math.compile(fn.xFunctionString);
+            }
+            const originalYFunctionString = fn.yFunctionString;
+            if (originalYFunctionString != fn.updateFunctionString(fn.yFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.yFunctionString = fn.updateFunctionString(fn.yFunctionStringDef, fn.scope);
+                fn.yCompiledFunction = math.compile(fn.yFunctionString);
+            }
             return fn;
         }
 

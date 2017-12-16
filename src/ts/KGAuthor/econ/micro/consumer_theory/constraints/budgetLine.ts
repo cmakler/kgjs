@@ -57,6 +57,8 @@ module KGAuthor {
 
             def = setStrokeColor(def);
 
+            def.name = def.name || 'BL' + KG.randomString(5);
+
             // may define income either by income m or value of endowment point
             if(!def.hasOwnProperty('m')) {
                 if(def.hasOwnProperty('point') && def.point.length == 2) {
@@ -80,8 +82,8 @@ module KGAuthor {
             }
 
             KG.setDefaults(def, {
-                a: [xIntercept, 0],
-                b: [0, yIntercept],
+                a: [`calcs.${def.name}.xIntercept`, 0],
+                b: [0, `calcs.${def.name}.yIntercept`],
                 color: 'colors.budget',
                 strokeWidth: 2,
                 lineStyle: 'solid'
