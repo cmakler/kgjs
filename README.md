@@ -22,7 +22,7 @@ For convenience, minified versions of the JS and CSS dependencies are included i
 
 This library is very much in flux and there isn't much documentation for that reason. As I create graphs, I often find that there are better ways of specifying things.
 
-That said, if you want to play around with some JSON, try downloading playground.zip. It's a self-contained folder with everything you need to get started with no external dependencies.
+That said, if you want to play around with some JSON, try downloading [playground.zip](playground.zip). It's a self-contained folder with everything you need to get started with no external dependencies.
 
 ## Code Development
 
