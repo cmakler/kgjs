@@ -41,9 +41,9 @@ module KG {
             let fn = this;
             if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
                 return fn.yCompiledFunction.eval({y: input});
-            } else if (fn.ind == 'y') {
+            } else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
                 return fn.compiledFunction.eval({y: input});
-            } else {
+            } else if (fn.hasOwnProperty('compiledFunction')) {
                 return fn.compiledFunction.eval({x: input});
             }
         }

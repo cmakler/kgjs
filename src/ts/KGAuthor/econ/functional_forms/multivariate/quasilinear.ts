@@ -15,7 +15,7 @@ module KGAuthor {
                 level = this.extractLevel(def);
             return [
                 {
-                    "fn": `((${level})-(${c[0]})*log(x))`,
+                    "fn": `((${level})-(${c[0]})*log((x)))`,
                     "ind": "x",
                     "samplePoints": 100
                 }

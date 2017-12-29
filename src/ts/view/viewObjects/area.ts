@@ -24,7 +24,6 @@ module KG {
             const maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
 
             setDefaults(def, {
-                alwaysUpdate: true,
                 interpolation: 'curveBasis',
                 ind: 'x',
                 fill: 'lightsteelblue',
@@ -39,12 +38,18 @@ module KG {
             });
 
             setProperties(def, 'constants', ['interpolation']);
-            super(def);
 
             def.univariateFunction1.model = def.model;
             def.univariateFunction2.model = def.model;
-            this.univariateFunction1 = new UnivariateFunction(def.univariateFunction1);
-            this.univariateFunction2 = new UnivariateFunction(def.univariateFunction2);
+
+            // need to initialize the functions before the area, so they exist when it's time to draw the area
+            const univariateFunction1 = new UnivariateFunction(def.univariateFunction1),
+                univariateFunction2 = new UnivariateFunction(def.univariateFunction2);
+
+            super(def);
+
+            this.univariateFunction1 = univariateFunction1;
+            this.univariateFunction2 = univariateFunction2;
         }
 
         // create SVG elements
@@ -74,34 +79,42 @@ module KG {
 
         // update properties
         redraw() {
-            const ab = this,
-                fn1 = ab.univariateFunction1,
-                fn2 = ab.univariateFunction2;
+            const area = this;
+            console.log('drawing area ', area)
 
-            if (fn1 != undefined && fn2 != undefined) {
-                ab.updateFn(fn1);
-                ab.updateFn(fn2);
+            if (area.univariateFunction1 != undefined && area.univariateFunction2 != undefined) {
 
-                if (fn1.hasChanged || fn2.hasChanged) {
-                    ab.areaPath
-                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
-                        .attr('d', ab.areaShape)
-                        .style('fill', ab.fill)
-                        .style('opacity', ab.opacity);
-                }
+                const fn1 = area.univariateFunction1,
+                    fn2 = area.univariateFunction2,
+                    scale = fn1.ind == 'y' ? area.yScale : area.xScale;
 
+                fn1.generateData(scale.domainMin, scale.domainMax);
+                fn2.generateData(scale.domainMin, scale.domainMax);
+
+                area.areaPath
+                    .data([d3.zip(fn1.data, fn2.data)])
+                    .attr('d', area.areaShape)
+                    .style('fill', area.fill)
+                    .style('opacity', area.opacity);
+            } else {
+                console.log('area functions undefined')
             }
 
-            return ab;
+            area.areaPath
+
+
+            return area;
         }
 
-        updateFn(fn) {
-            const scale = (fn.ind == 'y') ? this.yScale : this.xScale;
-            fn.update(false);
-            if (fn.hasChanged) {
-                fn.generateData(scale.domainMin, scale.domainMax);
+        // update self and functions
+        update(force) {
+            let area = super.update(force);
+            if (!area.hasChanged) {
+                if (area.univariateFunction1.hasChanged || area.univariateFunction2.hasChanged) {
+                    area.redraw();
+                }
             }
-            return false;
+            return area;
         }
     }
 

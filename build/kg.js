@@ -271,10 +271,11 @@ var KGAuthor;
             return parsedData;
         };
         AuthoringObject.prototype.parse = function (parsedData) {
-            parsedData = this.parseSelf(parsedData);
             this.subObjects.forEach(function (obj) {
                 parsedData = obj.parse(parsedData);
             });
+            delete this.subObjects;
+            parsedData = this.parseSelf(parsedData);
             return parsedData;
         };
         AuthoringObject.prototype.addSecondGraph = function (graph2) {
@@ -2067,7 +2068,7 @@ var KGAuthor;
             var c = this.coefficients, level = this.extractLevel(def);
             return [
                 {
-                    "fn": "((" + level + ")-(" + c[0] + ")*log(x))",
+                    "fn": "((" + level + ")-(" + c[0] + ")*log((x)))",
                     "ind": "x",
                     "samplePoints": 100
                 }
@@ -3360,10 +3361,11 @@ var KG;
                 }
                 return o;
             }
+            str = str.toString();
             if (str.indexOf('null') > -1 || str.indexOf('Infinity') > -1) {
                 return null;
             }
-            var re = /([calcs|params].[.A-Za-z0-9_]*)+/g;
+            var re = /((calcs|params).[.\w]*)+/g;
             var references = str.match(re);
             if (references) {
                 references.forEach(function (name) {
@@ -3400,10 +3402,10 @@ var KG;
             if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
                 return fn.yCompiledFunction.eval({ y: input });
             }
-            else if (fn.ind == 'y') {
+            else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
                 return fn.compiledFunction.eval({ y: input });
             }
-            else {
+            else if (fn.hasOwnProperty('compiledFunction')) {
                 return fn.compiledFunction.eval({ x: input });
             }
         };
@@ -4094,9 +4096,7 @@ var KG;
         Curve.prototype.redraw = function () {
             var curve = this;
             if (curve.hasOwnProperty('univariateFunction')) {
-                var fn = curve.univariateFunction;
-                console.log('redrawing curve ', fn.fnStringDef);
-                var scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                var fn = curve.univariateFunction, scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
                 fn.generateData(scale.domainMin, scale.domainMax);
                 curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
                 curve.path.data([fn.data]).attr('d', curve.dataLine);
@@ -4287,7 +4287,6 @@ var KG;
             var minValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMin : def.xScale.domainMin;
             var maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
             KG.setDefaults(def, {
-                alwaysUpdate: true,
                 interpolation: 'curveBasis',
                 ind: 'x',
                 fill: 'lightsteelblue',
@@ -4301,11 +4300,13 @@ var KG;
                 }
             });
             KG.setProperties(def, 'constants', ['interpolation']);
-            _this = _super.call(this, def) || this;
             def.univariateFunction1.model = def.model;
             def.univariateFunction2.model = def.model;
-            _this.univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1);
-            _this.univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
+            // need to initialize the functions before the area, so they exist when it's time to draw the area
+            var univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1), univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
+            _this = _super.call(this, def) || this;
+            _this.univariateFunction1 = univariateFunction1;
+            _this.univariateFunction2 = univariateFunction2;
             return _this;
         }
         // create SVG elements
@@ -4330,27 +4331,33 @@ var KG;
         };
         // update properties
         Area.prototype.redraw = function () {
-            var ab = this, fn1 = ab.univariateFunction1, fn2 = ab.univariateFunction2;
-            if (fn1 != undefined && fn2 != undefined) {
-                ab.updateFn(fn1);
-                ab.updateFn(fn2);
-                if (fn1.hasChanged || fn2.hasChanged) {
-                    ab.areaPath
-                        .data([d3.zip(ab.univariateFunction1.data, ab.univariateFunction2.data)])
-                        .attr('d', ab.areaShape)
-                        .style('fill', ab.fill)
-                        .style('opacity', ab.opacity);
+            var area = this;
+            console.log('drawing area ', area);
+            if (area.univariateFunction1 != undefined && area.univariateFunction2 != undefined) {
+                var fn1 = area.univariateFunction1, fn2 = area.univariateFunction2, scale = fn1.ind == 'y' ? area.yScale : area.xScale;
+                fn1.generateData(scale.domainMin, scale.domainMax);
+                fn2.generateData(scale.domainMin, scale.domainMax);
+                area.areaPath
+                    .data([d3.zip(fn1.data, fn2.data)])
+                    .attr('d', area.areaShape)
+                    .style('fill', area.fill)
+                    .style('opacity', area.opacity);
+            }
+            else {
+                console.log('area functions undefined');
+            }
+            area.areaPath;
+            return area;
+        };
+        // update self and functions
+        Area.prototype.update = function (force) {
+            var area = _super.prototype.update.call(this, force);
+            if (!area.hasChanged) {
+                if (area.univariateFunction1.hasChanged || area.univariateFunction2.hasChanged) {
+                    area.redraw();
                 }
             }
-            return ab;
-        };
-        Area.prototype.updateFn = function (fn) {
-            var scale = (fn.ind == 'y') ? this.yScale : this.xScale;
-            fn.update(false);
-            if (fn.hasChanged) {
-                fn.generateData(scale.domainMin, scale.domainMax);
-            }
-            return false;
+            return area;
         };
         return Area;
     }(KG.ViewObject));

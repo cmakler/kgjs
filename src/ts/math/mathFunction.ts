@@ -44,12 +44,13 @@ module KG {
                 }
                 return o;
             }
+            str = str.toString();
 
             if(str.indexOf('null') > -1 || str.indexOf('Infinity') > -1) {
                 return null;
             }
 
-            const re = /([calcs|params].[.A-Za-z0-9_]*)+/g;
+            const re = /((calcs|params).[.\w]*)+/g;
             const references = str.match(re);
             if (references) {
                 references.forEach(function (name) {

@@ -67,9 +67,8 @@ module KG {
         redraw() {
             let curve = this;
             if (curve.hasOwnProperty('univariateFunction')) {
-                const fn = curve.univariateFunction;
-                console.log('redrawing curve ', fn.fnStringDef);
-                const scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                const fn = curve.univariateFunction,
+                    scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
                 fn.generateData(scale.domainMin, scale.domainMax);
                 curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
                 curve.path.data([fn.data]).attr('d', curve.dataLine);
