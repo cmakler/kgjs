@@ -14,8 +14,10 @@ Each KineticGraph maintains its aspect ratio as the page window changes dimensio
 ## Dependencies
 
 This project is made possible by two incredible open-source technologies:
+
 * [D3](https://d3js.org/) for drawing
 * [KaTeX](https://khan.github.io/KaTeX/) for rendering math
+
 For convenience, minified versions of the JS and CSS dependencies are included in this repository in the build/lib folder. This folder includes the necessary JS and CSS files as well as the fonts required for KaTex and Tufte CSS. To use these, add kg-lib.js and either kg-lib.css or kg-tufte.css. If your project already includes those libraries, you can just use kg.js.
 
 ## Quick Start
