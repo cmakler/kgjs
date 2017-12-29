@@ -2,44 +2,35 @@
 
 module KG {
 
-    export interface ParametricFunctionDefinition extends ViewObjectDefinition {
+    export interface ParametricFunctionDefinition extends MathFunctionDefinition {
         xFunction: string;
         yFunction: string;
-        min?: any;
-        max?: any;
-        samplePoints?: any;
-        parametric?: boolean;
     }
 
-    export interface IParametricFunction {
+    export interface IParametricFunction extends IMathFunction {
         eval: (input: number) => { x: number, y: number };
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
-    export class ParametricFunction extends UpdateListener implements IParametricFunction {
+    export class ParametricFunction extends MathFunction implements IParametricFunction {
 
-        private scope;
+        private xFunctionString;
+        private yFunctionString;
+        private xFunctionStringDef;
+        private yFunctionStringDef;
         private xCompiledFunction;
         private yCompiledFunction;
-        public ind;
-        private samplePoints;
-        private min;
-        private max;
-        public data;
 
         constructor(def: ParametricFunctionDefinition) {
 
             setDefaults(def, {
                 min: 0,
-                max: 10,
-                samplePoints: 50
+                max: 10
             });
-            setProperties(def, 'constants', ['samplePoints']);
-            setProperties(def, 'updatables', ['min', 'max']);
             super(def);
 
-            this.xCompiledFunction = math.compile(def.xFunction);
-            this.yCompiledFunction = math.compile(def.yFunction);
+            this.xFunctionStringDef = def.xFunction;
+            this.yFunctionStringDef = def.yFunction;
         }
 
         eval(input) {
@@ -72,7 +63,24 @@ module KG {
 
         update(force) {
             let fn = super.update(force);
-            fn.scope = {params: fn.model.currentParamValues};
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            const originalXFunctionString = fn.xFunctionString;
+            if (originalXFunctionString != fn.updateFunctionString(fn.xFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.xFunctionString = fn.updateFunctionString(fn.xFunctionStringDef, fn.scope);
+                fn.xCompiledFunction = math.compile(fn.xFunctionString);
+            }
+            const originalYFunctionString = fn.yFunctionString;
+            if (originalYFunctionString != fn.updateFunctionString(fn.yFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.yFunctionString = fn.updateFunctionString(fn.yFunctionStringDef, fn.scope);
+                fn.yCompiledFunction = math.compile(fn.yFunctionString);
+            }
             return fn;
         }
 

@@ -18,21 +18,28 @@ module KG {
         private parametricFunction: ParametricFunction;
 
         constructor(def: CurveDefinition) {
-
+            let univariateFunction, parametricFunction;
             setDefaults(def, {
-                alwaysUpdate: true,
                 interpolation: 'curveBasis',
                 strokeWidth: 2
             });
             setProperties(def, 'constants', ['interpolation']);
+            if (def.hasOwnProperty('univariateFunction')) {
+                def.univariateFunction.model = def.model;
+                univariateFunction = new UnivariateFunction(def.univariateFunction);
+                setProperties(def, 'updatables', [])
+            } else if (def.hasOwnProperty('parametricFunction')) {
+                def.parametricFunction.model = def.model;
+                parametricFunction = new ParametricFunction(def.parametricFunction);
+                setProperties(def, 'updatables', [])
+            }
             super(def);
             let curve = this;
             if (def.hasOwnProperty('univariateFunction')) {
-                def.univariateFunction.model = def.model;
-                curve.univariateFunction = new UnivariateFunction(def.univariateFunction)
+                curve.univariateFunction = univariateFunction;
             } else if (def.hasOwnProperty('parametricFunction')) {
                 def.parametricFunction.model = def.model;
-                curve.parametricFunction = new ParametricFunction(def.parametricFunction)
+                curve.parametricFunction = parametricFunction;
             }
 
         }
@@ -60,21 +67,17 @@ module KG {
         redraw() {
             let curve = this;
             if (curve.hasOwnProperty('univariateFunction')) {
-                const fn = curve.univariateFunction.update(true);
-                if (fn.hasChanged) {
-                    const scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                    fn.generateData(scale.domainMin, scale.domainMax);
-                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
-                    curve.path.data([fn.data]).attr('d', curve.dataLine);
-                }
+                const fn = curve.univariateFunction,
+                    scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                fn.generateData(scale.domainMin, scale.domainMax);
+                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                curve.path.data([fn.data]).attr('d', curve.dataLine);
             }
             if (curve.hasOwnProperty('parametricFunction')) {
-                const fn = curve.parametricFunction.update(true);
-                if (fn.hasChanged) {
-                    fn.generateData();
-                    curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
-                    curve.path.data([fn.data]).attr('d', curve.dataLine);
-                }
+                const fn = curve.parametricFunction;
+                fn.generateData();
+                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                curve.path.data([fn.data]).attr('d', curve.dataLine);
             }
             curve.path.attr('stroke', curve.stroke);
             curve.path.attr('stroke-width', curve.strokeWidth);
@@ -86,6 +89,25 @@ module KG {
             }
             return curve;
         }
+
+        // update self and functions
+        update(force) {
+            let curve = super.update(force);
+            if (!curve.hasChanged) {
+                if (curve.hasOwnProperty('univariateFunction')) {
+                    if (curve.univariateFunction.hasChanged) {
+                        curve.redraw();
+                    }
+                }
+                if (curve.hasOwnProperty('parametricFunction')) {
+                    if (curve.parametricFunction.hasChanged) {
+                        curve.redraw();
+                    }
+                }
+            }
+            return curve;
+        }
+
     }
 
 }

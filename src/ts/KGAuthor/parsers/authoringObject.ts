@@ -27,10 +27,11 @@ module KGAuthor {
         }
 
         parse(parsedData: KG.ViewDefinition) {
-            parsedData = this.parseSelf(parsedData);
             this.subObjects.forEach(function (obj) {
                 parsedData = obj.parse(parsedData);
             });
+            delete this.subObjects;
+            parsedData = this.parseSelf(parsedData);
             return parsedData;
         }
 

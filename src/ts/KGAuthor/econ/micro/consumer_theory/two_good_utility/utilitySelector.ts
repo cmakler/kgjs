@@ -15,7 +15,7 @@ module KGAuthor {
                 return new KGAuthor.ConcaveFunction(def.def)
             } else if (def.type == 'Quasilinear') {
                 return new KGAuthor.QuasilinearFunction(def.def)
-            } else if (def.type == 'CESFunction') {
+            } else if (def.type == 'CESFunction' || def.type == 'CES') {
                 return new KGAuthor.CESFunction(def.def)
             }
         }

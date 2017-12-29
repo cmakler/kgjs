@@ -173,7 +173,7 @@ module KG {
             let vo = super.update(force);
             if (vo.show && vo.onGraph()) {
                 vo.displayElement(true);
-                if (vo.hasChanged || vo.alwaysUpdate) {
+                if (vo.hasChanged) {
                     vo.redraw();
                 }
             }

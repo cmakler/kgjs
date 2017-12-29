@@ -51,10 +51,13 @@ module KGAuthor {
         private yInterceptPoint;
         private budgetSetArea;
         private costlierArea;
+        private priceRatio;
 
         constructor(def, graph) {
 
             def = setStrokeColor(def);
+
+            def.name = def.name || 'BL' + KG.randomString(5);
 
             // may define income either by income m or value of endowment point
             if(!def.hasOwnProperty('m')) {
@@ -79,8 +82,8 @@ module KGAuthor {
             }
 
             KG.setDefaults(def, {
-                a: [xIntercept, 0],
-                b: [0, yIntercept],
+                a: [`calcs.${def.name}.xIntercept`, 0],
+                b: [0, `calcs.${def.name}.yIntercept`],
                 color: 'colors.budget',
                 strokeWidth: 2,
                 lineStyle: 'solid'
@@ -110,6 +113,7 @@ module KGAuthor {
             bl.m = def.m;
             bl.xIntercept = xIntercept;
             bl.yIntercept = yIntercept;
+            bl.priceRatio = priceRatio;
 
 
             if (graph) {
@@ -117,7 +121,7 @@ module KGAuthor {
 
 
                 let xInterceptPointDef = {
-                    coordinates: [xIntercept, 0],
+                    coordinates: [`calcs.${bl.name}.xIntercept`, 0],
                     fill: def.stroke,
                     r: 4
                 };
@@ -126,7 +130,7 @@ module KGAuthor {
                     xInterceptPointDef['drag'] = [{
                         directions: 'x',
                         param: paramName(def.p1),
-                        expression: divideDefs(def.m, 'drag.x')
+                        expression: divideDefs(`calcs.${bl.name}.m`, 'drag.x')
                     }]
                 }
 
@@ -139,7 +143,7 @@ module KGAuthor {
                 bl.xInterceptPoint = new Point(xInterceptPointDef, graph);
 
                 let yInterceptPointDef = {
-                    coordinates: [0, yIntercept],
+                    coordinates: [0, `calcs.${bl.name}.yIntercept`],
                     fill: def.stroke,
                     r: 4
                 };
@@ -148,7 +152,7 @@ module KGAuthor {
                     yInterceptPointDef['drag'] = [{
                         directions: 'y',
                         param: paramName(def.p2),
-                        expression: divideDefs(def.m, 'drag.y')
+                        expression: divideDefs('calcs.'+bl.name+'.m', 'drag.y')
                     }]
                 }
 
@@ -163,9 +167,9 @@ module KGAuthor {
                 bl.budgetSetArea = new Area({
                     fill: "colors.budget",
                     univariateFunction1: {
-                        fn: `${yIntercept} - ${priceRatio}*x`,
+                        fn: `calcs.${bl.name}.yIntercept - calcs.${bl.name}.priceRatio*(x)`,
                         samplePoints: 2,
-                        max: xIntercept
+                        max: `calcs.${bl.name}.xIntercept`
                     },
                     show: def.set
                 }, graph);
@@ -173,7 +177,7 @@ module KGAuthor {
                 bl.costlierArea = new Area({
                     fill: "colors.costlier",
                     univariateFunction1: {
-                        fn: `${yIntercept} - ${priceRatio}*x`,
+                        fn: `calcs.${bl.name}.yIntercept - calcs.${bl.name}.priceRatio*(x)`,
                         samplePoints: 2
                     },
                     show: def.costlier,
@@ -198,8 +202,23 @@ module KGAuthor {
 
         cost(bundle:EconBundle) {
             const c = `((${this.p1})*(${bundle.x}) + (${this.p2})*(${bundle.y}))`;
-            console.log(c);
+            //console.log(c);
             return c;
+        }
+
+        parseSelf(parsedData) {
+            let bl = this;
+            parsedData = super.parseSelf(parsedData);
+            parsedData.calcs[bl.name] = {
+                xIntercept: bl.xIntercept,
+                yIntercept: bl.yIntercept,
+                m: bl.m,
+                p1: bl.p1,
+                p2: bl.p2,
+                priceRatio: bl.priceRatio
+            };
+
+            return parsedData;
         }
     }
 

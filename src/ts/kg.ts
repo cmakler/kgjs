@@ -11,6 +11,7 @@
 /// <reference path="model/restriction.ts" />
 /// <reference path="model/updateListener.ts" />
 
+/// <reference path="math/mathFunction.ts" />
 /// <reference path="math/univariateFunction.ts" />
 /// <reference path="math/parametricFunction.ts" />
 

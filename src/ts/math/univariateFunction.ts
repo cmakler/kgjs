@@ -2,71 +2,59 @@
 
 module KG {
 
-    export interface UnivariateFunctionDefinition extends ViewObjectDefinition {
+    import MathFunction = KG.MathFunction;
+
+    export interface UnivariateFunctionDefinition extends MathFunctionDefinition {
         fn: string;
         yFn?: string;
         ind?: string;
-        samplePoints?: any;
     }
 
-    export interface IUnivariateFunction {
+    export interface IUnivariateFunction extends IMathFunction {
         eval: (input: number) => number;
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
-    export class UnivariateFunction extends UpdateListener implements IUnivariateFunction {
+    export class UnivariateFunction extends MathFunction implements IUnivariateFunction {
 
         private fn;
         private yFn;
         private yCompiledFunction;
-        private scope;
         private compiledFunction;
         public ind;
-        private samplePoints;
-        private min;
-        private max;
-        public data;
+        public fnStringDef;
+        public yFnStringDef;
 
         constructor(def: UnivariateFunctionDefinition) {
 
             setDefaults(def, {
-                ind: 'x',
-                samplePoints: 50
+                ind: 'x'
             });
-            setProperties(def, 'constants', ['samplePoints', 'fn', 'yFn']);
-            setProperties(def, 'updatables', ['min', 'max', 'ind']);
+            setProperties(def, 'constants', ['fn', 'yFn']);
+            setProperties(def, 'updatables', ['ind']);
             super(def);
-
-            this.compiledFunction = math.compile(def.fn);
-            if(def.hasOwnProperty('yFn')) {
-                this.yCompiledFunction = math.compile(def.yFn);
-            }
+            this.fnStringDef = def.fn;
+            this.yFnStringDef = def.yFn;
         }
 
         eval(input) {
             let fn = this;
-            // collect current values in a scope object
-            const scope = {
-                params: fn.model.currentParamValues,
-                calcs: fn.model.currentCalcValues,
-                colors: fn.model.currentColors
-            };
-            fn.scope = fn.scope || scope;
-            fn.scope[fn.ind] = input;
-            if(fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                return fn.yCompiledFunction.eval(fn.scope)
-            } else {
-                return fn.compiledFunction.eval(fn.scope);
+            if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
+                return fn.yCompiledFunction.eval({y: input});
+            } else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
+                return fn.compiledFunction.eval({y: input});
+            } else if (fn.hasOwnProperty('compiledFunction')) {
+                return fn.compiledFunction.eval({x: input});
             }
         }
 
         generateData(min, max) {
             let fn = this,
                 data = [];
-            if(undefined != fn.min) {
+            if (undefined != fn.min) {
                 min = fn.min;
             }
-            if(undefined != fn.max) {
+            if (undefined != fn.max) {
                 max = fn.max;
             }
             for (let i = 0; i < fn.samplePoints + 1; i++) {
@@ -83,11 +71,25 @@ module KG {
 
         update(force) {
             let fn = super.update(force);
+            //console.log('updating; currently ', fn.fnString);
             fn.scope = {
                 params: fn.model.currentParamValues,
                 calcs: fn.model.currentCalcValues,
                 colors: fn.model.currentColors
             };
+            const originalString = fn.fnString;
+            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
+                fn.compiledFunction = math.compile(fn.fnString);
+            }
+            if (fn.def.hasOwnProperty('yFn')) {
+                if (fn.yFnString != fn.updateFunctionString(fn.yFnStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.yFnString = fn.updateFunctionString(fn.yFnStringDef, fn.scope);
+                    fn.yCompiledFunction = math.compile(fn.yFnString);
+                }
+            }
             return fn;
         }
 

@@ -11,6 +11,7 @@
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
 /// <reference path="layouts/twoVerticalGraphs.ts"/>
 /// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
+/// <reference path="layouts/fourGraphs.ts"/>
 
 
 /// <reference path="positionedObjects/positionedObject.ts"/>
