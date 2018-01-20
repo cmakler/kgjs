@@ -57,7 +57,7 @@ module KG {
                     str = KGAuthor.replaceVariable(str, name, getCalc(scope, name));
                 });
             }
-            console.log('updated function to ',str);
+            //console.log('updated function to ',str);
             return str;
         }
 

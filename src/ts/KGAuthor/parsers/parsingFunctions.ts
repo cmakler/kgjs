@@ -141,6 +141,12 @@ module KGAuthor {
     export function curvesFromFunctions(fns: (UnivariateFunctionDefinition | ParametricFunctionDefinition)[], def, graph) {
         return fns.map(function (fn) {
             let curveDef = copyJSON(def);
+            if (curveDef.hasOwnProperty('min')) {
+                fn.min = curveDef.min;
+            }
+            if (curveDef.hasOwnProperty('max')) {
+                fn.max = curveDef.max;
+            }
             if (fn.hasOwnProperty('show')) {
                 curveDef.show = fn.show;
             }
@@ -149,6 +155,7 @@ module KGAuthor {
             } else {
                 curveDef.univariateFunction = fn;
             }
+            console.log('creating curve from def', curveDef);
             return new Curve(curveDef, graph);
         })
     }

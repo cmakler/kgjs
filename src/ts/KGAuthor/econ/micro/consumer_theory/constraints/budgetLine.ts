@@ -37,6 +37,8 @@ module KGAuthor {
         costlier?: string;
         xInterceptLabel?: string;
         yInterceptLabel?: string;
+        buyOnly?: boolean;
+        sellOnly?: boolean;
 
     }
 
@@ -45,6 +47,7 @@ module KGAuthor {
         public p1;
         public p2;
         public m;
+        public point;
         public xIntercept;
         public yIntercept;
         private xInterceptPoint;
@@ -52,6 +55,7 @@ module KGAuthor {
         private budgetSetArea;
         private costlierArea;
         private priceRatio;
+        public endowment;
 
         constructor(def, graph) {
 
@@ -61,17 +65,18 @@ module KGAuthor {
 
             // may define income either by income m or value of endowment point
             if(!def.hasOwnProperty('m')) {
+                if(def.hasOwnProperty('x') && def.hasOwnProperty('y')) {
+                    def.point = [def.x,def.y];
+                }
                 if(def.hasOwnProperty('point') && def.point.length == 2) {
                     def.m = addDefs(multiplyDefs(def.p1, def.point[0]), multiplyDefs(def.p2, def.point[1]))
-                }
-                if(def.hasOwnProperty('x') && def.hasOwnProperty('y')) {
-                    def.m = addDefs(multiplyDefs(def.p1, def.x), multiplyDefs(def.p2, def.y))
                 }
             }
 
             const xIntercept = divideDefs(def.m, def.p1),
                 yIntercept = divideDefs(def.m, def.p2),
-                priceRatio = divideDefs(def.p1, def.p2);
+                priceRatio = divideDefs(def.p1, def.p2),
+                endowment = {x: def.x, y: def.y};
 
             if (def.inMap) {
                 def.strokeWidth = 1;
@@ -86,8 +91,18 @@ module KGAuthor {
                 b: [0, `calcs.${def.name}.yIntercept`],
                 color: 'colors.budget',
                 strokeWidth: 2,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                buyOnly: false,
+                sellOnly: false
             });
+
+            if(def.sellOnly) {
+                def.a = [def.x, def.y]
+            }
+
+            if(def.buyOnly) {
+                def.b = [def.x, def.y]
+            }
 
             if (def.draggable && typeof(def.m) == 'string') {
                 def.drag = [{
@@ -100,7 +115,7 @@ module KGAuthor {
             if (!def.inMap) {
                 def.label = KG.setDefaults(def.label || {}, {
                     text: "BL",
-                    location: 0.9
+                    location: def.sellOnly ? 0.1 : 0.9
                 });
             }
 
@@ -114,6 +129,8 @@ module KGAuthor {
             bl.xIntercept = xIntercept;
             bl.yIntercept = yIntercept;
             bl.priceRatio = priceRatio;
+            bl.point = def.point;
+            bl.endowment = endowment;
 
 
             if (graph) {
@@ -215,7 +232,8 @@ module KGAuthor {
                 m: bl.m,
                 p1: bl.p1,
                 p2: bl.p2,
-                priceRatio: bl.priceRatio
+                priceRatio: bl.priceRatio,
+                endowment: bl.endowment
             };
 
             return parsedData;

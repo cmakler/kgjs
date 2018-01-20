@@ -40,8 +40,7 @@ module KGAuthor {
             height: any;
         }
         xAxis?: AxisDefinition,
-        yAxis?: AxisDefinition,
-
+        yAxis?: AxisDefinition
     }
 
     export class PositionedObject extends AuthoringObject {
@@ -56,26 +55,37 @@ module KGAuthor {
 
             super(def);
 
-            const po = this;
+            const po = this,
+                xMin = def.xAxis.min,
+                xMax = def.xAxis.max,
+                yMin = def.yAxis.min,
+                yMax = def.yAxis.max,
+                leftEdge = def.position.x,
+                rightEdge = addDefs(def.position.x, def.position.width),
+                bottomEdge = addDefs(def.position.y, def.position.height),
+                topEdge = def.position.y;
+
             po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
-                "domainMin": def.xAxis.min,
-                "domainMax": def.xAxis.max,
-                "rangeMin": def.position.x,
-                "rangeMax": addDefs(def.position.x, def.position.width)
+                "domainMin": xMin,
+                "domainMax": xMax,
+                "rangeMin": leftEdge,
+                "rangeMax": rightEdge
             });
 
             po.yScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "y",
-                "domainMin": def.yAxis.min,
-                "domainMax": def.yAxis.max,
-                "rangeMin": addDefs(def.position.y, def.position.height),
-                "rangeMax": def.position.y
+                "domainMin": yMin,
+                "domainMax": yMax,
+                "rangeMin": bottomEdge,
+                "rangeMax": topEdge
             });
 
             po.subObjects = [po.xScale, po.yScale];
+
+
         }
 
     }

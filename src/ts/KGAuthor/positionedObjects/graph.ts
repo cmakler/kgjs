@@ -15,6 +15,13 @@ module KGAuthor {
             super(def);
 
             const g = this;
+
+            //axes need to update when the other one's domain changes
+            def.xAxis.otherMin = def.yAxis.min;
+            def.xAxis.otherMax = def.yAxis.max;
+            def.yAxis.otherMin = def.xAxis.min;
+            def.yAxis.otherMax = def.xAxis.max;
+
             g.clipPath = new ClipPath({
                 "name": KG.randomString(10),
                 "paths": [new Rectangle({
@@ -28,11 +35,11 @@ module KGAuthor {
             g.subObjects.push(g.clipPath);
             g.def.objects.unshift({
                 type: 'Axis',
-                def: this.def.xAxis
+                def: g.def.xAxis
             });
             g.def.objects.unshift({
                 type: 'Axis',
-                def: this.def.yAxis
+                def: g.def.yAxis
             });
             g.def.objects.forEach(function (obj) {
                 g.subObjects.push(new KGAuthor[obj.type](obj.def, g))

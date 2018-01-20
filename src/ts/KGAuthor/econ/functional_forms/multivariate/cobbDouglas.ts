@@ -40,6 +40,11 @@ module KGAuthor {
             ]
         }
 
+        levelCurveSlope(x) {
+            const c = this.coefficients;
+            return negativeDef(divideDefs(multiplyDefs(c[0], x[1]),multiplyDefs(c[1], x[0])));
+        }
+
         optimalBundle(budgetLine: EconBudgetLine) {
             const a = this.alpha;
             return [multiplyDefs(a, budgetLine.xIntercept), multiplyDefs(subtractDefs(1, a), budgetLine.yIntercept)]

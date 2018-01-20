@@ -31,7 +31,7 @@ module KG {
                 ind: 'x'
             });
             setProperties(def, 'constants', ['fn', 'yFn']);
-            setProperties(def, 'updatables', ['ind']);
+            setProperties(def, 'updatables', ['ind','min','max']);
             super(def);
             this.fnStringDef = def.fn;
             this.yFnStringDef = def.yFn;

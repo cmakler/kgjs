@@ -29,7 +29,7 @@ module KG {
                 fill: 'lightsteelblue',
                 opacity: 0.2,
                 univariateFunction2: {
-                    "fn": def.above ? maxValue : minValue,
+                    "fn": ((def.above && !def.useTopScale) || (!def.above && def.useTopScale)) ? maxValue : minValue,
                     "ind": def.univariateFunction1['ind'],
                     "min": def.univariateFunction1['min'],
                     "max": def.univariateFunction1['max'],
@@ -80,7 +80,6 @@ module KG {
         // update properties
         redraw() {
             const area = this;
-            console.log('drawing area ', area)
 
             if (area.univariateFunction1 != undefined && area.univariateFunction2 != undefined) {
 
@@ -99,9 +98,6 @@ module KG {
             } else {
                 console.log('area functions undefined')
             }
-
-            area.areaPath
-
 
             return area;
         }

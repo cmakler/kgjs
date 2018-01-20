@@ -47,6 +47,7 @@ module KGAuthor {
                 demand: 'blue',
                 budget: 'green',
                 costlier: 'red',
+                endowment: 'grey',
 
                 // producer theory
                 production: 'blue',

@@ -9,6 +9,7 @@ module KGAuthor {
 
         levelSet: (def: any, graph: Graph) => KG.UnivariateFunctionDefinition[];
         levelCurve: (def: any, graph: Graph) => Curve[];
+        levelCurveSlope: (x: any[]) => any;
 
         // used for consumer theory
 
@@ -36,7 +37,7 @@ module KGAuthor {
         public fillAboveRect;
 
         constructor(def) {
-            KG.setDefaults(def,{
+            KG.setDefaults(def, {
                 name: KG.randomString(10)
             });
             super(def);
@@ -51,7 +52,7 @@ module KGAuthor {
                 fn.alpha = divideDefs(fn.exponents[0], addDefs(fn.exponents[0], fn.exponents[1]));
                 fn.coefficients = def.coefficients;
             } else if (def.hasOwnProperty('coefficients')) {
-                fn.exponents = def.exponents;
+                fn.exponents = def.coefficients;
                 fn.coefficients = def.coefficients;
                 fn.alpha = divideDefs(fn.coefficients[0], addDefs(fn.coefficients[0], fn.coefficients[1]));
             }
@@ -80,6 +81,10 @@ module KGAuthor {
         levelCurve(def, graph) {
             def.interpolation = this.interpolation;
             return curvesFromFunctions(this.levelSet(def), def, graph);
+        }
+
+        levelCurveSlope(x) {
+            return null;
         }
 
         areaBelowLevelCurve(def, graph) {
@@ -136,6 +141,12 @@ module KGAuthor {
             ]
         }
 
+        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
+            return [];// defined at the subclass level
+        }
+
+        /* Optimization with an exogenous income */
+
         cornerCondition(budgetLine: EconBudgetLine) {
             return 'false';
         }
@@ -148,25 +159,36 @@ module KGAuthor {
             return [];
         }
 
-        lowestCostBundle(level: (string | number), prices: (string | number)[]) {
-            return [];// defined at the subclass level
+        quantityDemanded(budgetLine, good) {
+            return this.optimalBundle(budgetLine)[good - 1];
         }
 
         priceOfferFunction(budgetLine: EconBudgetLine, good: number, min: number, max: number, graph) {
-            const u = this,
+            const u = this;
+            let blDef;
+            if (budgetLine.hasOwnProperty('point') && budgetLine.point != undefined) {
+                min = 0.01;
+                max = 0.99;
+                blDef = {
+                    p1: '(t)',
+                    p2: '1 - (t)',
+                    m: `${budgetLine.point[0]}*(t) + ${budgetLine.point[1]}*(1-(t))`
+                }
+            } else {
                 blDef = (good == 1) ? {p1: '(t)', p2: budgetLine.p2, m: budgetLine.m} : {
                     p1: budgetLine.p1,
                     p2: '(t)',
                     m: budgetLine.m
-                },
-                optimalBundle = u.optimalBundle(new EconBudgetLine(blDef, graph));
+                }
+            }
+            const optimalBundle = u.optimalBundle(new EconBudgetLine(blDef, graph));
             return [
                 {
                     xFunction: optimalBundle[0],
                     yFunction: optimalBundle[1],
                     min: min,
                     max: max,
-                    samplePoints: 30,
+                    samplePoints: 100,
                     parametric: true
                 }
             ]
@@ -187,7 +209,7 @@ module KGAuthor {
                 };
             return [
                 {
-                    "fn": u.optimalBundle(new EconBudgetLine(blDef, graph))[good - 1],
+                    "fn": u.quantityDemanded(new EconBudgetLine(blDef, graph), good),
                     "ind": "y",
                     "samplePoints": 30
                 }
@@ -200,9 +222,75 @@ module KGAuthor {
             return curvesFromFunctions(u.demandFunction(budgetLine, good, graph), def, graph);
         }
 
-        quantityDemanded(budgetLine, good) {
-            return this.optimalBundle(budgetLine)[good - 1];
+        /* Net demand and supply from an endowment */
+
+        endowmentDemandFunction(budgetLine: EconBudgetLine, good: number, graph) {
+            const u = this;
+            let netDemand = '',
+                netSupply = '',
+                grossDemand = '';
+            const x1 = budgetLine.point[0],
+                x2 = budgetLine.point[1];
+            if (good == 2) {
+                const optimalBundle = u.optimalBundle(new EconBudgetLine({
+                    p1: budgetLine.p1,
+                    p2: '(y)',
+                    m: `(${x1}*${budgetLine.p1} + ${x2}*(y))`
+                }, graph));
+                grossDemand = optimalBundle[1];
+                netDemand = subtractDefs(grossDemand, x2);
+                netSupply = subtractDefs(x2, grossDemand);
+            } else {
+                const optimalBundle = u.optimalBundle(new EconBudgetLine({
+                    p1: '(y)',
+                    p2: budgetLine.p2,
+                    m: `(${x1}*(y) + ${x2}*${budgetLine.p2})`
+                }, graph));
+                grossDemand = optimalBundle[0];
+                netDemand = subtractDefs(grossDemand, x1);
+                netSupply = subtractDefs(x1, grossDemand);
+            }
+
+            return {
+                grossDemand: [
+                    {
+                        fn: grossDemand,
+                        ind: 'y'
+                    }
+                ],
+                netDemand: [
+                    {
+                        fn: netDemand,
+                        ind: 'y'
+                    }
+                ],
+                netSupply: [
+                    {
+                        fn: netSupply,
+                        ind: 'y'
+                    }
+                ]
+            }
         }
+
+        grossDemandCurve(budgetLine, good, def, graph) {
+            const u = this;
+            def.interpolation = 'curveMonotoneX';
+            return curvesFromFunctions(u.endowmentDemandFunction(budgetLine, good, graph).grossDemand, def, graph);
+        }
+
+        netDemandCurve(budgetLine, good, def, graph) {
+            const u = this;
+            def.interpolation = 'curveMonotoneX';
+            return curvesFromFunctions(u.endowmentDemandFunction(budgetLine, good, graph).netDemand, def, graph);
+        }
+
+        netSupplyCurve(budgetLine, good, def, graph) {
+            const u = this;
+            def.interpolation = 'curveMonotoneX';
+            return curvesFromFunctions(u.endowmentDemandFunction(budgetLine, good, graph).netSupply, def, graph);
+        }
+
 
         indirectUtility(income: (string | number), prices: (string | number)[]) {
             return this.extractLevel({budgetLine: {p1: prices[0], p2: prices[1], m: income}});

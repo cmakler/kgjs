@@ -24,6 +24,9 @@ module KG {
         strokeOpacity?: string;
         lineStyle?: string;
 
+        useTopScale?: boolean;
+        useRightScale?: boolean;
+
         // the following are used in the JSON definition but replaced by objects before creation
         xScaleName?: string;
         yScaleName?: string;

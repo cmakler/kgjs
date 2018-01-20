@@ -30,6 +30,19 @@ module KGAuthor {
                 indifferenceCurve: {}
             });
 
+            console.log('coords: ',coords);
+
+            if(bl.hasOwnProperty('endowment')) {
+                if(bl.def.sellOnly) {
+                    def.show = `(${def.show || true} && (${coords[0]} < ${bl.endowment.x}))`
+                }
+                if(bl.def.buyOnly) {
+                    def.show = `(${def.show || true} && (${coords[0]} > ${bl.endowment.x}))`
+                }
+            }
+
+            def.budgetLineObject = bl;
+
             super(def, graph);
 
             this.level = u.value(coords);

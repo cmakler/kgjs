@@ -3,10 +3,13 @@
 module KG {
 
     export interface IModel {
-        //params: any; // object with string names and Param values; e.g., "yA" : (Param object)
-        //updateListeners: UpdateListener[];
         eval: (name: string) => any;
         addUpdateListener: (updateListener: UpdateListener) => Model;
+        getParam: (name: string) => any;
+        updateParam: (name: string, value: any) => void;
+        toggleParam: (name: string) => void;
+        cycleParam: (name: string) => void;
+        update: (force: boolean) => void;
     }
 
     export class Model implements IModel {
@@ -89,10 +92,10 @@ module KG {
             try {
                 const compiledMath = math.compile(name);
                 let result = compiledMath.eval({
-                        params: params,
-                        calcs: calcs,
-                        colors: colors
-                    });
+                    params: params,
+                    calcs: calcs,
+                    colors: colors
+                });
                 //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
@@ -118,6 +121,15 @@ module KG {
 
         }
 
+        // This is a utility for exporting currently used colors for use in LaTex documents.
+        latexColors() {
+            let result = '%% econ colors %%\n', model = this;
+            for (const color in model.colors) {
+                result += `\\definecolor{${color}}{HTML}{${model.eval(model.colors[color]).replace('#', '')}}\n`
+            }
+            console.log(result)
+        }
+
         getParam(paramName: string) {
             const params = this.params;
             for (let i = 0; i < params.length; i++) {
@@ -128,7 +140,7 @@ module KG {
         }
 
 
-// method exposed to viewObjects to allow them to try to change a parameter
+        // method exposed to viewObjects to allow them to try to change a parameter
         updateParam(name: string, newValue: any) {
             let model = this,
                 param = model.getParam(name);
@@ -156,14 +168,14 @@ module KG {
         }
 
 
-// method exposed to viewObjects to allow them to toggle a binary param
+        // method exposed to viewObjects to allow them to toggle a binary param
         toggleParam(name: string) {
             const currentValue = this.getParam(name).value;
             this.updateParam(name, !currentValue);
         }
 
-// method exposed to viewObjects to allow them to cycle a discrete param
-// increments by 1 if below max value, otherwise sets to zero
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
         cycleParam(name: string) {
             const param = this.getParam(name);
             this.updateParam(name, param.value < param.max ? param.value++ : 0);

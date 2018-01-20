@@ -14,6 +14,7 @@ module KGAuthor {
         lineStyle?: string;
         drag?: any;
         click?: any;
+        show?: string;
     }
 
     export class GraphObject extends GraphObjectGenerator {
