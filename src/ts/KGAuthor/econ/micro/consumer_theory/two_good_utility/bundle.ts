@@ -71,7 +71,7 @@ module KGAuthor {
                 x: bundle.x,
                 y: bundle.y,
                 level: bundle.utilityFunction ? bundle.utilityFunction.value([bundle.x, bundle.y]) : '',
-                cost: bundle.budgetLine ? bundle.budgetLine.cost(bundle) : ''
+                cost: bundle.budgetLine ? bundle.budgetLine.cost(bundle) : '',
                 mrs: bundle.utilityFunction ? negativeDef(bundle.utilityFunction.levelCurveSlope([bundle.x, bundle.y])) : ''
             };
 
