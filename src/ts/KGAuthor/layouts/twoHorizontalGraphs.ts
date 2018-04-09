@@ -43,18 +43,26 @@ module KGAuthor {
                 rightGraphDef = def['rightGraph'],
                 sidebarDef = def['sidebar'];
 
+            const leftX = 0.1,
+                rightX = 0.6,
+                topY = 0.025,
+                bottomY = 1.2,
+                width = 0.369,
+                graphHeight = 0.9,
+                controlHeight = 0.3;
+
             leftGraphDef.position = {
-                "x": 0.1,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": leftX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
 
             rightGraphDef.position = {
-                "x": 0.6,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
 
             const leftGraph = new Graph(leftGraphDef),
@@ -64,6 +72,42 @@ module KGAuthor {
             l.subObjects.push(leftGraph);
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
+
+            if (def.hasOwnProperty('leftControls')) {
+                const leftControlsContainer = {
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new DivContainer(leftControlsContainer));
+            }
+
+            if (def.hasOwnProperty('rightControls')) {
+                const rightControlsContainer = {
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new DivContainer(rightControlsContainer));
+            }
 
         }
 
@@ -131,8 +175,6 @@ module KGAuthor {
 
 
     }
-
-
 
 
 }

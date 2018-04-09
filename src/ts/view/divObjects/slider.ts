@@ -31,7 +31,11 @@ module KG {
             slider.rootElement = layer.append('tr');
             const param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
-                .style('font-size', '14pt')
+                .style('font-size', '14pt');
+
+            function inputUpdate() {
+                slider.model.updateParam(slider.param, +this.value)
+            }
 
             slider.numberInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'number')
@@ -44,8 +48,10 @@ module KG {
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
                 .style('width','70px');
-            slider.numberInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value)
+            slider.numberInput.on("blur", inputUpdate);
+            slider.numberInput.on("click", inputUpdate);
+            slider.numberInput.on("keyup", function() {
+                if(event['keyCode'] == 13) {slider.model.updateParam(slider.param, +this.value)}
             });
 
             slider.rangeInput = slider.rootElement.append('td').append('input')
@@ -53,9 +59,7 @@ module KG {
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round);
-            slider.rangeInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value)
-            });
+            slider.rangeInput.on("input", inputUpdate);
             return slider;
 
         }

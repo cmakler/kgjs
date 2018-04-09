@@ -30,22 +30,33 @@ module KG {
 
         constructor(def: LabelDefinition) {
 
+            const xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax),
+                yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
+
+            let xOffset = xAxisReversed ? 6 : -6,
+                yOffset = yAxisReversed ? 14 : -14;
+
             if (def.x == 'AXIS') {
                 def.x = def.xScale.domainMin;
-                if (def.xScale.rangeMin < def.xScale.rangeMax) {
-                    def.align = 'right';
-                    def.xPixelOffset = -6;
-                } else {
-                    def.align = 'left';
-                    def.xPixelOffset = 6;
-                }
+                def.align = xAxisReversed ? 'left' : 'right';
+                def.xPixelOffset = xOffset;
+            }
+
+            if (def.x == 'OPPAXIS') {
+                def.x = def.xScale.domainMax;
+                def.align = xAxisReversed ? 'right' : 'left';
+                def.xPixelOffset = -xOffset;
             }
 
             if (def.y == 'AXIS') {
                 def.y = def.yScale.domainMin;
-                def.yPixelOffset = (def.yScale.rangeMin < def.yScale.rangeMax) ? 14 : -14;
+                def.yPixelOffset = yOffset;
             }
 
+            if (def.y == 'OPPAXIS') {
+                def.y = def.yScale.domainMax;
+                def.yPixelOffset = -yOffset;
+            }
 
             //establish property defaults
             setDefaults(def, {

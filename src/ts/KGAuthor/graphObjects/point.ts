@@ -8,7 +8,7 @@ module KGAuthor {
         x?: any;
         y?: any;
         coordinates?: any[];
-        droplines?: { horizontal?: string; vertical?: string };
+        droplines?: { horizontal?: string; vertical?: string; top?: string; right?: string; };
         r?: any;
     }
 
@@ -60,6 +60,16 @@ module KGAuthor {
             if (def.hasOwnProperty('droplines')) {
                 if (def.droplines.hasOwnProperty('vertical')) {
                     let verticalDroplineDef = copyJSON(def);
+                    if (def.droplines.hasOwnProperty('top')) {
+                        verticalDroplineDef.y = graph.yScale.max;
+                        let xTopAxisLabelDef = copyJSON(def);
+                        xTopAxisLabelDef.y = 'OPPAXIS';
+                        KG.setDefaults(xTopAxisLabelDef, {
+                            text: def.droplines.top,
+                            fontSize: 12
+                        });
+                        p.subObjects.push(new Label(xTopAxisLabelDef, graph));
+                    }
                     p.subObjects.push(new VerticalDropline(verticalDroplineDef, graph));
                     let xAxisLabelDef = copyJSON(def);
                     xAxisLabelDef.y = 'AXIS';

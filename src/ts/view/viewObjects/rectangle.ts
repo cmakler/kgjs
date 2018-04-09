@@ -19,7 +19,6 @@ module KG {
 
         constructor(def: RectangleDefinition) {
             setDefaults(def, {
-                fill: 'blue',
                 opacity: 0.2
             });
             setProperties(def, 'updatables',['x1', 'x2', 'y1', 'y2']);

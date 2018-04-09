@@ -54,14 +54,16 @@ module KGAuthor {
                         x: multiplyDefs(0.98, graph.xScale.max),
                         text: `${def.level}.toFixed(0)`,
                         color: def.color,
-                        bgcolor: def.inMap ? null : "white"
+                        bgcolor: null
                     });
                 }
             } else {
                 def.label = KG.setDefaults(def.label || {}, {
                     x: multiplyDefs(0.95, graph.xScale.max),
                     text: "U",
-                    color: def.color
+                    color: def.color,
+                    bgcolor: null,
+                    position: 'bl'
                 });
             }
 
@@ -74,7 +76,7 @@ module KGAuthor {
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     let preferredDef = copyJSON(def);
-                    preferredDef.fill = 'colors.preferred';
+                    preferredDef.fill = def.color || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }

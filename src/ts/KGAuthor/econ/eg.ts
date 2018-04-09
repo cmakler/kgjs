@@ -1,5 +1,9 @@
 /// <reference path="../kgAuthor.ts" />
 
+/* LAYOUTS */
+
+/// <reference path="layouts/edgeworth.ts"/>
+
 /* FUNCTIONAL FORMS */
 
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>
@@ -30,7 +34,12 @@
 /* Equilibrium */
 
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
+/// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
+
+/* Exchange */
+/// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
+/// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>
 
 module KGAuthor {
     export class EconSchema extends Schema {
@@ -48,6 +57,8 @@ module KGAuthor {
                 budget: 'green',
                 costlier: 'red',
                 endowment: 'grey',
+                incEffect: 'orange',
+                subEffect: 'red',
 
                 // producer theory
                 production: 'blue',

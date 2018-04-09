@@ -132,6 +132,7 @@ module KGAuthor {
                     x2: graph.def.xAxis.max,
                     y1: graph.def.yAxis.min,
                     y2: graph.def.yAxis.max,
+                    fill: def.fill,
                     show: def.show
                 }, graph),
                 new ClipPath({

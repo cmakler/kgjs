@@ -492,43 +492,6 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
-    var EdgeworthBoxPlusSidebar = /** @class */ (function (_super) {
-        __extends(EdgeworthBoxPlusSidebar, _super);
-        function EdgeworthBoxPlusSidebar(def) {
-            var _this = _super.call(this, def) || this;
-            var l = _this;
-            var agentA = def['agentA'], agentB = def['agentB'], sidebarDef = def['sidebar'];
-            var width = 0.738, height = 0.9;
-            if (def.totalGood1 > def.totalGood2) {
-                height = def.totalGood2 * height / def.totalGood1;
-            }
-            if (def.totalGood2 > def.totalGood1) {
-                height = def.totalGood1 * width / def.totalGood2;
-            }
-            agentA.position = {
-                "x": 0.15,
-                "y": 0.025,
-                "width": width,
-                "height": height
-            };
-            agentB.position = {
-                "x": 0.15 + width,
-                "y": 0.025 + height,
-                "width": -1 * width,
-                "height": -1 * height
-            };
-            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
-            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
-            agentB.xAxis.orient = 'top';
-            agentB.yAxis.orient = 'right';
-            l.subObjects.push(new KGAuthor.Graph(agentA));
-            l.subObjects.push(new KGAuthor.Graph(agentB));
-            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
-            return _this;
-        }
-        return EdgeworthBoxPlusSidebar;
-    }(KGAuthor.SquareLayout));
-    KGAuthor.EdgeworthBoxPlusSidebar = EdgeworthBoxPlusSidebar;
     var GeoGebraPlusSidebar = /** @class */ (function (_super) {
         __extends(GeoGebraPlusSidebar, _super);
         function GeoGebraPlusSidebar(def) {
@@ -583,22 +546,57 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'], sidebarDef = def['sidebar'];
+            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 1.2, width = 0.369, graphHeight = 0.9, controlHeight = 0.3;
             leftGraphDef.position = {
-                "x": 0.1,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": leftX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
             rightGraphDef.position = {
-                "x": 0.6,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
             var leftGraph = new KGAuthor.Graph(leftGraphDef), rightGraph = new KGAuthor.Graph(rightGraphDef), sidebar = new KGAuthor.Sidebar(sidebarDef);
             l.subObjects.push(leftGraph);
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
+            if (def.hasOwnProperty('leftControls')) {
+                var leftControlsContainer = {
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new KGAuthor.DivContainer(leftControlsContainer));
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                var rightControlsContainer = {
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new KGAuthor.DivContainer(rightControlsContainer));
+            }
             return _this;
         }
         return TwoHorizontalGraphsPlusSidebar;
@@ -1349,6 +1347,9 @@ var KGAuthor;
                 slope = KGAuthor.invertDef(def.invSlope);
                 yIntercept = KGAuthor.negativeDef(KGAuthor.divideDefs(xIntercept, invSlope));
             }
+            else if (def.hasOwnProperty('invSlope') && def.hasOwnProperty('yIntercept')) {
+                slope = KGAuthor.invertDef(def.invSlope);
+            }
             else if (def.hasOwnProperty('slope') && def.hasOwnProperty('point')) {
                 invSlope = KGAuthor.invertDef(def.slope);
                 xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], def.slope));
@@ -1444,6 +1445,16 @@ var KGAuthor;
             if (def.hasOwnProperty('droplines')) {
                 if (def.droplines.hasOwnProperty('vertical')) {
                     var verticalDroplineDef = KGAuthor.copyJSON(def);
+                    if (def.droplines.hasOwnProperty('top')) {
+                        verticalDroplineDef.y = graph.yScale.max;
+                        var xTopAxisLabelDef = KGAuthor.copyJSON(def);
+                        xTopAxisLabelDef.y = 'OPPAXIS';
+                        KG.setDefaults(xTopAxisLabelDef, {
+                            text: def.droplines.top,
+                            fontSize: 12
+                        });
+                        p.subObjects.push(new KGAuthor.Label(xTopAxisLabelDef, graph));
+                    }
                     p.subObjects.push(new KGAuthor.VerticalDropline(verticalDroplineDef, graph));
                     var xAxisLabelDef = KGAuthor.copyJSON(def);
                     xAxisLabelDef.y = 'AXIS';
@@ -1745,6 +1756,98 @@ var KGAuthor;
     }(KGAuthor.DivObject));
     KGAuthor.GeoGebraApplet = GeoGebraApplet;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var EdgeworthBoxPlusSidebar = /** @class */ (function (_super) {
+        __extends(EdgeworthBoxPlusSidebar, _super);
+        function EdgeworthBoxPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var agentA = def['agentA'], agentB = def['agentB'], sidebarDef = def['sidebar'];
+            var width = 0.738, height = 0.9;
+            if (def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2 * height / def.totalGood1;
+            }
+            if (def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1 * width / def.totalGood2;
+            }
+            agentA.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": width,
+                "height": height
+            };
+            agentB.position = {
+                "x": 0.15 + width,
+                "y": 0.05 + height,
+                "width": -1 * width,
+                "height": -1 * height
+            };
+            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
+            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
+            agentB.xAxis.orient = 'top';
+            agentB.yAxis.orient = 'right';
+            l.subObjects.push(new KGAuthor.Graph(agentA));
+            l.subObjects.push(new KGAuthor.Graph(agentB));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return EdgeworthBoxPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.EdgeworthBoxPlusSidebar = EdgeworthBoxPlusSidebar;
+    var EdgeworthBoxPlusTwoGraphsPlusSidebar = /** @class */ (function (_super) {
+        __extends(EdgeworthBoxPlusTwoGraphsPlusSidebar, _super);
+        function EdgeworthBoxPlusTwoGraphsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var agentA = def['agentA'], agentB = def['agentB'], graph1 = def['graph1'], graph2 = def['graph2'], sidebarDef = def['sidebar'];
+            var width = 0.738, height = 0.9;
+            if (def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2 * height / def.totalGood1;
+            }
+            if (def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1 * width / def.totalGood2;
+            }
+            agentA.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": width,
+                "height": height
+            };
+            agentB.position = {
+                "x": 0.15 + width,
+                "y": 0.05 + height,
+                "width": -1 * width,
+                "height": -1 * height
+            };
+            graph1.position = {
+                "x": 0.1,
+                "y": height + 0.15,
+                "width": 0.35,
+                "height": 0.85 - height
+            };
+            graph2.position = {
+                "x": 0.6,
+                "y": height + 0.15,
+                "width": 0.35,
+                "height": 0.85 - height
+            };
+            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
+            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
+            agentB.xAxis.orient = 'top';
+            agentB.yAxis.orient = 'right';
+            l.subObjects.push(new KGAuthor.Graph(agentB));
+            l.subObjects.push(new KGAuthor.Graph(agentA));
+            l.subObjects.push(new KGAuthor.Graph(graph1));
+            l.subObjects.push(new KGAuthor.Graph(graph2));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return EdgeworthBoxPlusTwoGraphsPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.EdgeworthBoxPlusTwoGraphsPlusSidebar = EdgeworthBoxPlusTwoGraphsPlusSidebar;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
@@ -1845,6 +1948,7 @@ var KGAuthor;
                     x2: graph.def.xAxis.max,
                     y1: graph.def.yAxis.min,
                     y2: graph.def.yAxis.max,
+                    fill: def.fill,
                     show: def.show
                 }, graph),
                 new KGAuthor.ClipPath({
@@ -2540,7 +2644,7 @@ var KGAuthor;
                         x: KGAuthor.multiplyDefs(0.98, graph.xScale.max),
                         text: def.level + ".toFixed(0)",
                         color: def.color,
-                        bgcolor: def.inMap ? null : "white"
+                        bgcolor: null
                     });
                 }
             }
@@ -2548,7 +2652,9 @@ var KGAuthor;
                 def.label = KG.setDefaults(def.label || {}, {
                     x: KGAuthor.multiplyDefs(0.95, graph.xScale.max),
                     text: "U",
-                    color: def.color
+                    color: def.color,
+                    bgcolor: null,
+                    position: 'bl'
                 });
             }
             _this = _super.call(this, def, graph) || this;
@@ -2558,7 +2664,7 @@ var KGAuthor;
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     var preferredDef = KGAuthor.copyJSON(def);
-                    preferredDef.fill = 'colors.preferred';
+                    preferredDef.fill = def.color || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }
@@ -3129,6 +3235,75 @@ var KGAuthor;
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
+    var EconLinearSupply = /** @class */ (function (_super) {
+        __extends(EconLinearSupply, _super);
+        function EconLinearSupply(def, graph) {
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            KG.setDefaults(def, {
+                color: 'colors.supply',
+                strokeWidth: 2,
+                lineStyle: 'solid'
+            });
+            if (def.draggable && typeof (def.slope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.slope),
+                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
+                    }];
+            }
+            else if (def.draggable && typeof (def.invSlope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.invSlope),
+                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
+                    }];
+            }
+            _this = _super.call(this, def, graph) || this;
+            var ld = _this;
+            if (graph) {
+                var subObjects = ld.subObjects;
+                var yInterceptPointDef = {
+                    coordinates: [0, ld.yIntercept],
+                    color: def.color,
+                    r: 4
+                };
+                if (def.draggable && typeof (ld.yIntercept) == 'string') {
+                    yInterceptPointDef['drag'] = [{
+                            directions: 'y',
+                            param: KGAuthor.paramName(ld.yIntercept),
+                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
+                        }];
+                }
+                if (def.hasOwnProperty('yInterceptLabel')) {
+                    yInterceptPointDef['droplines'] = {
+                        horizontal: def.yInterceptLabel
+                    };
+                }
+                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
+                if (def.handles) {
+                    subObjects.push(ld.yInterceptPoint);
+                }
+            }
+            return _this;
+        }
+        EconLinearSupply.prototype.parseSelf = function (parsedData) {
+            var ld = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[ld.name] = {
+                yIntercept: ld.yIntercept,
+                slope: ld.slope,
+                invSlope: ld.invSlope
+            };
+            return parsedData;
+        };
+        return EconLinearSupply;
+    }(KGAuthor.Line));
+    KGAuthor.EconLinearSupply = EconLinearSupply;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
     var EconPPF = /** @class */ (function (_super) {
         __extends(EconPPF, _super);
         function EconPPF(def, graph) {
@@ -3268,7 +3443,73 @@ var KGAuthor;
     }(KGAuthor.Curve));
     KGAuthor.EconPPF = EconPPF;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var ExchangeEquilibriumBundle = /** @class */ (function (_super) {
+        __extends(ExchangeEquilibriumBundle, _super);
+        function ExchangeEquilibriumBundle(def, graph) {
+            var _this = this;
+            var agentA = new KGAuthor.EconBundle(def.agentA, graph), agentB = new KGAuthor.EconBundle(def.agentB, graph);
+            var p;
+            if (def.agentA.utilityFunction.type == 'CobbDouglas' && def.agentB.utilityFunction.type == 'CobbDouglas') {
+                var alphaW2 = function (agent) {
+                    return KGAuthor.multiplyDefs(agent.y, agent.utilityFunction.alpha);
+                }, oneMinusAlphaW1 = function (agent) {
+                    return KGAuthor.multiplyDefs(agent.x, KGAuthor.subtractDefs(1, agent.utilityFunction.alpha));
+                };
+                p = KGAuthor.divideDefs(KGAuthor.addDefs(alphaW2(agentA), alphaW2(agentB)), KGAuthor.addDefs(oneMinusAlphaW1(agentA), oneMinusAlphaW1(agentB)));
+            }
+            else {
+                console.log("We're just handling Edgeworth equilibrium with Cobb-Douglas so far...");
+            }
+            KG.setDefaults(def, {
+                label: { text: 'E' },
+                color: "colors.budget"
+            });
+            def.utilityFunctionObject = agentA.utilityFunction;
+            def.budgetLine = {
+                p1: p,
+                p2: 1,
+                point: [agentA.x, agentA.y]
+            };
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return ExchangeEquilibriumBundle;
+    }(KGAuthor.EconOptimalBundle));
+    KGAuthor.ExchangeEquilibriumBundle = ExchangeEquilibriumBundle;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconContractCurve = /** @class */ (function (_super) {
+        __extends(EconContractCurve, _super);
+        function EconContractCurve(def, graph) {
+            var _this = this;
+            var a = def.a, b = def.b, ab = KGAuthor.multiplyDefs(a, b), aMinusABtimesX = KGAuthor.multiplyDefs(KGAuthor.subtractDefs(a, ab), def.totalGood1), bMinusABtimesY = KGAuthor.multiplyDefs(KGAuthor.subtractDefs(b, ab), def.totalGood2), bMinusA = KGAuthor.subtractDefs(b, a), fnString = bMinusABtimesY + "*(x)/(" + aMinusABtimesX + " + " + bMinusA + "*(x))";
+            def.univariateFunction = { fn: fnString };
+            KG.setDefaults(def, {
+                interpolation: 'curveMonotoneX',
+                color: 'colors.budget'
+            });
+            _this = _super.call(this, def, graph) || this;
+            _this.fnString = fnString;
+            return _this;
+        }
+        EconContractCurve.prototype.parseSelf = function (parsedData) {
+            var cc = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs['cc'] = cc.fnString;
+            return parsedData;
+        };
+        return EconContractCurve;
+    }(KGAuthor.Curve));
+    KGAuthor.EconContractCurve = EconContractCurve;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
+/* LAYOUTS */
+/// <reference path="layouts/edgeworth.ts"/>
 /* FUNCTIONAL FORMS */
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>
 /// <reference path="functional_forms/multivariate/cobbDouglas.ts"/>
@@ -3289,7 +3530,11 @@ var KGAuthor;
 /// <reference path="micro/producer_theory/oneInputProductionFunction.ts"/>
 /* Equilibrium */
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
+/// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
+/* Exchange */
+/// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
+/// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
     var EconSchema = /** @class */ (function (_super) {
@@ -3308,6 +3553,8 @@ var KGAuthor;
                 budget: 'green',
                 costlier: 'red',
                 endowment: 'grey',
+                incEffect: 'orange',
+                subEffect: 'red',
                 // producer theory
                 production: 'blue',
                 marginalCost: 'orange',
@@ -4546,7 +4793,6 @@ var KG;
         function Rectangle(def) {
             var _this = this;
             KG.setDefaults(def, {
-                fill: 'blue',
                 opacity: 0.2
             });
             KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
@@ -4868,6 +5114,9 @@ var KG;
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt');
+            function inputUpdate() {
+                slider.model.updateParam(slider.param, +this.value);
+            }
             slider.numberInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
@@ -4879,17 +5128,19 @@ var KG;
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
                 .style('width', '70px');
-            slider.numberInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
+            slider.numberInput.on("blur", inputUpdate);
+            slider.numberInput.on("click", inputUpdate);
+            slider.numberInput.on("keyup", function () {
+                if (event['keyCode'] == 13) {
+                    slider.model.updateParam(slider.param, +this.value);
+                }
             });
             slider.rangeInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round);
-            slider.rangeInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
-            });
+            slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
         // update properties
@@ -5002,10 +5253,18 @@ var KG;
                 new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
             });
             controls.checkboxes.forEach(function (checkbox) {
-                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
+                checkbox = KG.setDefaults(checkbox, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new KG.Checkbox(checkbox);
             });
             controls.radios.forEach(function (radio) {
-                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
+                radio = KG.setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new KG.Radio(radio);
             });
             controls.divs.forEach(function (div) {
                 div = KG.setDefaults(div, {
@@ -5198,20 +5457,25 @@ var KG;
         __extends(Label, _super);
         function Label(def) {
             var _this = this;
+            var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
+            var xOffset = xAxisReversed ? 6 : -6, yOffset = yAxisReversed ? 14 : -14;
             if (def.x == 'AXIS') {
                 def.x = def.xScale.domainMin;
-                if (def.xScale.rangeMin < def.xScale.rangeMax) {
-                    def.align = 'right';
-                    def.xPixelOffset = -6;
-                }
-                else {
-                    def.align = 'left';
-                    def.xPixelOffset = 6;
-                }
+                def.align = xAxisReversed ? 'left' : 'right';
+                def.xPixelOffset = xOffset;
+            }
+            if (def.x == 'OPPAXIS') {
+                def.x = def.xScale.domainMax;
+                def.align = xAxisReversed ? 'right' : 'left';
+                def.xPixelOffset = -xOffset;
             }
             if (def.y == 'AXIS') {
                 def.y = def.yScale.domainMin;
-                def.yPixelOffset = (def.yScale.rangeMin < def.yScale.rangeMax) ? 14 : -14;
+                def.yPixelOffset = yOffset;
+            }
+            if (def.y == 'OPPAXIS') {
+                def.y = def.yScale.domainMax;
+                def.yPixelOffset = -yOffset;
             }
             //establish property defaults
             KG.setDefaults(def, {

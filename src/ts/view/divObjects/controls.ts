@@ -29,8 +29,8 @@ module KG {
                 radios: [],
                 divs: []
             });
-            setProperties(def, 'constants',['sliders','checkboxes','radios','divs']);
-            setProperties(def, 'updatables',['title', 'description']);
+            setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
+            setProperties(def, 'updatables', ['title', 'description']);
 
             super(def);
         }
@@ -40,20 +40,28 @@ module KG {
             let controls = this;
 
             controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom',0);
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 0);
             controls.descriptionElement = controls.rootElement.append('div');
             const sliderTable = controls.rootElement.append('table').style('padding', '10px');
             controls.sliders.forEach(function (slider) {
                 new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: controls.model})
             });
             controls.checkboxes.forEach(function (checkbox) {
-                new Checkbox({layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model})
+                checkbox = setDefaults(checkbox, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new Checkbox(checkbox)
             });
             controls.radios.forEach(function (radio) {
-                new Radio({layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model})
+                radio = setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new Radio(radio)
             });
             controls.divs.forEach(function (div) {
-                div = setDefaults(div,{
+                div = setDefaults(div, {
                     layer: controls.rootElement,
                     model: controls.model,
                     fontSize: 14
@@ -67,7 +75,7 @@ module KG {
         // update properties
         redraw() {
             let controls = this;
-            if(controls.title.length > 0){
+            if (controls.title.length > 0) {
                 controls.titleElement.text(controls.title.toUpperCase());
             }
             controls.descriptionElement.text(controls.description);

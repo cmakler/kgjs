@@ -3,18 +3,15 @@
 module KGAuthor {
 
     export interface EconLinearSupplyDefinition extends LineDefinition {
-        xInterceptLabel?: string;
         yInterceptLabel?: string;
-        marginalRevenue?: any;
         draggable?: boolean;
         handles?: boolean;
     }
 
     export class EconLinearSupply extends Line {
 
-        public xIntercept;
+        public yIntercept;
         public slope;
-        private xInterceptPoint;
         private yInterceptPoint;
 
         constructor(def: EconLinearSupplyDefinition, graph) {
@@ -22,27 +19,24 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             KG.setDefaults(def, {
-                point: [0, def.yIntercept],
-                slope: 0,
                 color: 'colors.supply',
                 strokeWidth: 2,
                 lineStyle: 'solid'
             });
 
-            if (def.draggable && typeof(def.xIntercept) == 'string') {
+            if (def.draggable && typeof(def.slope) == 'string') {
                 def.drag = [{
-                    'directions': 'x',
-                    'param': paramName(def.xIntercept),
-                    'expression': addDefs(def.xIntercept, 'drag.dx')
+                    'directions': 'xy',
+                    'param': paramName(def.slope),
+                    'expression': divideDefs(subtractDefs('drag.y',def.yIntercept),'drag.x')
                 }]
-            } else if (def.draggable && typeof(def.yIntercept) == 'string') {
+            } else if (def.draggable && typeof(def.invSlope) == 'string') {
                 def.drag = [{
-                    'directions': 'y',
-                    'param': paramName(def.yIntercept),
-                    'expression': addDefs(def.yIntercept, 'drag.dy')
+                    'directions': 'xy',
+                    'param': paramName(def.invSlope),
+                    'expression': divideDefs('drag.x',subtractDefs('drag.y',def.yIntercept))
                 }]
             }
-            def.max = def.xIntercept;
 
             super(def, graph);
 
@@ -51,28 +45,6 @@ module KGAuthor {
 
             if (graph) {
                 const subObjects = ld.subObjects;
-
-                let xInterceptPointDef = {
-                    coordinates: [ld.xIntercept, 0],
-                    color: def.color,
-                    r: 4
-                };
-
-                if (def.draggable && typeof(ld.xIntercept) == 'string') {
-                    xInterceptPointDef['drag'] = [{
-                        directions: 'x',
-                        param: paramName(ld.xIntercept),
-                        expression: addDefs(ld.xIntercept, 'drag.dx')
-                    }]
-                }
-
-                if (def.hasOwnProperty('xInterceptLabel')) {
-                    xInterceptPointDef['droplines'] = {
-                        vertical: def.xInterceptLabel
-                    }
-                }
-
-                ld.xInterceptPoint = new Point(xInterceptPointDef, graph);
 
                 let yInterceptPointDef = {
                     coordinates: [0, ld.yIntercept],
@@ -83,8 +55,8 @@ module KGAuthor {
                 if (def.draggable && typeof(ld.yIntercept) == 'string') {
                     yInterceptPointDef['drag'] = [{
                         directions: 'y',
-                        param: paramName(ld.invSlope),
-                        expression: negativeDef(divideDefs(ld.xIntercept, 'drag.y'))
+                        param: paramName(ld.yIntercept),
+                        expression: addDefs(ld.yIntercept, 'drag.dy')
                     }]
                 }
 
@@ -97,24 +69,8 @@ module KGAuthor {
                 ld.yInterceptPoint = new Point(yInterceptPointDef, graph);
 
                 if (def.handles) {
-                    subObjects.push(ld.xInterceptPoint);
                     subObjects.push(ld.yInterceptPoint);
                 }
-
-                let marginalRevenueDef = {
-                    "color": "colors.marginalRevenue",
-                    "yIntercept": ld.yIntercept,
-                    "slope": multiplyDefs(2, ld.slope),
-                    "label": {
-                        "text": "MR",
-                        "x": multiplyDefs(0.6, ld.xIntercept)
-                    }
-                };
-
-                if(def.hasOwnProperty('marginalRevenue')) {
-                    def.marginalRevenue = KG.setDefaults(def.marginalRevenue, marginalRevenueDef)
-                    ld.subObjects.push(new Line(marginalRevenueDef, graph));
-                };
 
             }
 
@@ -126,7 +82,6 @@ module KGAuthor {
             parsedData.calcs[ld.name] = {
                 yIntercept: ld.yIntercept,
                 slope: ld.slope,
-                xIntercept: ld.xIntercept,
                 invSlope: ld.invSlope
             };
 
