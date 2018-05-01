@@ -4,7 +4,7 @@ module KG {
 
     export interface GeoGebraObjectDefinition extends ViewObjectDefinition {
         command: string;
-        color: string;
+        lineThickness: string;
     }
 
     export class GeoGebraObject extends ViewObject {
