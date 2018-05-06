@@ -342,11 +342,13 @@ var KGAuthor;
 (function (KGAuthor) {
     var Layout = /** @class */ (function (_super) {
         __extends(Layout, _super);
-        function Layout() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function Layout(def) {
+            var _this = _super.call(this, def) || this;
+            _this.aspectRatio = 2;
+            return _this;
         }
         Layout.prototype.parseSelf = function (parsedData) {
-            parsedData.aspectRatio = 2;
+            parsedData.aspectRatio = this.aspectRatio;
             return parsedData;
         };
         return Layout;
@@ -354,29 +356,25 @@ var KGAuthor;
     KGAuthor.Layout = Layout;
     var SquareLayout = /** @class */ (function (_super) {
         __extends(SquareLayout, _super);
-        function SquareLayout() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
         // creates a square layout (aspect ratio of 1) within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.82
-        SquareLayout.prototype.parseSelf = function (parsedData) {
-            parsedData.aspectRatio = 1.22;
-            return parsedData;
-        };
+        function SquareLayout(def) {
+            var _this = _super.call(this, def) || this;
+            _this.aspectRatio = 1.22;
+            return _this;
+        }
         return SquareLayout;
     }(Layout));
     KGAuthor.SquareLayout = SquareLayout;
     var WideRectanglePlusSidebarLayout = /** @class */ (function (_super) {
         __extends(WideRectanglePlusSidebarLayout, _super);
-        function WideRectanglePlusSidebarLayout() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
         // creates a rectangle, twice as wide as it is high, within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.41
-        WideRectanglePlusSidebarLayout.prototype.parseSelf = function (parsedData) {
-            parsedData.aspectRatio = 2.44;
-            return parsedData;
-        };
+        function WideRectanglePlusSidebarLayout(def) {
+            var _this = _super.call(this, def) || this;
+            _this.aspectRatio = 2.44;
+            return _this;
+        }
         return WideRectanglePlusSidebarLayout;
     }(Layout));
     KGAuthor.WideRectanglePlusSidebarLayout = WideRectanglePlusSidebarLayout;
@@ -591,74 +589,84 @@ var KGAuthor;
         function ThreeHorizontalGraphs(def) {
             var _this = _super.call(this, def) || this;
             var l = _this;
-            var leftGraphDef = def['leftGraph'], leftControlsDef = def['leftControls'] || { "title": "" }, middleGraphDef = def['middleGraph'], middleControlsDef = def['middleControls'] || { "title": "" }, rightGraphDef = def['rightGraph'], rightControlsDef = def['rightControls'] || { "title": "" };
-            var leftX = 0.05, middleX = 0.35, rightX = 0.65, topY = 0.025, bottomY = 0.65, width = 0.25, graphHeight = 0.5, controlHeight = 0.3;
+            var leftGraphDef = def['leftGraph'], middleGraphDef = def['middleGraph'], rightGraphDef = def['rightGraph'];
+            var leftX = 0.05, middleX = 0.35, rightX = 0.65, topY = 0.025, bottomY = 0.65, width = 0.25, controlHeight = 0.3;
+            var includeControls = false;
+            console.log('layout: ', l);
+            if (def.hasOwnProperty('leftControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            if (def.hasOwnProperty('middleControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: middleX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['middleControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            var graphHeight = includeControls ? 0.5 : 0.9;
+            _this.aspectRatio = includeControls ? 2 : 4;
             leftGraphDef.position = {
                 x: leftX,
                 y: topY,
                 width: width,
                 height: graphHeight
             };
-            var leftControlsContainer = {
-                position: {
-                    x: leftX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: leftControlsDef
-                    }
-                ]
-            };
+            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
             middleGraphDef.position = {
                 "x": middleX,
                 "y": topY,
                 "width": width,
                 "height": graphHeight
             };
-            var middleControlsContainer = {
-                position: {
-                    x: middleX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: middleControlsDef
-                    }
-                ]
-            };
+            l.subObjects.push(new KGAuthor.Graph(middleGraphDef));
             rightGraphDef.position = {
                 "x": rightX,
                 "y": topY,
                 "width": width,
                 "height": graphHeight
             };
-            var rightControlsContainer = {
-                position: {
-                    x: rightX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: rightControlsDef
-                    }
-                ]
-            };
-            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
-            l.subObjects.push(new KGAuthor.DivContainer(leftControlsContainer));
-            l.subObjects.push(new KGAuthor.Graph(middleGraphDef));
-            l.subObjects.push(new KGAuthor.DivContainer(middleControlsContainer));
             l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
-            l.subObjects.push(new KGAuthor.DivContainer(rightControlsContainer));
             return _this;
         }
         return ThreeHorizontalGraphs;

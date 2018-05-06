@@ -4,8 +4,15 @@ module KGAuthor {
 
     export class Layout extends AuthoringObject {
 
+        public aspectRatio: number;
+
+        constructor(def) {
+            super(def);
+            this.aspectRatio = 2;
+        }
+
         parseSelf(parsedData) {
-            parsedData.aspectRatio = 2;
+            parsedData.aspectRatio = this.aspectRatio;
             return parsedData;
         }
 
@@ -16,9 +23,9 @@ module KGAuthor {
         // creates a square layout (aspect ratio of 1) within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.82
 
-        parseSelf(parsedData) {
-            parsedData.aspectRatio = 1.22;
-            return parsedData;
+        constructor(def) {
+            super(def);
+            this.aspectRatio = 1.22;
         }
     }
 
@@ -28,9 +35,9 @@ module KGAuthor {
         // creates a rectangle, twice as wide as it is high, within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.41
 
-        parseSelf(parsedData) {
-            parsedData.aspectRatio = 2.44;
-            return parsedData;
+        constructor(def) {
+            super(def);
+            this.aspectRatio = 2.44;
         }
 
     }

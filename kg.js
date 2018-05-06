@@ -1565,6 +1565,9 @@ var KG;
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt');
+            function inputUpdate() {
+                slider.model.updateParam(slider.param, +this.value);
+            }
             slider.numberInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
@@ -1576,17 +1579,19 @@ var KG;
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
                 .style('width', '70px');
-            slider.numberInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
+            slider.numberInput.on("blur", inputUpdate);
+            slider.numberInput.on("click", inputUpdate);
+            slider.numberInput.on("keyup", function () {
+                if (event['keyCode'] == 13) {
+                    slider.model.updateParam(slider.param, +this.value);
+                }
             });
             slider.rangeInput = slider.rootElement.append('td').append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round);
-            slider.rangeInput.on("input", function () {
-                slider.model.updateParam(slider.param, +this.value);
-            });
+            slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
         // update properties
@@ -1699,10 +1704,18 @@ var KG;
                 new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
             });
             controls.checkboxes.forEach(function (checkbox) {
-                new KG.Checkbox({ layer: controls.rootElement, param: checkbox.param, label: checkbox.label, model: controls.model });
+                checkbox = KG.setDefaults(checkbox, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new KG.Checkbox(checkbox);
             });
             controls.radios.forEach(function (radio) {
-                new KG.Radio({ layer: controls.rootElement, param: radio.param, label: radio.label, optionValue: radio.optionValue, model: controls.model });
+                radio = KG.setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new KG.Radio(radio);
             });
             controls.divs.forEach(function (div) {
                 div = KG.setDefaults(div, {
@@ -2467,22 +2480,57 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'], sidebarDef = def['sidebar'];
+            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 1.2, width = 0.369, graphHeight = 0.9, controlHeight = 0.3;
             leftGraphDef.position = {
-                "x": 0.1,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": leftX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
             rightGraphDef.position = {
-                "x": 0.6,
-                "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
             };
             var leftGraph = new KGAuthor.Graph(leftGraphDef), rightGraph = new KGAuthor.Graph(rightGraphDef), sidebar = new KGAuthor.Sidebar(sidebarDef);
             l.subObjects.push(leftGraph);
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
+            if (def.hasOwnProperty('leftControls')) {
+                var leftControlsContainer = {
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new KGAuthor.DivContainer(leftControlsContainer));
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                var rightControlsContainer = {
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                };
+                l.subObjects.push(new KGAuthor.DivContainer(rightControlsContainer));
+            }
             return _this;
         }
         return TwoHorizontalGraphsPlusSidebar;
@@ -3233,6 +3281,9 @@ var KGAuthor;
                 slope = KGAuthor.invertDef(def.invSlope);
                 yIntercept = KGAuthor.negativeDef(KGAuthor.divideDefs(xIntercept, invSlope));
             }
+            else if (def.hasOwnProperty('invSlope') && def.hasOwnProperty('yIntercept')) {
+                slope = KGAuthor.invertDef(def.invSlope);
+            }
             else if (def.hasOwnProperty('slope') && def.hasOwnProperty('point')) {
                 invSlope = KGAuthor.invertDef(def.slope);
                 xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], def.slope));
@@ -3639,43 +3690,6 @@ var KGAuthor;
     }(KGAuthor.DivObject));
     KGAuthor.GeoGebraApplet = GeoGebraApplet;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../kg.ts"/>
-/// <reference path="parsers/parsingFunctions.ts"/>
-/// <reference path="parsers/authoringObject.ts"/>
-/// <reference path="schemas/schema.ts"/>
-/// <reference path="layouts/layout.ts"/>
-/// <reference path="layouts/oneGraph.ts"/>
-/// <reference path="layouts/twoHorizontalGraphs.ts"/>
-/// <reference path="layouts/threeHorizontalGraphs.ts"/>
-/// <reference path="layouts/twoVerticalGraphs.ts"/>
-/// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
-/// <reference path="layouts/fourGraphs.ts"/>
-/// <reference path="positionedObjects/positionedObject.ts"/>
-/// <reference path="positionedObjects/graph.ts"/>
-/// <reference path="positionedObjects/ggbContainer.ts"/>
-/// <reference path="positionedObjects/divContainer.ts"/>
-/// <reference path="defObjects/graphObjectGenerator.ts"/>
-/// <reference path="defObjects/defObject.ts"/>
-/// <reference path="defObjects/clipPath.ts"/>
-/// <reference path="defObjects/marker.ts"/>
-/// <reference path="defObjects/arrowDef.ts"/>
-/// <reference path="graphObjects/graphObject.ts"/>
-/// <reference path="graphObjects/axis.ts"/>
-/// <reference path="graphObjects/grid.ts"/>
-/// <reference path="graphObjects/curve.ts"/>
-/// <reference path="graphObjects/line.ts"/>
-/// <reference path="graphObjects/point.ts"/>
-/// <reference path="graphObjects/segment.ts"/>
-/// <reference path="graphObjects/dropline.ts"/>
-/// <reference path="graphObjects/area.ts"/>
-/// <reference path="graphObjects/rectangle.ts"/>
-/// <reference path="divObjects/divObject.ts"/>
-/// <reference path="divObjects/positionedDiv.ts"/>
-/// <reference path="divObjects/label.ts"/>
-/// <reference path="divObjects/sidebar.ts"/>
-/// <reference path="divObjects/controls.ts"/>
-/// <reference path="divObjects/ggbApplet.ts"/>
-/// <reference path="econ/eg.ts"/>
 /// <reference path="../eg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
@@ -5155,6 +5169,75 @@ var KGAuthor;
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
+    var EconLinearSupply = /** @class */ (function (_super) {
+        __extends(EconLinearSupply, _super);
+        function EconLinearSupply(def, graph) {
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            KG.setDefaults(def, {
+                color: 'colors.supply',
+                strokeWidth: 2,
+                lineStyle: 'solid'
+            });
+            if (def.draggable && typeof (def.slope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.slope),
+                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
+                    }];
+            }
+            else if (def.draggable && typeof (def.invSlope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.invSlope),
+                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
+                    }];
+            }
+            _this = _super.call(this, def, graph) || this;
+            var ld = _this;
+            if (graph) {
+                var subObjects = ld.subObjects;
+                var yInterceptPointDef = {
+                    coordinates: [0, ld.yIntercept],
+                    color: def.color,
+                    r: 4
+                };
+                if (def.draggable && typeof (ld.yIntercept) == 'string') {
+                    yInterceptPointDef['drag'] = [{
+                            directions: 'y',
+                            param: KGAuthor.paramName(ld.yIntercept),
+                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
+                        }];
+                }
+                if (def.hasOwnProperty('yInterceptLabel')) {
+                    yInterceptPointDef['droplines'] = {
+                        horizontal: def.yInterceptLabel
+                    };
+                }
+                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
+                if (def.handles) {
+                    subObjects.push(ld.yInterceptPoint);
+                }
+            }
+            return _this;
+        }
+        EconLinearSupply.prototype.parseSelf = function (parsedData) {
+            var ld = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[ld.name] = {
+                yIntercept: ld.yIntercept,
+                slope: ld.slope,
+                invSlope: ld.invSlope
+            };
+            return parsedData;
+        };
+        return EconLinearSupply;
+    }(KGAuthor.Line));
+    KGAuthor.EconLinearSupply = EconLinearSupply;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
     var EconPPF = /** @class */ (function (_super) {
         __extends(EconPPF, _super);
         function EconPPF(def, graph) {
@@ -5381,6 +5464,7 @@ var KGAuthor;
 /// <reference path="micro/producer_theory/oneInputProductionFunction.ts"/>
 /* Equilibrium */
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
+/// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
@@ -5429,75 +5513,77 @@ var KGAuthor;
     }(KGAuthor.Schema));
     KGAuthor.EconSchema = EconSchema;
 })(KGAuthor || (KGAuthor = {}));
-/// <reference path="../../eg.ts"/>
+/// <reference path="../kg.ts"/>
+/// <reference path="parsers/parsingFunctions.ts"/>
+/// <reference path="parsers/authoringObject.ts"/>
+/// <reference path="schemas/schema.ts"/>
+/// <reference path="layouts/layout.ts"/>
+/// <reference path="layouts/oneGraph.ts"/>
+/// <reference path="layouts/twoHorizontalGraphs.ts"/>
+/// <reference path="layouts/threeHorizontalGraphs.ts"/>
+/// <reference path="layouts/twoVerticalGraphs.ts"/>
+/// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
+/// <reference path="layouts/fourGraphs.ts"/>
+/// <reference path="positionedObjects/positionedObject.ts"/>
+/// <reference path="positionedObjects/graph.ts"/>
+/// <reference path="positionedObjects/ggbContainer.ts"/>
+/// <reference path="positionedObjects/divContainer.ts"/>
+/// <reference path="defObjects/graphObjectGenerator.ts"/>
+/// <reference path="defObjects/defObject.ts"/>
+/// <reference path="defObjects/clipPath.ts"/>
+/// <reference path="defObjects/marker.ts"/>
+/// <reference path="defObjects/arrowDef.ts"/>
+/// <reference path="graphObjects/graphObject.ts"/>
+/// <reference path="graphObjects/axis.ts"/>
+/// <reference path="graphObjects/grid.ts"/>
+/// <reference path="graphObjects/curve.ts"/>
+/// <reference path="graphObjects/line.ts"/>
+/// <reference path="graphObjects/point.ts"/>
+/// <reference path="graphObjects/segment.ts"/>
+/// <reference path="graphObjects/dropline.ts"/>
+/// <reference path="graphObjects/area.ts"/>
+/// <reference path="graphObjects/rectangle.ts"/>
+/// <reference path="divObjects/divObject.ts"/>
+/// <reference path="divObjects/positionedDiv.ts"/>
+/// <reference path="divObjects/label.ts"/>
+/// <reference path="divObjects/sidebar.ts"/>
+/// <reference path="divObjects/controls.ts"/>
+/// <reference path="divObjects/ggbApplet.ts"/>
+/// <reference path="econ/eg.ts"/>
+/// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var EconLinearSupply = /** @class */ (function (_super) {
-        __extends(EconLinearSupply, _super);
-        function EconLinearSupply(def, graph) {
-            var _this = this;
-            def = KGAuthor.setStrokeColor(def);
-            KG.setDefaults(def, {
-                point: [0, def.yIntercept],
-                slope: 0,
-                color: 'colors.supply',
-                strokeWidth: 2,
-                lineStyle: 'solid'
-            });
-            if (def.draggable && typeof (def.slope) == 'string') {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.slope),
-                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
-                    }];
-            }
-            else if (def.draggable && typeof (def.invSlope) == 'string') {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.slope),
-                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
-                    }];
-            }
-            def.max = def.xIntercept;
-            _this = _super.call(this, def, graph) || this;
-            var ld = _this;
-            if (graph) {
-                var subObjects = ld.subObjects;
-                var yInterceptPointDef = {
-                    coordinates: [0, ld.yIntercept],
-                    color: def.color,
-                    r: 4
-                };
-                if (def.draggable && typeof (ld.yIntercept) == 'string') {
-                    yInterceptPointDef['drag'] = [{
-                            directions: 'y',
-                            param: KGAuthor.paramName(ld.invSlope),
-                            expression: KGAuthor.negativeDef(KGAuthor.divideDefs(ld.xIntercept, 'drag.y'))
-                        }];
-                }
-                if (def.hasOwnProperty('yInterceptLabel')) {
-                    yInterceptPointDef['droplines'] = {
-                        horizontal: def.yInterceptLabel
-                    };
-                }
-                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
-                if (def.handles) {
-                    subObjects.push(ld.yInterceptPoint);
-                }
-            }
+    var ThreeHorizontalGraphsNoControls = /** @class */ (function (_super) {
+        __extends(ThreeHorizontalGraphsNoControls, _super);
+        function ThreeHorizontalGraphsNoControls(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var leftGraphDef = def['leftGraph'], middleGraphDef = def['middleGraph'], rightGraphDef = def['rightGraph'];
+            var leftX = 0.05, middleX = 0.35, rightX = 0.65, topY = 0.025, bottomY = 0.65, width = 0.25, graphHeight = 0.5, controlHeight = 0.3;
+            leftGraphDef.position = {
+                x: leftX,
+                y: topY,
+                width: width,
+                height: graphHeight
+            };
+            middleGraphDef.position = {
+                "x": middleX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
+            };
+            rightGraphDef.position = {
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
+            };
+            l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(middleGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
             return _this;
         }
-        EconLinearSupply.prototype.parseSelf = function (parsedData) {
-            var ld = this;
-            parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept,
-                slope: ld.slope,
-                invSlope: ld.invSlope
-            };
-            return parsedData;
-        };
-        return EconLinearSupply;
-    }(KGAuthor.Line));
-    KGAuthor.EconLinearSupply = EconLinearSupply;
+        return ThreeHorizontalGraphsNoControls;
+    }(KGAuthor.Layout));
+    KGAuthor.ThreeHorizontalGraphsNoControls = ThreeHorizontalGraphsNoControls;
 })(KGAuthor || (KGAuthor = {}));

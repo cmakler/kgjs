@@ -9,11 +9,8 @@ module KGAuthor {
 
             const l = this;
             let leftGraphDef = def['leftGraph'],
-                leftControlsDef = def['leftControls'] || {"title": ""},
                 middleGraphDef = def['middleGraph'],
-                middleControlsDef = def['middleControls'] || {"title": ""},
-                rightGraphDef = def['rightGraph'],
-                rightControlsDef = def['rightControls'] || {"title": ""};
+                rightGraphDef = def['rightGraph'];
 
             const leftX = 0.05,
                 middleX = 0.35,
@@ -21,8 +18,79 @@ module KGAuthor {
                 topY = 0.025,
                 bottomY = 0.65,
                 width = 0.25,
-                graphHeight = 0.5,
                 controlHeight = 0.3;
+
+            let includeControls = false;
+
+            console.log('layout: ',l);
+
+            if (def.hasOwnProperty('leftControls')) {
+
+                l.subObjects.push(new DivContainer({
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                }));
+
+                includeControls = true;
+
+            }
+
+            if (def.hasOwnProperty('middleControls')) {
+
+                l.subObjects.push(new DivContainer({
+                    position: {
+                        x: middleX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['middleControls']
+                        }
+                    ]
+                }));
+
+                includeControls = true;
+
+            }
+
+            if (def.hasOwnProperty('rightControls')) {
+
+                l.subObjects.push(new DivContainer({
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                }));
+
+                includeControls = true;
+
+            }
+
+            let graphHeight = includeControls ? 0.5 : 0.9;
+
+            this.aspectRatio = includeControls ? 2 : 4;
+
 
             leftGraphDef.position = {
                 x: leftX,
@@ -31,20 +99,7 @@ module KGAuthor {
                 height: graphHeight
             };
 
-            const leftControlsContainer = {
-                position: {
-                    x: leftX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: leftControlsDef
-                    }
-                ]
-            };
+            l.subObjects.push(new Graph(leftGraphDef));
 
             middleGraphDef.position = {
                 "x": middleX,
@@ -53,20 +108,8 @@ module KGAuthor {
                 "height": graphHeight
             };
 
-            const middleControlsContainer = {
-                position: {
-                    x: middleX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: middleControlsDef
-                    }
-                ]
-            };
+            l.subObjects.push(new Graph(middleGraphDef));
+
 
             rightGraphDef.position = {
                 "x": rightX,
@@ -75,27 +118,8 @@ module KGAuthor {
                 "height": graphHeight
             };
 
-            const rightControlsContainer = {
-                position: {
-                    x: rightX,
-                    y: bottomY,
-                    width: width,
-                    height: controlHeight
-                },
-                children: [
-                    {
-                        type: "Controls",
-                        def: rightControlsDef
-                    }
-                ]
-            };
-
-            l.subObjects.push(new Graph(leftGraphDef));
-            l.subObjects.push(new DivContainer(leftControlsContainer));
-            l.subObjects.push(new Graph(middleGraphDef));
-            l.subObjects.push(new DivContainer(middleControlsContainer));
             l.subObjects.push(new Graph(rightGraphDef));
-            l.subObjects.push(new DivContainer(rightControlsContainer));
+
 
 
         }
