@@ -1,5 +1,8 @@
 /// <reference path="../kgAuthor.ts" />
 
+/* OBJECTS */
+/// <reference path="positionedObjects/gameMatrix.ts"/>
+
 /* LAYOUTS */
 
 /// <reference path="layouts/edgeworth.ts"/>

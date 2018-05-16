@@ -261,7 +261,7 @@ var KGAuthor;
     }
     KGAuthor.copyJSON = copyJSON;
     function replaceVariable(target, search, replacement) {
-        return target.split(search).join(replacement);
+        return "(" + target.split(search).join(replacement) + ")";
     }
     KGAuthor.replaceVariable = replaceVariable;
 })(KGAuthor || (KGAuthor = {}));
@@ -419,6 +419,16 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var OneGraphPlusSidebarRoom200 = /** @class */ (function (_super) {
+        __extends(OneGraphPlusSidebarRoom200, _super);
+        function OneGraphPlusSidebarRoom200(def) {
+            var _this = _super.call(this, def) || this;
+            _this.aspectRatio = 2;
+            return _this;
+        }
+        return OneGraphPlusSidebarRoom200;
+    }(OneGraphPlusSidebar));
+    KGAuthor.OneGraphPlusSidebarRoom200 = OneGraphPlusSidebarRoom200;
     var GeoGebraPlusSidebar = /** @class */ (function (_super) {
         __extends(GeoGebraPlusSidebar, _super);
         function GeoGebraPlusSidebar(def) {
@@ -676,6 +686,34 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var TwoVerticalGraphs = /** @class */ (function (_super) {
+        __extends(TwoVerticalGraphs, _super);
+        function TwoVerticalGraphs(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'];
+            topGraphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.8,
+                "height": 0.4
+            };
+            bottomGraphDef.position = {
+                "x": 0.15,
+                "y": 0.525,
+                "width": 0.8,
+                "height": 0.4
+            };
+            var topGraph = new KGAuthor.Graph(topGraphDef), bottomGraph = new KGAuthor.Graph(bottomGraphDef);
+            topGraph.subObjects.forEach(function (obj) { obj.addSecondGraph(bottomGraph); });
+            bottomGraph.subObjects.forEach(function (obj) { obj.addSecondGraph(topGraph); });
+            l.subObjects.push(topGraph);
+            l.subObjects.push(bottomGraph);
+            return _this;
+        }
+        return TwoVerticalGraphs;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.TwoVerticalGraphs = TwoVerticalGraphs;
     var TwoVerticalGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(TwoVerticalGraphsPlusSidebar, _super);
         function TwoVerticalGraphsPlusSidebar(def) {
@@ -705,6 +743,35 @@ var KGAuthor;
         return TwoVerticalGraphsPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.TwoVerticalGraphsPlusSidebar = TwoVerticalGraphsPlusSidebar;
+    var TwoVerticalGraphsRoom200 = /** @class */ (function (_super) {
+        __extends(TwoVerticalGraphsRoom200, _super);
+        function TwoVerticalGraphsRoom200(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'];
+            topGraphDef.position = {
+                "x": 0.1,
+                "y": 0,
+                "width": 0.85,
+                "height": 0.4
+            };
+            bottomGraphDef.position = {
+                "x": 0.1,
+                "y": 0.62,
+                "width": 0.85,
+                "height": 0.38
+            };
+            var topGraph = new KGAuthor.Graph(topGraphDef), bottomGraph = new KGAuthor.Graph(bottomGraphDef);
+            topGraph.subObjects.forEach(function (obj) { obj.addSecondGraph(bottomGraph); });
+            bottomGraph.subObjects.forEach(function (obj) { obj.addSecondGraph(topGraph); });
+            l.subObjects.push(topGraph);
+            l.subObjects.push(bottomGraph);
+            l.aspectRatio = 1.3;
+            return _this;
+        }
+        return TwoVerticalGraphsRoom200;
+    }(KGAuthor.Layout));
+    KGAuthor.TwoVerticalGraphsRoom200 = TwoVerticalGraphsRoom200;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -847,7 +914,9 @@ var KGAuthor;
     var Graph = /** @class */ (function (_super) {
         __extends(Graph, _super);
         function Graph(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def = KG.setDefaults(def, { objects: [] });
+            _this = _super.call(this, def) || this;
             var g = _this;
             //axes need to update when the other one's domain changes
             def.xAxis.otherMin = def.yAxis.min;
@@ -1692,6 +1761,20 @@ var KGAuthor;
         return GeoGebraApplet;
     }(KGAuthor.DivObject));
     KGAuthor.GeoGebraApplet = GeoGebraApplet;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var GameMatrix = /** @class */ (function (_super) {
+        __extends(GameMatrix, _super);
+        function GameMatrix(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'GameMatrix';
+            return _this;
+        }
+        return GameMatrix;
+    }(KGAuthor.DivObject));
+    KGAuthor.GameMatrix = GameMatrix;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../eg.ts" />
 var KGAuthor;
@@ -3445,6 +3528,8 @@ var KGAuthor;
     KGAuthor.EconContractCurve = EconContractCurve;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
+/* OBJECTS */
+/// <reference path="positionedObjects/gameMatrix.ts"/>
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /* FUNCTIONAL FORMS */
@@ -3551,6 +3636,7 @@ var KGAuthor;
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
 /// <reference path="divObjects/controls.ts"/>
+/// <reference path="divObjects/gameMat.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
 /// <reference path="econ/eg.ts"/>
 /// <reference path="../kg.ts" />
@@ -5229,6 +5315,56 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var GameMatrix = /** @class */ (function (_super) {
+        __extends(GameMatrix, _super);
+        function GameMatrix(def) {
+            var _this = this;
+            def.player1.name = def.player1.name || 'Player 1';
+            def.player2.name = def.player2.name || 'Player 2';
+            _this = _super.call(this, def) || this;
+            _this.player1 = def.player1;
+            _this.player2 = def.player2;
+            return _this;
+        }
+        // create div for text
+        GameMatrix.prototype.draw = function (layer) {
+            var gameMatrix = this;
+            var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            gameMatrix.rootElement = layer.append('div');
+            var table = gameMatrix.rootElement.append('table');
+            var topRow = table.append('tr');
+            topRow.append('td')["class"]('noborder');
+            topRow.append('td')
+                .attr('colspan', numStrategies2)["class"]('player2 strategy noborder')
+                .text(player2.name);
+            var secondRow = table.append('tr');
+            secondRow.append('td')["class"]('noborder');
+            player2.strategies.forEach(function (s) {
+                secondRow.append('td')["class"]('player 2 strategy')
+                    .text(s);
+            });
+            for (var i = 0; i < numStrategies1; i++) {
+                var row = table.append('tr');
+                if (i == 0) {
+                    row.append('td')
+                        .attr('rowSpan', numStrategies1)["class"]('player1 strategy noborder')
+                        .text('player1.name');
+                }
+                row.append('td')["class"]('player1 strategy').text(player1.strategies[i]);
+                for (var j = 0; j < numStrategies2; j++) {
+                    row.append('td')["class"]('player1 payoff').text(player1.payoffs[i][j]);
+                    row.append('td')["class"]('player2 payoff').text(player2.payoffs[i][j]);
+                }
+            }
+            return gameMatrix;
+        };
+        return GameMatrix;
+    }(KG.DivObject));
+    KG.GameMatrix = GameMatrix;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var GeoGebraApplet = /** @class */ (function (_super) {
         __extends(GeoGebraApplet, _super);
         function GeoGebraApplet(def) {
@@ -5517,6 +5653,7 @@ var KG;
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/gameMatrix.ts"/>
 /// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />

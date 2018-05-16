@@ -40,6 +40,7 @@
 /// <reference path="view/divObjects/checkbox.ts"/>
 /// <reference path="view/divObjects/radio.ts"/>
 /// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/gameMatrix.ts"/>
 /// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />

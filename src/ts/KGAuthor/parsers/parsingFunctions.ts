@@ -189,6 +189,6 @@ module KGAuthor {
     }
 
     export function replaceVariable(target, search, replacement) {
-        return target.split(search).join(replacement);
+        return `(${target.split(search).join(replacement)})`;
     }
 }

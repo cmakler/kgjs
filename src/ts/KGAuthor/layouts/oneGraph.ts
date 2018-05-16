@@ -44,6 +44,15 @@ module KGAuthor {
 
     }
 
+    export class OneGraphPlusSidebarRoom200 extends OneGraphPlusSidebar {
+
+        constructor(def) {
+            super(def);
+            this.aspectRatio = 2;
+        }
+
+    }
+
     export class GeoGebraPlusSidebar extends SquareLayout {
 
         constructor(def) {

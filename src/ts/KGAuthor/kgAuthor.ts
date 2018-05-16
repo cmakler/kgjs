@@ -12,6 +12,7 @@
 /// <reference path="layouts/twoVerticalGraphs.ts"/>
 /// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
 /// <reference path="layouts/fourGraphs.ts"/>
+/// <reference path="layouts/gameMatrix.ts"/>
 
 
 /// <reference path="positionedObjects/positionedObject.ts"/>
@@ -41,6 +42,7 @@
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
 /// <reference path="divObjects/controls.ts"/>
+/// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
 
 /// <reference path="econ/eg.ts"/>

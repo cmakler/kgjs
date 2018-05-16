@@ -12,6 +12,7 @@ module KGAuthor {
         public markerNames;
 
         constructor(def) {
+            def = KG.setDefaults(def,{objects: []});
             super(def);
 
             const g = this;
