@@ -5,14 +5,17 @@ module KGAuthor {
     export class Layout extends AuthoringObject {
 
         public aspectRatio: number;
+        public nosvg: boolean;
 
         constructor(def) {
             super(def);
             this.aspectRatio = 2;
+            this.nosvg = false;
         }
 
         parseSelf(parsedData) {
             parsedData.aspectRatio = this.aspectRatio;
+            parsedData.nosvg = this.nosvg;
             return parsedData;
         }
 

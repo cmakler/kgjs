@@ -345,10 +345,12 @@ var KGAuthor;
         function Layout(def) {
             var _this = _super.call(this, def) || this;
             _this.aspectRatio = 2;
+            _this.nosvg = false;
             return _this;
         }
         Layout.prototype.parseSelf = function (parsedData) {
             parsedData.aspectRatio = this.aspectRatio;
+            parsedData.nosvg = this.nosvg;
             return parsedData;
         };
         return Layout;
@@ -852,6 +854,22 @@ var KGAuthor;
         return FourGraphs;
     }(KGAuthor.Layout));
     KGAuthor.FourGraphs = FourGraphs;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var GameMatrixLayout = /** @class */ (function (_super) {
+        __extends(GameMatrixLayout, _super);
+        function GameMatrixLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            l.subObjects.push(new KGAuthor.GameMatrix(def.gameMatrix));
+            return _this;
+        }
+        return GameMatrixLayout;
+    }(KGAuthor.Layout));
+    KGAuthor.GameMatrixLayout = GameMatrixLayout;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1751,20 +1769,6 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var GeoGebraApplet = /** @class */ (function (_super) {
-        __extends(GeoGebraApplet, _super);
-        function GeoGebraApplet(def) {
-            var _this = _super.call(this, def) || this;
-            _this.type = 'GeoGebraApplet';
-            return _this;
-        }
-        return GeoGebraApplet;
-    }(KGAuthor.DivObject));
-    KGAuthor.GeoGebraApplet = GeoGebraApplet;
-})(KGAuthor || (KGAuthor = {}));
-/// <reference path="../eg.ts" />
-var KGAuthor;
-(function (KGAuthor) {
     var GameMatrix = /** @class */ (function (_super) {
         __extends(GameMatrix, _super);
         function GameMatrix(def) {
@@ -1775,6 +1779,20 @@ var KGAuthor;
         return GameMatrix;
     }(KGAuthor.DivObject));
     KGAuthor.GameMatrix = GameMatrix;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var GeoGebraApplet = /** @class */ (function (_super) {
+        __extends(GeoGebraApplet, _super);
+        function GeoGebraApplet(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'GeoGebraApplet';
+            return _this;
+        }
+        return GeoGebraApplet;
+    }(KGAuthor.DivObject));
+    KGAuthor.GeoGebraApplet = GeoGebraApplet;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../eg.ts" />
 var KGAuthor;
@@ -3528,8 +3546,6 @@ var KGAuthor;
     KGAuthor.EconContractCurve = EconContractCurve;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
-/* OBJECTS */
-/// <reference path="positionedObjects/gameMatrix.ts"/>
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /* FUNCTIONAL FORMS */
@@ -3612,6 +3628,7 @@ var KGAuthor;
 /// <reference path="layouts/twoVerticalGraphs.ts"/>
 /// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
 /// <reference path="layouts/fourGraphs.ts"/>
+/// <reference path="layouts/gameMatrix.ts"/>
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
@@ -3636,7 +3653,7 @@ var KGAuthor;
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
 /// <reference path="divObjects/controls.ts"/>
-/// <reference path="divObjects/gameMat.ts"/>
+/// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
 /// <reference path="econ/eg.ts"/>
 /// <reference path="../kg.ts" />
@@ -4281,7 +4298,22 @@ var KG;
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 markers: data.markers || [],
-                scales: data.scales || [],
+                scales: data.scales || [{
+                        name: 'x',
+                        axis: 'x',
+                        rangeMin: 0,
+                        rangeMax: 1,
+                        domainMin: 0,
+                        domainMax: 1
+                    },
+                    {
+                        name: 'y',
+                        axis: 'y',
+                        rangeMin: 0,
+                        rangeMax: 1,
+                        domainMin: 0,
+                        domainMax: 1
+                    }],
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
             };
@@ -4293,7 +4325,6 @@ var KG;
                 data.objects.push({ type: data.schema, def: {} });
             }
             parsedData = KGAuthor.parse(data.objects, parsedData);
-            console.log(parsedData);
             var view = this;
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
@@ -4306,9 +4337,11 @@ var KG;
             view.div = d3.select(div)
                 .style('position', 'relative');
             // create the SVG element for the view
-            view.svg = view.div.append('svg')
-                .style('overflow', 'visible')
-                .style('pointer-events', 'none');
+            if (!parsedData.nosvg) {
+                view.svg = view.div.append('svg')
+                    .style('overflow', 'visible')
+                    .style('pointer-events', 'none');
+            }
             view.addViewObjects(parsedData);
             console.log('parsedData: ', parsedData);
         }
@@ -4338,59 +4371,61 @@ var KG;
         View.prototype.addViewObjects = function (data) {
             var view = this;
             var defURLS = {};
-            var defLayer = view.svg.append('defs');
-            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
-            if (data.clipPaths.length > 0) {
-                data.clipPaths.forEach(function (def) {
-                    var clipPathURL = KG.randomString(10);
-                    var clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
-                    def.paths.forEach(function (td) {
-                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
-                    });
-                    defURLS[def.name] = clipPathURL;
-                });
-            }
-            // create Markers, generate their URLs, and add their paths to the SVG defs element.
-            if (data.markers.length > 0) {
-                data.markers.forEach(function (def) {
-                    var markerURL = KG.randomString(10);
-                    var markerLayer = defLayer.append('marker')
-                        .attr('id', markerURL)
-                        .attr("refX", def.refX)
-                        .attr("refY", 6)
-                        .attr("markerWidth", 13)
-                        .attr("markerHeight", 13)
-                        .attr("orient", "auto")
-                        .attr("markerUnits", "userSpaceOnUse");
-                    markerLayer.append("svg:path")
-                        .attr("d", def.maskPath)
-                        .attr("fill", "white");
-                    markerLayer.append("svg:path")
-                        .attr("d", def.arrowPath)
-                        .attr("fill", view.model.eval(def.color));
-                    defURLS[def.name] = markerURL;
-                });
-            }
-            // add layers of objects
-            data.layers.forEach(function (layerTds) {
-                if (layerTds.length > 0) {
-                    var layer_1 = view.svg.append('g');
-                    layerTds.forEach(function (td) {
-                        var def = td.def;
-                        if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = defURLS[def['clipPathName']];
-                        }
-                        if (def.hasOwnProperty('startArrowName')) {
-                            def.startArrow = defURLS[def['startArrowName']];
-                        }
-                        if (def.hasOwnProperty('endArrowName')) {
-                            def.endArrow = defURLS[def['endArrowName']];
-                        }
-                        def = view.addViewToDef(def, layer_1);
-                        new KG[td.type](def);
+            if (view.svg) {
+                var defLayer_1 = view.svg.append('defs');
+                // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
+                if (data.clipPaths.length > 0) {
+                    data.clipPaths.forEach(function (def) {
+                        var clipPathURL = KG.randomString(10);
+                        var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
+                        def.paths.forEach(function (td) {
+                            new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                        });
+                        defURLS[def.name] = clipPathURL;
                     });
                 }
-            });
+                // create Markers, generate their URLs, and add their paths to the SVG defs element.
+                if (data.markers.length > 0) {
+                    data.markers.forEach(function (def) {
+                        var markerURL = KG.randomString(10);
+                        var markerLayer = defLayer_1.append('marker')
+                            .attr('id', markerURL)
+                            .attr("refX", def.refX)
+                            .attr("refY", 6)
+                            .attr("markerWidth", 13)
+                            .attr("markerHeight", 13)
+                            .attr("orient", "auto")
+                            .attr("markerUnits", "userSpaceOnUse");
+                        markerLayer.append("svg:path")
+                            .attr("d", def.maskPath)
+                            .attr("fill", "white");
+                        markerLayer.append("svg:path")
+                            .attr("d", def.arrowPath)
+                            .attr("fill", view.model.eval(def.color));
+                        defURLS[def.name] = markerURL;
+                    });
+                }
+                // add layers of objects
+                data.layers.forEach(function (layerTds) {
+                    if (layerTds.length > 0) {
+                        var layer_1 = view.svg.append('g');
+                        layerTds.forEach(function (td) {
+                            var def = td.def;
+                            if (def.hasOwnProperty('clipPathName')) {
+                                def.clipPath = defURLS[def['clipPathName']];
+                            }
+                            if (def.hasOwnProperty('startArrowName')) {
+                                def.startArrow = defURLS[def['startArrowName']];
+                            }
+                            if (def.hasOwnProperty('endArrowName')) {
+                                def.endArrow = defURLS[def['endArrowName']];
+                            }
+                            def = view.addViewToDef(def, layer_1);
+                            new KG[td.type](def);
+                        });
+                    }
+                });
+            }
             // add divs
             if (data.divs.length > 0) {
                 data.divs.forEach(function (td) {
@@ -4417,9 +4452,11 @@ var KG;
             var height = width / view.aspectRatio;
             // set the height of the div
             view.div.style.height = height + 'px';
-            // set the dimensions of the svg
-            view.svg.style('width', width);
-            view.svg.style('height', height);
+            if (view.svg) {
+                // set the dimensions of the svg
+                view.svg.style('width', width);
+                view.svg.style('height', height);
+            }
             // adjust all of the scales to be proportional to the new dimensions
             view.scales.forEach(function (scale) {
                 scale.updateDimensions(width, height);
@@ -5321,41 +5358,48 @@ var KG;
             var _this = this;
             def.player1.name = def.player1.name || 'Player 1';
             def.player2.name = def.player2.name || 'Player 2';
+            KG.setProperties(def, 'constants', ['player1', 'player2']);
             _this = _super.call(this, def) || this;
-            _this.player1 = def.player1;
-            _this.player2 = def.player2;
             return _this;
         }
         // create div for text
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
-            var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            var player1 = gameMatrix.player1, player2 = gameMatrix.player2;
+            var numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
             gameMatrix.rootElement = layer.append('div');
-            var table = gameMatrix.rootElement.append('table');
+            var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             var topRow = table.append('tr');
-            topRow.append('td')["class"]('noborder');
+            topRow.append('td').attr('colspan', '2').attr('class', 'empty');
             topRow.append('td')
-                .attr('colspan', numStrategies2)["class"]('player2 strategy noborder')
+                .attr('colspan', numStrategies2 * 2)
+                .attr('class', 'player2 strategy empty')
                 .text(player2.name);
             var secondRow = table.append('tr');
-            secondRow.append('td')["class"]('noborder');
+            secondRow.append('td').attr('colspan', '2').attr('class', 'empty');
             player2.strategies.forEach(function (s) {
-                secondRow.append('td')["class"]('player 2 strategy')
-                    .text(s);
+                secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy').text(s);
             });
             for (var i = 0; i < numStrategies1; i++) {
                 var row = table.append('tr');
                 if (i == 0) {
                     row.append('td')
-                        .attr('rowSpan', numStrategies1)["class"]('player1 strategy noborder')
-                        .text('player1.name');
+                        .attr('rowSpan', numStrategies1)
+                        .attr('class', 'player1 strategy empty')
+                        .text(player1.name);
                 }
-                row.append('td')["class"]('player1 strategy').text(player1.strategies[i]);
+                row.append('td').text(player1.strategies[i]).attr('class', 'player1 strategy');
                 for (var j = 0; j < numStrategies2; j++) {
-                    row.append('td')["class"]('player1 payoff').text(player1.payoffs[i][j]);
-                    row.append('td')["class"]('player2 payoff').text(player2.payoffs[i][j]);
+                    var payoff1 = row.append('td').attr('class', 'player1 payoff');
+                    katex.render(player1.payoffs[i][j].toString(), payoff1.node());
+                    var payoff2 = row.append('td').attr('class', 'player2 payoff');
+                    katex.render(player2.payoffs[i][j].toString(), payoff2.node());
                 }
             }
+            return gameMatrix;
+        };
+        GameMatrix.prototype.redraw = function () {
+            var gameMatrix = this;
             return gameMatrix;
         };
         return GameMatrix;

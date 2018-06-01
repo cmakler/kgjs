@@ -23,6 +23,7 @@ module KG {
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
+        nosvg?: boolean;
         schema?: string;
         params?: ParamDefinition[];
         calcs: {};
@@ -79,7 +80,22 @@ module KG {
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 markers: data.markers || [],
-                scales: data.scales || [],
+                scales: data.scales || [{
+                    name: 'x',
+                    axis: 'x',
+                    rangeMin: 0,
+                    rangeMax: 1,
+                    domainMin: 0,
+                    domainMax: 1
+                },
+                    {
+                        name: 'y',
+                        axis: 'y',
+                        rangeMin: 0,
+                        rangeMax: 1,
+                        domainMin: 0,
+                        domainMax: 1
+                    }],
                 layers: data.layers || [[], [], [], []],
                 divs: data.divs || []
             };
@@ -96,7 +112,6 @@ module KG {
 
             parsedData = KGAuthor.parse(data.objects, parsedData);
 
-            console.log(parsedData);
             let view = this;
 
             view.aspectRatio = parsedData.aspectRatio || 1;
@@ -113,13 +128,15 @@ module KG {
                 .style('position', 'relative');
 
             // create the SVG element for the view
-            view.svg = view.div.append('svg')
-                .style('overflow', 'visible')
-                .style('pointer-events', 'none');
+            if (!parsedData.nosvg) {
+                view.svg = view.div.append('svg')
+                    .style('overflow', 'visible')
+                    .style('pointer-events', 'none');
+            }
 
             view.addViewObjects(parsedData);
 
-            console.log('parsedData: ',parsedData);
+            console.log('parsedData: ', parsedData);
 
         }
 
@@ -155,65 +172,68 @@ module KG {
 
             let defURLS = {};
 
-            const defLayer = view.svg.append('defs');
+            if (view.svg) {
+                const defLayer = view.svg.append('defs');
 
-            // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
-            if (data.clipPaths.length > 0) {
-                data.clipPaths.forEach(function (def: ClipPathDefinition) {
-                    const clipPathURL = randomString(10);
-                    const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
-                    def.paths.forEach(function (td) {
-                        new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
+                if (data.clipPaths.length > 0) {
+                    data.clipPaths.forEach(function (def: ClipPathDefinition) {
+                        const clipPathURL = randomString(10);
+                        const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
+                        def.paths.forEach(function (td) {
+                            new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                        });
+                        defURLS[def.name] = clipPathURL;
                     });
-                    defURLS[def.name] = clipPathURL;
-                });
-            }
-
-            // create Markers, generate their URLs, and add their paths to the SVG defs element.
-            if (data.markers.length > 0) {
-                data.markers.forEach(function (def: MarkerDefinition) {
-                    const markerURL = randomString(10);
-                    const markerLayer = defLayer.append('marker')
-                        .attr('id', markerURL)
-                        .attr("refX", def.refX)
-                        .attr("refY", 6)
-                        .attr("markerWidth", 13)
-                        .attr("markerHeight", 13)
-                        .attr("orient", "auto")
-                        .attr("markerUnits", "userSpaceOnUse");
-
-                    markerLayer.append("svg:path")
-                        .attr("d", def.maskPath)
-                        .attr("fill", "white");
-
-                    markerLayer.append("svg:path")
-                        .attr("d", def.arrowPath)
-                        .attr("fill", view.model.eval(def.color));
-                    defURLS[def.name] = markerURL;
-                });
-            }
-
-
-            // add layers of objects
-            data.layers.forEach(function (layerTds: TypeAndDef[]) {
-                if (layerTds.length > 0) {
-                    const layer = view.svg.append('g');
-                    layerTds.forEach(function (td) {
-                        let def: ViewObjectDefinition = td.def;
-                        if (def.hasOwnProperty('clipPathName')) {
-                            def.clipPath = defURLS[def['clipPathName']]
-                        }
-                        if (def.hasOwnProperty('startArrowName')) {
-                            def.startArrow = defURLS[def['startArrowName']]
-                        }
-                        if (def.hasOwnProperty('endArrowName')) {
-                            def.endArrow = defURLS[def['endArrowName']]
-                        }
-                        def = view.addViewToDef(def, layer);
-                        new KG[td.type](def);
-                    })
                 }
-            });
+
+                // create Markers, generate their URLs, and add their paths to the SVG defs element.
+                if (data.markers.length > 0) {
+                    data.markers.forEach(function (def: MarkerDefinition) {
+                        const markerURL = randomString(10);
+                        const markerLayer = defLayer.append('marker')
+                            .attr('id', markerURL)
+                            .attr("refX", def.refX)
+                            .attr("refY", 6)
+                            .attr("markerWidth", 13)
+                            .attr("markerHeight", 13)
+                            .attr("orient", "auto")
+                            .attr("markerUnits", "userSpaceOnUse");
+
+                        markerLayer.append("svg:path")
+                            .attr("d", def.maskPath)
+                            .attr("fill", "white");
+
+                        markerLayer.append("svg:path")
+                            .attr("d", def.arrowPath)
+                            .attr("fill", view.model.eval(def.color));
+                        defURLS[def.name] = markerURL;
+                    });
+                }
+
+
+                // add layers of objects
+                data.layers.forEach(function (layerTds: TypeAndDef[]) {
+                    if (layerTds.length > 0) {
+                        const layer = view.svg.append('g');
+                        layerTds.forEach(function (td) {
+                            let def: ViewObjectDefinition = td.def;
+                            if (def.hasOwnProperty('clipPathName')) {
+                                def.clipPath = defURLS[def['clipPathName']]
+                            }
+                            if (def.hasOwnProperty('startArrowName')) {
+                                def.startArrow = defURLS[def['startArrowName']]
+                            }
+                            if (def.hasOwnProperty('endArrowName')) {
+                                def.endArrow = defURLS[def['endArrowName']]
+                            }
+                            def = view.addViewToDef(def, layer);
+                            new KG[td.type](def);
+                        })
+                    }
+                });
+
+            }
 
             // add divs
             if (data.divs.length > 0) {
@@ -247,9 +267,11 @@ module KG {
             // set the height of the div
             view.div.style.height = height + 'px';
 
-            // set the dimensions of the svg
-            view.svg.style('width', width);
-            view.svg.style('height', height);
+            if (view.svg) {
+                // set the dimensions of the svg
+                view.svg.style('width', width);
+                view.svg.style('height', height);
+            }
 
             // adjust all of the scales to be proportional to the new dimensions
             view.scales.forEach(function (scale) {
