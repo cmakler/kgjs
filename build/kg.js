@@ -980,6 +980,7 @@ var KGAuthor;
             if (found) {
                 return name;
             }
+            // otherwise create a new marker, add to the graph's subobjects, and return the new marker's name
             else {
                 var newMarker = new KGAuthor[lookup.markerType]({ color: lookup.color });
                 g.subObjects.push(newMarker);

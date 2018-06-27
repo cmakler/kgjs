@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "sourceMap": true,
-        "compileOnSave": true,
         "outFile": "build/kg.js"
     },
     "files": [
