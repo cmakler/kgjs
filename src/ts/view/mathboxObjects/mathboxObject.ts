@@ -7,7 +7,7 @@ module KG {
     }
 
     export interface IMathboxObject extends IViewObject {
-
+        mathbox: Mathbox;
     }
 
     export class MathboxObject extends ViewObject implements IMathboxObject {
@@ -26,18 +26,8 @@ module KG {
             let mo = this;
         }
 
-        update(force) {
-            let mo = super.update(force);
-            if (mo.show) {
-                mo.displayElement(true);
-                if (mo.hasChanged) {
-                    mo.redraw();
-                }
-            }
-            else {
-                mo.displayElement(false);
-            }
-            return mo;
+        mathboxExists() {
+            return this.mathbox != undefined;
         }
 
     }

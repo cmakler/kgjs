@@ -17,6 +17,9 @@ module KG {
         public mathbox;
         public camera;
         public mathboxView;
+        public xAxis;
+        public yAxis;
+        public zAxis;
 
         constructor(def: MathboxDefinition) {
             setDefaults(def, {
@@ -51,7 +54,12 @@ module KG {
 
                 div.three = div.mathbox.three;
                 div.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
-                div.mathbox.camera({proxy: true, position: [-4, 4, 2], eulerOrder: "xzy"});
+                div.mathbox.camera({proxy: true, position: [-3, 1, 1], eulerOrder: "xzy"});
+                div.mathboxView = div.mathbox.cartesian(
+                {
+                    scale: [1, 1, 1],
+                }
+            )
             } else {
                 return div;
             }
@@ -70,7 +78,7 @@ module KG {
             var budget = (priceX * traceX) + (priceY * traceY);
 
             div.a = 0.5;
-            var xMin = 0, xMax = 5, yMin = 0, yMax = 5, zMin = 0, zMax = 5;
+            var xMin = 0, xMax = 50, yMin = 0, yMax = 50, zMin = 0, zMax = 50;
 
             div.updateGraphFunc = function () {
                 var zFunc = function (x, y) {
@@ -128,30 +136,24 @@ module KG {
                 div.updateGraphFunc();
             };
 
-
-            view = mathbox.cartesian(
-                {
-                    range: [[xMin, xMax], [yMin, yMax], [zMin, zMax]],
-                    scale: [2, 2, 2],
-                }
-            );
+            view = div.mathboxView;
 
             var xAxis = view.axis({axis: 3, width: 8, detail: 40, color: "black"});
-            var xScale = view.scale({axis: 3, divide: 10, nice: true, zero: true});
-            var xTicks = view.ticks({width: 5, size: 15, color: "black", zBias: 2});
-            var xFormat = view.format({digits: 2, font: "Arial", weight: "bold", style: "normal", source: xScale});
+            var xScale = view.scale({axis: 3, divide: 5, nice: true, zero: true});
+            var xTicks = view.ticks({width: 5, size: 10, color: "black", zBias: 2});
+            var xFormat = view.format({digits: 2, font: "KaTeX_Main", style: "normal", source: xScale});
             var xTicksLabel = view.label({color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat});
 
             var yAxis = view.axis({axis: 1, width: 8, detail: 40, color: "black"});
             var yScale = view.scale({axis: 1, divide: 5, nice: true, zero: false});
-            var yTicks = view.ticks({width: 5, size: 15, color: "black", zBias: 2});
-            var yFormat = view.format({digits: 2, font: "Arial", weight: "bold", style: "normal", source: yScale});
+            var yTicks = view.ticks({width: 5, size: 10, color: "black", zBias: 2});
+            var yFormat = view.format({digits: 2, font: "KaTeX_Main", style: "normal", source: yScale});
             var yTicksLabel = view.label({color: "black", zIndex: 1, offset: [0, 0], points: yScale, text: yFormat});
 
             var zAxis = view.axis({axis: 2, width: 8, detail: 40, color: "black"});
             var zScale = view.scale({axis: 2, divide: 5, nice: true, zero: false});
-            var zTicks = view.ticks({width: 5, size: 15, color: "black", zBias: 2});
-            var zFormat = view.format({digits: 2, style: "normal", source: zScale});
+            var zTicks = view.ticks({width: 5, size: 10, color: "black", zBias: 2});
+            var zFormat = view.format({digits: 2, font: "KaTeX_Main", style: "normal", source: zScale});
             var zTicksLabel = view.label({color: "black", zIndex: 1, offset: [0, 0], points: zScale, text: zFormat});
 
             view.grid({axes: [1, 3], width: 2, divideX: 20, divideY: 20, opacity: 0.3});

@@ -30,36 +30,14 @@ module KG {
 
         }
 
-        draw(layer) {
-            let a = this;
-            a.rootElement = layer.append('g').attr('class', 'axis');
-            return a;
-        }
-
         redraw() {
-            let a = this;
-            switch (a.orient) {
-                case 'bottom':
-                    a.rootElement.attr('transform', `translate(0, ${a.yScale.scale(a.intercept)})`);
-                    a.rootElement.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
-                    return a;
-
-                case 'left':
-                    a.rootElement.attr('transform', `translate(${a.xScale.scale(a.intercept)},0)`);
-                    a.rootElement.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
-                    return a;
-
-                case 'top':
-                    a.rootElement.attr('transform', `translate(0, ${a.yScale.scale(a.intercept)})`);
-                    a.rootElement.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
-                    return a;
-
-                case 'right':
-                    a.rootElement.attr('transform', `translate(${a.xScale.scale(a.intercept)},0)`);
-                    a.rootElement.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
-                    return a;
-            }
-            return a;
+            let view = this.mathbox.view;
+            var xAxis = view.axis({axis: 3, width: 8, detail: 40, color: "black"});
+            var xScale = view.scale({axis: 3, divide: 10, nice: true, zero: true});
+            var xTicks = view.ticks({width: 5, size: 15, color: "black", zBias: 2});
+            var xFormat = view.format({digits: 2, font: "KaTeX_Main", style: "normal", source: xScale});
+            var xTicksLabel = view.label({color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat});
+            return this;
         }
 
     }

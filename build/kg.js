@@ -5650,7 +5650,10 @@ var KG;
                     throw "WebGL not supported";
                 div.three = div.mathbox.three;
                 div.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
-                div.mathbox.camera({ proxy: true, position: [-4, 4, 2], eulerOrder: "xzy" });
+                div.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "xzy" });
+                div.mathboxView = div.mathbox.cartesian({
+                    scale: [1, 1, 1]
+                });
             }
             else {
                 return div;
@@ -5665,7 +5668,7 @@ var KG;
             var priceX = 1, priceY = 1;
             var budget = (priceX * traceX) + (priceY * traceY);
             div.a = 0.5;
-            var xMin = 0, xMax = 5, yMin = 0, yMax = 5, zMin = 0, zMax = 5;
+            var xMin = 0, xMax = 50, yMin = 0, yMax = 50, zMin = 0, zMax = 50;
             div.updateGraphFunc = function () {
                 var zFunc = function (x, y) {
                     return Math.pow(x * y, 0.5);
@@ -5702,24 +5705,21 @@ var KG;
             var updateGraph = function () {
                 div.updateGraphFunc();
             };
-            view = mathbox.cartesian({
-                range: [[xMin, xMax], [yMin, yMax], [zMin, zMax]],
-                scale: [2, 2, 2]
-            });
+            view = div.mathboxView;
             var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
-            var xScale = view.scale({ axis: 3, divide: 10, nice: true, zero: true });
-            var xTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var xFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: xScale });
+            var xScale = view.scale({ axis: 3, divide: 5, nice: true, zero: true });
+            var xTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
+            var xFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: xScale });
             var xTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat });
             var yAxis = view.axis({ axis: 1, width: 8, detail: 40, color: "black" });
             var yScale = view.scale({ axis: 1, divide: 5, nice: true, zero: false });
-            var yTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var yFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: yScale });
+            var yTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
+            var yFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: yScale });
             var yTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: yScale, text: yFormat });
             var zAxis = view.axis({ axis: 2, width: 8, detail: 40, color: "black" });
             var zScale = view.scale({ axis: 2, divide: 5, nice: true, zero: false });
-            var zTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var zFormat = view.format({ digits: 2, style: "normal", source: zScale });
+            var zTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
+            var zFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: zScale });
             var zTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: zScale, text: zFormat });
             view.grid({ axes: [1, 3], width: 2, divideX: 20, divideY: 20, opacity: 0.3 });
             var graphData = view.area({
@@ -5962,6 +5962,57 @@ var KG;
     }(KG.ViewObject));
     KG.Label = Label;
 })(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var MathboxObject = /** @class */ (function (_super) {
+        __extends(MathboxObject, _super);
+        function MathboxObject(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                interactive: false
+            });
+            KG.setProperties(def, 'updatables', []);
+            KG.setProperties(def, 'constants', []);
+            _this = _super.call(this, def) || this;
+            var mo = _this;
+            return _this;
+        }
+        MathboxObject.prototype.mathboxExists = function () {
+            return this.mathbox != undefined;
+        };
+        return MathboxObject;
+    }(KG.ViewObject));
+    KG.MathboxObject = MathboxObject;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxAxis = /** @class */ (function (_super) {
+        __extends(MathboxAxis, _super);
+        function MathboxAxis(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                ticks: 5,
+                intercept: 0
+            });
+            KG.setProperties(def, 'constants', ['orient']);
+            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label', 'min', 'max', 'otherMin', 'otherMax']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxAxis.prototype.redraw = function () {
+            var view = this.mathbox.view;
+            var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
+            var xScale = view.scale({ axis: 3, divide: 10, nice: true, zero: true });
+            var xTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var xFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: xScale });
+            var xTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat });
+            return this;
+        };
+        return MathboxAxis;
+    }(KG.MathboxObject));
+    KG.MathboxAxis = MathboxAxis;
+})(KG || (KG = {}));
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
@@ -6001,6 +6052,8 @@ var KG;
 /// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
+/// <reference path="view/mathboxObjects/mathboxObject.ts" />
+/// <reference path="view/mathboxObjects/mathboxAxis.ts" />
 // this file provides the interface with the overall web page
 var views = [];
 // initialize the diagram from divs with class kg-container

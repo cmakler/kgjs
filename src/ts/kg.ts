@@ -46,6 +46,9 @@
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 
+/// <reference path="view/mathboxObjects/mathboxObject.ts" />
+/// <reference path="view/mathboxObjects/mathboxAxis.ts" />
+
 declare function renderMathInElement(node,delimiters);
 
 
