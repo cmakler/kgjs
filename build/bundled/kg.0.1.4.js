@@ -298,7 +298,7 @@ var KGAuthor;
             else {
                 curveDef.univariateFunction = fn;
             }
-            console.log('creating curve from def', curveDef);
+            //console.log('creating curve from def', curveDef);
             return new KGAuthor.Curve(curveDef, graph);
         });
     }
@@ -612,6 +612,31 @@ var KGAuthor;
         return TwoHorizontalGraphsPlusSidebar;
     }(KGAuthor.WideRectanglePlusSidebarLayout));
     KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
+    var MathboxPlusGraph = /** @class */ (function (_super) {
+        __extends(MathboxPlusGraph, _super);
+        function MathboxPlusGraph(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var mathboxDef = def['mathbox'], graphDef = def['graph'];
+            mathboxDef.position = {
+                "x": 0.05,
+                "y": 0.025,
+                "width": 0.45,
+                "height": 0.9
+            };
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.2,
+                "width": 0.3,
+                "height": 0.6
+            };
+            l.subObjects.push(new KGAuthor.Mathbox(mathboxDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            return _this;
+        }
+        return MathboxPlusGraph;
+    }(KGAuthor.Layout));
+    KGAuthor.MathboxPlusGraph = MathboxPlusGraph;
     var GeoGebraPlusGraph = /** @class */ (function (_super) {
         __extends(GeoGebraPlusGraph, _super);
         function GeoGebraPlusGraph(def) {
@@ -663,6 +688,32 @@ var KGAuthor;
         return GeoGebraPlusGraphPlusSidebar;
     }(KGAuthor.WideRectanglePlusSidebarLayout));
     KGAuthor.GeoGebraPlusGraphPlusSidebar = GeoGebraPlusGraphPlusSidebar;
+    var MathboxPlusGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(MathboxPlusGraphPlusSidebar, _super);
+        function MathboxPlusGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var mathboxDef = def['mathbox'], graphDef = def['graph'], sidebarDef = def['sidebar'];
+            mathboxDef.position = {
+                "x": 0.1,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Mathbox(mathboxDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return MathboxPlusGraphPlusSidebar;
+    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    KGAuthor.MathboxPlusGraphPlusSidebar = MathboxPlusGraphPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1051,6 +1102,7 @@ var KGAuthor;
             if (found) {
                 return name;
             }
+            // otherwise create a new marker, add to the graph's subobjects, and return the new marker's name
             else {
                 var newMarker = new KGAuthor[lookup.markerType]({ color: lookup.color });
                 g.subObjects.push(newMarker);
@@ -1092,6 +1144,26 @@ var KGAuthor;
         return GeoGebraContainer;
     }(KGAuthor.PositionedObject));
     KGAuthor.GeoGebraContainer = GeoGebraContainer;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Mathbox = /** @class */ (function (_super) {
+        __extends(Mathbox, _super);
+        function Mathbox(def) {
+            var _this = this;
+            def.xAxis = { min: 0, max: 1 };
+            def.yAxis = { min: 0, max: 1 };
+            _this = _super.call(this, def) || this;
+            var mb = _this;
+            def.xScaleName = mb.xScale.name;
+            def.yScaleName = mb.yScale.name;
+            mb.subObjects.push(new KGAuthor.MathboxApplet(def));
+            return _this;
+        }
+        return Mathbox;
+    }(KGAuthor.PositionedObject));
+    KGAuthor.Mathbox = Mathbox;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1864,6 +1936,16 @@ var KGAuthor;
         return GeoGebraApplet;
     }(KGAuthor.DivObject));
     KGAuthor.GeoGebraApplet = GeoGebraApplet;
+    var MathboxApplet = /** @class */ (function (_super) {
+        __extends(MathboxApplet, _super);
+        function MathboxApplet(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'Mathbox';
+            return _this;
+        }
+        return MathboxApplet;
+    }(KGAuthor.DivObject));
+    KGAuthor.MathboxApplet = MathboxApplet;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../eg.ts" />
 var KGAuthor;
@@ -3703,6 +3785,7 @@ var KGAuthor;
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
+/// <reference path="positionedObjects/mathbox.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>
 /// <reference path="defObjects/graphObjectGenerator.ts"/>
 /// <reference path="defObjects/defObject.ts"/>
@@ -4450,6 +4533,7 @@ var KG;
                         var clipPathURL = KG.randomString(10);
                         var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
+                            console.log(td.type);
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -4492,6 +4576,7 @@ var KG;
                                 def.endArrow = defURLS[def['endArrowName']];
                             }
                             def = view.addViewToDef(def, layer_1);
+                            console.log(td.type);
                             new KG[td.type](def);
                         });
                     }
@@ -4500,6 +4585,7 @@ var KG;
             // add divs
             if (data.divs.length > 0) {
                 data.divs.forEach(function (td) {
+                    console.log(td.type);
                     var def = view.addViewToDef(td.def, view.div), newDiv = new KG[td.type](def);
                     if (td.type == 'Sidebar') {
                         view.sidebar = newDiv;
@@ -4613,10 +4699,13 @@ var KG;
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
             if (def.hasOwnProperty('layer')) {
-                vo.draw(def.layer).update(true);
+                vo.draw(def.layer).update(true).init();
             }
             return _this;
         }
+        ViewObject.prototype.init = function () {
+            return this; //defined at subclass level
+        };
         ViewObject.prototype.addClipPathAndArrows = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
@@ -5598,6 +5687,208 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Mathbox = /** @class */ (function (_super) {
+        __extends(Mathbox, _super);
+        function Mathbox(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                params: [],
+                objects: [],
+                axisLabels: []
+            });
+            KG.setProperties(def, 'updatables', def.params);
+            KG.setProperties(def, 'constants', ['axes', 'params']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for mathbox
+        Mathbox.prototype.draw = function (layer) {
+            console.log('creating mathbox container');
+            var div = this;
+            div.rootElement = layer.append('div').style('position', 'absolute').style('border', 'thin blue solid');
+            div.mathbox = mathBox({
+                plugins: ['core', 'controls', 'cursor', 'mathbox'],
+                controls: { klass: THREE.OrbitControls },
+                element: div.rootElement.node()
+            });
+            if (div.mathbox.fallback)
+                throw "WebGL not supported";
+            div.three = div.mathbox.three;
+            div.three.renderer.setClearColor(new THREE.Color(0xFFFF00), 1.0);
+            div.mathbox.camera({ proxy: true, position: [-4, 4, 2], eulerOrder: "xzy" });
+            return div;
+        };
+        Mathbox.prototype.render3d = function () {
+            console.log('render3d called');
+            var div = this;
+            var mathbox = div.mathbox;
+            var three = div.three;
+            var graphData, view;
+            var functionText = "(x)^(0.5) * (y)^(0.5)";
+            var pointText = "(1,1)";
+            var priceText = "(1,1)";
+            var traceX = 1, traceY = 1, traceZ = 1;
+            var priceX = 1, priceY = 1;
+            var budget = (priceX * traceX) + (priceY * traceY);
+            div.a = 0.5;
+            var xMin = 0, xMax = 5, yMin = 0, yMax = 5, zMin = 0, zMax = 5;
+            div.updateGraphFunc = function () {
+                var zFunc = function (x, y) { return Math.pow(x * y, 0.5); };
+                graphData.set("expr", function (emit, x, y, i, j, t) {
+                    emit(x, zFunc(x, y), y);
+                });
+                var tempString = pointText.replace(/\(|\)/g, " ");
+                var tempArray = tempString.split(",");
+                var tempPriceString = priceText.replace(/\(|\)/g, " ");
+                var tempPriceArray = tempPriceString.split(",");
+                traceX = Number(tempArray[0]);
+                traceY = Number(tempArray[1]);
+                traceZ = zFunc(traceX, traceY);
+                priceX = Number(tempPriceArray[0]);
+                priceY = Number(tempPriceArray[1]);
+                budget = (priceX * traceX) + (priceY * traceY);
+                tracePointData.set("data", [[traceX, traceZ, traceY]]);
+                xCurveData.set("expr", function (emit, x, i, t) {
+                    emit(x, zFunc(x, traceY), traceY);
+                });
+                yCurveData.set("expr", function (emit, y, j, t) {
+                    emit(traceX, zFunc(traceX, y), y);
+                });
+                budgetCurveData.set("expr", function (emit, x, y, t) {
+                    emit((budget - priceX * x) / priceY, zFunc(x, (budget - priceX * x) / priceY), x);
+                });
+                utilityCurveData.set("expr", function (emit, x, y, i, j, t) {
+                    emit(zFunc(traceX, traceY) / x, zFunc(traceX, traceY), x);
+                });
+                view.set("range", [[xMin, xMax], [yMin, yMax], [zMin, zMax]]);
+            };
+            // end of updateGraph function ==============================================================
+            var updateGraph = function () {
+                div.updateGraphFunc();
+            };
+            view = mathbox.cartesian({
+                range: [[0, 50], [yMin, yMax], [zMin, zMax]],
+                scale: [2, 1, 2]
+            });
+            var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
+            var xScale = view.scale({ axis: 3, divide: 10, nice: true, zero: true });
+            var xTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var xFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: xScale });
+            var xTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat });
+            var yAxis = view.axis({ axis: 1, width: 8, detail: 40, color: "black" });
+            var yScale = view.scale({ axis: 1, divide: 5, nice: true, zero: false });
+            var yTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var yFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: yScale });
+            var yTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: yScale, text: yFormat });
+            var zAxis = view.axis({ axis: 2, width: 8, detail: 40, color: "black" });
+            var zScale = view.scale({ axis: 2, divide: 5, nice: true, zero: false });
+            var zTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var zFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: zScale });
+            var zTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: zScale, text: zFormat });
+            view.grid({ axes: [1, 3], width: 2, divideX: 20, divideY: 20, opacity: 0.3 });
+            var graphData = view.area({
+                axes: [1, 3], channels: 3, width: 64, height: 64,
+                expr: function (emit, x, y, i, j, t) {
+                    var z = x * y;
+                    emit(x, z, y);
+                }
+            });
+            var graphVisible = true;
+            var graphViewSolid = view.surface({
+                points: graphData,
+                color: "#D3D3D3",
+                shaded: false,
+                fill: true,
+                lineX: false,
+                lineY: false,
+                opacity: 0.9,
+                visible: graphVisible,
+                width: 0
+            });
+            var graphViewWire = view.surface({
+                points: graphData,
+                color: "#A9A9A9", shaded: false, fill: false, lineX: true, lineY: true, visible: graphVisible, width: 2
+            });
+            var tracePointData = view.array({
+                width: 1, channels: 3,
+                data: [[1, 2, 3]]
+            });
+            var tracePointView = view.point({ size: 20, color: "black", points: tracePointData, visible: true });
+            var xCurveData = view.interval({
+                axis: 1, channels: 3, width: 64
+            });
+            var yCurveData = view.interval({
+                axis: 3, channels: 3, width: 64
+            });
+            var budgetCurveData = view.interval({
+                axis: 1, channels: 3, width: 64
+            });
+            var utilityCurveData = view.interval({
+                axis: 1, channels: 3, width: 64
+            });
+            var xCurveVisible = false;
+            var xCurveView = view.line({
+                points: xCurveData,
+                color: "red", width: 20, visible: xCurveVisible
+            });
+            var yCurveVisible = false;
+            var yCurveView = view.line({
+                points: yCurveData,
+                color: "blue", width: 20, visible: yCurveVisible
+            });
+            var budgetCurveVisible = true;
+            var budgetCurveView = view.line({
+                points: budgetCurveData,
+                color: "green", width: 20, visible: budgetCurveVisible
+            });
+            var utilityCurveVisible = false;
+            var utilityCurveView = view.line({
+                points: utilityCurveData,
+                color: "purple", width: 20, visible: utilityCurveVisible
+            });
+            var xPlaneData = view.area({
+                axes: [1, 3], channels: 3, width: 2, height: 2,
+                expr: function (emit, x, z, i, j, t) {
+                    emit(x, z, traceY);
+                }
+            });
+            var xPlaneVisible = false;
+            var xPlaneView = view.surface({
+                points: xPlaneData,
+                color: "#ff0000", visible: xPlaneVisible, opacity: 0.5, zWrite: false
+            });
+            var yPlaneData = view.area({
+                axes: [3, 2], channels: 3, width: 2, height: 2,
+                expr: function (emit, y, z, i, j, t) {
+                    emit(traceX, z, y);
+                }
+            });
+            var yPlaneVisible = false;
+            var yPlaneView = view.surface({
+                points: yPlaneData,
+                color: "#0000FF", visible: yPlaneVisible, opacity: 0.5, zWrite: false
+            });
+            div.updateGraphFunc();
+            var toggle = function () {
+                budgetCurveVisible = !budgetCurveVisible;
+                budgetCurveView.set({ visible: budgetCurveVisible });
+                console.log('toggled!');
+                updateGraph();
+            };
+            div.mathbox = mathbox;
+        };
+        Mathbox.prototype.redraw = function () {
+            var div = _super.prototype.redraw.call(this, force);
+            div.render3d();
+            return div;
+        };
+        return Mathbox;
+    }(KG.PositionedDiv));
+    KG.Mathbox = Mathbox;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
@@ -5770,6 +6061,7 @@ var KG;
 /// <reference path="view/divObjects/controls.ts"/>
 /// <reference path="view/divObjects/gameMatrix.ts"/>
 /// <reference path="view/divObjects/ggbApplet.ts"/>
+/// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 // this file provides the interface with the overall web page

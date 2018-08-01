@@ -18,6 +18,7 @@
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
+/// <reference path="positionedObjects/mathbox.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>
 
 /// <reference path="defObjects/graphObjectGenerator.ts"/>
