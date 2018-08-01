@@ -5634,22 +5634,27 @@ var KG;
         Mathbox.prototype.draw = function (layer) {
             console.log('creating mathbox container');
             var div = this;
-            div.rootElement = layer.append('div').style('position', 'absolute').style('border', 'thin blue solid');
-            div.mathbox = mathBox({
-                plugins: ['core', 'controls', 'cursor', 'mathbox'],
-                controls: { klass: THREE.OrbitControls },
-                element: div.rootElement.node()
-            });
-            if (div.mathbox.fallback)
-                throw "WebGL not supported";
-            div.three = div.mathbox.three;
-            div.three.renderer.setClearColor(new THREE.Color(0xFFFF00), 1.0);
-            div.mathbox.camera({ proxy: true, position: [-4, 4, 2], eulerOrder: "xzy" });
+            div.rootElement = layer.append('div').style('position', 'absolute');
             return div;
         };
         Mathbox.prototype.render3d = function () {
             console.log('render3d called');
             var div = this;
+            if (div.mathbox == undefined && div.rootElement.node().clientWidth > 10) {
+                div.mathbox = mathBox({
+                    plugins: ['core', 'controls', 'cursor', 'mathbox'],
+                    controls: { klass: THREE.OrbitControls },
+                    element: div.rootElement.node()
+                });
+                if (div.mathbox.fallback)
+                    throw "WebGL not supported";
+                div.three = div.mathbox.three;
+                div.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+                div.mathbox.camera({ proxy: true, position: [-4, 4, 2], eulerOrder: "xzy" });
+            }
+            else {
+                return div;
+            }
             var mathbox = div.mathbox;
             var three = div.three;
             var graphData, view;
@@ -5662,7 +5667,9 @@ var KG;
             div.a = 0.5;
             var xMin = 0, xMax = 5, yMin = 0, yMax = 5, zMin = 0, zMax = 5;
             div.updateGraphFunc = function () {
-                var zFunc = function (x, y) { return Math.pow(x * y, 0.5); };
+                var zFunc = function (x, y) {
+                    return Math.pow(x * y, 0.5);
+                };
                 graphData.set("expr", function (emit, x, y, i, j, t) {
                     emit(x, zFunc(x, y), y);
                 });
@@ -5696,8 +5703,8 @@ var KG;
                 div.updateGraphFunc();
             };
             view = mathbox.cartesian({
-                range: [[0, 50], [yMin, yMax], [zMin, zMax]],
-                scale: [2, 1, 2]
+                range: [[xMin, xMax], [yMin, yMax], [zMin, zMax]],
+                scale: [2, 2, 2]
             });
             var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
             var xScale = view.scale({ axis: 3, divide: 10, nice: true, zero: true });
@@ -5712,7 +5719,7 @@ var KG;
             var zAxis = view.axis({ axis: 2, width: 8, detail: 40, color: "black" });
             var zScale = view.scale({ axis: 2, divide: 5, nice: true, zero: false });
             var zTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var zFormat = view.format({ digits: 2, font: "Arial", weight: "bold", style: "normal", source: zScale });
+            var zFormat = view.format({ digits: 2, style: "normal", source: zScale });
             var zTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: zScale, text: zFormat });
             view.grid({ axes: [1, 3], width: 2, divideX: 20, divideY: 20, opacity: 0.3 });
             var graphData = view.area({
@@ -5808,6 +5815,7 @@ var KG;
         };
         Mathbox.prototype.redraw = function () {
             var div = _super.prototype.redraw.call(this);
+            console.log('called redraw');
             div.render3d();
             return div;
         };
