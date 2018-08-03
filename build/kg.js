@@ -5911,11 +5911,14 @@ var KG;
             _this = _super.call(this, def) || this;
             return _this;
         }
-        MathboxObject.prototype.mathboxExists = function () {
-            return this.mathbox != undefined;
-        };
         MathboxObject.prototype.onGraph = function () {
             return true; // we won't check yet to see if it's on the graph...
+        };
+        MathboxObject.prototype.displayElement = function (show) {
+            var mbo = this;
+            if (mbo.hasOwnProperty("mo")) {
+                this.mo.set("visible", show);
+            }
         };
         return MathboxObject;
     }(KG.ViewObject));
@@ -6004,16 +6007,20 @@ var KG;
         MathboxPoint.prototype.draw = function () {
             var p = this;
             p.pointData = p.mathbox.mathboxView.array({
-                width: 1, channels: 3,
-                data: [[0, 0, 0]]
+                width: 1,
+                channels: 3
             });
-            p.pointObject = p.mathbox.mathboxView.point({ size: 20, color: "black", points: p.pointData, visible: true });
+            p.mo = p.mathbox.mathboxView.point({
+                size: 20,
+                points: p.pointData
+            });
             return p;
         };
         MathboxPoint.prototype.redraw = function () {
             var p = this;
             console.log(p);
             p.pointData.set("data", [[p.y, p.z, p.x]]);
+            p.mo.set("color", p.stroke);
             return p;
         };
         return MathboxPoint;

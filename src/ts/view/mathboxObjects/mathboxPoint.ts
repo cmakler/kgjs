@@ -34,11 +34,14 @@ module KG {
         draw() {
             let p = this;
             p.pointData = p.mathbox.mathboxView.array({
-                width: 1, channels: 3,
-                data: [[0, 0, 0]]
+                width: 1,
+                channels: 3
             });
 
-            p.pointObject = p.mathbox.mathboxView.point({size: 20, color: "black", points: p.pointData, visible: true});
+            p.mo = p.mathbox.mathboxView.point({
+                size: 20,
+                points: p.pointData
+            });
             return p;
         }
 
@@ -46,6 +49,7 @@ module KG {
             let p = this;
             console.log(p);
             p.pointData.set("data", [[p.y, p.z, p.x]]);
+            p.mo.set("color", p.stroke);
             return p;
         }
 

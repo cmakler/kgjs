@@ -70,6 +70,7 @@ module KG {
         public markedElement;
         public alwaysUpdate: boolean;
 
+        public show;
         public fill;
         public opacity;
         public stroke;
