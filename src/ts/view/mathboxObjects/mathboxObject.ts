@@ -3,7 +3,7 @@
 module KG {
 
     export interface MathboxObjectDefinition extends ViewObjectDefinition {
-
+        mathbox: Mathbox;
     }
 
     export interface IMathboxObject extends IViewObject {
@@ -15,19 +15,16 @@ module KG {
         public mathbox;
 
         constructor(def: MathboxObjectDefinition) {
-            setDefaults(def, {
-                interactive: false
-            });
-            setProperties(def, 'updatables', []);
-            setProperties(def, 'constants', []);
-
+            setProperties(def, 'constants', ['mathbox']);
             super(def);
-
-            let mo = this;
         }
 
         mathboxExists() {
             return this.mathbox != undefined;
+        }
+
+        onGraph() {
+            return true; // we won't check yet to see if it's on the graph...
         }
 
     }

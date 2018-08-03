@@ -1740,6 +1740,78 @@ var KGAuthor;
     }(KGAuthor.GraphObject));
     KGAuthor.Rectangle = Rectangle;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxObject = /** @class */ (function (_super) {
+        __extends(MathboxObject, _super);
+        function MathboxObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return MathboxObject;
+    }(KGAuthor.AuthoringObject));
+    KGAuthor.MathboxObject = MathboxObject;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxAxis = /** @class */ (function (_super) {
+        __extends(MathboxAxis, _super);
+        function MathboxAxis(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxAxis';
+            return _this;
+        }
+        return MathboxAxis;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxAxis = MathboxAxis;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxPoint = /** @class */ (function (_super) {
+        __extends(MathboxPoint, _super);
+        function MathboxPoint(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxPoint';
+            return _this;
+        }
+        return MathboxPoint;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxPoint = MathboxPoint;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxLine = /** @class */ (function (_super) {
+        __extends(MathboxLine, _super);
+        function MathboxLine(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxAxis';
+            return _this;
+        }
+        return MathboxLine;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxLine = MathboxLine;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxArea = /** @class */ (function (_super) {
+        __extends(MathboxArea, _super);
+        function MathboxArea(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxAxis';
+            return _this;
+        }
+        return MathboxArea;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxArea = MathboxArea;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
@@ -3731,6 +3803,11 @@ var KGAuthor;
 /// <reference path="graphObjects/dropline.ts"/>
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
+/// <reference path="mathboxObjects/mathboxObject.ts"/>
+/// <reference path="mathboxObjects/mathboxAxis.ts"/>
+/// <reference path="mathboxObjects/mathboxPoint.ts"/>
+/// <reference path="mathboxObjects/mathboxLine.ts"/>
+/// <reference path="mathboxObjects/mathboxArea.ts"/>
 /// <reference path="divObjects/divObject.ts"/>
 /// <reference path="divObjects/positionedDiv.ts"/>
 /// <reference path="divObjects/label.ts"/>
@@ -4866,6 +4943,7 @@ var KG;
         };
         Axis.prototype.redraw = function () {
             var a = this;
+            console.log(a);
             switch (a.orient) {
                 case 'bottom':
                     a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
@@ -5621,203 +5699,63 @@ var KG;
         function Mathbox(def) {
             var _this = this;
             KG.setDefaults(def, {
-                params: [],
-                objects: [],
-                axisLabels: []
+                objects: []
             });
-            KG.setProperties(def, 'updatables', def.params);
-            KG.setProperties(def, 'constants', ['axes', 'params']);
             _this = _super.call(this, def) || this;
+            var mb = _this;
+            def.axes.forEach(function (a) {
+                a.mathbox = mb;
+                a.model = mb.model;
+            });
+            mb.xAxis = new KG.MathboxXAxis(def.axes[0]);
+            mb.yAxis = new KG.MathboxYAxis(def.axes[1]);
+            mb.zAxis = new KG.MathboxZAxis(def.axes[2]);
+            mb.objectDefs = def.objects;
             return _this;
         }
-        // create div for mathbox
+        Mathbox.prototype.initMathbox = function () {
+            var mb = this;
+            mb.mathbox = mathBox({
+                plugins: ['core', 'controls', 'cursor', 'mathbox'],
+                controls: { klass: THREE.OrbitControls },
+                element: mb.rootElement.node()
+            });
+            if (mb.mathbox.fallback)
+                throw "WebGL not supported";
+            mb.three = mb.mathbox.three;
+            mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+            mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
+            mb.mathboxView = mb.mathbox.cartesian({ scale: [1, 1, 1] });
+            mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
+            mb.xAxis.redraw();
+            mb.yAxis.redraw();
+            mb.zAxis.redraw();
+            mb.objects = [];
+            mb.objectDefs.forEach(function (td) {
+                td.def.mathbox = mb;
+                td.def.model = mb.model;
+                var mbo = new KG[td.type](td.def);
+                mbo.draw().update();
+            });
+            return mb;
+        };
+        // create mb for mathbox
         Mathbox.prototype.draw = function (layer) {
             console.log('creating mathbox container');
-            var div = this;
-            div.rootElement = layer.append('div').style('position', 'absolute');
-            return div;
-        };
-        Mathbox.prototype.render3d = function () {
-            console.log('render3d called');
-            var div = this;
-            if (div.mathbox == undefined && div.rootElement.node().clientWidth > 10) {
-                div.mathbox = mathBox({
-                    plugins: ['core', 'controls', 'cursor', 'mathbox'],
-                    controls: { klass: THREE.OrbitControls },
-                    element: div.rootElement.node()
-                });
-                if (div.mathbox.fallback)
-                    throw "WebGL not supported";
-                div.three = div.mathbox.three;
-                div.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
-                div.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "xzy" });
-                div.mathboxView = div.mathbox.cartesian({
-                    scale: [1, 1, 1]
-                });
-            }
-            else {
-                return div;
-            }
-            var mathbox = div.mathbox;
-            var three = div.three;
-            var graphData, view;
-            var functionText = "(x)^(0.5) * (y)^(0.5)";
-            var pointText = "(1,1)";
-            var priceText = "(1,1)";
-            var traceX = 1, traceY = 1, traceZ = 1;
-            var priceX = 1, priceY = 1;
-            var budget = (priceX * traceX) + (priceY * traceY);
-            div.a = 0.5;
-            var xMin = 0, xMax = 50, yMin = 0, yMax = 50, zMin = 0, zMax = 50;
-            div.updateGraphFunc = function () {
-                var zFunc = function (x, y) {
-                    return Math.pow(x * y, 0.5);
-                };
-                graphData.set("expr", function (emit, x, y, i, j, t) {
-                    emit(x, zFunc(x, y), y);
-                });
-                var tempString = pointText.replace(/\(|\)/g, " ");
-                var tempArray = tempString.split(",");
-                var tempPriceString = priceText.replace(/\(|\)/g, " ");
-                var tempPriceArray = tempPriceString.split(",");
-                traceX = Number(tempArray[0]);
-                traceY = Number(tempArray[1]);
-                traceZ = zFunc(traceX, traceY);
-                priceX = Number(tempPriceArray[0]);
-                priceY = Number(tempPriceArray[1]);
-                budget = (priceX * traceX) + (priceY * traceY);
-                tracePointData.set("data", [[traceX, traceZ, traceY]]);
-                xCurveData.set("expr", function (emit, x, i, t) {
-                    emit(x, zFunc(x, traceY), traceY);
-                });
-                yCurveData.set("expr", function (emit, y, j, t) {
-                    emit(traceX, zFunc(traceX, y), y);
-                });
-                budgetCurveData.set("expr", function (emit, x, y, t) {
-                    emit((budget - priceX * x) / priceY, zFunc(x, (budget - priceX * x) / priceY), x);
-                });
-                utilityCurveData.set("expr", function (emit, x, y, i, j, t) {
-                    emit(zFunc(traceX, traceY) / x, zFunc(traceX, traceY), x);
-                });
-                view.set("range", [[xMin, xMax], [yMin, yMax], [zMin, zMax]]);
-            };
-            // end of updateGraph function ==============================================================
-            var updateGraph = function () {
-                div.updateGraphFunc();
-            };
-            view = div.mathboxView;
-            var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
-            var xScale = view.scale({ axis: 3, divide: 5, nice: true, zero: true });
-            var xTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
-            var xFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: xScale });
-            var xTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat });
-            var yAxis = view.axis({ axis: 1, width: 8, detail: 40, color: "black" });
-            var yScale = view.scale({ axis: 1, divide: 5, nice: true, zero: false });
-            var yTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
-            var yFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: yScale });
-            var yTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: yScale, text: yFormat });
-            var zAxis = view.axis({ axis: 2, width: 8, detail: 40, color: "black" });
-            var zScale = view.scale({ axis: 2, divide: 5, nice: true, zero: false });
-            var zTicks = view.ticks({ width: 5, size: 10, color: "black", zBias: 2 });
-            var zFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: zScale });
-            var zTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: zScale, text: zFormat });
-            view.grid({ axes: [1, 3], width: 2, divideX: 20, divideY: 20, opacity: 0.3 });
-            var graphData = view.area({
-                axes: [1, 3], channels: 3, width: 64, height: 64,
-                expr: function (emit, x, y, i, j, t) {
-                    var z = x * y;
-                    emit(x, z, y);
-                }
-            });
-            var graphVisible = true;
-            var graphViewSolid = view.surface({
-                points: graphData,
-                color: "#D3D3D3",
-                shaded: false,
-                fill: true,
-                lineX: false,
-                lineY: false,
-                opacity: 0.9,
-                visible: graphVisible,
-                width: 0
-            });
-            var graphViewWire = view.surface({
-                points: graphData,
-                color: "#A9A9A9", shaded: false, fill: false, lineX: true, lineY: true, visible: graphVisible, width: 2
-            });
-            var tracePointData = view.array({
-                width: 1, channels: 3,
-                data: [[1, 2, 3]]
-            });
-            var tracePointView = view.point({ size: 20, color: "black", points: tracePointData, visible: true });
-            var xCurveData = view.interval({
-                axis: 1, channels: 3, width: 64
-            });
-            var yCurveData = view.interval({
-                axis: 3, channels: 3, width: 64
-            });
-            var budgetCurveData = view.interval({
-                axis: 1, channels: 3, width: 64
-            });
-            var utilityCurveData = view.interval({
-                axis: 1, channels: 3, width: 64
-            });
-            var xCurveVisible = false;
-            var xCurveView = view.line({
-                points: xCurveData,
-                color: "red", width: 20, visible: xCurveVisible
-            });
-            var yCurveVisible = false;
-            var yCurveView = view.line({
-                points: yCurveData,
-                color: "blue", width: 20, visible: yCurveVisible
-            });
-            var budgetCurveVisible = true;
-            var budgetCurveView = view.line({
-                points: budgetCurveData,
-                color: "green", width: 20, visible: budgetCurveVisible
-            });
-            var utilityCurveVisible = false;
-            var utilityCurveView = view.line({
-                points: utilityCurveData,
-                color: "purple", width: 20, visible: utilityCurveVisible
-            });
-            var xPlaneData = view.area({
-                axes: [1, 3], channels: 3, width: 2, height: 2,
-                expr: function (emit, x, z, i, j, t) {
-                    emit(x, z, traceY);
-                }
-            });
-            var xPlaneVisible = false;
-            var xPlaneView = view.surface({
-                points: xPlaneData,
-                color: "#ff0000", visible: xPlaneVisible, opacity: 0.5, zWrite: false
-            });
-            var yPlaneData = view.area({
-                axes: [3, 2], channels: 3, width: 2, height: 2,
-                expr: function (emit, y, z, i, j, t) {
-                    emit(traceX, z, y);
-                }
-            });
-            var yPlaneVisible = false;
-            var yPlaneView = view.surface({
-                points: yPlaneData,
-                color: "#0000FF", visible: yPlaneVisible, opacity: 0.5, zWrite: false
-            });
-            div.updateGraphFunc();
-            var toggle = function () {
-                budgetCurveVisible = !budgetCurveVisible;
-                budgetCurveView.set({ visible: budgetCurveVisible });
-                console.log('toggled!');
-                updateGraph();
-            };
-            div.mathbox = mathbox;
+            var mb = this;
+            mb.rootElement = layer.append('div').style('position', 'absolute');
+            return mb;
         };
         Mathbox.prototype.redraw = function () {
-            var div = _super.prototype.redraw.call(this);
+            var mb = _super.prototype.redraw.call(this);
             console.log('called redraw');
-            div.render3d();
-            return div;
+            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10) {
+                mb.initMathbox();
+            }
+            else {
+                return mb;
+            }
+            return mb;
         };
         return Mathbox;
     }(KG.PositionedDiv));
@@ -5969,17 +5907,15 @@ var KG;
         __extends(MathboxObject, _super);
         function MathboxObject(def) {
             var _this = this;
-            KG.setDefaults(def, {
-                interactive: false
-            });
-            KG.setProperties(def, 'updatables', []);
-            KG.setProperties(def, 'constants', []);
+            KG.setProperties(def, 'constants', ['mathbox']);
             _this = _super.call(this, def) || this;
-            var mo = _this;
             return _this;
         }
         MathboxObject.prototype.mathboxExists = function () {
             return this.mathbox != undefined;
+        };
+        MathboxObject.prototype.onGraph = function () {
+            return true; // we won't check yet to see if it's on the graph...
         };
         return MathboxObject;
     }(KG.ViewObject));
@@ -5993,25 +5929,96 @@ var KG;
             var _this = this;
             KG.setDefaults(def, {
                 ticks: 5,
-                intercept: 0
+                min: 0,
+                max: 10
             });
-            KG.setProperties(def, 'constants', ['orient']);
-            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label', 'min', 'max', 'otherMin', 'otherMax']);
+            KG.setProperties(def, 'constants', ['axisNumber', 'ticks']);
+            KG.setProperties(def, 'updatables', ['ticks', 'label', 'min', 'max']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         MathboxAxis.prototype.redraw = function () {
-            var view = this.mathbox.view;
-            var xAxis = view.axis({ axis: 3, width: 8, detail: 40, color: "black" });
-            var xScale = view.scale({ axis: 3, divide: 10, nice: true, zero: true });
-            var xTicks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var xFormat = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: xScale });
-            var xTicksLabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: xScale, text: xFormat });
-            return this;
+            var a = this;
+            console.log(a);
+            var view = a.mathbox.mathboxView;
+            view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
+            var axis = view.axis({ axis: a.axisNumber, width: 8, detail: 40, color: "black" });
+            var scale = view.scale({ axis: a.axisNumber, divide: a.ticks, nice: true, zero: true });
+            var ticks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var format = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: scale });
+            var ticklabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: scale, text: format });
+            return a;
         };
         return MathboxAxis;
     }(KG.MathboxObject));
     KG.MathboxAxis = MathboxAxis;
+    var MathboxXAxis = /** @class */ (function (_super) {
+        __extends(MathboxXAxis, _super);
+        function MathboxXAxis(def) {
+            var _this = this;
+            def.axisNumber = 3;
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return MathboxXAxis;
+    }(MathboxAxis));
+    KG.MathboxXAxis = MathboxXAxis;
+    var MathboxYAxis = /** @class */ (function (_super) {
+        __extends(MathboxYAxis, _super);
+        function MathboxYAxis(def) {
+            var _this = this;
+            def.axisNumber = 1;
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return MathboxYAxis;
+    }(MathboxAxis));
+    KG.MathboxYAxis = MathboxYAxis;
+    var MathboxZAxis = /** @class */ (function (_super) {
+        __extends(MathboxZAxis, _super);
+        function MathboxZAxis(def) {
+            var _this = this;
+            def.axisNumber = 2;
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return MathboxZAxis;
+    }(MathboxAxis));
+    KG.MathboxZAxis = MathboxZAxis;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxPoint = /** @class */ (function (_super) {
+        __extends(MathboxPoint, _super);
+        function MathboxPoint(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                x: 0,
+                y: 0,
+                z: 0
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxPoint.prototype.draw = function () {
+            var p = this;
+            p.pointData = p.mathbox.mathboxView.array({
+                width: 1, channels: 3,
+                data: [[0, 0, 0]]
+            });
+            p.pointObject = p.mathbox.mathboxView.point({ size: 20, color: "black", points: p.pointData, visible: true });
+            return p;
+        };
+        MathboxPoint.prototype.redraw = function () {
+            var p = this;
+            console.log(p);
+            p.pointData.set("data", [[p.y, p.z, p.x]]);
+            return p;
+        };
+        return MathboxPoint;
+    }(KG.MathboxObject));
+    KG.MathboxPoint = MathboxPoint;
 })(KG || (KG = {}));
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
@@ -6054,6 +6061,7 @@ var KG;
 /// <reference path="view/viewObjects/label.ts" />
 /// <reference path="view/mathboxObjects/mathboxObject.ts" />
 /// <reference path="view/mathboxObjects/mathboxAxis.ts" />
+/// <reference path="view/mathboxObjects/mathboxPoint.ts" />
 // this file provides the interface with the overall web page
 var views = [];
 // initialize the diagram from divs with class kg-container

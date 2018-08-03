@@ -145,7 +145,7 @@ module KG {
             return vo;
         }
 
-        draw(layer: any, inDef ?: boolean) {
+        draw(layer?: any, inDef ?: boolean) {
             return this;
         }
 
