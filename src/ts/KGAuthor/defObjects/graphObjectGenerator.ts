@@ -3,7 +3,7 @@
 module KGAuthor {
 
     export interface GraphObjectGeneratorDefinition extends AuthoringObjectDefinition {
-
+        include3d?: boolean;
     }
 
     export class GraphObjectGenerator extends AuthoringObject {

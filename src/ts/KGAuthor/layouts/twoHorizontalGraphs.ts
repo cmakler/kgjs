@@ -217,10 +217,10 @@ module KGAuthor {
                 sidebarDef = def['sidebar'];
 
             mathboxDef.position = {
-                "x": 0.1,
+                "x": 0.025,
                 "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "width": 0.444,
+                "height": 0.95
             };
 
             graphDef.position = {
@@ -230,7 +230,7 @@ module KGAuthor {
                 "height": 0.9
             };
 
-            l.subObjects.push(new Mathbox(mathboxDef));
+            l.subObjects.push(new MathboxContainer(mathboxDef));
             l.subObjects.push(new Graph(graphDef));
             l.subObjects.push(new Sidebar(sidebarDef));
 

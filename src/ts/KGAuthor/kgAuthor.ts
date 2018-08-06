@@ -18,7 +18,7 @@
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
-/// <reference path="positionedObjects/mathbox.ts"/>
+/// <reference path="positionedObjects/mathboxContainer.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>
 
 /// <reference path="defObjects/graphObjectGenerator.ts"/>
@@ -51,6 +51,7 @@
 /// <reference path="divObjects/controls.ts"/>
 /// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
+/// <reference path="divObjects/mathbox.ts"/>
 
 
 

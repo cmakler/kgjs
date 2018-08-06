@@ -36,6 +36,9 @@ module KG {
             const a = this;
             console.log(a);
             let view = a.mathbox.mathboxView;
+            if(view == undefined) {
+                return a;
+            }
             view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
             let axis = view.axis({axis: a.axisNumber, width: 8, detail: 40, color: "black"});
             let scale = view.scale({axis: a.axisNumber, divide: a.ticks, nice: true, zero: true});
@@ -51,7 +54,9 @@ module KG {
 
         constructor(def) {
             def.axisNumber = 3;
-            super(def)
+            super(def);
+            let xAxis = this;
+            xAxis.mathbox.xAxis = xAxis;
         }
 
     }
@@ -60,7 +65,9 @@ module KG {
 
         constructor(def) {
             def.axisNumber = 1;
-            super(def)
+            super(def);
+            let yAxis = this;
+            yAxis.mathbox.yAxis = yAxis;
         }
 
     }
@@ -69,7 +76,9 @@ module KG {
 
         constructor(def) {
             def.axisNumber = 2;
-            super(def)
+            super(def);
+            let zAxis = this;
+            zAxis.mathbox.zAxis = zAxis;
         }
 
     }

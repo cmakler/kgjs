@@ -624,10 +624,10 @@ var KGAuthor;
             var l = _this;
             var mathboxDef = def['mathbox'], graphDef = def['graph'], sidebarDef = def['sidebar'];
             mathboxDef.position = {
-                "x": 0.1,
+                "x": 0.025,
                 "y": 0.025,
-                "width": 0.369,
-                "height": 0.9
+                "width": 0.444,
+                "height": 0.95
             };
             graphDef.position = {
                 "x": 0.6,
@@ -635,7 +635,7 @@ var KGAuthor;
                 "width": 0.369,
                 "height": 0.9
             };
-            l.subObjects.push(new KGAuthor.Mathbox(mathboxDef));
+            l.subObjects.push(new KGAuthor.MathboxContainer(mathboxDef));
             l.subObjects.push(new KGAuthor.Graph(graphDef));
             l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
             return _this;
@@ -1077,22 +1077,37 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Mathbox = /** @class */ (function (_super) {
-        __extends(Mathbox, _super);
-        function Mathbox(def) {
+    var MathboxContainer = /** @class */ (function (_super) {
+        __extends(MathboxContainer, _super);
+        function MathboxContainer(def) {
             var _this = this;
+            // the container, as a div, must have an x and y axis of its own.
+            // so we must first push down the author's specified x, y, and z axes down to be objects
+            def.objects.push({
+                "type": "MathboxXAxis",
+                "def": def.xAxis
+            });
+            def.objects.push({
+                "type": "MathboxYAxis",
+                "def": def.yAxis
+            });
+            def.objects.push({
+                "type": "MathboxZAxis",
+                "def": def.zAxis
+            });
+            delete def.zAxis;
             def.xAxis = { min: 0, max: 1 };
             def.yAxis = { min: 0, max: 1 };
             _this = _super.call(this, def) || this;
             var mb = _this;
             def.xScaleName = mb.xScale.name;
             def.yScaleName = mb.yScale.name;
-            mb.subObjects.push(new KGAuthor.MathboxApplet(def));
+            mb.subObjects.push(new KGAuthor.Mathbox(def));
             return _this;
         }
-        return Mathbox;
+        return MathboxContainer;
     }(KGAuthor.PositionedObject));
-    KGAuthor.Mathbox = Mathbox;
+    KGAuthor.MathboxContainer = MathboxContainer;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1745,8 +1760,10 @@ var KGAuthor;
 (function (KGAuthor) {
     var MathboxObject = /** @class */ (function (_super) {
         __extends(MathboxObject, _super);
-        function MathboxObject() {
-            return _super !== null && _super.apply(this, arguments) || this;
+        function MathboxObject(def) {
+            var _this = _super.call(this, def) || this;
+            _this.mb = def.mb;
+            return _this;
         }
         return MathboxObject;
     }(KGAuthor.AuthoringObject));
@@ -1761,6 +1778,15 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var a = _this;
             a.type = 'MathboxAxis';
+            a.mb.addObject({
+                "type": "MathboxLabel",
+                "def": {
+                    "x": 50,
+                    "y": 0,
+                    "z": 0,
+                    "text": "Good 1"
+                }
+            });
             return _this;
         }
         return MathboxAxis;
@@ -1937,16 +1963,26 @@ var KGAuthor;
         return GeoGebraApplet;
     }(KGAuthor.DivObject));
     KGAuthor.GeoGebraApplet = GeoGebraApplet;
-    var MathboxApplet = /** @class */ (function (_super) {
-        __extends(MathboxApplet, _super);
-        function MathboxApplet(def) {
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Mathbox = /** @class */ (function (_super) {
+        __extends(Mathbox, _super);
+        function Mathbox(def) {
             var _this = _super.call(this, def) || this;
-            _this.type = 'Mathbox';
+            var mb = _this;
+            mb.type = 'Mathbox';
+            def.objects.forEach(function (mbo) { mbo.def.mb = mb; });
             return _this;
         }
-        return MathboxApplet;
+        Mathbox.prototype.addObject = function (mbo) {
+            this.def.objects.push(mbo);
+            return this;
+        };
+        return Mathbox;
     }(KGAuthor.DivObject));
-    KGAuthor.MathboxApplet = MathboxApplet;
+    KGAuthor.Mathbox = Mathbox;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../eg.ts" />
 var KGAuthor;
@@ -2852,6 +2888,7 @@ var KGAuthor;
             _this = _super.call(this, def, graph) || this;
             var curve = _this;
             var utilityFunction = KGAuthor.extractUtilityFunction(def);
+            curve.utilityFunction = utilityFunction;
             curve.subObjects = curve.subObjects.concat(utilityFunction.levelCurve(def, graph));
             if (!def.inMap) {
                 if (!!def.showPreferred) {
@@ -3786,7 +3823,7 @@ var KGAuthor;
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
-/// <reference path="positionedObjects/mathbox.ts"/>
+/// <reference path="positionedObjects/mathboxContainer.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>
 /// <reference path="defObjects/graphObjectGenerator.ts"/>
 /// <reference path="defObjects/defObject.ts"/>
@@ -3815,6 +3852,7 @@ var KGAuthor;
 /// <reference path="divObjects/controls.ts"/>
 /// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
+/// <reference path="divObjects/mathbox.ts"/>
 /// <reference path="econ/eg.ts"/>
 /// <reference path="../kg.ts" />
 var KG;
@@ -4151,19 +4189,34 @@ var KG;
             KG.setProperties(def, 'updatables', ['ind', 'min', 'max']);
             _this = _super.call(this, def) || this;
             _this.fnStringDef = def.fn;
+            _this.fnZStringDef = def.fnZ;
             _this.yFnStringDef = def.yFn;
+            _this.yFnZStringDef = def.yFnZ;
             return _this;
         }
-        UnivariateFunction.prototype.eval = function (input) {
+        UnivariateFunction.prototype.eval = function (input, z) {
             var fn = this;
-            if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                return fn.yCompiledFunction.eval({ y: input });
+            if (z) {
+                if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
+                    return fn.yzCompiledFunction.eval({ y: input });
+                }
+                else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
+                    return fn.zCompiledFunction.eval({ y: input });
+                }
+                else if (fn.hasOwnProperty('zCompiledFunction')) {
+                    return fn.zCompiledFunction.eval({ x: input });
+                }
             }
-            else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
-                return fn.compiledFunction.eval({ y: input });
-            }
-            else if (fn.hasOwnProperty('compiledFunction')) {
-                return fn.compiledFunction.eval({ x: input });
+            else {
+                if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
+                    return fn.yCompiledFunction.eval({ y: input });
+                }
+                else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
+                    return fn.compiledFunction.eval({ y: input });
+                }
+                else if (fn.hasOwnProperty('compiledFunction')) {
+                    return fn.compiledFunction.eval({ x: input });
+                }
             }
         };
         UnivariateFunction.prototype.generateData = function (min, max) {
@@ -4182,6 +4235,15 @@ var KG;
             }
             this.data = data;
             return data;
+        };
+        UnivariateFunction.prototype.mathboxFn = function () {
+            var fn = this;
+            return function (emit, x) {
+                var y = fn.eval(x), z = fn.eval(x, true);
+                if (y <= 50 && z <= 50) {
+                    emit(y, z, x);
+                }
+            };
         };
         UnivariateFunction.prototype.update = function (force) {
             var fn = _super.prototype.update.call(this, force);
@@ -4202,6 +4264,20 @@ var KG;
                     fn.hasChanged = true;
                     fn.yFnString = fn.updateFunctionString(fn.yFnStringDef, fn.scope);
                     fn.yCompiledFunction = math.compile(fn.yFnString);
+                }
+            }
+            if (fn.def.hasOwnProperty('fnZ')) {
+                if (fn.fnZString != fn.updateFunctionString(fn.fnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.fnZString = fn.updateFunctionString(fn.fnZStringDef, fn.scope);
+                    fn.zCompiledFunction = math.compile(fn.fnZString);
+                }
+            }
+            if (fn.def.hasOwnProperty('yFnZ')) {
+                if (fn.yFnZString != fn.updateFunctionString(fn.yFnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.yFnZString = fn.updateFunctionString(fn.yFnZStringDef, fn.scope);
+                    fn.yzCompiledFunction = math.compile(fn.yFnZString);
                 }
             }
             return fn;
@@ -4274,6 +4350,69 @@ var KG;
         return ParametricFunction;
     }(KG.MathFunction));
     KG.ParametricFunction = ParametricFunction;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var MathFunction = KG.MathFunction;
+    var MultivariateFunction = /** @class */ (function (_super) {
+        __extends(MultivariateFunction, _super);
+        function MultivariateFunction(def) {
+            var _this = _super.call(this, def) || this;
+            _this.fnStringDef = def.fn;
+            _this.domainConditionStringDef = def.domainCondition;
+            return _this;
+        }
+        MultivariateFunction.prototype.inDomain = function (x, y, z) {
+            var fn = this;
+            if (fn.hasOwnProperty('compiledDomainCondition')) {
+                return fn.compiledDomainCondition.eval({ x: x, y: y, z: z });
+            }
+            else {
+                return true;
+            }
+        };
+        MultivariateFunction.prototype.eval = function (x, y) {
+            var fn = this;
+            if (fn.hasOwnProperty('compiledFunction')) {
+                var z = fn.compiledFunction.eval({ x: x, y: y });
+                if (fn.inDomain(x, y, z)) {
+                    return z;
+                }
+            }
+        };
+        MultivariateFunction.prototype.mathboxFn = function () {
+            var fn = this;
+            return function (emit, x, y) {
+                emit(y, fn.eval(x, y), x);
+            };
+        };
+        MultivariateFunction.prototype.update = function (force) {
+            var fn = _super.prototype.update.call(this, force);
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            var originalString = fn.fnString, originalDomainCondition = fn.domainConditionString;
+            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
+                fn.compiledFunction = math.compile(fn.fnString);
+            }
+            if (fn.domainConditionStringDef != undefined) {
+                if (originalDomainCondition != fn.updateFunctionString(fn.domainConditionStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.domainConditionString = fn.updateFunctionString(fn.domainConditionStringDef, fn.scope);
+                    fn.compiledDomainCondition = math.compile(fn.domainConditionString);
+                }
+            }
+            return fn;
+        };
+        return MultivariateFunction;
+    }(MathFunction));
+    KG.MultivariateFunction = MultivariateFunction;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -5703,14 +5842,14 @@ var KG;
             });
             _this = _super.call(this, def) || this;
             var mb = _this;
-            def.axes.forEach(function (a) {
-                a.mathbox = mb;
-                a.model = mb.model;
-            });
-            mb.xAxis = new KG.MathboxXAxis(def.axes[0]);
-            mb.yAxis = new KG.MathboxYAxis(def.axes[1]);
-            mb.zAxis = new KG.MathboxZAxis(def.axes[2]);
             mb.objectDefs = def.objects;
+            mb.objects = [];
+            mb.objectDefs.forEach(function (td) {
+                td.def.mathbox = mb;
+                td.def.model = mb.model;
+                mb.objects.push(new KG[td.type](td.def));
+            });
+            console.log('created mathbox', mb);
             return _this;
         }
         Mathbox.prototype.initMathbox = function () {
@@ -5725,18 +5864,12 @@ var KG;
             mb.three = mb.mathbox.three;
             mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
             mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
-            mb.mathboxView = mb.mathbox.cartesian({ scale: [1, 1, 1] });
+            mb.mathboxView = mb.mathbox.cartesian({ scale: [0.9, 0.9, 0.9] });
             mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
             mb.xAxis.redraw();
             mb.yAxis.redraw();
             mb.zAxis.redraw();
-            mb.objects = [];
-            mb.objectDefs.forEach(function (td) {
-                td.def.mathbox = mb;
-                td.def.model = mb.model;
-                var mbo = new KG[td.type](td.def);
-                mbo.draw().update();
-            });
+            mb.objects.forEach(function (o) { o.draw().update(); });
             return mb;
         };
         // create mb for mathbox
@@ -5749,7 +5882,7 @@ var KG;
         Mathbox.prototype.redraw = function () {
             var mb = _super.prototype.redraw.call(this);
             console.log('called redraw');
-            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10) {
+            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10 && mb.zAxis != undefined) {
                 mb.initMathbox();
             }
             else {
@@ -5944,6 +6077,9 @@ var KG;
             var a = this;
             console.log(a);
             var view = a.mathbox.mathboxView;
+            if (view == undefined) {
+                return a;
+            }
             view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
             var axis = view.axis({ axis: a.axisNumber, width: 8, detail: 40, color: "black" });
             var scale = view.scale({ axis: a.axisNumber, divide: a.ticks, nice: true, zero: true });
@@ -5961,6 +6097,8 @@ var KG;
             var _this = this;
             def.axisNumber = 3;
             _this = _super.call(this, def) || this;
+            var xAxis = _this;
+            xAxis.mathbox.xAxis = xAxis;
             return _this;
         }
         return MathboxXAxis;
@@ -5972,6 +6110,8 @@ var KG;
             var _this = this;
             def.axisNumber = 1;
             _this = _super.call(this, def) || this;
+            var yAxis = _this;
+            yAxis.mathbox.yAxis = yAxis;
             return _this;
         }
         return MathboxYAxis;
@@ -5983,6 +6123,8 @@ var KG;
             var _this = this;
             def.axisNumber = 2;
             _this = _super.call(this, def) || this;
+            var zAxis = _this;
+            zAxis.mathbox.zAxis = zAxis;
             return _this;
         }
         return MathboxZAxis;
@@ -6012,13 +6154,13 @@ var KG;
             });
             p.mo = p.mathbox.mathboxView.point({
                 size: 20,
-                points: p.pointData
+                points: p.pointData,
+                zIndex: 4
             });
             return p;
         };
         MathboxPoint.prototype.redraw = function () {
             var p = this;
-            console.log(p);
             p.pointData.set("data", [[p.y, p.z, p.x]]);
             p.mo.set("color", p.stroke);
             return p;
@@ -6026,6 +6168,138 @@ var KG;
         return MathboxPoint;
     }(KG.MathboxObject));
     KG.MathboxPoint = MathboxPoint;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxCurve = /** @class */ (function (_super) {
+        __extends(MathboxCurve, _super);
+        function MathboxCurve(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                text: "#666666",
+                strokeWidth: 10
+            });
+            _this = _super.call(this, def) || this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            _this.fn = new KG.UnivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        MathboxCurve.prototype.draw = function () {
+            var c = this;
+            c.curveData = c.mathbox.mathboxView.interval({
+                axis: 1,
+                channels: 3,
+                width: c.fn.samplePoints
+            });
+            c.mo = c.mathbox.mathboxView.line({
+                points: c.curveData,
+                zIndex: 3
+            });
+            return c;
+        };
+        MathboxCurve.prototype.redraw = function () {
+            var c = this;
+            console.log(c);
+            c.curveData.set("expr", c.fn.mathboxFn());
+            c.mo.set("color", c.stroke);
+            c.mo.set("width", c.strokeWidth);
+            return c;
+        };
+        return MathboxCurve;
+    }(KG.MathboxObject));
+    KG.MathboxCurve = MathboxCurve;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxSurface = /** @class */ (function (_super) {
+        __extends(MathboxSurface, _super);
+        function MathboxSurface(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: "#666666",
+                strokeWidth: 10,
+                opacity: 0.2
+            });
+            _this = _super.call(this, def) || this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        MathboxSurface.prototype.draw = function () {
+            var s = this;
+            s.surfaceData = s.mathbox.mathboxView.area({
+                axes: [1, 3],
+                channels: 3,
+                width: s.fn.samplePoints,
+                height: s.fn.samplePoints
+            });
+            s.mo = s.mathbox.mathboxView.surface({
+                points: s.surfaceData,
+                shaded: false,
+                fill: true,
+                lineX: false,
+                lineY: false,
+                width: 0,
+                zIndex: 2
+            });
+            return s;
+        };
+        MathboxSurface.prototype.redraw = function () {
+            var c = this;
+            console.log(c);
+            c.surfaceData.set("expr", c.fn.mathboxFn());
+            c.mo.set("color", c.fill);
+            c.mo.set("opacity", c.opacity);
+            return c;
+        };
+        return MathboxSurface;
+    }(KG.MathboxObject));
+    KG.MathboxSurface = MathboxSurface;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxLabel = /** @class */ (function (_super) {
+        __extends(MathboxLabel, _super);
+        function MathboxLabel(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                text: "foo"
+            });
+            KG.setProperties(def, 'updatables', ['text']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxLabel.prototype.draw = function () {
+            var l = this;
+            l.pointData = l.mathbox.mathboxView.array({
+                width: 1,
+                channels: 3
+            });
+            l.labelData = l.mathbox.mathboxView.format({
+                font: "KaTeX_Main",
+                style: "normal"
+            });
+            l.mo = l.mathbox.mathboxView.label({
+                points: l.pointData,
+                zIndex: 4,
+                text: l.labelData
+            });
+            return l;
+        };
+        MathboxLabel.prototype.redraw = function () {
+            var l = _super.prototype.redraw.call(this);
+            l.labelData.set("data", [l.text]);
+            return l;
+        };
+        return MathboxLabel;
+    }(KG.MathboxPoint));
+    KG.MathboxLabel = MathboxLabel;
 })(KG || (KG = {}));
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
@@ -6039,6 +6313,7 @@ var KG;
 /// <reference path="math/mathFunction.ts" />
 /// <reference path="math/univariateFunction.ts" />
 /// <reference path="math/parametricFunction.ts" />
+/// <reference path="math/multivariateFunction.ts" />
 /// <reference path="controller/listeners/listener.ts" />
 /// <reference path="controller/listeners/dragListener.ts" />
 /// <reference path="controller/listeners/clickListener.ts" />
@@ -6069,6 +6344,9 @@ var KG;
 /// <reference path="view/mathboxObjects/mathboxObject.ts" />
 /// <reference path="view/mathboxObjects/mathboxAxis.ts" />
 /// <reference path="view/mathboxObjects/mathboxPoint.ts" />
+/// <reference path="view/mathboxObjects/mathboxCurve.ts" />
+/// <reference path="view/mathboxObjects/mathboxSurface.ts" />
+/// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 // this file provides the interface with the overall web page
 var views = [];
 // initialize the diagram from divs with class kg-container

@@ -14,14 +14,4 @@ module KGAuthor {
         }
     }
 
-    export class MathboxApplet extends DivObject {
-        constructor(def: GeoGebraAppletDefinition) {
-            super(def);
-            this.type = 'Mathbox';
-        }
-    }
-
-
-
-
 }

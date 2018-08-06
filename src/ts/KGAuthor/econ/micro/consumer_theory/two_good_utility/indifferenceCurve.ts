@@ -21,6 +21,8 @@ module KGAuthor {
         inMap?: boolean;
         showMapLevels?: boolean;
         level: string | number;
+        include2d?: boolean;
+        include3d?: boolean;
 
         // this are used if an object representing the utility function already exists
         utilityFunctionObject?: EconMultivariateFunction;
@@ -29,6 +31,8 @@ module KGAuthor {
 
 
     export class EconIndifferenceCurve extends GraphObjectGenerator {
+
+        utilityFunction: EconMultivariateFunction;
 
         constructor(def: IndifferenceCurveDefinition, graph) {
             if (def.inMap) {
@@ -71,6 +75,7 @@ module KGAuthor {
             super(def, graph);
             let curve = this;
             const utilityFunction = extractUtilityFunction(def);
+            curve.utilityFunction = utilityFunction;
             curve.subObjects = curve.subObjects.concat(utilityFunction.levelCurve(def, graph));
 
             if (!def.inMap) {

@@ -11,11 +11,10 @@ module KG {
 
     export class MathboxPoint extends MathboxObject {
 
-        private pointData: any;
-        private pointObject: any;
-        private x: number;
-        private y: number;
-        private z: number;
+        public pointData: any;
+        public x: number;
+        public y: number;
+        public z: number;
 
         constructor(def: MathboxPointDefinition) {
 
@@ -40,14 +39,14 @@ module KG {
 
             p.mo = p.mathbox.mathboxView.point({
                 size: 20,
-                points: p.pointData
+                points: p.pointData,
+                zIndex: 4
             });
             return p;
         }
 
         redraw() {
             let p = this;
-            console.log(p);
             p.pointData.set("data", [[p.y, p.z, p.x]]);
             p.mo.set("color", p.stroke);
             return p;

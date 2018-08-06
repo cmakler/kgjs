@@ -2,7 +2,9 @@
 module KG {
 
     export interface MathboxDefinition extends DivObjectDefinition {
-        axes: MathboxAxisDefinition[];
+        xAxis: MathboxAxisDefinition;
+        yAxis: MathboxAxisDefinition;
+        zAxis: MathboxAxisDefinition;
         objects: TypeAndDef[];
     }
 
@@ -27,19 +29,18 @@ module KG {
             });
             super(def);
             let mb = this;
-            def.axes.forEach(function (a) {
-                a.mathbox = mb;
-                a.model = mb.model;
-            });
-            mb.xAxis = new MathboxXAxis(def.axes[0]);
-            mb.yAxis = new MathboxYAxis(def.axes[1]);
-            mb.zAxis = new MathboxZAxis(def.axes[2]);
             mb.objectDefs = def.objects;
+            mb.objects = [];
+            mb.objectDefs.forEach(function (td) {
+                td.def.mathbox = mb;
+                td.def.model = mb.model;
+                mb.objects.push(new KG[td.type](td.def));
+            });
+            console.log('created mathbox', mb);
         }
 
         initMathbox() {
             let mb: Mathbox = this;
-
 
             mb.mathbox = mathBox({
                 plugins: ['core', 'controls', 'cursor', 'mathbox'],
@@ -51,19 +52,12 @@ module KG {
             mb.three = mb.mathbox.three;
             mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
             mb.mathbox.camera({proxy: true, position: [-3, 1, 1], eulerOrder: "yzx"});
-            mb.mathboxView = mb.mathbox.cartesian({scale: [1, 1, 1]});
+            mb.mathboxView = mb.mathbox.cartesian({scale: [0.9, 0.9, 0.9]});
             mb.mathboxView.grid({axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3});
             mb.xAxis.redraw();
             mb.yAxis.redraw();
             mb.zAxis.redraw();
-            mb.objects = [];
-
-            mb.objectDefs.forEach(function (td) {
-                td.def.mathbox = mb;
-                td.def.model = mb.model;
-                let mbo = new KG[td.type](td.def);
-                mbo.draw().update();
-            });
+            mb.objects.forEach(function(o) {o.draw().update()});
             return mb;
         }
 
@@ -78,7 +72,7 @@ module KG {
         redraw() {
             let mb = super.redraw();
             console.log('called redraw');
-            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10) {
+            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10 && mb.zAxis != undefined) {
                 mb.initMathbox();
             } else {
                 return mb;
