@@ -53,6 +53,7 @@ module KG {
 
     export class View implements IView {
 
+        public parsedData;
         private div: any;
         private svg: any;
         private model: Model;
@@ -61,7 +62,10 @@ module KG {
         private sidebar?: any;
 
         constructor(div: Element, data: ViewDefinition) {
+            this.render(data,div);
+        }
 
+        parse(data:ViewDefinition, div?) {
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -110,9 +114,14 @@ module KG {
                 data.objects.push({type: data.schema, def: {}})
             }
 
-            parsedData = KGAuthor.parse(data.objects, parsedData);
+            return KGAuthor.parse(data.objects, parsedData);
+        }
 
+        render(data,div) {
             let view = this;
+            const parsedData = view.parse(data, div);
+            div.innerHTML = "";
+            console.log('removing all children');
 
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
@@ -135,9 +144,9 @@ module KG {
             }
 
             view.addViewObjects(parsedData);
+            view.parsedData = parsedData;
 
             console.log('parsedData: ', parsedData);
-
         }
 
         // add view information (model, layer, scales) to an object

@@ -4651,6 +4651,9 @@ var KG;
     KG.addView = addView;
     var View = /** @class */ (function () {
         function View(div, data) {
+            this.render(data, div);
+        }
+        View.prototype.parse = function (data, div) {
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -4694,8 +4697,13 @@ var KG;
             if (data.hasOwnProperty('schema')) {
                 data.objects.push({ type: data.schema, def: {} });
             }
-            parsedData = KGAuthor.parse(data.objects, parsedData);
+            return KGAuthor.parse(data.objects, parsedData);
+        };
+        View.prototype.render = function (data, div) {
             var view = this;
+            var parsedData = view.parse(data, div);
+            div.innerHTML = "";
+            console.log('removing all children');
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
             // create scales
@@ -4713,8 +4721,9 @@ var KG;
                     .style('pointer-events', 'none');
             }
             view.addViewObjects(parsedData);
+            view.parsedData = parsedData;
             console.log('parsedData: ', parsedData);
-        }
+        };
         // add view information (model, layer, scales) to an object
         View.prototype.addViewToDef = function (def, layer) {
             var view = this;
