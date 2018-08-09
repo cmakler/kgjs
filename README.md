@@ -1,6 +1,9 @@
 # kg.js
 Javascript Renderer for KineticGraphs
 
+## See documentation page
+[Here](https://cmakler.github.io/kgjs/)
+
 ## What it does
 
 The purpose of kg.js is to provide a way to render interactive diagrams ("KineticGraphs") defined as a JSON.
