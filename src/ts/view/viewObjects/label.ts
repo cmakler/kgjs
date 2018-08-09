@@ -37,7 +37,7 @@ module KG {
                 yOffset = yAxisReversed ? 14 : -14;
 
             if (def.x == 'AXIS') {
-                def.x = def.xScale.domainMin;
+                def.x = 0;
                 def.align = xAxisReversed ? 'left' : 'right';
                 def.xPixelOffset = xOffset;
             }
@@ -49,7 +49,7 @@ module KG {
             }
 
             if (def.y == 'AXIS') {
-                def.y = def.yScale.domainMin;
+                def.y = 0;
                 def.yPixelOffset = yOffset;
             }
 

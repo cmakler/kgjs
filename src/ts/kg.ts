@@ -14,6 +14,7 @@
 /// <reference path="math/mathFunction.ts" />
 /// <reference path="math/univariateFunction.ts" />
 /// <reference path="math/parametricFunction.ts" />
+/// <reference path="math/multivariateFunction.ts" />
 
 /// <reference path="controller/listeners/listener.ts" />
 /// <reference path="controller/listeners/dragListener.ts" />
@@ -42,8 +43,16 @@
 /// <reference path="view/divObjects/controls.ts"/>
 /// <reference path="view/divObjects/gameMatrix.ts"/>
 /// <reference path="view/divObjects/ggbApplet.ts"/>
+/// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
+
+/// <reference path="view/mathboxObjects/mathboxObject.ts" />
+/// <reference path="view/mathboxObjects/mathboxAxis.ts" />
+/// <reference path="view/mathboxObjects/mathboxPoint.ts" />
+/// <reference path="view/mathboxObjects/mathboxCurve.ts" />
+/// <reference path="view/mathboxObjects/mathboxSurface.ts" />
+/// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 
 declare function renderMathInElement(node,delimiters);
 

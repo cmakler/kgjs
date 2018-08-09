@@ -40,6 +40,7 @@ module KG {
 
         redraw() {
             let a = this;
+            console.log(a);
             switch (a.orient) {
                 case 'bottom':
                     a.rootElement.attr('transform', `translate(0, ${a.yScale.scale(a.intercept)})`);

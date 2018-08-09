@@ -53,6 +53,7 @@ module KG {
 
     export class View implements IView {
 
+        public parsedData;
         private div: any;
         private svg: any;
         private model: Model;
@@ -61,7 +62,12 @@ module KG {
         private sidebar?: any;
 
         constructor(div: Element, data: ViewDefinition) {
+            this.render(data,div);
+        }
 
+        parse(data:ViewDefinition, div?) {
+
+            data.schema = data.schema || "Schema";
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -110,9 +116,14 @@ module KG {
                 data.objects.push({type: data.schema, def: {}})
             }
 
-            parsedData = KGAuthor.parse(data.objects, parsedData);
+            return KGAuthor.parse(data.objects, parsedData);
+        }
 
+        render(data,div) {
             let view = this;
+            const parsedData = view.parse(data, div);
+            div.innerHTML = "";
+            console.log('removing all children');
 
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
@@ -135,9 +146,9 @@ module KG {
             }
 
             view.addViewObjects(parsedData);
+            view.parsedData = parsedData;
 
             console.log('parsedData: ', parsedData);
-
         }
 
         // add view information (model, layer, scales) to an object
@@ -181,6 +192,7 @@ module KG {
                         const clipPathURL = randomString(10);
                         const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
+                            console.log(td.type);
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -228,6 +240,7 @@ module KG {
                                 def.endArrow = defURLS[def['endArrowName']]
                             }
                             def = view.addViewToDef(def, layer);
+                            console.log(td.type);
                             new KG[td.type](def);
                         })
                     }
@@ -238,6 +251,7 @@ module KG {
             // add divs
             if (data.divs.length > 0) {
                 data.divs.forEach(function (td: TypeAndDef) {
+                    console.log(td.type);
                     const def = view.addViewToDef(td.def, view.div),
                         newDiv = new KG[td.type](def);
                     if (td.type == 'Sidebar') {

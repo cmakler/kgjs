@@ -70,6 +70,7 @@ module KG {
         public markedElement;
         public alwaysUpdate: boolean;
 
+        public show;
         public fill;
         public opacity;
         public stroke;
@@ -117,8 +118,12 @@ module KG {
             // the draw method creates the DOM elements for the view object
             // the update method updates their attributes
             if (def.hasOwnProperty('layer')) {
-                vo.draw(def.layer).update(true);
+                vo.draw(def.layer).update(true).init();
             }
+        }
+
+        init() {
+            return this; //defined at subclass level
         }
 
         addClipPathAndArrows() {
@@ -141,7 +146,7 @@ module KG {
             return vo;
         }
 
-        draw(layer: any, inDef ?: boolean) {
+        draw(layer?: any, inDef ?: boolean) {
             return this;
         }
 

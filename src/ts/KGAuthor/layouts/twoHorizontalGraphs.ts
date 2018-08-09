@@ -113,6 +113,36 @@ module KGAuthor {
 
     }
 
+    export class MathboxPlusGraph extends Layout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let mathboxDef = def['mathbox'],
+                graphDef = def['graph'];
+
+            mathboxDef.position = {
+                "x": 0.05,
+                "y": 0.025,
+                "width": 0.45,
+                "height": 0.9
+            };
+
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.2,
+                "width": 0.3,
+                "height": 0.6
+            };
+
+            l.subObjects.push(new Mathbox(mathboxDef));
+            l.subObjects.push(new Graph(graphDef));
+
+        }
+
+    }
+
     export class GeoGebraPlusGraph extends Layout {
 
         constructor(def) {
@@ -168,6 +198,39 @@ module KGAuthor {
             };
 
             l.subObjects.push(new GeoGebraContainer(ggbAppletDef));
+            l.subObjects.push(new Graph(graphDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+
+
+    }
+
+    export class MathboxPlusGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let mathboxDef = def['mathbox'],
+                graphDef = def['graph'],
+                sidebarDef = def['sidebar'];
+
+            mathboxDef.position = {
+                "x": 0.025,
+                "y": 0.025,
+                "width": 0.444,
+                "height": 0.95
+            };
+
+            graphDef.position = {
+                "x": 0.6,
+                "y": 0.025,
+                "width": 0.369,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new MathboxContainer(mathboxDef));
             l.subObjects.push(new Graph(graphDef));
             l.subObjects.push(new Sidebar(sidebarDef));
 

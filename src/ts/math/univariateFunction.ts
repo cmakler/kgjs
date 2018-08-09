@@ -5,13 +5,16 @@ module KG {
     import MathFunction = KG.MathFunction;
 
     export interface UnivariateFunctionDefinition extends MathFunctionDefinition {
-        fn: string;
-        yFn?: string;
-        ind?: string;
+        fn: string; // y as a function of x
+        fnZ?: string; // z as a function of x
+        yFn?: string; // x as a function of y
+        yFnZ?: string; // z as a function of y
+        ind?: string; // which variable is independent?
     }
 
     export interface IUnivariateFunction extends IMathFunction {
-        eval: (input: number) => number;
+        eval: (input: number, z?: boolean) => number;
+        mathboxFn: (maxY,maxZ,minY?,minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y?: number, i?: number, j?: number, t?: number) => void;
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
@@ -19,11 +22,17 @@ module KG {
 
         private fn;
         private yFn;
-        private yCompiledFunction;
+        private fnZ;
+        private yFnZ;
         private compiledFunction;
+        private yCompiledFunction;
+        private zCompiledFunction;
+        private yzCompiledFunction;
         public ind;
         public fnStringDef;
         public yFnStringDef;
+        public fnZStringDef;
+        public yFnZStringDef;
 
         constructor(def: UnivariateFunctionDefinition) {
 
@@ -31,21 +40,34 @@ module KG {
                 ind: 'x'
             });
             setProperties(def, 'constants', ['fn', 'yFn']);
-            setProperties(def, 'updatables', ['ind','min','max']);
+            setProperties(def, 'updatables', ['ind', 'min', 'max']);
             super(def);
             this.fnStringDef = def.fn;
+            this.fnZStringDef = def.fnZ;
             this.yFnStringDef = def.yFn;
+            this.yFnZStringDef = def.yFnZ;
         }
 
-        eval(input) {
+        eval(input, z?: boolean) {
             let fn = this;
-            if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                return fn.yCompiledFunction.eval({y: input});
-            } else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
-                return fn.compiledFunction.eval({y: input});
-            } else if (fn.hasOwnProperty('compiledFunction')) {
-                return fn.compiledFunction.eval({x: input});
+            if (z) {
+                if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
+                    return fn.yzCompiledFunction.eval({y: input});
+                } else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
+                    return fn.zCompiledFunction.eval({y: input});
+                } else if (fn.hasOwnProperty('zCompiledFunction')) {
+                    return fn.zCompiledFunction.eval({x: input});
+                }
+            } else {
+                if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
+                    return fn.yCompiledFunction.eval({y: input});
+                } else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
+                    return fn.compiledFunction.eval({y: input});
+                } else if (fn.hasOwnProperty('compiledFunction')) {
+                    return fn.compiledFunction.eval({x: input});
+                }
             }
+
         }
 
         generateData(min, max) {
@@ -69,6 +91,18 @@ module KG {
             return data;
         }
 
+        mathboxFn() {
+            const fn = this;
+            return function (emit, x) {
+                const y = fn.eval(x),
+                    z = fn.eval(x,true);
+                if(y <= 50 && z <= 50) {
+                    emit(y, z, x);
+                }
+
+            };
+        }
+
         update(force) {
             let fn = super.update(force);
             //console.log('updating; currently ', fn.fnString);
@@ -88,6 +122,20 @@ module KG {
                     fn.hasChanged = true;
                     fn.yFnString = fn.updateFunctionString(fn.yFnStringDef, fn.scope);
                     fn.yCompiledFunction = math.compile(fn.yFnString);
+                }
+            }
+            if (fn.def.hasOwnProperty('fnZ')) {
+                if (fn.fnZString != fn.updateFunctionString(fn.fnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.fnZString = fn.updateFunctionString(fn.fnZStringDef, fn.scope);
+                    fn.zCompiledFunction = math.compile(fn.fnZString);
+                }
+            }
+            if (fn.def.hasOwnProperty('yFnZ')) {
+                if (fn.yFnZString != fn.updateFunctionString(fn.yFnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.yFnZString = fn.updateFunctionString(fn.yFnZStringDef, fn.scope);
+                    fn.yzCompiledFunction = math.compile(fn.yFnZString);
                 }
             }
             return fn;

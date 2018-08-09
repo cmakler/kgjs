@@ -155,7 +155,7 @@ module KGAuthor {
             } else {
                 curveDef.univariateFunction = fn;
             }
-            console.log('creating curve from def', curveDef);
+            //console.log('creating curve from def', curveDef);
             return new Curve(curveDef, graph);
         })
     }

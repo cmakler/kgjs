@@ -14,7 +14,4 @@ module KGAuthor {
         }
     }
 
-
-
-
 }
