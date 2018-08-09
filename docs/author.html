@@ -38,7 +38,7 @@
 <p>KINETICGRAPHS EDITOR</p>
 <hr/>
 <div class="enclosing">
-    <div id="dest" class="kg-container preview" src="author"></div>
+    <div id="dest" class="kg-container preview" src="templates/oneGraph.json"></div>
     <div id="src" class="author"></div>
 </div>
 <script>
@@ -59,18 +59,10 @@
     }
 
     function load(filename) {
-        if (KG.viewData.hasOwnProperty('author')) {
-            d3.json('templates/' + filename + '.json', function (data) {
-                srcCodeMirror.setValue(JSON.stringify(data, null, 2));
-                new KG.View(dest, data);
-            });
-        } else {
-            d3.json('templates/' + filename + '.json', function (data) {
-                srcCodeMirror.setValue(JSON.stringify(data, null, 2));
-                KG.addView("author", data);
-            });
-        }
-
+        d3.json('templates/' + filename + '.json', function (data) {
+            srcCodeMirror.setValue(JSON.stringify(data, null, 2));
+            new KG.View(dest, data);
+        });
     }
 
     load('oneGraph');
