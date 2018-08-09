@@ -66,6 +66,8 @@ module KG {
         }
 
         parse(data:ViewDefinition, div?) {
+
+            data.schema = data.schema || "Schema";
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {

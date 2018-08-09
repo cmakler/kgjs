@@ -4654,6 +4654,7 @@ var KG;
             this.render(data, div);
         }
         View.prototype.parse = function (data, div) {
+            data.schema = data.schema || "Schema";
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -6027,7 +6028,7 @@ var KG;
             var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
             var xOffset = xAxisReversed ? 6 : -6, yOffset = yAxisReversed ? 14 : -14;
             if (def.x == 'AXIS') {
-                def.x = def.xScale.domainMin;
+                def.x = 0;
                 def.align = xAxisReversed ? 'left' : 'right';
                 def.xPixelOffset = xOffset;
             }
@@ -6037,7 +6038,7 @@ var KG;
                 def.xPixelOffset = -xOffset;
             }
             if (def.y == 'AXIS') {
-                def.y = def.yScale.domainMin;
+                def.y = 0;
                 def.yPixelOffset = yOffset;
             }
             if (def.y == 'OPPAXIS') {

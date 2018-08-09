@@ -6,7 +6,7 @@ __author__ = 'cmakler'
 bundles = [
     {
         "name": "kg.0.1.4.js",
-        "dest_directories": ['build/bundled/','build/'],
+        "dest_directories": ['build/bundled/'],
         "order": [
             "build/lib/kg-lib.js",
             "build/kg.js"
@@ -14,7 +14,7 @@ bundles = [
     },
     {
         "name": "kg.0.1.4.css",
-        "dest_directories": ['build/bundled/','build/'],
+        "dest_directories": ['build/bundled/'],
         "order": [
             "build/lib/kg-lib.css",
             "build/kg.css"
@@ -22,7 +22,7 @@ bundles = [
     },
     {
         "name": "kg-tufte.0.1.4.css",
-        "dest_directories": ['build/bundled/','build/'],
+        "dest_directories": ['build/bundled/'],
         "order": [
             "build/lib/kg-tufte.css",
             "build/kg.css"
