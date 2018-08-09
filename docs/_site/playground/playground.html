@@ -1,0 +1,105 @@
+<!doctype html>
+<html class="no-js" lang="">
+<head>
+    <title>KineticGraphs Playground</title>
+    <link href="code/kg.0.1.4.css" rel="stylesheet">
+    <script src="code/kg.0.1.4.js"></script>
+</head>
+<body>
+
+<div id="diagram" class="kg-container" src="playground"
+     style="width: 80%;margin-right: auto;margin-left: auto;margin-top: 2em;margin-bottom: 2em;">
+
+</div>
+<script>
+    KG.addView("playground", {
+  "params": [
+    {
+      "name": "d",
+      "value": "40",
+      "min": "0",
+      "max": "100"
+    },
+    {
+      "name": "showLine",
+      "value": true
+    }
+  ],
+  "layout": {
+    "type": "OneGraphPlusSidebar",
+    "def": {
+      "graph": {
+        "xAxis": {
+          "title": "Time",
+          "orient": "bottom",
+          "min": 0,
+          "max": 5
+        },
+        "yAxis": {
+          "title": "Distance",
+          "orient": "left",
+          "min": 0,
+          "max": 100
+        },
+        "objects": [
+          {
+            "type": "Segment",
+            "def": {
+              "a": [0,40],
+              "b": [
+                1,
+                "params.d"
+              ],
+              "color": "green",
+              "show": "params.showLine"
+            }
+          },
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                1,
+                "params.d"
+              ],
+              "label": {
+                "text": "X"
+              },
+              "droplines": {
+                "vertical": ""
+              },
+              "drag": [
+                {
+                  "directions": "y",
+                  "param": "d",
+                  "expression": "params.d + drag.dy"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "sidebar": {
+        "controls": [
+          {
+            "title": "KineticGraphs Playgound",
+            "sliders": [
+              {
+                "param": "d",
+                "label": "d"
+              }
+            ],
+            "checkboxes": [
+              {
+                "param": "showLine",
+                "label": "\\text{Show line}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+})
+</script>
+</body>
+</html>
