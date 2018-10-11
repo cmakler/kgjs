@@ -40,7 +40,8 @@ module KG {
             let controls = this;
 
             controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 0);
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             const sliderTable = controls.rootElement.append('table').style('padding', '10px');
             controls.sliders.forEach(function (slider) {

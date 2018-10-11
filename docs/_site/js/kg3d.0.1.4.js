@@ -1571,6 +1571,11 @@ var KGAuthor;
                 xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], def.slope));
                 yIntercept = KGAuthor.subtractDefs(def.point[1], KGAuthor.multiplyDefs(def.point[0], def.slope));
             }
+            else if (def.hasOwnProperty('invSlope') && def.hasOwnProperty('point')) {
+                slope = KGAuthor.invertDef(def.invSlope);
+                xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], slope));
+                yIntercept = KGAuthor.subtractDefs(def.point[1], KGAuthor.multiplyDefs(def.point[0], slope));
+            }
             else if (def.hasOwnProperty('slope')) {
                 invSlope = KGAuthor.invertDef(def.slope);
                 xIntercept = 0;
@@ -5727,7 +5732,8 @@ var KG;
         Controls.prototype.draw = function (layer) {
             var controls = this;
             controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 0);
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             var sliderTable = controls.rootElement.append('table').style('padding', '10px');
             controls.sliders.forEach(function (slider) {

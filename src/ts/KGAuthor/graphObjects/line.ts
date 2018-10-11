@@ -68,6 +68,12 @@ module KGAuthor {
                 yIntercept = subtractDefs(def.point[1],multiplyDefs(def.point[0],def.slope));
             }
 
+            else if(def.hasOwnProperty('invSlope') && def.hasOwnProperty('point')) {
+                slope = invertDef(def.invSlope);
+                xIntercept = subtractDefs(def.point[0],divideDefs(def.point[1],slope));
+                yIntercept = subtractDefs(def.point[1],multiplyDefs(def.point[0],slope));
+            }
+
             else if(def.hasOwnProperty('slope')) {
                 invSlope = invertDef(def.slope);
                 xIntercept = 0;

@@ -953,14 +953,15 @@ var KGAuthor;
             KG.setDefaults(def.xAxis, { min: 0, max: 10, title: '', orient: 'bottom' });
             KG.setDefaults(def.yAxis, { min: 0, max: 10, title: '', orient: 'left' });
             _this = _super.call(this, def) || this;
-            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, yMin = def.yAxis.min, yMax = def.yAxis.max, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
+            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, xLog = def.xAxis.log, yMin = def.yAxis.min, yMax = def.yAxis.max, yLog = def.yAxis.log, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
             po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
                 "domainMin": xMin,
                 "domainMax": xMax,
                 "rangeMin": leftEdge,
-                "rangeMax": rightEdge
+                "rangeMax": rightEdge,
+                "log": xLog
             });
             po.yScale = new Scale({
                 "name": KG.randomString(10),
@@ -968,7 +969,8 @@ var KGAuthor;
                 "domainMin": yMin,
                 "domainMax": yMax,
                 "rangeMin": bottomEdge,
-                "rangeMax": topEdge
+                "rangeMax": topEdge,
+                "log": yLog
             });
             po.subObjects = [po.xScale, po.yScale];
             return _this;
@@ -1465,6 +1467,11 @@ var KGAuthor;
                 invSlope = KGAuthor.invertDef(def.slope);
                 xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], def.slope));
                 yIntercept = KGAuthor.subtractDefs(def.point[1], KGAuthor.multiplyDefs(def.point[0], def.slope));
+            }
+            else if (def.hasOwnProperty('invSlope') && def.hasOwnProperty('point')) {
+                slope = KGAuthor.invertDef(def.invSlope);
+                xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], slope));
+                yIntercept = KGAuthor.subtractDefs(def.point[1], KGAuthor.multiplyDefs(def.point[0], slope));
             }
             else if (def.hasOwnProperty('slope')) {
                 invSlope = KGAuthor.invertDef(def.slope);
@@ -4787,10 +4794,13 @@ var KG;
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
+            KG.setDefaults(def, {
+                log: false
+            });
             def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
             def.updatables = ['domainMin', 'domainMax'];
             _this = _super.call(this, def) || this;
-            _this.scale = d3.scaleLinear();
+            _this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
             _this.update(true);
             return _this;
         }
@@ -5622,7 +5632,8 @@ var KG;
         Controls.prototype.draw = function (layer) {
             var controls = this;
             controls.rootElement = layer.append('div');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 0);
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             var sliderTable = controls.rootElement.append('table').style('padding', '10px');
             controls.sliders.forEach(function (slider) {

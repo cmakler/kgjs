@@ -7,6 +7,7 @@ module KGAuthor {
         max: any;
         title: string;
         orient: string;
+        log: boolean;
     }
 
     export class Scale extends AuthoringObject {
@@ -58,8 +59,10 @@ module KGAuthor {
             const po = this,
                 xMin = def.xAxis.min,
                 xMax = def.xAxis.max,
+                xLog = def.xAxis.log,
                 yMin = def.yAxis.min,
                 yMax = def.yAxis.max,
+                yLog = def.yAxis.log,
                 leftEdge = def.position.x,
                 rightEdge = addDefs(def.position.x, def.position.width),
                 bottomEdge = addDefs(def.position.y, def.position.height),
@@ -71,7 +74,8 @@ module KGAuthor {
                 "domainMin": xMin,
                 "domainMax": xMax,
                 "rangeMin": leftEdge,
-                "rangeMax": rightEdge
+                "rangeMax": rightEdge,
+                "log": xLog
             });
 
             po.yScale = new Scale({
@@ -80,7 +84,8 @@ module KGAuthor {
                 "domainMin": yMin,
                 "domainMax": yMax,
                 "rangeMin": bottomEdge,
-                "rangeMax": topEdge
+                "rangeMax": topEdge,
+                "log": yLog
             });
 
             po.subObjects = [po.xScale, po.yScale];
