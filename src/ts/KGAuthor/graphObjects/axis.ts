@@ -25,7 +25,7 @@ module KGAuthor {
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
-                        xPixelOffset: -40,
+                        xPixelOffset: -50,
                         rotate: 90
                     }, graph))
                 }
@@ -41,7 +41,7 @@ module KGAuthor {
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
-                        xPixelOffset: 40,
+                        xPixelOffset: 50,
                         rotate: 270
                     }, graph));
                 }

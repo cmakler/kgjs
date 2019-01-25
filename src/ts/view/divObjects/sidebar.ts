@@ -38,7 +38,8 @@ module KG {
             sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
-                .style('width', null);
+                .style('width', null)
+                .style('padding-top', '20px');
         }
 
 

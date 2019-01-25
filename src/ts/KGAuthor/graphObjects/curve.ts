@@ -30,12 +30,12 @@ module KGAuthor {
                     if (labelDef.hasOwnProperty('x') && def.univariateFunction.ind != 'y') {
                         labelDef.coordinates = [
                             labelDef.x,
-                            replaceVariable(def.univariateFunction.fn, '(x)', `(${labelDef.x})`)
+                            `(${replaceVariable(def.univariateFunction.fn, '(x)', `(${labelDef.x})`)})`
                         ];
                         c.subObjects.push(new Label(labelDef, graph));
                     } else if (labelDef.hasOwnProperty('y') && def.univariateFunction.ind != 'x') {
                         labelDef.coordinates = [
-                            replaceVariable(def.univariateFunction.fn, '(y)', `(${labelDef.y})`),
+                            `(${replaceVariable(def.univariateFunction.fn, '(y)', `(${labelDef.y})`)})`,
                             labelDef.y
                         ];
                         c.subObjects.push(new Label(labelDef, graph));

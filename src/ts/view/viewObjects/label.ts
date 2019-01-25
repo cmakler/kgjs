@@ -33,7 +33,7 @@ module KG {
             const xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax),
                 yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
 
-            let xOffset = xAxisReversed ? 6 : -6,
+            let xOffset = xAxisReversed ? 3 : -3,
                 yOffset = yAxisReversed ? 14 : -14;
 
             if (def.x == 'AXIS') {

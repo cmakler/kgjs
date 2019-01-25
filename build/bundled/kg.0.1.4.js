@@ -1383,7 +1383,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: -40,
+                        xPixelOffset: -50,
                         rotate: 90
                     }, graph));
                 }
@@ -1400,7 +1400,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: 40,
+                        xPixelOffset: 50,
                         rotate: 270
                     }, graph));
                 }
@@ -1470,13 +1470,13 @@ var KGAuthor;
                     if (labelDef.hasOwnProperty('x') && def.univariateFunction.ind != 'y') {
                         labelDef.coordinates = [
                             labelDef.x,
-                            KGAuthor.replaceVariable(def.univariateFunction.fn, '(x)', "(" + labelDef.x + ")")
+                            "(" + KGAuthor.replaceVariable(def.univariateFunction.fn, '(x)', "(" + labelDef.x + ")") + ")"
                         ];
                         c.subObjects.push(new KGAuthor.Label(labelDef, graph));
                     }
                     else if (labelDef.hasOwnProperty('y') && def.univariateFunction.ind != 'x') {
                         labelDef.coordinates = [
-                            KGAuthor.replaceVariable(def.univariateFunction.fn, '(y)', "(" + labelDef.y + ")"),
+                            "(" + KGAuthor.replaceVariable(def.univariateFunction.fn, '(y)', "(" + labelDef.y + ")") + ")",
                             labelDef.y
                         ];
                         c.subObjects.push(new KGAuthor.Label(labelDef, graph));
@@ -6013,7 +6013,8 @@ var KG;
             sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
-                .style('width', null);
+                .style('width', null)
+                .style('padding-top', '20px');
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
@@ -6037,7 +6038,7 @@ var KG;
         function Label(def) {
             var _this = this;
             var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 6 : -6, yOffset = yAxisReversed ? 14 : -14;
+            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
             if (def.x == 'AXIS') {
                 def.x = 0;
                 def.align = xAxisReversed ? 'left' : 'right';
