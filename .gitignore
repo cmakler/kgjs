@@ -1,3 +1,4 @@
 .idea/
 node_modules/
 export_to_econgraphs.py
+docs/_site/
