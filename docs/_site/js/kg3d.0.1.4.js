@@ -1058,14 +1058,15 @@ var KGAuthor;
             KG.setDefaults(def.xAxis, { min: 0, max: 10, title: '', orient: 'bottom' });
             KG.setDefaults(def.yAxis, { min: 0, max: 10, title: '', orient: 'left' });
             _this = _super.call(this, def) || this;
-            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, yMin = def.yAxis.min, yMax = def.yAxis.max, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
+            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, xLog = def.xAxis.log, yMin = def.yAxis.min, yMax = def.yAxis.max, yLog = def.yAxis.log, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
             po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
                 "domainMin": xMin,
                 "domainMax": xMax,
                 "rangeMin": leftEdge,
-                "rangeMax": rightEdge
+                "rangeMax": rightEdge,
+                "log": xLog
             });
             po.yScale = new Scale({
                 "name": KG.randomString(10),
@@ -1073,7 +1074,8 @@ var KGAuthor;
                 "domainMin": yMin,
                 "domainMax": yMax,
                 "rangeMin": bottomEdge,
-                "rangeMax": topEdge
+                "rangeMax": topEdge,
+                "log": yLog
             });
             po.subObjects = [po.xScale, po.yScale];
             return _this;
@@ -1415,7 +1417,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: -40,
+                        xPixelOffset: -50,
                         rotate: 90
                     }, graph));
                 }
@@ -1432,7 +1434,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: 40,
+                        xPixelOffset: 50,
                         rotate: 270
                     }, graph));
                 }
@@ -1502,13 +1504,13 @@ var KGAuthor;
                     if (labelDef.hasOwnProperty('x') && def.univariateFunction.ind != 'y') {
                         labelDef.coordinates = [
                             labelDef.x,
-                            KGAuthor.replaceVariable(def.univariateFunction.fn, '(x)', "(" + labelDef.x + ")")
+                            "(" + KGAuthor.replaceVariable(def.univariateFunction.fn, '(x)', "(" + labelDef.x + ")") + ")"
                         ];
                         c.subObjects.push(new KGAuthor.Label(labelDef, graph));
                     }
                     else if (labelDef.hasOwnProperty('y') && def.univariateFunction.ind != 'x') {
                         labelDef.coordinates = [
-                            KGAuthor.replaceVariable(def.univariateFunction.fn, '(y)', "(" + labelDef.y + ")"),
+                            "(" + KGAuthor.replaceVariable(def.univariateFunction.fn, '(y)', "(" + labelDef.y + ")") + ")",
                             labelDef.y
                         ];
                         c.subObjects.push(new KGAuthor.Label(labelDef, graph));
@@ -4897,10 +4899,13 @@ var KG;
         __extends(Scale, _super);
         function Scale(def) {
             var _this = this;
+            KG.setDefaults(def, {
+                log: false
+            });
             def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
             def.updatables = ['domainMin', 'domainMax'];
             _this = _super.call(this, def) || this;
-            _this.scale = d3.scaleLinear();
+            _this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
             _this.update(true);
             return _this;
         }
@@ -6042,7 +6047,8 @@ var KG;
             sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
-                .style('width', null);
+                .style('width', null)
+                .style('padding-top', '20px');
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
@@ -6066,7 +6072,7 @@ var KG;
         function Label(def) {
             var _this = this;
             var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 6 : -6, yOffset = yAxisReversed ? 14 : -14;
+            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
             if (def.x == 'AXIS') {
                 def.x = 0;
                 def.align = xAxisReversed ? 'left' : 'right';

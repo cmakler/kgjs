@@ -21,7 +21,7 @@ module KG {
         constructor(def: PointDefinition) {
 
             setDefaults(def, {
-                fill: 'blue',
+                fill: 'colors.blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,

@@ -59,7 +59,7 @@
     }
 
     function load(filename) {
-        d3.json('templates/' + filename + '.json', function (data) {
+        d3.json('examples/' + filename + '.json', function (data) {
             srcCodeMirror.setValue(JSON.stringify(data, null, 2));
             new KG.View(dest, data);
         });
