@@ -8,3 +8,5 @@ Setup instructions for creating documentation pages
 6. Type ``sudo bundle install``
 7. Typd ``cd docs``
 8. Type ``bundle exec jekyll serve`` and navigate to [localhost:4000](localhost:4000). You should see the Github pages!
+
+Once you've done that, all you need to do is to navigate in Terminal to kgjs/docs and type ``bundle exec jekyll serve`` to get going!
