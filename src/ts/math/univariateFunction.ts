@@ -29,6 +29,10 @@ module KG {
         private zCompiledFunction;
         private yzCompiledFunction;
         public ind;
+        public fnString: string;
+        public yFnString: string;
+        public fnZString: string;
+        public yFnZString: string;
         public fnStringDef;
         public yFnStringDef;
         public fnZStringDef;
