@@ -9,6 +9,7 @@ module KG {
 
     export class MathboxCurve extends MathboxObject {
 
+        public curveData: any;
         private fn: UnivariateFunction;
 
         constructor(def: MathboxCurveDefinition) {

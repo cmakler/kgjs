@@ -1,9 +1,12 @@
 /// <reference path="../../kg.ts" />
 'use strict';
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -1528,6 +1531,9 @@ var KGAuthor;
         __extends(Point, _super);
         function Point(def, graph) {
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.blue'
+            });
             def = KGAuthor.setFillColor(def);
             _this = _super.call(this, def, graph) || this;
             var p = _this;
@@ -5135,7 +5141,7 @@ var KG;
         function Point(def) {
             var _this = this;
             KG.setDefaults(def, {
-                fill: 'blue',
+                fill: 'colors.blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,

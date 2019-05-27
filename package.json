@@ -4,16 +4,16 @@
   "description": "js renderer for kineticgraphs",
   "main": "kg.js",
   "devDependencies": {
-    "@types/d3": "^4.9.0",
+    "@types/d3": "^4.13.2",
     "@types/katex": "^0.5.0",
     "@types/mathjs": "0.0.34",
     "@types/three": "0.92.14",
-    "typescript": "next",
-    "http-server": "latest"
+    "http-server": "latest",
+    "typescript": "next"
   },
   "scripts": {
     "preview": "tsc && http-server -o",
-    "build": "tsc",
+    "build": "tsc --skipLibCheck",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -25,5 +25,13 @@
   "bugs": {
     "url": "https://github.com/cmakler/kgjs/issues"
   },
-  "homepage": "https://github.com/cmakler/kgjs#readme"
+  "compilerOptions": {
+    "exclude": [
+      "node_modules"
+    ]
+  },
+  "homepage": "https://github.com/cmakler/kgjs#readme",
+  "dependencies": {
+    "mathjs": "^5.10.3"
+  }
 }

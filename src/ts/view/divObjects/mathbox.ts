@@ -22,6 +22,7 @@ module KG {
         public yAxis;
         public zAxis;
         private objectDefs;
+        public objects;
 
         constructor(def: MathboxDefinition) {
             setDefaults(def, {
