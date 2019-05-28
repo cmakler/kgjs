@@ -1436,8 +1436,11 @@ var KGAuthor;
     var Line = /** @class */ (function (_super) {
         __extends(Line, _super);
         function Line(def, graph) {
-            // may define line with two points
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.orange'
+            });
+            // may define line with two points
             var xIntercept = def.xIntercept, yIntercept = def.yIntercept, slope = def.slope, invSlope = def.invSlope;
             if (def.hasOwnProperty('point') && def.hasOwnProperty('point2')) {
                 // still need to handle infinite case
