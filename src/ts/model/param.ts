@@ -3,13 +3,13 @@
 module KG {
 
     export interface ParamDefinition {
-        name: string;
-        label: string;
-        value: any;
-        min?: any;
-        max?: any;
-        round?: any;
-        precision?: any;
+        name: string;     // how to refer to this parameter; e.g. if name is "x", you would refer to this as "params.x"
+        label: string;    // what to label a slider that controls this param
+        value: any;       // initial value (either a number or true/false)
+        min?: any;        // if param is a number, lowest acceptable value; also sets left bound of a slider
+        max?: any;        // ditto for max
+        round?: any;      // interval to snap to as user changes 
+        precision?: any;  // number of decimal places to display value to; automatically sets itself based on "round" - i.e., if round = 0.01 then precision will automatically choose 2 decimal places
     }
 
     export interface IParam {
