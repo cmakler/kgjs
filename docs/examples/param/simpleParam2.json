@@ -17,7 +17,7 @@
   "layout": {
     "type": "HTMLPlusSidebarLayout",
     "def": {
-      "html": "`<p>Let's add $a$ and $b$ together: $$ ${params.a} + ${params.b} = ${params.a + params.b}$$</p>`",
+      "html": "`<p>The value of $a$ is ${params.a}.</p><p>The value of $b$ is ${params.b.toFixed(1)}.</p>`",
       "sidebar": {
         "controls": [
           {
