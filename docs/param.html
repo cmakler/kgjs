@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Using Variables: Params and Calcs</title>
+    <script src="codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="css/kg-tufte.0.1.4.css">
+    <script src="codemirror/mode/javascript/javascript.js"></script>
+    <script src="js/kg.0.1.4.js"></script>
+    <style>
+
+        .enclosing {
+            border: thin gray solid;
+            background-color: white;
+            margin-left:0;
+        }
+
+        .preview {
+            float: right;
+        }
+
+        .author {
+            width: 500px;
+        }
+
+        .CodeMirror {
+            width: 100%;
+            height: 100%;
+            border-right: thin gray dotted;
+        }
+    </style>
+</head>
+<body>
+    <h1>Parameters and Calculations</h1>
+    <p>A parameter is a variable which the user can adjust, either via a slider or by manipulating something on the graph.</p>
+        <div id="simple1"></div>
+        <p>Drag the slider for b back and forth. Oh no! It displays badly. We can fix this by including a ".toFixed(1)" after it:
+            <div id="simple2"></div>
+        <p>Parameters may be added together inline:</p>
+        <div id="simple3"></div>
+        <p>However, it's better to use a calculation to pre-calculate the summed value:</p>
+        <div id="simple4"></div>
+        <script src="js/preview-pane.js"></script>
+        <script>
+            createCodeMirror({
+                name: 'simple1',
+                filename: 'param/simpleParam1',
+                width: 800,
+                height: 410
+            });
+
+            createCodeMirror({
+                name: 'simple2',
+                filename: 'param/simpleParam2',
+                width: 800,
+                height: 410
+            });
+
+            createCodeMirror({
+                name: 'simple3',
+                filename: 'param/simpleParam3',
+                width: 800,
+                height: 410
+            });
+
+            createCodeMirror({
+                name: 'simple4',
+                filename: 'param/simpleParam4',
+                width: 800,
+                height: 410
+            });
+
+
+        </script>
+    </body>
+    </html>

@@ -19,8 +19,11 @@ module KGAuthor {
 
         constructor(def: PointDefinition, graph) {
 
-            def = setFillColor(def);
+            KG.setDefaults(def,{
+                color: 'colors.blue'
+            });
 
+            def = setFillColor(def);
 
             super(def, graph);
 

@@ -1,9 +1,12 @@
 /// <reference path="../../kg.ts" />
 'use strict';
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -380,6 +383,37 @@ var KGAuthor;
         return WideRectanglePlusSidebarLayout;
     }(Layout));
     KGAuthor.WideRectanglePlusSidebarLayout = WideRectanglePlusSidebarLayout;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var HTMLLayout = /** @class */ (function (_super) {
+        __extends(HTMLLayout, _super);
+        function HTMLLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var divDef = { "html": def['html'] };
+            console.log("divDef: ", divDef);
+            l.subObjects.push(new KGAuthor.Div(divDef));
+            return _this;
+        }
+        return HTMLLayout;
+    }(KGAuthor.Layout));
+    KGAuthor.HTMLLayout = HTMLLayout;
+    var HTMLPlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(HTMLPlusSidebarLayout, _super);
+        function HTMLPlusSidebarLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var sidebarDef = def['sidebar'];
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return HTMLPlusSidebarLayout;
+    }(HTMLLayout));
+    KGAuthor.HTMLPlusSidebarLayout = HTMLPlusSidebarLayout;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1433,8 +1467,11 @@ var KGAuthor;
     var Line = /** @class */ (function (_super) {
         __extends(Line, _super);
         function Line(def, graph) {
-            // may define line with two points
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.orange'
+            });
+            // may define line with two points
             var xIntercept = def.xIntercept, yIntercept = def.yIntercept, slope = def.slope, invSlope = def.invSlope;
             if (def.hasOwnProperty('point') && def.hasOwnProperty('point2')) {
                 // still need to handle infinite case
@@ -1528,6 +1565,9 @@ var KGAuthor;
         __extends(Point, _super);
         function Point(def, graph) {
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.blue'
+            });
             def = KGAuthor.setFillColor(def);
             _this = _super.call(this, def, graph) || this;
             var p = _this;
@@ -1860,6 +1900,16 @@ var KGAuthor;
         return DivObject;
     }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = "Div";
+            return _this;
+        }
+        return Div;
+    }(DivObject));
+    KGAuthor.Div = Div;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -3820,6 +3870,7 @@ var KGAuthor;
 /// <reference path="parsers/authoringObject.ts"/>
 /// <reference path="schemas/schema.ts"/>
 /// <reference path="layouts/layout.ts"/>
+/// <reference path="layouts/html.ts"/>
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
@@ -5135,7 +5186,7 @@ var KG;
         function Point(def) {
             var _this = this;
             KG.setDefaults(def, {
-                fill: 'blue',
+                fill: 'colors.blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,

@@ -9,6 +9,7 @@ module KG {
 
     export class MathboxSurface extends MathboxObject {
 
+        public surfaceData;
         private fn: MultivariateFunction;
 
         constructor(def: MathboxSurfaceDefinition) {

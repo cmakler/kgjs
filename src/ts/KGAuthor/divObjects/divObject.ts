@@ -8,10 +8,19 @@ module KGAuthor {
 
     export class DivObject extends GraphObject {
 
-        parseSelf(parsedData: KG.ViewDefinition) {
+    	parseSelf(parsedData: KG.ViewDefinition) {
             parsedData.divs.push(this);
             return parsedData;
         }
+    }
+
+    export class Div extends DivObject {
+
+    	constructor(def) {
+    		super(def);
+    		this.type = "Div"
+    	}
+    	
     }
 
 }

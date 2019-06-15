@@ -22,6 +22,10 @@ module KGAuthor {
 
         constructor(def, graph) {
 
+            KG.setDefaults(def,{
+                color: 'colors.orange'
+            });
+
             // may define line with two points
 
             let xIntercept = def.xIntercept,
