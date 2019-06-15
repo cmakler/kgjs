@@ -1,0 +1,29 @@
+{
+  "params": [
+    {
+      "name": "a",
+      "value": 3,
+      "min": 0,
+      "max": 10
+    }
+  ],
+  "layout": {
+    "type": "HTMLPlusSidebarLayout",
+    "def": {
+      "html": "`<p>The value of $a$ is ${params.a}.</p>`",
+      "sidebar": {
+        "controls": [
+          {
+            "title": "Parameters",
+            "sliders": [
+              {
+                "param": "a",
+                "label": "a"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

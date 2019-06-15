@@ -1,0 +1,40 @@
+{
+  "params": [
+    {
+      "name": "a",
+      "value": 3,
+      "min": 0,
+      "max": 10
+    },
+    {
+      "name": "b",
+      "value": 0.6,
+      "min": 0,
+      "max": 1,
+      "round": 0.1
+    }
+  ],
+  "layout": {
+    "type": "HTMLPlusSidebarLayout",
+    "def": {
+      "html": "`<p>Let's add $a$ and $b$ together: $$ ${params.a} + ${params.b} = ${params.a + params.b}$$</p>`",
+      "sidebar": {
+        "controls": [
+          {
+            "title": "Parameters",
+            "sliders": [
+              {
+                "param": "a",
+                "label": "a"
+              },
+              {
+                "param": "b",
+                "label": "b"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

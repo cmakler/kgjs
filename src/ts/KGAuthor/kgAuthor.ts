@@ -6,6 +6,7 @@
 /// <reference path="schemas/schema.ts"/>
 
 /// <reference path="layouts/layout.ts"/>
+/// <reference path="layouts/html.ts"/>
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>

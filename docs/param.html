@@ -32,24 +32,25 @@
     </style>
 </head>
 <body>
-    <h1>Point</h1>
-    <p>The Point object is used for just that: points. In its simplest form, you can define it simply using a pair of coordinates:</p>
+    <h1>Parameter and Calculations</h1>
+    <p>A parameter is a variable which the user can adjust, either via a slider or by manipulating something on the graph.</p>
         <div id="simple1"></div>
-        <p>You can add droplines (vertical and/or horizontal) by saying what their labels should be. Note that the labels are LaTeX by default; to make them text, use the LaTeX \text command, double-escaping the backslash:</p>
+        <p>Parameters may be added together inline:</p>
         <div id="simple2"></div>
         <script src="js/preview-pane.js"></script>
         <script>
             createCodeMirror({
                 name: 'simple1',
-                filename:'point/simplePoint',
-                width: 500,
+                filename: 'param/simpleParam1',
+                width: 800,
                 height: 410
             });
+
             createCodeMirror({
                 name: 'simple2',
-                filename:'point/simplePoint2',
-                width: 500,
-                height: 425
+                filename: 'param/simpleParam2',
+                width: 800,
+                height: 410
             });
 
         </script>
