@@ -1,0 +1,14 @@
+{
+  "params": [
+    {
+      "name": "a",
+      "value": 3
+    }
+  ],
+  "layout": {
+    "type": "HTMLLayout",
+    "def": {
+      "html": "`<p>The value of $a$ is ${params.a}.</p><p>`"
+          }
+      }
+    }
