@@ -463,19 +463,58 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'];
+            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 0.75, width = 0.3, controlHeight = 0.25;
+            var includeControls = false;
+            console.log('layout: ', l);
+            if (def.hasOwnProperty('leftControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            var graphHeight = includeControls ? 0.5 : 0.9;
+            _this.aspectRatio = includeControls ? 2 : 4;
             leftGraphDef.position = {
-                "x": 0.05,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
-            };
-            rightGraphDef.position = {
-                "x": 0.55,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
+                x: leftX,
+                y: topY,
+                width: width,
+                height: graphHeight
             };
             l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            rightGraphDef.position = {
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
+            };
             l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
             return _this;
         }

@@ -1,0 +1,51 @@
+{
+  "params": [
+    {
+      "name": "m",
+      "value": 30,
+      "min": 0,
+      "max": 45,
+      "round": 5
+    }
+  ],
+  "calcs": {
+    "slope": "(math.tan(2*math.pi*(params.m)/360))",
+    "y": "(6*(math.tan(2*math.pi*(params.m)/360)))"
+  },
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Line",
+            "def": {
+              "slope": "calcs.slope",
+              "label": {"text": "`${params.m}^\\\\circ`", "x":0.6}
+            }
+          },
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                6,
+                "calcs.y"
+              ],
+              "droplines": {
+                "vertical": "a",
+                "horizontal": "b"
+              },
+              "drag": [
+                {
+                  "direction": "xy",
+                  "param": "m",
+                  "expression": "(atan(drag.y/6)*180/pi)"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
