@@ -458,6 +458,37 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var HTMLLayout = /** @class */ (function (_super) {
+        __extends(HTMLLayout, _super);
+        function HTMLLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var divDef = { "html": def['html'] };
+            console.log("divDef: ", divDef);
+            l.subObjects.push(new KGAuthor.Div(divDef));
+            return _this;
+        }
+        return HTMLLayout;
+    }(KGAuthor.Layout));
+    KGAuthor.HTMLLayout = HTMLLayout;
+    var HTMLPlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(HTMLPlusSidebarLayout, _super);
+        function HTMLPlusSidebarLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var sidebarDef = def['sidebar'];
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return HTMLPlusSidebarLayout;
+    }(HTMLLayout));
+    KGAuthor.HTMLPlusSidebarLayout = HTMLPlusSidebarLayout;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var OneGraph = /** @class */ (function (_super) {
         __extends(OneGraph, _super);
         function OneGraph(def) {
@@ -1940,6 +1971,16 @@ var KGAuthor;
         return DivObject;
     }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = "Div";
+            return _this;
+        }
+        return Div;
+    }(DivObject));
+    KGAuthor.Div = Div;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -3900,6 +3941,7 @@ var KGAuthor;
 /// <reference path="parsers/authoringObject.ts"/>
 /// <reference path="schemas/schema.ts"/>
 /// <reference path="layouts/layout.ts"/>
+/// <reference path="layouts/html.ts"/>
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
