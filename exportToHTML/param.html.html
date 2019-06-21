@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>param.html</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #e8bf6a;}
+.s1 { color: #bababa;}
+.s2 { color: #a9b7c6;}
+.s3 { color: #a5c261;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+param.html</font>
+</center></td></tr></table>
+<pre><span class="s0">&lt;!DOCTYPE </span><span class="s1">html</span><span class="s0">&gt;</span>
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta <span class="s1">charset</span><span class="s3">=&quot;utf-8&quot;</span><span class="s0">&gt;</span>
+    &lt;title&gt;<span class="s2">Using Variables: Params and Calcs</span><span class="s0">&lt;/title&gt;</span>
+    &lt;script <span class="s1">src</span><span class="s3">=&quot;codemirror/lib/codemirror.js&quot;</span><span class="s0">&gt;&lt;/script&gt;</span>
+    &lt;link <span class="s1">rel</span><span class="s3">=&quot;stylesheet&quot; </span><span class="s1">type</span><span class="s3">=&quot;text/css&quot; </span><span class="s1">href</span><span class="s3">=&quot;codemirror/lib/codemirror.css&quot;</span><span class="s0">&gt;</span>
+    &lt;link <span class="s1">rel</span><span class="s3">=&quot;stylesheet&quot; </span><span class="s1">type</span><span class="s3">=&quot;text/css&quot; </span><span class="s1">href</span><span class="s3">=&quot;css/kg-tufte.0.1.4.css&quot;</span><span class="s0">&gt;</span>
+    &lt;script <span class="s1">src</span><span class="s3">=&quot;codemirror/mode/javascript/javascript.js&quot;</span><span class="s0">&gt;&lt;/script&gt;</span>
+    &lt;script <span class="s1">src</span><span class="s3">=&quot;js/kg.0.1.4.js&quot;</span><span class="s0">&gt;&lt;/script&gt;</span>
+    &lt;style&gt;
+
+        <span class="s2">.enclosing {</span>
+            border: thin gray solid;
+            background-color: white;
+            margin-left:0;
+        }
+
+        .preview {
+            float: right;
+        }
+
+        .author {
+            width: 500px;
+        }
+
+        .CodeMirror {
+            width: 100%;
+            height: 100%;
+            border-right: thin gray dotted;
+        }
+    <span class="s0">&lt;/style&gt;</span>
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;<span class="s2">Parameters and Calculations</span><span class="s0">&lt;/h1&gt;</span>
+    &lt;p&gt; <span class="s2">A parameter is like a variable that can be inputted into functions.</span><span class="s0">&lt;/p&gt;</span>
+        &lt;div <span class="s1">id</span><span class="s3">=&quot;simple6&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+    &lt;p&gt;<span class="s2">Furthermore, a parameter is a variable which the user can adjust, either via a slider or by manipulating something on the graph. The initial value of the parameter is determined by the 'value' of a. The range of the slider is determined by the 'min' and 'max' of a. We can create a sidebar and a slider like this: </span><span class="s0">&lt;/p&gt;</span>
+        &lt;div <span class="s1">id</span><span class="s3">=&quot;simple1&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+    &lt;p&gt;<span class="s2">You can change the precision of a by creating a 'round' command. Here, we round a to the nearest tenth:</span><span class="s0">&lt;/p&gt;</span>
+            &lt;div <span class="s1">id</span><span class="s3">=&quot;simple5&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+        &lt;p&gt;<span class="s2">Drag the slider for a back and forth. Oh no! It displays badly. We can fix this by including a &quot;.toFixed(1)&quot; after it:</span>
+            <span class="s0">&lt;div </span><span class="s1">id</span><span class="s3">=&quot;simple2&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+        &lt;p&gt;<span class="s2">Parameters may be added together inline:</span><span class="s0">&lt;/p&gt;</span>
+        &lt;div <span class="s1">id</span><span class="s3">=&quot;simple3&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+        &lt;p&gt;<span class="s2">However, it's better to use a calculation to pre-calculate the summed value. A calculation is a function that takes in parameters, based on the format of mathjs (https://mathjs.org/docs/expressions/index.html). We can make calculations like this:</span><span class="s0">&lt;/p&gt;</span>
+        &lt;div <span class="s1">id</span><span class="s3">=&quot;simple4&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+        &lt;p&gt;<span class="s2">Note that calculations work best when all terms are surrounded by parantheses.</span><span class="s0">&lt;/p&gt;</span>
+        &lt;p&gt;<span class="s2">For example, &quot;((params.a)^(params.b))&quot; is more robust than &quot;params.a^params.b&quot;. Without parentheses, the expression may be evaluated incorrectly.</span><span class="s0">&lt;/p&gt;</span>
+        &lt;p&gt; <span class="s2">Now let's take a closer look at the code structure when using calculations. Notice that the HTML text is surrounded by the ` symbol inside each of the quotation marks. This ensures that LaTeX formatting is used. See what happens when ` is not included:</span><span class="s0">&lt;/p&gt;</span>
+        &lt;div <span class="s1">id</span><span class="s3">=&quot;simple7&quot;</span><span class="s0">&gt;&lt;/div&gt;</span>
+        &lt;script <span class="s1">src</span><span class="s3">=&quot;js/preview-pane.js&quot;</span><span class="s0">&gt;&lt;/script&gt;</span>
+        &lt;script&gt;
+        <span class="s2">createCodeMirror({</span>
+                name: 'simple6',
+                filename: 'param/simpleParam6',
+                width: 800,
+                height: 210
+            });
+
+            createCodeMirror({
+                name: 'simple1',
+                filename: 'param/simpleParam1',
+                width: 800,
+                height: 210
+            });
+
+            createCodeMirror({
+                name: 'simple5',
+                filename: 'param/simpleParam5',
+                width: 800,
+                height: 210
+            });
+
+            createCodeMirror({
+                name: 'simple2',
+                filename: 'param/simpleParam2',
+                width: 800,
+                height: 210
+            });
+
+            createCodeMirror({
+                name: 'simple3',
+                filename: 'param/simpleParam3',
+                width: 800,
+                height: 230
+            });
+
+            createCodeMirror({
+                name: 'simple4',
+                filename: 'param/simpleParam4',
+                width: 800,
+                height: 330
+            });
+
+            createCodeMirror({
+                name: 'simple7',
+                filename: 'param/simpleParam7',
+                width: 800,
+                height: 330
+            });
+
+
+        <span class="s0">&lt;/script&gt;</span>
+    &lt;/body&gt;
+    &lt;/html&gt;
+
+</pre>
+</body>
+</html>
