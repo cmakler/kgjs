@@ -1,0 +1,34 @@
+{
+  "params": [
+    {
+      "name": "intercepts",
+    "value": 6,
+    "min": 2,
+    "max": 10,
+    "round": 0.01
+    }
+  ],
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Line",
+            "def": {
+              "xIntercept": "params.intercepts",
+              "yIntercept": "params.intercepts",
+              "drag": [
+                {
+                  "directions": "xy",
+                  "param": "intercepts",
+                  "expression": "drag.x+drag.y"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

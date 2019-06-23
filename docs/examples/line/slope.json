@@ -1,0 +1,17 @@
+{
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Line",
+            "def": {
+              "slope": 2
+            }
+          }
+        ]
+      }
+    }
+  }
+}

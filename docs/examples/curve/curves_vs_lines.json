@@ -1,0 +1,58 @@
+{
+{
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                3,4
+              ],
+              "color": "colors.blue"
+              
+            }
+          },
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                6,5
+              ],
+              "color": "colors.blue"
+            }
+          },
+          {
+            "type": "Line",
+            "def": {
+              "point": [
+                3,4
+              ],
+              "point2": [
+                6,5
+              ],
+              "color": "colors.grey",
+              "lineStyle": "dotted"
+            }
+          },
+          {
+            "type": "Line",
+            "def": {
+              "point": [
+                3,4
+              ],
+              "point2": [
+                6,5
+              ],
+              "min": 2,
+              "max": 8,
+              "color": "colors.blue"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
