@@ -29,12 +29,12 @@
               },
               "drag": [
               {
-              "direction": "x",
+              "directions": "x",
               "param": "a",
                 "expression": "params.a + drag.dx"
               },
               {
-              "direction": "y",
+              "directions": "y",
               "param": "b",
                 "expression": "params.b + drag.dy"
               }]

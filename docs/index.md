@@ -1,5 +1,15 @@
+---
+layout: post
+title: Blogging Like a Hacker
+---
+
 This is the documentation for KGJS. Sorry it doesn't really so much exist yet. Fixing that soon.
 
-Let's get right to the [point](point.html)
+Getting started:
+* [parmameters and calculations](param.html)
 
-In the meantime why not go over to the [interactive editor](author.html)?
+Graph objects:
+* [point](point.html)
+* [line](line.html)
+
+Try the [interactive editor](author.html)!
