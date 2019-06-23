@@ -1,0 +1,47 @@
+{
+"params": [
+{
+"name": "a",
+"value": 6,
+"min": 1,
+"max": 9,
+"round": 0.01
+},
+{
+"name": "b",
+"value": 4,
+"min": 1,
+"max": 9,
+"round": 2
+}],
+    "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": ["params.a","params.b"],
+              "droplines": {
+                "vertical": "a",
+                "horizontal": "b"
+              },
+              "drag": [
+              {
+              "directions": "x",
+              "param": "a",
+                "expression": "params.a + drag.dx"
+              },
+              {
+              "directions": "y",
+              "param": "b",
+                "expression": "params.b + drag.dy"
+              }]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

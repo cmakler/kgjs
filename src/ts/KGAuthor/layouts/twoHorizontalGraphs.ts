@@ -12,22 +12,83 @@ module KGAuthor {
             let leftGraphDef = def['leftGraph'],
                 rightGraphDef = def['rightGraph'];
 
-            leftGraphDef.position = {
-                "x": 0.05,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
-            };
+            const leftX = 0.1,
+                rightX = 0.6,
+                topY = 0.025,
+                bottomY = 0.75,
+                width = 0.3,
+                controlHeight = 0.25;
 
-            rightGraphDef.position = {
-                "x": 0.55,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
+            let includeControls = false;
+
+            console.log('layout: ',l);
+
+            if (def.hasOwnProperty('leftControls')) {
+
+                l.subObjects.push(new DivContainer({
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                }));
+
+                includeControls = true;
+
+            }
+
+            if (def.hasOwnProperty('rightControls')) {
+
+                l.subObjects.push(new DivContainer({
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                }));
+
+                includeControls = true;
+
+            }
+
+            let graphHeight = includeControls ? 0.5 : 0.9;
+
+            this.aspectRatio = includeControls ? 2 : 4;
+
+
+            leftGraphDef.position = {
+                x: leftX,
+                y: topY,
+                width: width,
+                height: graphHeight
             };
 
             l.subObjects.push(new Graph(leftGraphDef));
+
+            rightGraphDef.position = {
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
+            };
+
             l.subObjects.push(new Graph(rightGraphDef));
+
+
 
         }
 
