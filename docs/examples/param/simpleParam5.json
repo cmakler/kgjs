@@ -11,7 +11,7 @@
   "layout": {
     "type": "HTMLPlusSidebarLayout",
     "def": {
-      "html": "`<p>The value of $a$ is ${params.a.toFixed(1)}.</p><p>`",
+      "html": "`<p>The value of $a$ is ${params.a}.</p><p>`",
       "sidebar": {
         "controls": [
           {
