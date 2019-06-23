@@ -29,7 +29,7 @@ However, it's better to use a calculation to pre-calculate the summed value. A c
 
 Note that calculations work best when all terms are surrounded by parentheses. For example, `((params.a)^(params.b))` is more robust than `params.a^params.b`. Without parentheses, the expression may be evaluated incorrectly. 
 
-Taking a closer look at the code structure using calculations, notice that the HTML text is surrounded by the `\`` 
+Taking a closer look at the code structure using calculations, notice that the HTML text is surrounded by the \` symbols.
 
 
 
