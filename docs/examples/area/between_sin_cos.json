@@ -1,0 +1,45 @@
+{
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "xAxis": {
+          "min": -7,
+          "max": 7
+        },
+        "yAxis": {
+          "min": -2,
+          "max": 2
+        },
+        "objects": [
+          {
+            "type": "Curve",
+            "def": {
+              "univariateFunction": {
+                "fn": "sin((x))"
+              },
+              "color": "colors.blue"
+            }
+          },
+          {
+            "type": "Curve",
+            "def": {
+              "univariateFunction": {
+                "fn": "cos((x))"
+              },
+              "color": "colors.orange"
+            }
+          },
+          
+          {
+            "type": "Area",
+            "def": {
+            	"univariateFunction1": {"fn":"sin((x))"},
+            	"univariateFunction2": {"fn":"cos((x))"}
+            }
+          }
+        ]
+      }
+    }
+  }
+}
