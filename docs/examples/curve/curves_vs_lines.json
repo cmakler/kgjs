@@ -1,56 +1,65 @@
 {
-{
   "layout": {
     "type": "OneGraph",
     "def": {
       "graph": {
         "objects": [
           {
-            "type": "Point",
+            "type": "Line",
             "def": {
-              "coordinates": [
-                3,4
-              ],
-              "color": "colors.blue"
-              
+              "yIntercept": 3,
+              "slope": 2,
+              "color": "colors.red",
+              "lineStyle": "dashed",
+              "label": {
+              "text": "y = 3 + 2x",
+              "x": 2
+              }
             }
           },
           {
-            "type": "Point",
+            "type": "Curve",
             "def": {
-              "coordinates": [
-                6,5
-              ],
-              "color": "colors.blue"
+              "univariateFunction": {
+                "fn": "1 + 2*(x)",
+                "ind": "x"
+              },
+              "color": "colors.red",
+              "label": {
+              "text": "'f(x) = 1 + 2x'",
+              "x": 2
+              }
             }
           },
           {
             "type": "Line",
             "def": {
-              "point": [
-                3,4
-              ],
-              "point2": [
-                6,5
-              ],
-              "color": "colors.grey",
-              "lineStyle": "dotted"
+              "xIntercept": 1,
+              "invSlope": 2,
+              "color": "colors.green",
+              "lineStyle": "dashed",
+              "label": {
+              "text": "x = 1 + 2y",
+              "x": 6
+              }
             }
           },
           {
-            "type": "Line",
+            "type": "Curve",
             "def": {
-              "point": [
-                3,4
-              ],
-              "point2": [
-                6,5
-              ],
-              "min": 2,
-              "max": 8,
-              "color": "colors.blue"
+              "univariateFunction": {
+                "fn": "3 + 2*(y)",
+                "ind": "y"
+              },
+              "color": "colors.green",
+              "label": {
+              "text": "'f(y) = 3 + 2y'",
+              "y": 2.5
+              }
             }
           }
+          
+          
         ]
       }
     }
