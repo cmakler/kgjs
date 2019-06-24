@@ -47,7 +47,7 @@ module KG {
                 .style('background', 'none')
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
-                .style('width','70px');
+                .style('width','50px');
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
             slider.numberInput.on("keyup", function() {
@@ -58,7 +58,8 @@ module KG {
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
-                .attr('step', param.round);
+                .attr('step', param.round)
+                .style('width', '50px');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
 
