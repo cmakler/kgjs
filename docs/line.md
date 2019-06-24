@@ -1,6 +1,6 @@
 ---
 layout: documentation
-title: Parameters and Calculations
+title: Lines
 ---
 
 A line can be generated in a number of ways. First, let's look at a line defined by two points:
