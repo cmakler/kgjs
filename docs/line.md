@@ -39,8 +39,12 @@ Using our two-points example, let's look at customization. Here are some common 
 Now, let's see how we can make a line interactive, such that it can be dragged in a number of ways. The components of the `drag` command are as follows:
 * `directions`: the direction of the dragging may be in the x direction, the y direction, or in both the x and y direction (notated `xy` as below).
 * `param`: this is the parameter you will be changing by dragging the line. In the example below, we are changing the intercepts, so `param` is `"intercepts"`.
-* `expression`: the expression is the 
+* `expression`: the expression describes how the `param` will change based on the amount of dragging done. See below for a concrete example. 
 
-First, let's see how to drag a line parallel to its starting position:
+First, let's see how to drag a line defined by intercepts. We want to drag the line so that it is always parallel to its starting position; in other words, the x- and y-intercepts will always be equal to each other. 
+
+* The direction of dragging can be in the x- or y-direction, so `directions` is `xy`. 
+* We are given the parameter `intercepts`, and that is what we want to change. So `param` is `intercepts`. 
+* `expression` is a bit trickier to come up with. Notice that our line is of the equation _y = intercept - x_. We could also write this as _intercept = x + y_. Thus, the change in the intercept is the sum of the change in x and y. We write this as `drag.x + drag.y`, where drag is the amount that the cursor drags the line. 
 
 <div filename="line/drag_parallel" width="800" height="710" class="codePreview"></div>
