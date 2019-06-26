@@ -4,7 +4,7 @@
       "name": "intercepts",
     "value": 6,
     "min": 2,
-    "max": 10,
+    "max": 15,
     "round": 0.01
     }
   ],
@@ -12,6 +12,16 @@
     "type": "OneGraph",
     "def": {
       "graph": {
+        "xAxis": {
+          "title": "Horizontal Axis",
+          "min": 0,
+          "max": 15
+        },
+        "yAxis": {
+          "title": "Vertical Axis",
+          "min": 0,
+          "max": 15
+        },
         "objects": [
           {
             "type": "Line",

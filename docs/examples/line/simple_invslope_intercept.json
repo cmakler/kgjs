@@ -1,0 +1,18 @@
+{
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Line",
+            "def": {
+              "xIntercept": 2,
+              "invSlope": 2
+            }
+          }
+        ]
+      }
+    }
+  }
+}
