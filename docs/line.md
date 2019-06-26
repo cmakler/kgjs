@@ -33,6 +33,7 @@ Using our two-points example, let's look at customization. Here are some common 
 * Line segment: if you want the line to begin and end at particular points, in the `def` of the line, add `min` and `max` commands for the x-coordinate at which you would like the line to begin and end. 
 * Adding a point: to add a point to your line, follow the normal protocol for drawing a point, as demonstrated below. 
 * Labelling: to label a line, add a `label` command to the `def` of the line, which has a `text` attribute (what you want the label to say) and an `x` attribute describing the x-coordinate where you want the label to appear. 
+* Axes: you can add axis labels and the minimum and maximum value of each axis as an attribute of the graph, as shown below. 
 
 <div filename="line/two_points" width="800" height="710" class="codePreview"></div>
 
@@ -48,3 +49,7 @@ First, let's see how to drag a line defined by intercepts. We want to drag the l
 * `expression` is a bit trickier to come up with. Notice that our line is of the equation _y = intercept - x_. We could also write this as _intercept = x + y_. Thus, the change in the intercept is the sum of the change in x and y. We write this as `drag.x + drag.y`, where drag is the amount that the cursor drags the line. 
 
 <div filename="line/drag_parallel" width="800" height="710" class="codePreview"></div>
+
+Now, let's add a feature where you can change the slope by dragging the line. The slope of a line is defined by /frac{y2 - y1}{x2 - x1}, so we will follow the same form here for our `expression`, where y2 and x2 are drag.y and drag.x, respectively, and y1 and x1 are the coordinates of the point we have chosen, (4,5). See how the slope of the line revolves around our chosen point: 
+
+<div filename="line/drag_slope" width="800" height="710" class="codePreview"></div>
