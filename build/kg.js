@@ -1539,6 +1539,10 @@ var KGAuthor;
             else if (def.hasOwnProperty('invSlope') && def.hasOwnProperty('yIntercept')) {
                 slope = KGAuthor.invertDef(def.invSlope);
             }
+            else if (def.hasOwnProperty('slope') && def.hasOwnProperty('xIntercept')) {
+                invSlope = KGAuthor.invertDef(def.slope);
+                yIntercept = KGAuthor.negativeDef(KGAuthor.divideDefs(xIntercept, slope));
+            }
             else if (def.hasOwnProperty('slope') && def.hasOwnProperty('point')) {
                 invSlope = KGAuthor.invertDef(def.slope);
                 xIntercept = KGAuthor.subtractDefs(def.point[0], KGAuthor.divideDefs(def.point[1], def.slope));
@@ -5192,7 +5196,6 @@ var KG;
         };
         Axis.prototype.redraw = function () {
             var a = this;
-            console.log(a);
             switch (a.orient) {
                 case 'bottom':
                     a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
@@ -5616,7 +5619,7 @@ var KG;
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('width', '50px');
+                .style('width', '100%');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
