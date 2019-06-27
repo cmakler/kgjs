@@ -59,7 +59,7 @@ module KG {
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('width', '50px');
+                .style('width', '100%');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
 
