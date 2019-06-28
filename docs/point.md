@@ -15,7 +15,7 @@ You can add droplines (vertical and/or horizontal) by saying what their labels s
 
 ## Dragging
 
-You can attach drag behavor to a point using the `drag` attribute. Drag is an array of drag instructions.
+You can attach drag behavior to a point using the `drag` attribute. Drag is an array of drag instructions.
 
 <div filename="point/dragPoint1" width="500" height="425" class="codePreview"></div>
 
