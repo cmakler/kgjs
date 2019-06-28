@@ -53,3 +53,12 @@ First, let's see how to drag a line defined by intercepts. We want to drag the l
 Now, let's add a feature where you can change the slope by dragging the line. The slope of a line is defined by /frac{y2 - y1}{x2 - x1}, so we will follow the same form here for our `expression`, where y2 and x2 are drag.y and drag.x, respectively, and y1 and x1 are the coordinates of the point we have chosen, (4,5). See how the slope of the line revolves around our chosen point: 
 
 <div filename="line/drag_slope" width="800" height="710" class="codePreview"></div>
+
+Here is a template for a graph with several lines. Try implementing the following dragging ability: 
+ Drag the green line's slope around its y-intercept. 
+
+<div filename="line/drag_exercises" width="800" height="710" class="codePreview"></div>
+
+Solution key: 
+
+<div filename="line/line_drag_solutions" width="800" height="710" class="codePreview"></div>
