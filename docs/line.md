@@ -32,6 +32,7 @@ Using our two-points example, let's look at customization. Here are some common 
 * Dashed/Dotted: in the `def` of the line, add the command `"lineStyle" : "dashed"` or `"dotted"` to change the texture of the line. 
 * Line segment: if you want the line to begin and end at particular points, in the `def` of the line, add `min` and `max` commands for the x-coordinate at which you would like the line to begin and end. 
 * Adding a point: to add a point to your line, follow the normal protocol for drawing a point, as demonstrated below. 
+* Line width: use the command `"strokeWidth"` to change the width of the line.
 * Labelling: to label a line, add a `label` command to the `def` of the line, which has a `text` attribute (what you want the label to say) and an `x` attribute describing the x-coordinate where you want the label to appear. 
 * Axes: you can add axis labels and the minimum and maximum value of each axis as an attribute of the graph, as shown below. 
 

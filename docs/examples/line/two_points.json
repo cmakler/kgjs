@@ -61,9 +61,10 @@
               "label": {
                 "text": "y = x + 3",
                 "x": "5"
+              },
+              "strokeWidth": 4
               }
             }
-          }
         ]
       }
     }

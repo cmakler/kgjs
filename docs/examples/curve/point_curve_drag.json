@@ -1,0 +1,60 @@
+{
+  "params": [
+    {
+      "name": "x",
+      "value": 0,
+      "min": -7,
+      "max": 7,
+      "round": 0.01
+    }
+  ],
+  "calcs": {
+    "m": "(cos(params.x))"
+  },
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "xAxis": {
+          "title": "$x$",
+          "min": -7,
+          "max": 7
+        },
+        "yAxis": {
+          "title": "$f'(x)$",
+          "orient": "left",
+          "min": -2,
+          "max": 2
+        },
+        "objects": [
+          {
+            "type": "Curve",
+            "def": {
+              "univariateFunction": {
+                "fn": "cos((x))"
+              },
+              "color": "colors.orange"
+            }
+          },
+          {
+            "type": "Point",
+            "def": {
+              "coordinates": [
+                "params.x",
+                "calcs.m"
+              ],
+              "color": "colors.orange",
+              "drag": [
+                {
+                  "directions": "x",
+                  "param": "x",
+                  "expression": "params.x + drag.dx"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
