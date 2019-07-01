@@ -5,27 +5,27 @@ title: Lines
 
 A line can be generated in a number of ways. First, let's look at a line defined by two points:
 
-<div filename="line/simple_two_points" width="800" height="710" class="codePreview"></div>
+<div filename="line/simple_two_points" width="500" height="425" class="codePreview"></div>
 
 A line can also be created using a point and a slope: 
 
-<div filename="line/point_slope" width="800" height="710" class="codePreview"></div>
+<div filename="line/point_slope" width="500" height="425" class="codePreview"></div>
 
 Or by using the slope and the y-intercept: 
 
-<div filename="line/simple_slope_intercept" width="800" height="710" class="codePreview"></div>
+<div filename="line/simple_slope_intercept" width="500" height="425" class="codePreview"></div>
 
 Or by using the inverse slope and the x-intercept: 
 
-<div filename="line/simple_invslope_intercept" width="800" height="710" class="codePreview"></div>
+<div filename="line/simple_invslope_intercept" width="500" height="425" class="codePreview"></div>
 
 Or by using _both_ intercepts:
 
-<div filename="line/intercepts" width="800" height="710" class="codePreview"></div>
+<div filename="line/intercepts" width="500" height="425" class="codePreview"></div>
 
 Finally, if you would like to create a line through the origin, you can provide just one point _or_ a slope and the line will, by default, pass through the origin: 
 
-<div filename="line/one_point" width="800" height="710" class="codePreview"></div>
+<div filename="line/one_point" width="500" height="425" class="codePreview"></div>
 
 Using our two-points example, let's look at customization. Here are some common attributes you might want to give a line:
 * Color: in the `def` of the line, add the command `"color" : "colors.green"` or whatever basic color you prefer. 
@@ -36,7 +36,7 @@ Using our two-points example, let's look at customization. Here are some common 
 * Labelling: to label a line, add a `label` command to the `def` of the line, which has a `text` attribute (what you want the label to say) and an `x` attribute describing the x-coordinate where you want the label to appear. 
 * Axes: you can add axis labels and the minimum and maximum value of each axis as an attribute of the graph, as shown below. 
 
-<div filename="line/two_points" width="800" height="710" class="codePreview"></div>
+<div filename="line/two_points" width="500" height="425" class="codePreview"></div>
 
 Now, let's see how we can make a line interactive, such that it can be dragged in a number of ways. The components of the `drag` command are as follows:
 * `directions`: the direction of the dragging may be in the x direction, the y direction, or in both the x and y direction (notated `xy` as below).
@@ -49,17 +49,17 @@ First, let's see how to drag a line defined by intercepts. We want to drag the l
 * We are given the parameter `intercepts`, and that is what we want to change. So `param` is `intercepts`. 
 * `expression` is a bit trickier to come up with. Notice that our line is of the equation _y = intercept - x_. We could also write this as _intercept = x + y_. Thus, the change in the intercept is the sum of the change in x and y. We write this as `drag.x + drag.y`, where drag is the amount that the cursor drags the line. 
 
-<div filename="line/drag_parallel" width="800" height="710" class="codePreview"></div>
+<div filename="line/drag_parallel" width="500" height="425" class="codePreview"></div>
 
 Now, let's add a feature where you can change the slope by dragging the line. The slope of a line is defined by /frac{y2 - y1}{x2 - x1}, so we will follow the same form here for our `expression`, where y2 and x2 are drag.y and drag.x, respectively, and y1 and x1 are the coordinates of the point we have chosen, (4,5). See how the slope of the line revolves around our chosen point: 
 
-<div filename="line/drag_slope" width="800" height="710" class="codePreview"></div>
+<div filename="line/drag_slope" width="500" height="425" class="codePreview"></div>
 
 Here is a template for a graph with several lines. Try implementing the following dragging ability: 
  Drag the green line's slope around its y-intercept. 
 
-<div filename="line/drag_exercises" width="800" height="710" class="codePreview"></div>
+<div filename="line/drag_exercises" width="500" height="425" class="codePreview"></div>
 
 Solution key: 
 
-<div filename="line/line_drag_solutions" width="800" height="710" class="codePreview"></div>
+<div filename="line/line_drag_solutions" width="500" height="425" class="codePreview"></div>
