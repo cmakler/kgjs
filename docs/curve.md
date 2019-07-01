@@ -33,4 +33,7 @@ One practical use of curves is to have a point traveling along a curve. In this 
 
 <div filename="curve/point_curve_drag" width="800" height="710" class="codePreview"></div>
 
+You can also move an entire curve in the x or y direction. Let's try to change the y-intercept of the quadratic curve shown above: 
+
+<div filename="curve/quadratic_curve_drag" width="800" height="710" class="codePreview"></div>
 

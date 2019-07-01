@@ -44,6 +44,9 @@
                 "calcs.m"
               ],
               "color": "colors.orange",
+              "droplines": {
+                "horizontal": "calcs.m.toFixed(2)"
+              },
               "drag": [
                 {
                   "directions": "x",
