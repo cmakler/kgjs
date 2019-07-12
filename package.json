@@ -8,6 +8,7 @@
     "@types/katex": "^0.5.0",
     "@types/mathjs": "0.0.34",
     "@types/three": "0.92.14",
+    "@types/js-yaml": "latest",
     "http-server": "latest",
     "typescript": "next"
   },
