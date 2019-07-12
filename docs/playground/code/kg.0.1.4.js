@@ -72,9 +72,12 @@ examples:["a = [1, 2, 3; 4, 5, 6]","size(a)","b = flatten(a)","size(b)"],seealso
 /// <reference path="../../kg.ts" />
 'use strict';
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -455,6 +458,37 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var HTMLLayout = /** @class */ (function (_super) {
+        __extends(HTMLLayout, _super);
+        function HTMLLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var divDef = { "html": def['html'] };
+            console.log("divDef: ", divDef);
+            l.subObjects.push(new KGAuthor.Div(divDef));
+            return _this;
+        }
+        return HTMLLayout;
+    }(KGAuthor.Layout));
+    KGAuthor.HTMLLayout = HTMLLayout;
+    var HTMLPlusSidebarLayout = /** @class */ (function (_super) {
+        __extends(HTMLPlusSidebarLayout, _super);
+        function HTMLPlusSidebarLayout(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            var sidebarDef = def['sidebar'];
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return HTMLPlusSidebarLayout;
+    }(HTMLLayout));
+    KGAuthor.HTMLPlusSidebarLayout = HTMLPlusSidebarLayout;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var OneGraph = /** @class */ (function (_super) {
         __extends(OneGraph, _super);
         function OneGraph(def) {
@@ -531,19 +565,58 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'];
+            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 0.75, width = 0.3, controlHeight = 0.25;
+            var includeControls = false;
+            console.log('layout: ', l);
+            if (def.hasOwnProperty('leftControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: leftX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                l.subObjects.push(new KGAuthor.DivContainer({
+                    position: {
+                        x: rightX,
+                        y: bottomY,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                }));
+                includeControls = true;
+            }
+            var graphHeight = includeControls ? 0.5 : 0.9;
+            _this.aspectRatio = includeControls ? 2 : 4;
             leftGraphDef.position = {
-                "x": 0.05,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
-            };
-            rightGraphDef.position = {
-                "x": 0.55,
-                "y": 0.025,
-                "width": 0.45,
-                "height": 0.9
+                x: leftX,
+                y: topY,
+                width: width,
+                height: graphHeight
             };
             l.subObjects.push(new KGAuthor.Graph(leftGraphDef));
+            rightGraphDef.position = {
+                "x": rightX,
+                "y": topY,
+                "width": width,
+                "height": graphHeight
+            };
             l.subObjects.push(new KGAuthor.Graph(rightGraphDef));
             return _this;
         }
@@ -1383,7 +1456,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: -40,
+                        xPixelOffset: -50,
                         rotate: 90
                     }, graph));
                 }
@@ -1400,7 +1473,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: 40,
+                        xPixelOffset: 50,
                         rotate: 270
                     }, graph));
                 }
@@ -1504,8 +1577,11 @@ var KGAuthor;
     var Line = /** @class */ (function (_super) {
         __extends(Line, _super);
         function Line(def, graph) {
-            // may define line with two points
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.orange'
+            });
+            // may define line with two points
             var xIntercept = def.xIntercept, yIntercept = def.yIntercept, slope = def.slope, invSlope = def.invSlope;
             if (def.hasOwnProperty('point') && def.hasOwnProperty('point2')) {
                 // still need to handle infinite case
@@ -1599,6 +1675,9 @@ var KGAuthor;
         __extends(Point, _super);
         function Point(def, graph) {
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.blue'
+            });
             def = KGAuthor.setFillColor(def);
             _this = _super.call(this, def, graph) || this;
             var p = _this;
@@ -1931,6 +2010,16 @@ var KGAuthor;
         return DivObject;
     }(KGAuthor.GraphObject));
     KGAuthor.DivObject = DivObject;
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = "Div";
+            return _this;
+        }
+        return Div;
+    }(DivObject));
+    KGAuthor.Div = Div;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -3891,6 +3980,7 @@ var KGAuthor;
 /// <reference path="parsers/authoringObject.ts"/>
 /// <reference path="schemas/schema.ts"/>
 /// <reference path="layouts/layout.ts"/>
+/// <reference path="layouts/html.ts"/>
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
@@ -5206,7 +5296,7 @@ var KG;
         function Point(def) {
             var _this = this;
             KG.setDefaults(def, {
-                fill: 'blue',
+                fill: 'colors.blue',
                 opacity: 1,
                 stroke: 'white',
                 strokeWidth: 1,
@@ -5584,7 +5674,7 @@ var KG;
                 .style('background', 'none')
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
-                .style('width', '70px');
+                .style('width', '50px');
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
             slider.numberInput.on("keyup", function () {
@@ -5596,7 +5686,8 @@ var KG;
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
-                .attr('step', param.round);
+                .attr('step', param.round)
+                .style('width', '50px');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
@@ -6013,7 +6104,8 @@ var KG;
             sidebar.rootElement
                 .style('position', null)
                 .style('left', null)
-                .style('width', null);
+                .style('width', null)
+                .style('padding-top', '20px');
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
@@ -6037,7 +6129,7 @@ var KG;
         function Label(def) {
             var _this = this;
             var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 6 : -6, yOffset = yAxisReversed ? 14 : -14;
+            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
             if (def.x == 'AXIS') {
                 def.x = 0;
                 def.align = xAxisReversed ? 'left' : 'right';
@@ -6445,8 +6537,19 @@ var views = [];
 window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
-        var src = viewDivs[i].getAttribute('src');
+        var d = viewDivs[i], src = d.getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
+        // if there is no src attribute
+        if (!src) {
+            try {
+                doc = jsyaml.safeLoad(d.innerHTML);
+                console.log(doc);
+                new KG.View(d, doc);
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
         // first look to see if there's a definition in the KG.viewData object
         if (KG['viewData'].hasOwnProperty(src)) {
             viewDivs[i].innerHTML = "";
@@ -6454,8 +6557,7 @@ window.addEventListener("load", function () {
         }
         else {
             // then look to see if the src is available by a URL
-            src += "?update=true"; //force update - JSON is often cached
-            d3.json(src, function (data) {
+            d3.json(src + "?update=true", function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
                 }
@@ -6466,6 +6568,7 @@ window.addEventListener("load", function () {
             });
         }
     };
+    var doc;
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (var i = 0; i < viewDivs.length; i++) {
         _loop_1(i);

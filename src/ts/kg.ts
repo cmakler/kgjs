@@ -68,8 +68,20 @@ window.addEventListener("load", function () {
 
 // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
-        let src = viewDivs[i].getAttribute('src');
+        const d = viewDivs[i],
+         src = d.getAttribute('src');
         viewDivs[i].innerHTML = "<p>loading...</p>";
+
+        // if there is no src attribute
+        if (!src) {
+            try {
+                var doc = jsyaml.safeLoad(d.innerHTML);
+                console.log(doc);
+                new KG.View(d, doc);
+            } catch (e) {
+                console.log(e);
+            }
+        }
 
         // first look to see if there's a definition in the KG.viewData object
         if (KG['viewData'].hasOwnProperty(src)) {
@@ -77,8 +89,7 @@ window.addEventListener("load", function () {
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         } else {
             // then look to see if the src is available by a URL
-            src += "?update=true"; //force update - JSON is often cached
-            d3.json(src, function (data) {
+            d3.json(src + "?update=true", function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
                 } else {
@@ -89,7 +100,8 @@ window.addEventListener("load", function () {
         }
 
     }
-});
+    
+})
 
 
 // if the window changes size, update the dimensions of the containers

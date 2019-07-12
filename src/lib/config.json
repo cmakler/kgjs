@@ -5,7 +5,8 @@
             "katex/contrib/auto-render.min.js",
             "katex/katex.min.js",
             "d3/d3.min.js",
-            "mathjs/dist/math.min.js"
+            "mathjs/dist/math.min.js",
+            "js-yaml/dist/js-yaml.min.js"
         ]
     },
     {
