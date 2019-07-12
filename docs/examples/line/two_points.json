@@ -3,6 +3,16 @@
     "type": "OneGraph",
     "def": {
       "graph": {
+        "xAxis": {
+          "title": "Horizontal Axis",
+          "min": -2,
+          "max": 11
+        },
+        "yAxis": {
+          "title": "Vertical Axis",
+          "min": -2,
+          "max": 11
+        },
         "objects": [
           {
             "type": "Point",
@@ -18,7 +28,7 @@
             "type": "Point",
             "def": {
               "coordinates": [
-                6,5
+                7,8
               ],
               "color": "colors.blue"
             }
@@ -27,10 +37,10 @@
             "type": "Line",
             "def": {
               "point": [
-                3,4
+                2,3
               ],
               "point2": [
-                6,5
+                5,6
               ],
               "color": "colors.blue",
               "lineStyle": "dotted"
@@ -40,16 +50,21 @@
             "type": "Line",
             "def": {
               "point": [
-                3,4
+                2,3
               ],
               "point2": [
-                6,5
+                5,6
               ],
               "min": 2,
               "max": 8,
-              "color": "colors.blue"
+              "color": "colors.blue",
+              "label": {
+                "text": "y = x + 3",
+                "x": "5"
+              },
+              "strokeWidth": 4
+              }
             }
-          }
         ]
       }
     }

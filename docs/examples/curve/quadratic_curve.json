@@ -1,0 +1,25 @@
+{
+  "layout": {
+    "type": "OneGraph",
+    "def": {
+      "graph": {
+        "objects": [
+          {
+            "type": "Curve",
+            "def": {
+              "univariateFunction": {
+                "fn": "1 + (x)^2",
+                "ind": "x"
+              },
+              "color": "colors.red",
+              "label": {
+              "text": "'f(x) = 1 + x^2'",
+              "x": 2
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
