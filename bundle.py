@@ -8,7 +8,11 @@ bundles = [
         "name": "kg.0.1.4.js",
         "dest_directories": ['build/bundled/','docs/js/','../electric-book/assets/js/', 'docs/playground/code/'],
         "order": [
-            "build/lib/kg-lib.js",
+            "src/lib/katex/contrib/auto-render.min.js",
+            "src/lib/katex/katex.min.js",
+            "src/lib/d3/d3.min.js",
+            "src/lib/mathjs/dist/math.min.js",
+            "src/lib/js-yaml/dist/js-yaml.min.js",
             "build/kg.js"
         ]
     },

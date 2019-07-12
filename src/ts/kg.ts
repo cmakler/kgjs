@@ -69,8 +69,7 @@ window.addEventListener("load", function () {
 // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
-         src = d.getAttribute('src');
-        viewDivs[i].innerHTML = "<p>loading...</p>";
+        src = d.getAttribute('src');
 
         // if there is no src attribute
         if (!src) {
@@ -84,7 +83,7 @@ window.addEventListener("load", function () {
         }
 
         // first look to see if there's a definition in the KG.viewData object
-        if (KG['viewData'].hasOwnProperty(src)) {
+        else if (KG['viewData'].hasOwnProperty(src)) {
             viewDivs[i].innerHTML = "";
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         } else {

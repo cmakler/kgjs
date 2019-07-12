@@ -6467,7 +6467,6 @@ window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
         var d = viewDivs[i], src = d.getAttribute('src');
-        viewDivs[i].innerHTML = "<p>loading...</p>";
         // if there is no src attribute
         if (!src) {
             try {
@@ -6480,7 +6479,7 @@ window.addEventListener("load", function () {
             }
         }
         // first look to see if there's a definition in the KG.viewData object
-        if (KG['viewData'].hasOwnProperty(src)) {
+        else if (KG['viewData'].hasOwnProperty(src)) {
             viewDivs[i].innerHTML = "";
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         }
