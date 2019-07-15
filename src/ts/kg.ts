@@ -77,7 +77,10 @@ window.addEventListener("load", function () {
             try {
                 var doc = jsyaml.safeLoad(d.innerHTML);
                 console.log(doc);
-                views.push(new KG.View(d, doc));
+                var txt = JSON.stringify(doc).replace(/&gt;/g,'>').replace(/&lt;/g,'<');
+                console.log(txt);
+                var backToJSON = JSON.parse(txt);
+                views.push(new KG.View(d, backToJSON));
             } catch (e) {
                 console.log(e);
             }

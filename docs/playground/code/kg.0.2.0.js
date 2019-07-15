@@ -6500,6 +6500,7 @@ var KG;
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
 /// <reference path="KGAuthor/kgAuthor.ts"/>
 /// <reference path="model/model.ts"/>
@@ -6555,7 +6556,10 @@ window.addEventListener("load", function () {
             try {
                 doc = jsyaml.safeLoad(d.innerHTML);
                 console.log(doc);
-                views.push(new KG.View(d, doc));
+                txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+                console.log(txt);
+                backToJSON = JSON.parse(txt);
+                views.push(new KG.View(d, backToJSON));
             }
             catch (e) {
                 console.log(e);
@@ -6579,7 +6583,7 @@ window.addEventListener("load", function () {
             });
         }
     };
-    var doc;
+    var doc, txt, backToJSON;
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (var i = 0; i < viewDivs.length; i++) {
         _loop_1(i);

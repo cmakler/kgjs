@@ -6484,7 +6484,10 @@ window.addEventListener("load", function () {
             try {
                 doc = jsyaml.safeLoad(d.innerHTML);
                 console.log(doc);
-                views.push(new KG.View(d, doc));
+                txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+                console.log(txt);
+                backToJSON = JSON.parse(txt);
+                views.push(new KG.View(d, backToJSON));
             }
             catch (e) {
                 console.log(e);
@@ -6508,7 +6511,7 @@ window.addEventListener("load", function () {
             });
         }
     };
-    var doc;
+    var doc, txt, backToJSON;
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (var i = 0; i < viewDivs.length; i++) {
         _loop_1(i);
