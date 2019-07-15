@@ -6428,6 +6428,7 @@ var KG;
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
 /// <reference path="lib/underscore.ts"/>
 /// <reference path="KGAuthor/kgAuthor.ts"/>
 /// <reference path="model/model.ts"/>
