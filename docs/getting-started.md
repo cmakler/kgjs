@@ -1,9 +1,47 @@
 ---
 layout: documentation
-title: Parameters and Calculations
+title: Getting Started
 ---
 
-A parameter is like a variable that can be used in functions. At its simpest, it consists of a name and a value:
+KGJS is a JavaScript engine that takes a description of an interactive graph and renders that graph in a browser.
+
+The engine understands JSON as the language describing the graphs, but as an author you can use YAML, which is then translated into JSON. This is generally easier to read and edit.
+
+Getting up and running with KGJS is quite simple: you just need a single Javascript file and a single CSS file. Then, use a
+
+``
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Hello World</title>
+    <link rel="stylesheet" type="text/css" href="https://cmakler.github.io/kgjs/css/kg.0.2.0.css">
+    <script src="https://cmakler.github.io/kgjs/js/kg.0.2.0.js"></script>
+</head>
+<body>
+
+The text in the following div will be rendered using KGJS:
+
+<div class="kg-container">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+
+      # Point object at coordinates (6,4)
+      - Point:
+          coordinates: [6,4]
+
+</div>
+
+</body>
+</html>
+
+
+``
+
+
 
 <div width="800" height="210" class="codePreview">
 

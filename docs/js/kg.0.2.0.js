@@ -6555,7 +6555,7 @@ window.addEventListener("load", function () {
             try {
                 doc = jsyaml.safeLoad(d.innerHTML);
                 console.log(doc);
-                new KG.View(d, doc);
+                views.push(new KG.View(d, doc));
             }
             catch (e) {
                 console.log(e);
