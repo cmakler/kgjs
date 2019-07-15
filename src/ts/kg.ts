@@ -66,7 +66,7 @@ let views = [];
 window.addEventListener("load", function () {
     let viewDivs = document.getElementsByClassName('kg-container');
 
-// for each div, fetch the JSON definition and create a View object with that div and data
+    // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
         src = d.getAttribute('src');
@@ -97,7 +97,6 @@ window.addEventListener("load", function () {
                 }
             })
         }
-
     }
     
 })

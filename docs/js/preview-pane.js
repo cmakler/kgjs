@@ -1,16 +1,18 @@
 function createCodeMirror(def) {
-    console.log(def);
     const parent = d3.select(this),
     filename = parent.attr('filename'),
     previewWidth = +parent.attr('width') || 800,
-    height = +parent.attr('height') || 500
+    height = +parent.attr('height') || 500,
+    initialCode = parent.node().innerHTML.trim();
+
+    parent.node().innerHTML = '';
+
 
     parent.style("width", previewWidth + 500 + "px")
     .attr("class","enclosing");
     
     const destWindow = parent.append('div')
     .attr("class","kg-container")
-    .attr("src","examples/"+filename+".json")
     .style("width", previewWidth + "px")
     .style("height", height + "px")
     .style("float", "right");
@@ -27,27 +29,20 @@ function createCodeMirror(def) {
         dest: destWindow.node()
     }
     srcCodeMirror = CodeMirror(newMirror.src, {
-        mode: "javascript",
+        mode: "text/x-yaml",
         lineNumbers: true,
-        lineWrapping: true
+        lineWrapping: true,
+        value: initialCode
     })
-
-    console.log(srcCodeMirror);
 
     newMirror.mirror = srcCodeMirror;
     newMirror.update = function() {
-        const authorJSON = JSON.parse(newMirror.mirror.getValue());
-        new KG.View(newMirror.dest, authorJSON)
-    }
-    newMirror.load = function(filename) {
-        d3.json('examples/' + filename + '.json', function (data) {
-            newMirror.mirror.setValue(JSON.stringify(data, null, 2));
-            new KG.View(newMirror.dest, data);
-        });
+        const authorYAML = jsyaml.safeLoad(newMirror.mirror.getValue());
+        new KG.View(newMirror.dest, authorYAML);
+        return newMirror;
     }
     newMirror.mirror.on("change", newMirror.update);
-    newMirror.load(filename);
-    return newMirror;
+    return newMirror.update();
 }
 
 divs = d3.selectAll(".codePreview").each(createCodeMirror);

@@ -109,7 +109,13 @@ module KG {
             data.objects = data.objects || [];
 
             if (data.hasOwnProperty('layout')) {
-                data.objects.push(data.layout)
+                if(data.layout.hasOwnProperty('type')) {
+                    data.objects.push(data.layout)
+                } else {
+                    const layoutType = Object.keys(data.layout)[0],
+                    layoutDef = data.layout[layoutType];
+                    data.objects.push({type: layoutType, def: layoutDef});
+                }
             }
 
             if (data.hasOwnProperty('schema')) {

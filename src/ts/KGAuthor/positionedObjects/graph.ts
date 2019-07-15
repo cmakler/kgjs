@@ -43,7 +43,14 @@ module KGAuthor {
                 def: g.def.yAxis
             });
             g.def.objects.forEach(function (obj) {
-                g.subObjects.push(new KGAuthor[obj.type](obj.def, g))
+                if(obj.hasOwnProperty('type')) {
+                    g.subObjects.push(new KGAuthor[obj.type](obj.def, g))
+                } else {
+                    const objType = Object.keys(obj)[0],
+                    objDef = obj[objType];
+                    g.subObjects.push(new KGAuthor[objType](objDef, g))
+                }
+                
             });
 
             console.log(g);

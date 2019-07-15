@@ -1087,7 +1087,13 @@ var KGAuthor;
                 def: g.def.yAxis
             });
             g.def.objects.forEach(function (obj) {
-                g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
+                if (obj.hasOwnProperty('type')) {
+                    g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
+                }
+                else {
+                    var objType = Object.keys(obj)[0], objDef = obj[objType];
+                    g.subObjects.push(new KGAuthor[objType](objDef, g));
+                }
             });
             console.log(g);
             return _this;
@@ -4719,7 +4725,13 @@ var KG;
             };
             data.objects = data.objects || [];
             if (data.hasOwnProperty('layout')) {
-                data.objects.push(data.layout);
+                if (data.layout.hasOwnProperty('type')) {
+                    data.objects.push(data.layout);
+                }
+                else {
+                    var layoutType = Object.keys(data.layout)[0], layoutDef = data.layout[layoutType];
+                    data.objects.push({ type: layoutType, def: layoutDef });
+                }
             }
             if (data.hasOwnProperty('schema')) {
                 data.objects.push({ type: data.schema, def: {} });
@@ -5192,7 +5204,6 @@ var KG;
         };
         Axis.prototype.redraw = function () {
             var a = this;
-            console.log(a);
             switch (a.orient) {
                 case 'bottom':
                     a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
@@ -5616,7 +5627,7 @@ var KG;
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('width', '50px');
+                .style('width', '100%');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
@@ -5726,7 +5737,7 @@ var KG;
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
-            var sliderTable = controls.rootElement.append('table').style('padding', '10px');
+            var sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%');
             controls.sliders.forEach(function (slider) {
                 new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
             });

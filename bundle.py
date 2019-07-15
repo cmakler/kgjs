@@ -5,7 +5,7 @@ __author__ = 'cmakler'
 
 bundles = [
     {
-        "name": "kg.0.1.4.js",
+        "name": "kg.0.2.0.js",
         "dest_directories": ['build/bundled/','docs/js/','../electric-book/assets/js/', 'docs/playground/code/'],
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
@@ -17,7 +17,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.1.4.css",
+        "name": "kg.0.2.0.css",
         "dest_directories": ['build/bundled/','docs/css/'],
         "order": [
             "build/lib/kg-lib.css",
@@ -25,7 +25,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.1.4.css",
+        "name": "kg-tufte.0.2.0.css",
         "dest_directories": ['build/bundled/'],
         "order": [
             "build/lib/kg-tufte.css",

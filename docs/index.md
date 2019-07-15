@@ -11,5 +11,3 @@ Graph objects:
 * [point](point.html)
 * [line](line.html)
 * [curve](curve.html)
-
-Try the [interactive editor](author.html)!
