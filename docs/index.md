@@ -36,3 +36,4 @@ Graph objects:
 * [point](point.html)
 * [line](line.html)
 * [curve](curve.html)
+* [drag](drag.html)
