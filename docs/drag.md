@@ -42,8 +42,69 @@ layout:
             text: y = params.y
             x: 6
 
-
-          
-
 </div>
 
+
+Some drag functions are more complicated. For example, see the following drag command for pivoting the slope of a line around the point (4,5). We will use the parameter `m` to represent the slope of the line. The expression for the drag is  `(drag.y-5)/(drag.x-4)` because the slope is represented by rise over run. The 'rise' of the line is drag.y, the new position of y, minus its anchor point with a y-coordinate of 5. The same logic applies to the run. As you can see, the point itself does not change position since the line will always go through the point (4,5) because we are changing the slope parameter `m`, not the location of the line.  
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- name: m
+  value: 1
+  min: -10
+  max: 10
+  round: 0.01
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Line:
+          color: colors.blue
+          point: [4,5]
+          slope: params.m
+          drag:
+          - directions: xy
+            param: m
+            expression: "(drag.y-5)/(drag.x-4)"
+      - Point:
+          coordinates: [4,5]
+          
+</div>
+
+You can attribute multiple drag commands to a single object, such as a point. See how two different drag commands could be applied to our point example from above, now with one in the x-direction: 
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- name: y
+  value: 3
+  min: 0
+  max: 10
+  round: 0.5
+- name: x
+  value: 5
+  min: 2
+  max: 8
+  round: 0.1
+  
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Point:
+         coordinates:
+         - params.x
+         - params.y
+         drag:
+         - directions: y
+           param: y
+           expression: drag.y
+         - directions: x
+           param: x
+           expression: drag.x
+         label: 
+           text: "(params.x, params.y)"
+
+</div>
