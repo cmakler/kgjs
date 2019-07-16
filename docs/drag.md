@@ -73,7 +73,7 @@ layout:
           
 </div>
 
-You can attribute multiple drag commands to a single object, such as a point. See how two different drag commands could be applied to our point example from above, now with one in the x-direction: 
+You can attribute multiple drag commands to a single object, such as a point. See how two different drag commands could be applied to our point example from above, now with drag ability in the x-direction: 
 
 <div width="500" height="425" class="codePreview">
 
@@ -82,12 +82,12 @@ params:
   value: 3
   min: 0
   max: 10
-  round: 0.5
+  round: 0.01
 - name: x
   value: 5
   min: 2
   max: 8
-  round: 0.1
+  round: 0.01
   
 layout:
   OneGraph:
@@ -105,6 +105,64 @@ layout:
            param: x
            expression: drag.x
          label: 
-           text: "(params.x, params.y)"
+           text: "(params.x.toFixed(2), params.y.toFixed(2))"
+
+</div>
+
+One might also want to drag in a curved direction, such as along a sinusoidal path. (The sine curve is shown here for reference, but has no influence on the point or its drag path). 
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- {name: x, value: 0, min: -10, max: 10, round: 0.01}
+calcs:
+  m: "(2*(sin(params.x)))"
+layout:
+  OneGraph:
+    graph:
+      xAxis: { min: -10, max: 10}
+      yAxis: { min: -10, max: 10}
+      objects:
+      - Curve:
+          univariateFunction:
+            fn: (2*sin(x))
+      - Point:
+          coordinates:
+          - params.x
+          - calcs.m
+          drag:
+          - directions: x
+            param: x
+            expression: params.x + drag.dx
+
+</div>
+
+It is important to note the difference between `drag.x` and `drag.dx` and when each variable should be used. `drag.x` is the placement of the cursor as it drags an object. `drag.dx` is the _difference_ between the original parameter value and the new location of the cursor. So, for example, if a point is at (2,2) and is dragged to (4,2), `drag.x` is 4 and `drag.dx` is 2. This also means that `drag.x` = `params.x + drag.dx` if x is a parameter. 
+
+Notice that we can recreate the above example by substituting `drag.x` for `params.x + drag.dx`: 
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- {name: x, value: 0, min: -10, max: 10, round: 0.01}
+calcs:
+  m: "(2*(sin(params.x)))"
+layout:
+  OneGraph:
+    graph:
+      xAxis: { min: -10, max: 10}
+      yAxis: { min: -10, max: 10}
+      objects:
+      - Curve:
+          univariateFunction:
+            fn: (2*sin(x))
+      - Point:
+          coordinates:
+          - params.x
+          - calcs.m
+          drag:
+          - directions: x
+            param: x
+            expression: drag.x
 
 </div>
