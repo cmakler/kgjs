@@ -2,3 +2,4 @@
 node_modules/
 export_to_econgraphs.py
 docs/_site/
+src/lib/js-yaml/
