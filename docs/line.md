@@ -28,7 +28,7 @@ layout:
 
 A line can also be created using a point and a slope: 
 
-<div filename="line/point_slope" width="500" height="425" class="codePreview">
+<div width="500" height="425" class="codePreview">
     
 layout:
   OneGraph:
