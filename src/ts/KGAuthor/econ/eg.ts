@@ -38,6 +38,11 @@
 /// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
 
+/* Monopoly */
+
+/// <reference path="micro/monopoly/linearMC.ts"/>
+/// <reference path="micro/monopoly/linearMonopoly.ts"/>
+
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
 /// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>

@@ -3653,14 +3653,60 @@ var KGAuthor;
     var EconLinearEquilibrium = /** @class */ (function (_super) {
         __extends(EconLinearEquilibrium, _super);
         function EconLinearEquilibrium(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
-            _this.demand = new KGAuthor.EconLinearDemand(def.demandDef, graph);
-            _this.supply = new KGAuthor.EconLinearSupply(def.supplyDef, graph);
+            var _this = this;
+            KG.setDefaults(def, {
+                showCS: false,
+                showPS: false
+            });
+            _this = _super.call(this, def, graph) || this;
             var le = _this;
+            le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
+            le.supply = new KGAuthor.EconLinearSupply(def.supply, graph);
             le.Q = KGAuthor.divideDefs(KGAuthor.addDefs(le.demand.xIntercept, KGAuthor.multiplyDefs(le.demand.invSlope, le.supply.yIntercept)), KGAuthor.subtractDefs("1", KGAuthor.multiplyDefs(le.demand.invSlope, le.supply.slope)));
             le.P = KGAuthor.addDefs(le.supply.yIntercept, KGAuthor.multiplyDefs(le.supply.slope, le.Q));
             le.subObjects.push(_this.demand);
             le.subObjects.push(_this.supply);
+            if (graph) {
+                le.subObjects.push(new KGAuthor.Area({
+                    univariateFunction1: {
+                        fn: le.demand.yIntercept + " + (" + le.demand.slope + ")*(x)",
+                        max: le.Q
+                    },
+                    univariateFunction2: {
+                        fn: le.P,
+                        max: le.Q
+                    },
+                    fill: "colors.demand",
+                    show: def.showCS
+                }, graph));
+                le.subObjects.push(new KGAuthor.Area({
+                    univariateFunction1: {
+                        fn: le.supply.yIntercept + " + (" + le.supply.slope + ")*(x)",
+                        max: le.Q
+                    },
+                    univariateFunction2: {
+                        fn: le.P,
+                        max: le.Q
+                    },
+                    fill: "colors.supply",
+                    show: def.showPS
+                }, graph));
+                var equilibriumPointDef = {
+                    "color": "colors.green",
+                    "x": le.Q,
+                    "y": le.P,
+                    "droplines": {
+                        "vertical": "Q^*",
+                        "horizontal": "P^*"
+                    }
+                };
+                if (def.hasOwnProperty('equilibrium')) {
+                    def.equilibrium = KG.setDefaults(def.equilibrium, equilibriumPointDef);
+                    le.subObjects.push(new KGAuthor.Point(def.equilibrium, graph));
+                }
+                ;
+            }
+            console.log(le);
             return _this;
         }
         EconLinearEquilibrium.prototype.parseSelf = function (parsedData) {
