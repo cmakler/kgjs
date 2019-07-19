@@ -3552,10 +3552,10 @@ var KGAuthor;
             var ld = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept,
-                slope: ld.slope,
-                xIntercept: ld.xIntercept,
-                invSlope: ld.invSlope
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                xIntercept: ld.xIntercept.toString(),
+                invSlope: ld.invSlope.toString()
             };
             return parsedData;
         };
@@ -3598,6 +3598,13 @@ var KGAuthor;
                         'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
                     }];
             }
+            else if (def.draggable && typeof (def.yIntercept) == 'string') {
+                def.drag = [{
+                        'directions': 'y',
+                        'param': KGAuthor.paramName(def.yIntercept),
+                        'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
+                    }];
+            }
             _this = _super.call(this, def, graph) || this;
             var ld = _this;
             if (graph) {
@@ -3630,15 +3637,44 @@ var KGAuthor;
             var ld = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept,
-                slope: ld.slope,
-                invSlope: ld.invSlope
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                invSlope: ld.invSlope.toString()
             };
             return parsedData;
         };
         return EconLinearSupply;
     }(KGAuthor.Line));
     KGAuthor.EconLinearSupply = EconLinearSupply;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconLinearEquilibrium = /** @class */ (function (_super) {
+        __extends(EconLinearEquilibrium, _super);
+        function EconLinearEquilibrium(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.demand = new KGAuthor.EconLinearDemand(def.demandDef, graph);
+            _this.supply = new KGAuthor.EconLinearSupply(def.supplyDef, graph);
+            var le = _this;
+            le.Q = KGAuthor.divideDefs(KGAuthor.addDefs(le.demand.xIntercept, KGAuthor.multiplyDefs(le.demand.invSlope, le.supply.yIntercept)), KGAuthor.subtractDefs("1", KGAuthor.multiplyDefs(le.demand.invSlope, le.supply.slope)));
+            le.P = KGAuthor.addDefs(le.supply.yIntercept, KGAuthor.multiplyDefs(le.supply.slope, le.Q));
+            le.subObjects.push(_this.demand);
+            le.subObjects.push(_this.supply);
+            return _this;
+        }
+        EconLinearEquilibrium.prototype.parseSelf = function (parsedData) {
+            var le = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[le.name] = {
+                Q: le.Q.toString(),
+                P: le.P.toString()
+            };
+            return parsedData;
+        };
+        return EconLinearEquilibrium;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconLinearEquilibrium = EconLinearEquilibrium;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -3870,6 +3906,7 @@ var KGAuthor;
 /* Equilibrium */
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
 /// <reference path="micro/equilibrium/linearSupply.ts"/>
+/// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
@@ -4097,9 +4134,8 @@ var KG;
         Model.prototype.update = function (force) {
             var model = this;
             model.currentParamValues = model.evalParams();
-            console.log('calcs', model.currentCalcValues);
             model.currentCalcValues = model.evalObject(model.calcs);
-            console.log('updatedCalcs', model.currentCalcValues);
+            console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
                 listener.update(force);

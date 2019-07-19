@@ -36,6 +36,12 @@ module KGAuthor {
                     'param': paramName(def.invSlope),
                     'expression': divideDefs('drag.x',subtractDefs('drag.y',def.yIntercept))
                 }]
+            } else if (def.draggable && typeof(def.yIntercept) == 'string') {
+                def.drag = [{
+                    'directions': 'y',
+                    'param': paramName(def.yIntercept),
+                    'expression': addDefs(def.yIntercept, 'drag.dy')
+                }]
             }
 
             super(def, graph);
@@ -80,9 +86,9 @@ module KGAuthor {
             let ld = this;
             parsedData = super.parseSelf(parsedData);
             parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept,
-                slope: ld.slope,
-                invSlope: ld.invSlope
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                invSlope: ld.invSlope.toString()
             };
 
             return parsedData;

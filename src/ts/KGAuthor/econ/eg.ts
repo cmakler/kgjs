@@ -35,6 +35,7 @@
 
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
 /// <reference path="micro/equilibrium/linearSupply.ts"/>
+/// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
 
 /* Exchange */

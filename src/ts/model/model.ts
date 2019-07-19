@@ -185,9 +185,8 @@ module KG {
         update(force: boolean) {
             const model = this;
             model.currentParamValues = model.evalParams();
-            console.log('calcs', model.currentCalcValues);
             model.currentCalcValues = model.evalObject(model.calcs);
-            console.log('updatedCalcs', model.currentCalcValues);
+            console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
                 listener.update(force)

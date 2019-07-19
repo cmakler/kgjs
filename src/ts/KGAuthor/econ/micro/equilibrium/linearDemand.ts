@@ -124,10 +124,10 @@ module KGAuthor {
             let ld = this;
             parsedData = super.parseSelf(parsedData);
             parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept,
-                slope: ld.slope,
-                xIntercept: ld.xIntercept,
-                invSlope: ld.invSlope
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                xIntercept: ld.xIntercept.toString(),
+                invSlope: ld.invSlope.toString()
             };
 
             return parsedData;
