@@ -73,6 +73,17 @@ var KG;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    function extractTypeAndDef(def) {
+        if (def.hasOwnProperty('type')) {
+            return def;
+        }
+        else {
+            def.type = Object.keys(def)[0];
+            def.def = def[def.type];
+            return def;
+        }
+    }
+    KGAuthor.extractTypeAndDef = extractTypeAndDef;
     function parse(data, parsedData) {
         data.forEach(function (obj) {
             if (KGAuthor.hasOwnProperty(obj.type)) {
@@ -1087,13 +1098,8 @@ var KGAuthor;
                 def: g.def.yAxis
             });
             g.def.objects.forEach(function (obj) {
-                if (obj.hasOwnProperty('type')) {
-                    g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
-                }
-                else {
-                    var objType = Object.keys(obj)[0], objDef = obj[objType];
-                    g.subObjects.push(new KGAuthor[objType](objDef, g));
-                }
+                obj = KGAuthor.extractTypeAndDef(obj);
+                g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
             });
             console.log(g);
             return _this;
@@ -2770,6 +2776,7 @@ var KGAuthor;
                 }
             }
             var xIntercept = KGAuthor.divideDefs(def.m, def.p1), yIntercept = KGAuthor.divideDefs(def.m, def.p2), priceRatio = KGAuthor.divideDefs(def.p1, def.p2), endowment = { x: def.x, y: def.y };
+            console.log('xIntercept', xIntercept);
             if (def.inMap) {
                 def.strokeWidth = 1;
                 def.lineStyle = 'dotted';
@@ -2893,13 +2900,13 @@ var KGAuthor;
             var bl = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[bl.name] = {
-                xIntercept: bl.xIntercept,
-                yIntercept: bl.yIntercept,
-                m: bl.m,
-                p1: bl.p1,
-                p2: bl.p2,
-                priceRatio: bl.priceRatio,
-                endowment: bl.endowment
+                xIntercept: bl.xIntercept.toString(),
+                yIntercept: bl.yIntercept.toString(),
+                m: bl.m.toString(),
+                p1: bl.p1.toString(),
+                p2: bl.p2.toString(),
+                priceRatio: bl.priceRatio.toString(),
+                endowment: bl.endowment.toString()
             };
             return parsedData;
         };
@@ -2912,6 +2919,7 @@ var KGAuthor;
 (function (KGAuthor) {
     function getUtilityFunction(def) {
         if (def != undefined) {
+            def = KGAuthor.extractTypeAndDef(def);
             if (def.type == 'CobbDouglas') {
                 return new KGAuthor.CobbDouglasFunction(def.def);
             }
@@ -4089,8 +4097,9 @@ var KG;
         Model.prototype.update = function (force) {
             var model = this;
             model.currentParamValues = model.evalParams();
-            model.currentCalcValues = model.evalObject(model.calcs);
             console.log('calcs', model.currentCalcValues);
+            model.currentCalcValues = model.evalObject(model.calcs);
+            console.log('updatedCalcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
                 listener.update(force);
@@ -4742,7 +4751,6 @@ var KG;
             var view = this;
             var parsedData = view.parse(data, div);
             div.innerHTML = "";
-            console.log('removing all children');
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
             // create scales
@@ -4797,7 +4805,6 @@ var KG;
                         var clipPathURL = KG.randomString(10);
                         var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
-                            console.log(td.type);
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -4840,7 +4847,6 @@ var KG;
                                 def.endArrow = defURLS[def['endArrowName']];
                             }
                             def = view.addViewToDef(def, layer_1);
-                            console.log(td.type);
                             new KG[td.type](def);
                         });
                     }
@@ -4849,7 +4855,6 @@ var KG;
             // add divs
             if (data.divs.length > 0) {
                 data.divs.forEach(function (td) {
-                    console.log(td.type);
                     var def = view.addViewToDef(td.def, view.div), newDiv = new KG[td.type](def);
                     if (td.type == 'Sidebar') {
                         view.sidebar = newDiv;

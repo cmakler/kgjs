@@ -2,38 +2,35 @@
 <html class="no-js" lang="">
 <head>
     <title>Risk Dominance Demo</title>
-    <link href="code/kg.0.1.4.css" rel="stylesheet">
-    <script src="code/kg.0.1.4.js"></script>
+    <link href="code/kg.0.2.0.css" rel="stylesheet">
+    <script src="code/kg.0.2.0.js"></script>
 </head>
 <body>
 
-<div id="diagram" class="kg-container" src="playground"
-     style="width: 80%;margin-right: auto;margin-left: auto;margin-top: 2em;margin-bottom: 2em;">
-
-</div>
 
 <div class="kg-container">
 
+schema: EconSchema
+version: 1
+aspectRatio: 2
 layout:
-
-  type: OneGraph
-  def:
+  OneGraph:
     graph:
       objects:
-      
-        ## first point
-        - type: Point
-          def:
-            coordinates:
-              - 6
-              - 5
-        
-        ## second point
-        - type: Point
-          def:
-            coordinates:
-              - 3
-              - 8
+
+      - EconOptimalBundle:
+          name: foo
+          budgetLine:
+            p1: 1
+            p2: 2
+            m: 10
+          color: colors.red # from GraphObject
+          indifferenceCurve: {}
+          utilityFunction:
+            type: CobbDouglas
+            def:
+              alpha: 0.5
+          
               
 </div>
 

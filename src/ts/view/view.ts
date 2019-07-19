@@ -129,7 +129,6 @@ module KG {
             let view = this;
             const parsedData = view.parse(data, div);
             div.innerHTML = "";
-            console.log('removing all children');
 
             view.aspectRatio = parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
@@ -198,7 +197,6 @@ module KG {
                         const clipPathURL = randomString(10);
                         const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
-                            console.log(td.type);
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -246,7 +244,6 @@ module KG {
                                 def.endArrow = defURLS[def['endArrowName']]
                             }
                             def = view.addViewToDef(def, layer);
-                            console.log(td.type);
                             new KG[td.type](def);
                         })
                     }
@@ -257,7 +254,6 @@ module KG {
             // add divs
             if (data.divs.length > 0) {
                 data.divs.forEach(function (td: TypeAndDef) {
-                    console.log(td.type);
                     const def = view.addViewToDef(td.def, view.div),
                         newDiv = new KG[td.type](def);
                     if (td.type == 'Sidebar') {

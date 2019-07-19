@@ -78,6 +78,8 @@ module KGAuthor {
                 priceRatio = divideDefs(def.p1, def.p2),
                 endowment = {x: def.x, y: def.y};
 
+            console.log('xIntercept', xIntercept);
+
             if (def.inMap) {
                 def.strokeWidth = 1;
                 def.lineStyle = 'dotted';
@@ -227,15 +229,14 @@ module KGAuthor {
             let bl = this;
             parsedData = super.parseSelf(parsedData);
             parsedData.calcs[bl.name] = {
-                xIntercept: bl.xIntercept,
-                yIntercept: bl.yIntercept,
-                m: bl.m,
-                p1: bl.p1,
-                p2: bl.p2,
-                priceRatio: bl.priceRatio,
-                endowment: bl.endowment
+                xIntercept: bl.xIntercept.toString(),
+                yIntercept: bl.yIntercept.toString(),
+                m: bl.m.toString(),
+                p1: bl.p1.toString(),
+                p2: bl.p2.toString(),
+                priceRatio: bl.priceRatio.toString(),
+                endowment: bl.endowment.toString()
             };
-
             return parsedData;
         }
     }

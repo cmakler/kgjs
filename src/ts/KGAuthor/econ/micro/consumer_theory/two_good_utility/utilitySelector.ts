@@ -5,6 +5,7 @@ module KGAuthor {
 
     export function getUtilityFunction(def) {
         if (def != undefined) {
+            def = KGAuthor.extractTypeAndDef(def);
             if (def.type == 'CobbDouglas') {
                 return new KGAuthor.CobbDouglasFunction(def.def)
             } else if (def.type == 'Substitutes' || def.type == 'PerfectSubstitutes') {

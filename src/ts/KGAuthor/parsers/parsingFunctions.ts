@@ -5,6 +5,17 @@ module KGAuthor {
     import UnivariateFunctionDefinition = KG.UnivariateFunctionDefinition;
     import ParametricFunctionDefinition = KG.ParametricFunctionDefinition;
 
+
+    export function extractTypeAndDef(def) {
+        if(def.hasOwnProperty('type')) {
+            return def
+        } else {
+            def.type = Object.keys(def)[0];
+            def.def = def[def.type];
+            return def;
+        }
+    }
+
     export function parse(data: KG.TypeAndDef[], parsedData) {
         data.forEach(function (obj) {
             if (KGAuthor.hasOwnProperty(obj.type)) {
