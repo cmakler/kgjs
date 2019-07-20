@@ -2095,6 +2095,74 @@ var KGAuthor;
 /// <reference path="../eg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var EconSchema = /** @class */ (function (_super) {
+        __extends(EconSchema, _super);
+        function EconSchema(def) {
+            var _this = this;
+            def.colors = KG.setDefaults(def.colors || {}, {
+                // consumer theory
+                utility: 'purple',
+                mrs: 'blue',
+                dispreferred: 'red',
+                preferred: 'purple',
+                offer: 'blue',
+                incomeOffer: 'orange',
+                demand: 'blue',
+                budget: 'green',
+                costlier: 'red',
+                endowment: 'grey',
+                incEffect: 'orange',
+                subEffect: 'red',
+                // producer theory
+                production: 'blue',
+                marginalCost: 'orange',
+                marginalRevenue: 'olive',
+                supply: 'orange',
+                shortRun: 'red',
+                longRun: 'orange',
+                profit: 'green',
+                loss: 'red',
+                // equilibrium
+                price: 'grey',
+                // macro
+                consumption: 'blue',
+                depreciation: "red",
+                savings: "green",
+                tax: 'red'
+            });
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return EconSchema;
+    }(KGAuthor.Schema));
+    KGAuthor.EconSchema = EconSchema;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var BowlesHallidaySchema = /** @class */ (function (_super) {
+        __extends(BowlesHallidaySchema, _super);
+        function BowlesHallidaySchema(def) {
+            var _this = this;
+            // create color scheme here; I took these from the spreadsheet
+            var purple = "'#3f007d'", blue = "'#084081'", green = "'#005824'";
+            // define any overrides to the defined Econ schema here
+            def.colors = {
+                // consumer theory
+                demand: purple,
+                supply: blue,
+                equilibriumPrice: green
+            };
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return BowlesHallidaySchema;
+    }(KGAuthor.EconSchema));
+    KGAuthor.BowlesHallidaySchema = BowlesHallidaySchema;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var EdgeworthBoxPlusSidebar = /** @class */ (function (_super) {
         __extends(EdgeworthBoxPlusSidebar, _super);
         function EdgeworthBoxPlusSidebar(def) {
@@ -3692,7 +3760,7 @@ var KGAuthor;
                     show: def.showPS
                 }, graph));
                 var equilibriumPointDef = {
-                    "color": "colors.green",
+                    "color": "colors.equilibriumPrice",
                     "x": le.Q,
                     "y": le.P,
                     "droplines": {
@@ -3864,6 +3932,158 @@ var KGAuthor;
     }(KGAuthor.Curve));
     KGAuthor.EconPPF = EconPPF;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconLinearMC = /** @class */ (function (_super) {
+        __extends(EconLinearMC, _super);
+        function EconLinearMC(def, graph) {
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            KG.setDefaults(def, {
+                color: 'colors.supply',
+                strokeWidth: 2,
+                lineStyle: 'solid'
+            });
+            if (def.draggable && typeof (def.slope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.slope),
+                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
+                    }];
+            }
+            else if (def.draggable && typeof (def.invSlope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.invSlope),
+                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
+                    }];
+            }
+            else if (def.draggable && typeof (def.yIntercept) == 'string') {
+                def.drag = [{
+                        'directions': 'y',
+                        'param': KGAuthor.paramName(def.yIntercept),
+                        'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
+                    }];
+            }
+            _this = _super.call(this, def, graph) || this;
+            var ld = _this;
+            if (graph) {
+                var subObjects = ld.subObjects;
+                var yInterceptPointDef = {
+                    coordinates: [0, ld.yIntercept],
+                    color: def.color,
+                    r: 4
+                };
+                if (def.draggable && typeof (ld.yIntercept) == 'string') {
+                    yInterceptPointDef['drag'] = [{
+                            directions: 'y',
+                            param: KGAuthor.paramName(ld.yIntercept),
+                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
+                        }];
+                }
+                if (def.hasOwnProperty('yInterceptLabel')) {
+                    yInterceptPointDef['droplines'] = {
+                        horizontal: def.yInterceptLabel
+                    };
+                }
+                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
+                if (def.handles) {
+                    subObjects.push(ld.yInterceptPoint);
+                }
+            }
+            return _this;
+        }
+        EconLinearMC.prototype.parseSelf = function (parsedData) {
+            var ld = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[ld.name] = {
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                invSlope: ld.invSlope.toString()
+            };
+            return parsedData;
+        };
+        return EconLinearMC;
+    }(KGAuthor.Line));
+    KGAuthor.EconLinearMC = EconLinearMC;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconLinearMonopoly = /** @class */ (function (_super) {
+        __extends(EconLinearMonopoly, _super);
+        function EconLinearMonopoly(def, graph) {
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            KG.setDefaults(def, {
+                color: 'colors.supply',
+                strokeWidth: 2,
+                lineStyle: 'solid'
+            });
+            if (def.draggable && typeof (def.slope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.slope),
+                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
+                    }];
+            }
+            else if (def.draggable && typeof (def.invSlope) == 'string') {
+                def.drag = [{
+                        'directions': 'xy',
+                        'param': KGAuthor.paramName(def.invSlope),
+                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
+                    }];
+            }
+            else if (def.draggable && typeof (def.yIntercept) == 'string') {
+                def.drag = [{
+                        'directions': 'y',
+                        'param': KGAuthor.paramName(def.yIntercept),
+                        'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
+                    }];
+            }
+            _this = _super.call(this, def, graph) || this;
+            var ld = _this;
+            if (graph) {
+                var subObjects = ld.subObjects;
+                var yInterceptPointDef = {
+                    coordinates: [0, ld.yIntercept],
+                    color: def.color,
+                    r: 4
+                };
+                if (def.draggable && typeof (ld.yIntercept) == 'string') {
+                    yInterceptPointDef['drag'] = [{
+                            directions: 'y',
+                            param: KGAuthor.paramName(ld.yIntercept),
+                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
+                        }];
+                }
+                if (def.hasOwnProperty('yInterceptLabel')) {
+                    yInterceptPointDef['droplines'] = {
+                        horizontal: def.yInterceptLabel
+                    };
+                }
+                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
+                if (def.handles) {
+                    subObjects.push(ld.yInterceptPoint);
+                }
+            }
+            return _this;
+        }
+        EconLinearMonopoly.prototype.parseSelf = function (parsedData) {
+            var ld = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[ld.name] = {
+                yIntercept: ld.yIntercept.toString(),
+                slope: ld.slope.toString(),
+                invSlope: ld.invSlope.toString()
+            };
+            return parsedData;
+        };
+        return EconLinearMonopoly;
+    }(KGAuthor.Line));
+    KGAuthor.EconLinearMonopoly = EconLinearMonopoly;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
@@ -3929,6 +4149,9 @@ var KGAuthor;
     KGAuthor.EconContractCurve = EconContractCurve;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
+/* SCHEMAS */
+/// <reference path="schemas/econSchema.ts"/>
+/// <reference path="schemas/bowlesHallidaySchema.ts"/>
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /* FUNCTIONAL FORMS */
@@ -3954,53 +4177,12 @@ var KGAuthor;
 /// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
 /// <reference path="micro/equilibrium/ppf.ts"/>
+/* Monopoly */
+/// <reference path="micro/monopoly/linearMC.ts"/>
+/// <reference path="micro/monopoly/linearMonopoly.ts"/>
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
 /// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>
-var KGAuthor;
-(function (KGAuthor) {
-    var EconSchema = /** @class */ (function (_super) {
-        __extends(EconSchema, _super);
-        function EconSchema(def) {
-            var _this = this;
-            def.colors = {
-                // consumer theory
-                utility: 'purple',
-                mrs: 'blue',
-                dispreferred: 'red',
-                preferred: 'purple',
-                offer: 'blue',
-                incomeOffer: 'orange',
-                demand: 'blue',
-                budget: 'green',
-                costlier: 'red',
-                endowment: 'grey',
-                incEffect: 'orange',
-                subEffect: 'red',
-                // producer theory
-                production: 'blue',
-                marginalCost: 'orange',
-                marginalRevenue: 'olive',
-                supply: 'orange',
-                shortRun: 'red',
-                longRun: 'orange',
-                profit: 'green',
-                loss: 'red',
-                // equilibrium
-                price: 'grey',
-                // macro
-                consumption: 'blue',
-                depreciation: "red",
-                savings: "green",
-                tax: 'red'
-            };
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        return EconSchema;
-    }(KGAuthor.Schema));
-    KGAuthor.EconSchema = EconSchema;
-})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kg.ts"/>
 /// <reference path="parsers/parsingFunctions.ts"/>
 /// <reference path="parsers/authoringObject.ts"/>

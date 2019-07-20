@@ -68,7 +68,7 @@ module KGAuthor {
                 }, graph));
 
                 let equilibriumPointDef = {
-                    "color": "colors.green",
+                    "color": "colors.equilibriumPrice",
                     "x": le.Q,
                     "y": le.P,
                     "droplines": {
