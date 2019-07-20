@@ -108,6 +108,7 @@ module KGAuthor {
 
         areaAboveLevelCurve(def, graph) {
             const fn = this;
+            console.log('plotting area above', def);
             fn.fillAboveRect = null;
             def.interpolation = fn.interpolation;
             const fns = fn.levelSet(def);

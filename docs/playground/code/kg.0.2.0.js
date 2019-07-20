@@ -2400,6 +2400,7 @@ var KGAuthor;
         };
         EconMultivariateFunction.prototype.areaAboveLevelCurve = function (def, graph) {
             var fn = this;
+            console.log('plotting area above', def);
             fn.fillAboveRect = null;
             def.interpolation = fn.interpolation;
             var fns = fn.levelSet(def);
