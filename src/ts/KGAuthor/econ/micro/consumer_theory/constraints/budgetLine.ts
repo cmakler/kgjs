@@ -24,7 +24,7 @@ module KGAuthor {
             budgetDef.color = budgetDef.color || def.color;
             return new EconBudgetLine(budgetDef, graph);
         }
-        console.log('tried to instantiate a budget line without either a budget line def or object')
+        //console.log('tried to instantiate a budget line without either a budget line def or object')
     }
 
     export interface EconBudgetLineDefinition extends SegmentDefinition {

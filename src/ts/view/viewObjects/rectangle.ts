@@ -6,6 +6,7 @@ module KG {
         y1: any;
         x2: any;
         y2: any;
+        clipPath2: any;
     }
 
     export class Rectangle extends ViewObject {
@@ -14,8 +15,8 @@ module KG {
         private y1;
         private x2;
         private y2;
-
-        private shape;
+        public clipPath2;
+        public rootElement2;
 
         constructor(def: RectangleDefinition) {
             setDefaults(def, {
@@ -32,9 +33,8 @@ module KG {
                 rect.rootElement = layer;
             } else {
                 rect.rootElement = layer.append('g');
-                rect.addClipPathAndArrows().addInteraction();
             }
-            rect.shape = rect.rootElement.append('rect');
+            rect.rootElement2 = rect.rootElement.append('rect');
 
             //rect.interactionHandler.addTrigger(rect.rootElement);
             return rect.addClipPathAndArrows().addInteraction();
@@ -47,7 +47,7 @@ module KG {
             const y1 = rect.yScale.scale(rect.y1);
             const x2 = rect.xScale.scale(rect.x2);
             const y2 = rect.yScale.scale(rect.y2);
-            rect.shape
+            rect.rootElement2
                 .attr('x', Math.min(x1, x2))
                 .attr('y', Math.min(y1, y2))
                 .attr('width', Math.abs(x2-x1))

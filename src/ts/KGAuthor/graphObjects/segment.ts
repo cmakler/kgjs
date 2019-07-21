@@ -3,8 +3,8 @@
 module KGAuthor {
 
     export interface SegmentDefinition extends GraphObjectDefinition {
-        startArrow: boolean;
-        endArrow: boolean;
+        startArrow?: boolean;
+        endArrow?: boolean;
     }
 
 

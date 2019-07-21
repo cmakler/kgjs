@@ -32,6 +32,7 @@ module KGAuthor {
 
                 // equilibrium
                 price: 'grey',
+                paretoLens: "'#ffff99'",
 
                 // macro
                 consumption: 'blue',

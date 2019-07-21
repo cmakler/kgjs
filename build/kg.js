@@ -2124,6 +2124,7 @@ var KGAuthor;
                 loss: 'red',
                 // equilibrium
                 price: 'grey',
+                paretoLens: "'#ffff99'",
                 // macro
                 consumption: 'blue',
                 depreciation: "red",
@@ -2328,7 +2329,6 @@ var KGAuthor;
         };
         EconMultivariateFunction.prototype.areaAboveLevelCurve = function (def, graph) {
             var fn = this;
-            console.log('plotting area above', def);
             fn.fillAboveRect = null;
             def.interpolation = fn.interpolation;
             var fns = fn.levelSet(def);
@@ -2345,7 +2345,7 @@ var KGAuthor;
                 fn.fillAboveRect.inDef = true;
                 objs.push(new KGAuthor.Rectangle(fn.fillAboveRect, graph));
             }
-            var clipPathName = KG.randomString(10);
+            var clipPathName = def.hasOwnProperty('name') ? def.name + "_above" : KG.randomString(10);
             return [
                 new KGAuthor.Rectangle({
                     clipPathName: clipPathName,
@@ -2826,7 +2826,7 @@ var KGAuthor;
             budgetDef.color = budgetDef.color || def.color;
             return new EconBudgetLine(budgetDef, graph);
         }
-        console.log('tried to instantiate a budget line without either a budget line def or object');
+        //console.log('tried to instantiate a budget line without either a budget line def or object')
     }
     KGAuthor.extractBudgetLine = extractBudgetLine;
     var EconBudgetLine = /** @class */ (function (_super) {
@@ -3021,6 +3021,7 @@ var KGAuthor;
         if (def.hasOwnProperty('indifferenceCurve')) {
             var indifferenceCurveDef = KGAuthor.copyJSON(def.indifferenceCurve);
             indifferenceCurveDef.show = indifferenceCurveDef.show || def.show;
+            indifferenceCurveDef.name = def.name + "_IC";
             return new EconIndifferenceCurve(indifferenceCurveDef, graph);
         }
         console.log('tried to instantiate a budget line without either a budget line def or object');
@@ -4149,6 +4150,30 @@ var KGAuthor;
     }(KGAuthor.Curve));
     KGAuthor.EconContractCurve = EconContractCurve;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconParetoLens = /** @class */ (function (_super) {
+        __extends(EconParetoLens, _super);
+        function EconParetoLens(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            _this.subObjects.push(new KGAuthor.Rectangle({
+                clipPathName: def.bundleA + "_IC_above",
+                clipPathName2: def.bundleB + "_IC_above",
+                x1: graph.def.xAxis.min,
+                x2: graph.def.xAxis.max,
+                y1: graph.def.yAxis.min,
+                y2: graph.def.yAxis.max,
+                fill: "colors.paretoLens",
+                opacity: "0.2",
+                show: def.show
+            }, graph));
+            return _this;
+        }
+        return EconParetoLens;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconParetoLens = EconParetoLens;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 /* SCHEMAS */
 /// <reference path="schemas/econSchema.ts"/>
@@ -4184,6 +4209,7 @@ var KGAuthor;
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
 /// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>
+/// <reference path="micro/exchange/edgeworth/pareto_lens.ts"/>
 /// <reference path="../kg.ts"/>
 /// <reference path="parsers/parsingFunctions.ts"/>
 /// <reference path="parsers/authoringObject.ts"/>
@@ -5070,6 +5096,7 @@ var KG;
                         var clipPathURL = KG.randomString(10);
                         var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
+                            td.def.inDef = true;
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -5104,6 +5131,9 @@ var KG;
                             var def = td.def;
                             if (def.hasOwnProperty('clipPathName')) {
                                 def.clipPath = defURLS[def['clipPathName']];
+                            }
+                            if (def.hasOwnProperty('clipPathName2')) {
+                                def.clipPath2 = defURLS[def['clipPathName2']];
                             }
                             if (def.hasOwnProperty('startArrowName')) {
                                 def.startArrow = defURLS[def['startArrowName']];
@@ -5211,7 +5241,11 @@ var KG;
                 lineStyle: 'solid'
             });
             KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inDef']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
+            if (def.inDef) {
+                def.show = true;
+            }
+            ;
             _this = _super.call(this, def) || this;
             var vo = _this;
             // the interaction handler manages drag and hover events
@@ -5247,6 +5281,9 @@ var KG;
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
                 vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
+            }
+            if (vo.hasOwnProperty('clipPath2') && vo.clipPath2 != undefined) {
+                vo.rootElement2.attr('clip-path', "url(#" + vo.clipPath2 + ")");
             }
             if (vo.hasOwnProperty('endArrow') && vo.endArrow != undefined) {
                 vo.markedElement.attr("marker-end", "url(#" + vo.endArrow + ")");
@@ -5289,7 +5326,7 @@ var KG;
         };
         ViewObject.prototype.update = function (force) {
             var vo = _super.prototype.update.call(this, force);
-            if (vo.show && vo.onGraph()) {
+            if ((vo.show && vo.onGraph()) || vo.inDef) {
                 vo.displayElement(true);
                 if (vo.hasChanged) {
                     vo.redraw();
@@ -5564,9 +5601,8 @@ var KG;
             }
             else {
                 rect.rootElement = layer.append('g');
-                rect.addClipPathAndArrows().addInteraction();
             }
-            rect.shape = rect.rootElement.append('rect');
+            rect.rootElement2 = rect.rootElement.append('rect');
             //rect.interactionHandler.addTrigger(rect.rootElement);
             return rect.addClipPathAndArrows().addInteraction();
         };
@@ -5577,7 +5613,7 @@ var KG;
             var y1 = rect.yScale.scale(rect.y1);
             var x2 = rect.xScale.scale(rect.x2);
             var y2 = rect.yScale.scale(rect.y2);
-            rect.shape
+            rect.rootElement2
                 .attr('x', Math.min(x1, x2))
                 .attr('y', Math.min(y1, y2))
                 .attr('width', Math.abs(x2 - x1))
@@ -6753,9 +6789,7 @@ window.addEventListener("load", function () {
         if (!src) {
             try {
                 doc = jsyaml.safeLoad(d.innerHTML);
-                console.log(doc);
                 txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
-                console.log(txt);
                 backToJSON = JSON.parse(txt);
                 views.push(new KG.View(d, backToJSON));
             }

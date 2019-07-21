@@ -108,7 +108,6 @@ module KGAuthor {
 
         areaAboveLevelCurve(def, graph) {
             const fn = this;
-            console.log('plotting area above', def);
             fn.fillAboveRect = null;
             def.interpolation = fn.interpolation;
             const fns = fn.levelSet(def);
@@ -125,7 +124,7 @@ module KGAuthor {
                 fn.fillAboveRect.inDef = true;
                 objs.push(new Rectangle(fn.fillAboveRect, graph));
             }
-            const clipPathName = KG.randomString(10);
+            const clipPathName = def.hasOwnProperty('name') ? def.name + "_above" : KG.randomString(10);
             return [
                 new Rectangle({
                     clipPathName: clipPathName,

@@ -51,4 +51,5 @@
 /* Exchange */
 /// <reference path="micro/exchange/edgeworth/exchange_equilibrium.ts"/>
 /// <reference path="micro/exchange/edgeworth/contract_curve.ts"/>
+/// <reference path="micro/exchange/edgeworth/pareto_lens.ts"/>
 

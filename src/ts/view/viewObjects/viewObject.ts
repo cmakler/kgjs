@@ -9,12 +9,14 @@ module KG {
         xScale?: Scale;
         yScale?: Scale;
         clipPath?: string;
+        clipPath2?: string;
         startArrow?: string;
         endArrow?: string;
         drag?: DragListenerDefinition[];
         click?: ClickListenerDefinition[];
         interactive?: boolean;
         alwaysUpdate?: boolean;
+        inDef?: boolean;
 
         color?: string;
         fill?: string;
@@ -31,6 +33,7 @@ module KG {
         xScaleName?: string;
         yScaleName?: string;
         clipPathName?: string;
+        clipPathName2?: string;
 
     }
 
@@ -61,12 +64,14 @@ module KG {
         public xScale;
         public yScale;
         public clipPath;
+        public clipPath2;
         public startArrow;
         public endArrow;
         public inDef;
         public interactionHandler;
 
         public rootElement;
+        public rootElement2;
         public markedElement;
         public alwaysUpdate: boolean;
 
@@ -89,7 +94,9 @@ module KG {
                 lineStyle: 'solid'
             });
             setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'interactive', 'alwaysUpdate', 'inDef']);
+            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
+
+            if(def.inDef) {def.show = true};
 
             super(def);
 
@@ -130,6 +137,9 @@ module KG {
             const vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
                 vo.rootElement.attr('clip-path', `url(#${vo.clipPath})`);
+            }
+            if (vo.hasOwnProperty('clipPath2') && vo.clipPath2 != undefined) {
+                vo.rootElement2.attr('clip-path', `url(#${vo.clipPath2})`);
             }
             if (vo.hasOwnProperty('endArrow') && vo.endArrow != undefined) {
                 vo.markedElement.attr("marker-end", `url(#${vo.endArrow})`)
@@ -179,7 +189,7 @@ module KG {
 
         update(force) {
             let vo = super.update(force);
-            if (vo.show && vo.onGraph()) {
+            if ((vo.show && vo.onGraph()) || vo.inDef) {
                 vo.displayElement(true);
                 if (vo.hasChanged) {
                     vo.redraw();

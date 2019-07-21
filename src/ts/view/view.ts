@@ -197,6 +197,7 @@ module KG {
                         const clipPathURL = randomString(10);
                         const clipPathLayer = defLayer.append('clipPath').attr('id', clipPathURL);
                         def.paths.forEach(function (td) {
+                            td.def.inDef = true;
                             new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
                         });
                         defURLS[def.name] = clipPathURL;
@@ -236,6 +237,9 @@ module KG {
                             let def: ViewObjectDefinition = td.def;
                             if (def.hasOwnProperty('clipPathName')) {
                                 def.clipPath = defURLS[def['clipPathName']]
+                            }
+                            if (def.hasOwnProperty('clipPathName2')) {
+                                def.clipPath2 = defURLS[def['clipPathName2']]
                             }
                             if (def.hasOwnProperty('startArrowName')) {
                                 def.startArrow = defURLS[def['startArrowName']]
