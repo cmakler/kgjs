@@ -39,8 +39,7 @@ layout:
            param: y
            expression: drag.y
          label:
-            text: y = params.y
-            x: 6
+            text: "`y = ${params.y}`" 
 
 </div>
 
@@ -105,7 +104,7 @@ layout:
            param: x
            expression: drag.x
          label: 
-           text: "(params.x.toFixed(2), params.y.toFixed(2))"
+           text: "`(${params.x.toFixed(2)}, ${params.y.toFixed(2)})`"
 
 </div>
 
