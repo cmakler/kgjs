@@ -5978,7 +5978,8 @@ var KG;
             slider.rootElement = layer.append('tr');
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
-                .style('font-size', '14pt');
+                .style('font-size', '14pt')
+                .style('align', 'right');
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value);
             }
@@ -5992,7 +5993,7 @@ var KG;
                 .style('background', 'none')
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
-                .style('width', '50px');
+                .style('width', '100%');
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
             slider.numberInput.on("keyup", function () {
