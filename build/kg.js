@@ -6790,7 +6790,7 @@ window.addEventListener("load", function () {
         if (!src) {
             try {
                 doc = jsyaml.safeLoad(d.innerHTML);
-                txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+                txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
                 backToJSON = JSON.parse(txt);
                 views.push(new KG.View(d, backToJSON));
             }

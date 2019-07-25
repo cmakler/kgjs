@@ -5979,7 +5979,7 @@ var KG;
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt')
-                .style('align', 'right');
+                .style('text-align', 'right');
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value);
             }
