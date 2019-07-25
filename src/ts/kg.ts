@@ -76,7 +76,7 @@ window.addEventListener("load", function () {
         if (!src) {
             try {
                 var doc = jsyaml.safeLoad(d.innerHTML);
-                var txt = JSON.stringify(doc).replace(/&gt;/g,'>').replace(/&lt;/g,'<');
+                var txt = JSON.stringify(doc).replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&');
                 var backToJSON = JSON.parse(txt);
                 views.push(new KG.View(d, backToJSON));
             } catch (e) {
