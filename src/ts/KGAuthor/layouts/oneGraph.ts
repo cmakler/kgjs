@@ -44,6 +44,30 @@ module KGAuthor {
 
     }
 
+    export class OneWideGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let graphDef = def['graph'],
+                sidebarDef = def['sidebar'];
+
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new Graph(graphDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+    }
+
+
+
     export class OneGraphPlusSidebarRoom200 extends OneGraphPlusSidebar {
 
         constructor(def) {

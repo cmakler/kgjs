@@ -466,6 +466,25 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var OneWideGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(OneWideGraphPlusSidebar, _super);
+        function OneWideGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'], sidebarDef = def['sidebar'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return OneWideGraphPlusSidebar;
+    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    KGAuthor.OneWideGraphPlusSidebar = OneWideGraphPlusSidebar;
     var OneGraphPlusSidebarRoom200 = /** @class */ (function (_super) {
         __extends(OneGraphPlusSidebarRoom200, _super);
         function OneGraphPlusSidebarRoom200(def) {
@@ -1472,6 +1491,7 @@ var KGAuthor;
             var c = _this;
             c.type = 'Curve';
             c.layer = def.layer || 1;
+            c.pts = def.pts || [];
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -1508,6 +1528,26 @@ var KGAuthor;
             }
             return _this;
         }
+        Curve.prototype.parseSelf = function (parsedData) {
+            var c = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[c.name] = parsedData.calcs[c.name] || {};
+            c.pts.forEach(function (p) {
+                if (p.hasOwnProperty('x')) {
+                    parsedData.calcs[c.name][p['name']] = {
+                        x: p['x'],
+                        y: "(" + KGAuthor.replaceVariable(c.def.univariateFunction.fn, '(x)', "(" + p['x'] + ")") + ")"
+                    };
+                }
+                if (p.hasOwnProperty('y')) {
+                    parsedData.calcs[c.name][p['name']] = {
+                        x: "(" + KGAuthor.replaceVariable(c.def.univariateFunction.yFn, '(y)', "(" + p['y'] + ")") + ")",
+                        y: p['y']
+                    };
+                }
+            });
+            return parsedData;
+        };
         return Curve;
     }(KGAuthor.GraphObject));
     KGAuthor.Curve = Curve;
@@ -1605,6 +1645,24 @@ var KGAuthor;
             _this.invSlope = invSlope;
             return _this;
         }
+        Line.prototype.parseSelf = function (parsedData) {
+            var l = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            var d = {
+                slope: l.slope.toString(),
+                invSlope: l.invSlope.toString()
+            };
+            if (l.xIntercept) {
+                d.xIntercept = l.xIntercept.toString();
+            }
+            ;
+            if (l.yIntercept) {
+                d.yIntercept = l.yIntercept.toString();
+            }
+            ;
+            parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {}, d);
+            return parsedData;
+        };
         return Line;
     }(KGAuthor.Curve));
     KGAuthor.Line = Line;
@@ -3618,17 +3676,6 @@ var KGAuthor;
             }
             return _this;
         }
-        EconLinearDemand.prototype.parseSelf = function (parsedData) {
-            var ld = this;
-            parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                xIntercept: ld.xIntercept.toString(),
-                invSlope: ld.invSlope.toString()
-            };
-            return parsedData;
-        };
         return EconLinearDemand;
     }(KGAuthor.Line));
     KGAuthor.EconLinearDemand = EconLinearDemand;
@@ -3703,16 +3750,6 @@ var KGAuthor;
             }
             return _this;
         }
-        EconLinearSupply.prototype.parseSelf = function (parsedData) {
-            var ld = this;
-            parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                invSlope: ld.invSlope.toString()
-            };
-            return parsedData;
-        };
         return EconLinearSupply;
     }(KGAuthor.Line));
     KGAuthor.EconLinearSupply = EconLinearSupply;

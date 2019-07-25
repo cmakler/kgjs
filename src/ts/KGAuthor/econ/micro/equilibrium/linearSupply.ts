@@ -82,18 +82,6 @@ module KGAuthor {
 
         }
 
-        parseSelf(parsedData) {
-            let ld = this;
-            parsedData = super.parseSelf(parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                invSlope: ld.invSlope.toString()
-            };
-
-            return parsedData;
-        }
-
     }
 
 

@@ -12,8 +12,6 @@ module KGAuthor {
 
     export class EconLinearDemand extends Line {
 
-        public xIntercept;
-        public slope;
         private xInterceptPoint;
         private yInterceptPoint;
 
@@ -118,19 +116,6 @@ module KGAuthor {
 
             }
 
-        }
-
-        parseSelf(parsedData) {
-            let ld = this;
-            parsedData = super.parseSelf(parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                xIntercept: ld.xIntercept.toString(),
-                invSlope: ld.invSlope.toString()
-            };
-
-            return parsedData;
         }
 
     }

@@ -131,6 +131,22 @@ module KGAuthor {
 
         }
 
+        parseSelf(parsedData) {
+            let l = this;
+            parsedData = super.parseSelf(parsedData);
+            let d:any = {
+                slope: l.slope.toString(),
+                invSlope: l.invSlope.toString()
+            };
+            if (l.xIntercept) {
+                d.xIntercept = l.xIntercept.toString()
+            };
+            if (l.yIntercept) {
+                d.yIntercept = l.yIntercept.toString()
+            };
+            parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {} ,d);
+            return parsedData;
+        }
     }
 
 }

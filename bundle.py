@@ -6,7 +6,14 @@ __author__ = 'cmakler'
 bundles = [
     {
         "name": "kg.0.2.0.js",
-        "dest_directories": ['build/bundled/','docs/js/','../electric-book/assets/js/', 'docs/playground/code/', '../bh-textbook/code/'],
+        "dest_directories": [
+            'build/bundled/',
+            'docs/js/',
+            'docs/playground/code/',
+            '../electric-book/assets/js/',
+            '../bh-textbook/code/',
+            '../core-interactives/code/'
+        ],
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
             "src/lib/katex/katex.min.js",

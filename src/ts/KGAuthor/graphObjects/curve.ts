@@ -6,9 +6,12 @@ module KGAuthor {
         label?: LabelDefinition
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
+        pts?: {name: string; x?: string; y?: string;}[];
     }
 
     export class Curve extends GraphObject {
+
+        public pts: string[];
 
         constructor(def, graph) {
             def = setStrokeColor(def);
@@ -17,6 +20,7 @@ module KGAuthor {
             const c = this;
             c.type = 'Curve';
             c.layer = def.layer || 1;
+            c.pts = def.pts || [];
 
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);
@@ -53,6 +57,27 @@ module KGAuthor {
 
 
             }
+        }
+
+        parseSelf(parsedData) {
+            let c = this;
+            parsedData = super.parseSelf(parsedData);
+            parsedData.calcs[c.name] = parsedData.calcs[c.name] || {};
+            c.pts.forEach(function(p) {
+                if (p.hasOwnProperty('x')) {
+                    parsedData.calcs[c.name][p['name']] = {
+                        x: p['x'],
+                        y: `(${replaceVariable(c.def.univariateFunction.fn, '(x)', `(${p['x']})`)})`
+                    }
+                }
+                if (p.hasOwnProperty('y')) {
+                    parsedData.calcs[c.name][p['name']] = {
+                        x: `(${replaceVariable(c.def.univariateFunction.yFn, '(y)', `(${p['y']})`)})`,
+                        y: p['y']
+                    }
+                }
+            });
+            return parsedData;
         }
 
     }
