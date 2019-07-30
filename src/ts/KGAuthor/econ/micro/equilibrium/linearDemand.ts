@@ -3,7 +3,6 @@
 module KGAuthor {
 
     export interface SurplusDefinition extends AreaDefinition {
-        price?: any;
         quantity?: any;
     }
 
@@ -11,9 +10,10 @@ module KGAuthor {
         xInterceptLabel?: string;
         yInterceptLabel?: string;
         marginalRevenue?: any;
-        consumerSurplus?: SurplusDefinition;
+        surplus?: SurplusDefinition;
         draggable?: boolean;
         handles?: boolean;
+        price?: any;
     }
 
     export class EconLinearDemand extends Line {
@@ -26,6 +26,7 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             KG.setDefaults(def, {
+                name: "demand",
                 point: [0, def.yIntercept],
                 slope: 0,
                 color: 'colors.demand',
@@ -49,16 +50,18 @@ module KGAuthor {
             }
             def.max = def.xIntercept;
 
-            if (def.hasOwnProperty("consumerSurplus")) {
-                if (def.consumerSurplus.hasOwnProperty("price") && !def.consumerSurplus.hasOwnProperty("quantity")) {
+            if (def.hasOwnProperty("price")) {
+                def.pts.push({
+                    name: "PQ",
+                    y: def.price
+                })
+            }
+
+            if (def.hasOwnProperty("surplus")) {
+                if (!def.hasOwnProperty("price") && def.surplus.hasOwnProperty("quantity")) {
                     def.pts.push({
                         name: "PQ",
-                        y: def.consumerSurplus.price
-                    })
-                } else if (!def.consumerSurplus.hasOwnProperty("price") && def.consumerSurplus.hasOwnProperty("quantity")) {
-                    def.pts.push({
-                        name: "PQ",
-                        x: def.consumerSurplus.quantity
+                        x: def.surplus.quantity
                     })
                 }
             }
@@ -134,19 +137,25 @@ module KGAuthor {
                 }
 
 
-                if (def.hasOwnProperty('consumerSurplus')) {
-                    let consumerSurplusDef = KG.setDefaults(def.consumerSurplus || {}, {
-                        "color": "colors.demand"
+                if (def.hasOwnProperty('surplus')) {
+                    let surplusDef = KG.setDefaults(def.surplus || {}, {
+                        "fill": "colors.demand"
                     });
-                    let price = consumerSurplusDef.price || ld.pts[ld.name]["y"],
-                        quantity = consumerSurplusDef.quantity || ld.pts[ld.name]["x"];
-                    consumerSurplusDef.univariateFunction1 = ld.def.univariateFunction;
-                    consumerSurplusDef.univariateFunction2 = {
+                    let price = def.price || `calcs.${ld.name}.PQ.y`,
+                        quantity = surplusDef.quantity || `calcs.${ld.name}.PQ.x`;
+                    surplusDef.univariateFunction1 = {
+                        fn: ld.def.univariateFunction.fn,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    surplusDef.univariateFunction2 = {
                         fn: price,
                         min: 0,
-                        max: quantity
+                        max: quantity,
+                        samplePoints: 2
                     };
-                    ld.subObjects.push(new Area(consumerSurplusDef, graph));
+                    ld.subObjects.push(new Area(surplusDef, graph));
                 }
 
             }

@@ -6,6 +6,8 @@ module KGAuthor {
         yInterceptLabel?: string;
         draggable?: boolean;
         handles?: boolean;
+        price?: any;
+        surplus?: SurplusDefinition;
     }
 
     export class EconLinearSupply extends Line {
@@ -13,6 +15,7 @@ module KGAuthor {
         public yIntercept;
         public slope;
         private yInterceptPoint;
+        public price;
 
         constructor(def: EconLinearSupplyDefinition, graph) {
 
@@ -21,7 +24,8 @@ module KGAuthor {
             KG.setDefaults(def, {
                 color: 'colors.supply',
                 strokeWidth: 2,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                pts: []
             });
 
             if (def.draggable && typeof(def.slope) == 'string') {
@@ -44,25 +48,33 @@ module KGAuthor {
                 }]
             }
 
+            if (def.hasOwnProperty("price")) {
+                def.pts.push({
+                    name: "PQ",
+                    y: def.price
+                })
+            }
+
             super(def, graph);
 
-            let ld = this;
 
+
+            let ls = this;
 
             if (graph) {
-                const subObjects = ld.subObjects;
+                const subObjects = ls.subObjects;
 
                 let yInterceptPointDef = {
-                    coordinates: [0, ld.yIntercept],
+                    coordinates: [0, ls.yIntercept],
                     color: def.color,
                     r: 4
                 };
 
-                if (def.draggable && typeof(ld.yIntercept) == 'string') {
+                if (def.draggable && typeof(ls.yIntercept) == 'string') {
                     yInterceptPointDef['drag'] = [{
                         directions: 'y',
-                        param: paramName(ld.yIntercept),
-                        expression: addDefs(ld.yIntercept, 'drag.dy')
+                        param: paramName(ls.yIntercept),
+                        expression: addDefs(ls.yIntercept, 'drag.dy')
                     }]
                 }
 
@@ -72,10 +84,31 @@ module KGAuthor {
                     }
                 }
 
-                ld.yInterceptPoint = new Point(yInterceptPointDef, graph);
+                ls.yInterceptPoint = new Point(yInterceptPointDef, graph);
 
                 if (def.handles) {
-                    subObjects.push(ld.yInterceptPoint);
+                    subObjects.push(ls.yInterceptPoint);
+                }
+
+                if (def.hasOwnProperty('surplus')) {
+                    let surplusDef = KG.setDefaults(def.surplus || {}, {
+                        "fill": "colors.supply"
+                    });
+                    let price = def.price || `calcs.${ls.name}.PQ.y`,
+                        quantity = surplusDef.quantity || `calcs.${ls.name}.PQ.x`;
+                    surplusDef.univariateFunction1 = {
+                        fn: ls.def.univariateFunction.fn,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    surplusDef.univariateFunction2 = {
+                        fn: price,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    ls.subObjects.push(new Area(surplusDef, graph));
                 }
 
             }
