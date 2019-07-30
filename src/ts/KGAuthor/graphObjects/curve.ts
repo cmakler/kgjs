@@ -12,6 +12,8 @@ module KGAuthor {
     export class Curve extends GraphObject {
 
         public pts: string[];
+        public univariateFunction: KG.UnivariateFunction;
+        public parametricFunction: KG.ParametricFunction;
 
         constructor(def, graph) {
             def = setStrokeColor(def);

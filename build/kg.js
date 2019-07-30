@@ -3594,11 +3594,13 @@ var KGAuthor;
             var _this = this;
             def = KGAuthor.setStrokeColor(def);
             KG.setDefaults(def, {
+                name: "demand",
                 point: [0, def.yIntercept],
                 slope: 0,
                 color: 'colors.demand',
                 strokeWidth: 2,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                pts: []
             });
             if (def.draggable && typeof (def.xIntercept) == 'string') {
                 def.drag = [{
@@ -3615,6 +3617,20 @@ var KGAuthor;
                     }];
             }
             def.max = def.xIntercept;
+            if (def.hasOwnProperty("price")) {
+                def.pts.push({
+                    name: "PQ",
+                    y: def.price
+                });
+            }
+            if (def.hasOwnProperty("surplus")) {
+                if (!def.hasOwnProperty("price") && def.surplus.hasOwnProperty("quantity")) {
+                    def.pts.push({
+                        name: "PQ",
+                        x: def.surplus.quantity
+                    });
+                }
+            }
             _this = _super.call(this, def, graph) || this;
             var ld = _this;
             if (graph) {
@@ -3659,20 +3675,37 @@ var KGAuthor;
                     subObjects.push(ld.xInterceptPoint);
                     subObjects.push(ld.yInterceptPoint);
                 }
-                var marginalRevenueDef = {
-                    "color": "colors.marginalRevenue",
-                    "yIntercept": ld.yIntercept,
-                    "slope": KGAuthor.multiplyDefs(2, ld.slope),
-                    "label": {
-                        "text": "MR",
-                        "x": KGAuthor.multiplyDefs(0.6, ld.xIntercept)
-                    }
-                };
                 if (def.hasOwnProperty('marginalRevenue')) {
-                    def.marginalRevenue = KG.setDefaults(def.marginalRevenue, marginalRevenueDef);
+                    var marginalRevenueDef = KG.setDefaults(def.marginalRevenue || {}, {
+                        "color": "colors.marginalRevenue",
+                        "yIntercept": ld.yIntercept,
+                        "slope": KGAuthor.multiplyDefs(2, ld.slope),
+                        "label": {
+                            "text": "MR",
+                            "x": KGAuthor.multiplyDefs(0.6, ld.xIntercept)
+                        }
+                    });
                     ld.subObjects.push(new KGAuthor.Line(marginalRevenueDef, graph));
                 }
-                ;
+                if (def.hasOwnProperty('surplus')) {
+                    var surplusDef = KG.setDefaults(def.surplus || {}, {
+                        "fill": "colors.demand"
+                    });
+                    var price = def.price || "calcs." + ld.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ld.name + ".PQ.x";
+                    surplusDef.univariateFunction1 = {
+                        fn: ld.def.univariateFunction.fn,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    surplusDef.univariateFunction2 = {
+                        fn: price,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    ld.subObjects.push(new KGAuthor.Area(surplusDef, graph));
+                }
             }
             return _this;
         }
@@ -3699,7 +3732,8 @@ var KGAuthor;
             KG.setDefaults(def, {
                 color: 'colors.supply',
                 strokeWidth: 2,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                pts: []
             });
             if (def.draggable && typeof (def.slope) == 'string') {
                 def.drag = [{
@@ -3722,20 +3756,26 @@ var KGAuthor;
                         'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
                     }];
             }
+            if (def.hasOwnProperty("price")) {
+                def.pts.push({
+                    name: "PQ",
+                    y: def.price
+                });
+            }
             _this = _super.call(this, def, graph) || this;
-            var ld = _this;
+            var ls = _this;
             if (graph) {
-                var subObjects = ld.subObjects;
+                var subObjects = ls.subObjects;
                 var yInterceptPointDef = {
-                    coordinates: [0, ld.yIntercept],
+                    coordinates: [0, ls.yIntercept],
                     color: def.color,
                     r: 4
                 };
-                if (def.draggable && typeof (ld.yIntercept) == 'string') {
+                if (def.draggable && typeof (ls.yIntercept) == 'string') {
                     yInterceptPointDef['drag'] = [{
                             directions: 'y',
-                            param: KGAuthor.paramName(ld.yIntercept),
-                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
+                            param: KGAuthor.paramName(ls.yIntercept),
+                            expression: KGAuthor.addDefs(ls.yIntercept, 'drag.dy')
                         }];
                 }
                 if (def.hasOwnProperty('yInterceptLabel')) {
@@ -3743,9 +3783,28 @@ var KGAuthor;
                         horizontal: def.yInterceptLabel
                     };
                 }
-                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
+                ls.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
                 if (def.handles) {
-                    subObjects.push(ld.yInterceptPoint);
+                    subObjects.push(ls.yInterceptPoint);
+                }
+                if (def.hasOwnProperty('surplus')) {
+                    var surplusDef = KG.setDefaults(def.surplus || {}, {
+                        "fill": "colors.supply"
+                    });
+                    var price = def.price || "calcs." + ls.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ls.name + ".PQ.x";
+                    surplusDef.univariateFunction1 = {
+                        fn: ls.def.univariateFunction.fn,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    surplusDef.univariateFunction2 = {
+                        fn: price,
+                        min: 0,
+                        max: quantity,
+                        samplePoints: 2
+                    };
+                    ls.subObjects.push(new KGAuthor.Area(surplusDef, graph));
                 }
             }
             return _this;
