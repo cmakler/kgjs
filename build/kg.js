@@ -3598,7 +3598,8 @@ var KGAuthor;
                 slope: 0,
                 color: 'colors.demand',
                 strokeWidth: 2,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                pts: []
             });
             if (def.draggable && typeof (def.xIntercept) == 'string') {
                 def.drag = [{
@@ -3615,6 +3616,20 @@ var KGAuthor;
                     }];
             }
             def.max = def.xIntercept;
+            if (def.hasOwnProperty("consumerSurplus")) {
+                if (def.consumerSurplus.hasOwnProperty("price") && !def.consumerSurplus.hasOwnProperty("quantity")) {
+                    def.pts.push({
+                        name: "PQ",
+                        y: def.consumerSurplus.price
+                    });
+                }
+                else if (!def.consumerSurplus.hasOwnProperty("price") && def.consumerSurplus.hasOwnProperty("quantity")) {
+                    def.pts.push({
+                        name: "PQ",
+                        x: def.consumerSurplus.quantity
+                    });
+                }
+            }
             _this = _super.call(this, def, graph) || this;
             var ld = _this;
             if (graph) {
@@ -3659,20 +3674,31 @@ var KGAuthor;
                     subObjects.push(ld.xInterceptPoint);
                     subObjects.push(ld.yInterceptPoint);
                 }
-                var marginalRevenueDef = {
-                    "color": "colors.marginalRevenue",
-                    "yIntercept": ld.yIntercept,
-                    "slope": KGAuthor.multiplyDefs(2, ld.slope),
-                    "label": {
-                        "text": "MR",
-                        "x": KGAuthor.multiplyDefs(0.6, ld.xIntercept)
-                    }
-                };
                 if (def.hasOwnProperty('marginalRevenue')) {
-                    def.marginalRevenue = KG.setDefaults(def.marginalRevenue, marginalRevenueDef);
+                    var marginalRevenueDef = KG.setDefaults(def.marginalRevenue || {}, {
+                        "color": "colors.marginalRevenue",
+                        "yIntercept": ld.yIntercept,
+                        "slope": KGAuthor.multiplyDefs(2, ld.slope),
+                        "label": {
+                            "text": "MR",
+                            "x": KGAuthor.multiplyDefs(0.6, ld.xIntercept)
+                        }
+                    });
                     ld.subObjects.push(new KGAuthor.Line(marginalRevenueDef, graph));
                 }
-                ;
+                if (def.hasOwnProperty('consumerSurplus')) {
+                    var consumerSurplusDef = KG.setDefaults(def.consumerSurplus || {}, {
+                        "color": "colors.demand"
+                    });
+                    var price = consumerSurplusDef.price || ld.pts[ld.name]["y"], quantity = consumerSurplusDef.quantity || ld.pts[ld.name]["x"];
+                    consumerSurplusDef.univariateFunction1 = ld.def.univariateFunction;
+                    consumerSurplusDef.univariateFunction2 = {
+                        fn: price,
+                        min: 0,
+                        max: quantity
+                    };
+                    ld.subObjects.push(new KGAuthor.Area(consumerSurplusDef, graph));
+                }
             }
             return _this;
         }

@@ -2,6 +2,10 @@
 
 module KGAuthor {
 
+    export interface AreaDefinition extends GraphObjectDefinition {
+
+    }
+
     export class Area extends GraphObject {
 
         constructor(def, graph) {
