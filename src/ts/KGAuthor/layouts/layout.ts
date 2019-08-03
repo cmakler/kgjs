@@ -33,7 +33,7 @@ module KGAuthor {
     }
 
 
-    export class WideRectanglePlusSidebarLayout extends Layout {
+    export class WideRectangleLayout extends Layout {
 
         // creates a rectangle, twice as wide as it is high, within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.41

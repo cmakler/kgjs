@@ -77,3 +77,15 @@ table.gameMatrix tr td.player2.payoff {
 table.gameMatrix tr td.strategy {
     font-weight: bolder;
 }
+
+.kg-container:fullscreen {
+    background-color: white;
+}
+
+div.kg-container {
+    color: white;
+}
+
+div.kg-loaded {
+    color: black;
+}

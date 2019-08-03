@@ -14,13 +14,15 @@ module KG {
     export class Sidebar extends ViewObject implements ISidebar {
 
         public position: 'right' | 'bottom';
+        public triggerWidth: number;
 
         constructor(def: SidebarDefinition) {
 
             setDefaults(def, {
-                controls: []
+                controls: [],
+                triggerWidth: 563
             });
-            setProperties(def, 'constants',['controls']);
+            setProperties(def, 'constants',['controls', 'triggerWidth']);
             super(def);
         }
 
@@ -39,7 +41,7 @@ module KG {
                 .style('position', null)
                 .style('left', null)
                 .style('width', null)
-                .style('padding-top', '20px');
+                .style('padding-top', '40px');
         }
 
 

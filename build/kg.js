@@ -382,18 +382,18 @@ var KGAuthor;
         return SquareLayout;
     }(Layout));
     KGAuthor.SquareLayout = SquareLayout;
-    var WideRectanglePlusSidebarLayout = /** @class */ (function (_super) {
-        __extends(WideRectanglePlusSidebarLayout, _super);
+    var WideRectangleLayout = /** @class */ (function (_super) {
+        __extends(WideRectangleLayout, _super);
         // creates a rectangle, twice as wide as it is high, within the main body of the text
         // to make a square graph, the ratio of width to height should be 0.41
-        function WideRectanglePlusSidebarLayout(def) {
+        function WideRectangleLayout(def) {
             var _this = _super.call(this, def) || this;
             _this.aspectRatio = 2.44;
             return _this;
         }
-        return WideRectanglePlusSidebarLayout;
+        return WideRectangleLayout;
     }(Layout));
-    KGAuthor.WideRectanglePlusSidebarLayout = WideRectanglePlusSidebarLayout;
+    KGAuthor.WideRectangleLayout = WideRectangleLayout;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -447,6 +447,24 @@ var KGAuthor;
         return OneGraph;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraph = OneGraph;
+    var OneWideGraph = /** @class */ (function (_super) {
+        __extends(OneWideGraph, _super);
+        function OneWideGraph(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'];
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            return _this;
+        }
+        return OneWideGraph;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.OneWideGraph = OneWideGraph;
     var OneGraphPlusSidebar = /** @class */ (function (_super) {
         __extends(OneGraphPlusSidebar, _super);
         function OneGraphPlusSidebar(def) {
@@ -483,7 +501,7 @@ var KGAuthor;
             return _this;
         }
         return OneWideGraphPlusSidebar;
-    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    }(KGAuthor.WideRectangleLayout));
     KGAuthor.OneWideGraphPlusSidebar = OneWideGraphPlusSidebar;
     var OneGraphPlusSidebarRoom200 = /** @class */ (function (_super) {
         __extends(OneGraphPlusSidebarRoom200, _super);
@@ -642,7 +660,7 @@ var KGAuthor;
             return _this;
         }
         return TwoHorizontalGraphsPlusSidebar;
-    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    }(KGAuthor.WideRectangleLayout));
     KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
     var MathboxPlusGraph = /** @class */ (function (_super) {
         __extends(MathboxPlusGraph, _super);
@@ -718,7 +736,7 @@ var KGAuthor;
             return _this;
         }
         return GeoGebraPlusGraphPlusSidebar;
-    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    }(KGAuthor.WideRectangleLayout));
     KGAuthor.GeoGebraPlusGraphPlusSidebar = GeoGebraPlusGraphPlusSidebar;
     var MathboxPlusGraphPlusSidebar = /** @class */ (function (_super) {
         __extends(MathboxPlusGraphPlusSidebar, _super);
@@ -744,7 +762,7 @@ var KGAuthor;
             return _this;
         }
         return MathboxPlusGraphPlusSidebar;
-    }(KGAuthor.WideRectanglePlusSidebarLayout));
+    }(KGAuthor.WideRectangleLayout));
     KGAuthor.MathboxPlusGraphPlusSidebar = MathboxPlusGraphPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
@@ -1492,6 +1510,11 @@ var KGAuthor;
             c.type = 'Curve';
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
+            if (def.hasOwnProperty('area')) {
+                var areaDef = def.boundedArea;
+                areaDef.univariateFunction1 = def.univariateFunction;
+                c.subObjects.push(new KGAuthor.Area(areaDef, graph));
+            }
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -1718,7 +1741,7 @@ var KGAuthor;
                         xTopAxisLabelDef.y = 'OPPAXIS';
                         KG.setDefaults(xTopAxisLabelDef, {
                             text: def.droplines.top,
-                            fontSize: 12
+                            fontSize: 10
                         });
                         p.subObjects.push(new KGAuthor.Label(xTopAxisLabelDef, graph));
                     }
@@ -1727,7 +1750,7 @@ var KGAuthor;
                     xAxisLabelDef.y = 'AXIS';
                     KG.setDefaults(xAxisLabelDef, {
                         text: def.droplines.vertical,
-                        fontSize: 12
+                        fontSize: 10
                     });
                     p.subObjects.push(new KGAuthor.Label(xAxisLabelDef, graph));
                 }
@@ -1738,7 +1761,7 @@ var KGAuthor;
                     yAxisLabelDef.x = 'AXIS';
                     KG.setDefaults(yAxisLabelDef, {
                         text: def.droplines.horizontal,
-                        fontSize: 12
+                        fontSize: 10
                     });
                     p.subObjects.push(new KGAuthor.Label(yAxisLabelDef, graph));
                 }
@@ -5259,12 +5282,14 @@ var KG;
             var view = this;
             // read the client width of the enclosing div and calculate the height using the aspectRatio
             var width = view.div.node().clientWidth;
-            if (width > 563 && view.sidebar) {
-                view.sidebar.positionRight(width);
-                width = width * 77 / 126; // make width of graph the same width as main Tufte column
-            }
-            else if (view.sidebar) {
-                view.sidebar.positionBelow();
+            if (view.sidebar) {
+                if (width > view.sidebar.triggerWidth) {
+                    view.sidebar.positionRight(width);
+                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
+                }
+                else {
+                    view.sidebar.positionBelow();
+                }
             }
             var height = width / view.aspectRatio;
             // set the height of the div
@@ -6428,9 +6453,10 @@ var KG;
         function Sidebar(def) {
             var _this = this;
             KG.setDefaults(def, {
-                controls: []
+                controls: [],
+                triggerWidth: 563
             });
-            KG.setProperties(def, 'constants', ['controls']);
+            KG.setProperties(def, 'constants', ['controls', 'triggerWidth']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -6448,7 +6474,7 @@ var KG;
                 .style('position', null)
                 .style('left', null)
                 .style('width', null)
-                .style('padding-top', '20px');
+                .style('padding-top', '40px');
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
@@ -6911,6 +6937,7 @@ window.addEventListener("load", function () {
                 }
             });
         }
+        d.classList.add('kg-loaded');
     };
     var doc, txt, backToJSON;
     // for each div, fetch the JSON definition and create a View object with that div and data

@@ -5,12 +5,12 @@
   "main": "kg.js",
   "devDependencies": {
     "@types/d3": "^4.13.2",
+    "@types/js-yaml": "latest",
     "@types/katex": "^0.5.0",
     "@types/mathjs": "0.0.34",
     "@types/three": "0.92.14",
-    "@types/js-yaml": "latest",
     "http-server": "latest",
-    "typescript": "next"
+    "typescript": "^3.6.0-dev.20190802"
   },
   "scripts": {
     "preview": "tsc && http-server -o",

@@ -21,6 +21,25 @@ module KGAuthor {
         }
     }
 
+    export class OneWideGraph extends WideRectangleLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let graphDef = def['graph'];
+
+            graphDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new Graph(graphDef));
+        }
+    }
+
     export class OneGraphPlusSidebar extends SquareLayout {
 
         constructor(def) {
@@ -44,7 +63,7 @@ module KGAuthor {
 
     }
 
-    export class OneWideGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+    export class OneWideGraphPlusSidebar extends WideRectangleLayout {
 
         constructor(def) {
             super(def);

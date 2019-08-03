@@ -94,7 +94,7 @@ module KGAuthor {
 
     }
 
-    export class TwoHorizontalGraphsPlusSidebar extends WideRectanglePlusSidebarLayout {
+    export class TwoHorizontalGraphsPlusSidebar extends WideRectangleLayout {
 
         constructor(def) {
             super(def);
@@ -234,7 +234,7 @@ module KGAuthor {
 
     }
 
-    export class GeoGebraPlusGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+    export class GeoGebraPlusGraphPlusSidebar extends WideRectangleLayout {
 
         constructor(def) {
             super(def);
@@ -267,7 +267,7 @@ module KGAuthor {
 
     }
 
-    export class MathboxPlusGraphPlusSidebar extends WideRectanglePlusSidebarLayout {
+    export class MathboxPlusGraphPlusSidebar extends WideRectangleLayout {
 
         constructor(def) {
             super(def);

@@ -62,10 +62,10 @@ module KG {
         private sidebar?: any;
 
         constructor(div: Element, data: ViewDefinition) {
-            this.render(data,div);
+            this.render(data, div);
         }
 
-        parse(data:ViewDefinition, div?) {
+        parse(data: ViewDefinition, div?) {
 
             data.schema = data.schema || "Schema";
             data.params = (data.params || []).map(function (paramData) {
@@ -109,11 +109,11 @@ module KG {
             data.objects = data.objects || [];
 
             if (data.hasOwnProperty('layout')) {
-                if(data.layout.hasOwnProperty('type')) {
+                if (data.layout.hasOwnProperty('type')) {
                     data.objects.push(data.layout)
                 } else {
                     const layoutType = Object.keys(data.layout)[0],
-                    layoutDef = data.layout[layoutType];
+                        layoutDef = data.layout[layoutType];
                     data.objects.push({type: layoutType, def: layoutDef});
                 }
             }
@@ -125,7 +125,7 @@ module KG {
             return KGAuthor.parse(data.objects, parsedData);
         }
 
-        render(data,div) {
+        render(data, div) {
             let view = this;
             const parsedData = view.parse(data, div);
             div.innerHTML = "";
@@ -276,12 +276,15 @@ module KG {
             // read the client width of the enclosing div and calculate the height using the aspectRatio
             let width = view.div.node().clientWidth;
 
-            if (width > 563 && view.sidebar) {
-                view.sidebar.positionRight(width);
-                width = width * 77 / 126; // make width of graph the same width as main Tufte column
-            } else if (view.sidebar) {
-                view.sidebar.positionBelow();
+            if (view.sidebar) {
+                if (width > view.sidebar.triggerWidth) {
+                    view.sidebar.positionRight(width);
+                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
+                } else {
+                    view.sidebar.positionBelow();
+                }
             }
+
 
             const height = width / view.aspectRatio;
             // set the height of the div

@@ -69,7 +69,7 @@ module KGAuthor {
                         xTopAxisLabelDef.y = 'OPPAXIS';
                         KG.setDefaults(xTopAxisLabelDef, {
                             text: def.droplines.top,
-                            fontSize: 12
+                            fontSize: 10
                         });
                         p.subObjects.push(new Label(xTopAxisLabelDef, graph));
                     }
@@ -78,7 +78,7 @@ module KGAuthor {
                     xAxisLabelDef.y = 'AXIS';
                     KG.setDefaults(xAxisLabelDef, {
                         text: def.droplines.vertical,
-                        fontSize: 12
+                        fontSize: 10
                     });
                     p.subObjects.push(new Label(xAxisLabelDef, graph));
                 }
@@ -90,7 +90,7 @@ module KGAuthor {
                     yAxisLabelDef.x = 'AXIS';
                     KG.setDefaults(yAxisLabelDef, {
                         text: def.droplines.horizontal,
-                        fontSize: 12
+                        fontSize: 10
                     });
                     p.subObjects.push(new Label(yAxisLabelDef, graph));
                 }

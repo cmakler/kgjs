@@ -25,7 +25,13 @@ bundles = [
     },
     {
         "name": "kg.0.2.0.css",
-        "dest_directories": ['build/bundled/','docs/css/','docs/playground/code/','../bh-textbook/code/'],
+        "dest_directories": [
+            'build/bundled/',
+            'docs/css/',
+            'docs/playground/code/',
+            '../bh-textbook/code/',
+            '../core-interactives/code/'
+        ],
         "order": [
             "build/lib/kg-lib.css",
             "build/kg.css"

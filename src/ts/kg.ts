@@ -99,6 +99,7 @@ window.addEventListener("load", function () {
                 }
             })
         }
+        d.classList.add('kg-loaded');
     }
     
 })

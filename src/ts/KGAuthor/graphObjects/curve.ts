@@ -7,6 +7,7 @@ module KGAuthor {
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
         pts?: {name: string; x?: string; y?: string;}[];
+        area?: AreaDefinition;
     }
 
     export class Curve extends GraphObject {
@@ -14,6 +15,7 @@ module KGAuthor {
         public pts: string[];
         public univariateFunction: KG.UnivariateFunction;
         public parametricFunction: KG.ParametricFunction;
+
 
         constructor(def, graph) {
             def = setStrokeColor(def);
@@ -23,6 +25,12 @@ module KGAuthor {
             c.type = 'Curve';
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
+
+            if (def.hasOwnProperty('area')) {
+                let areaDef = def.boundedArea;
+                areaDef.univariateFunction1 = def.univariateFunction;
+                c.subObjects.push(new Area(areaDef, graph));
+            }
 
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);
