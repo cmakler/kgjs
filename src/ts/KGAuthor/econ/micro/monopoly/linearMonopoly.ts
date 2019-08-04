@@ -1,4 +1,4 @@
-/// <reference path="../../eg.ts"/>
+l/// <reference path="../../eg.ts"/>
 
 module KGAuthor {
 

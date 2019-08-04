@@ -1,152 +1,53 @@
 <!doctype html>
 <html class="no-js" lang="">
 <head>
-    <title>Risk Dominance Demo</title>
-    <link href="code/kg.0.1.4.css" rel="stylesheet">
-    <script src="code/kg.0.1.4.js"></script>
+    <title>Econ Example</title>
+    <link href="code/kg.0.2.0.css" rel="stylesheet">
+    <script src="code/kg.0.2.0.js"></script>
 </head>
 <body>
 
-<div id="diagram" class="kg-container" src="playground"
-     style="width: 80%;margin-right: auto;margin-left: auto;margin-top: 2em;margin-bottom: 2em;">
-
-</div>
 
 <div class="kg-container">
 
+schema: EconSchema #try switching to BowlesHallidaySchema
+params:
+  - {name: QMax, value: 80, min: 50, max: 100}
+  - {name: MC, value: 2, min: 1, max: 3, round: 0.01}
 layout:
-
-  type: OneGraph
-  def:
+  OneGraph:
     graph:
+      xAxis: {title: Quantity, max: 100}
+      yAxis: {title: Price}
       objects:
-      
-        ## first point
-        - type: Point
-          def:
-            coordinates:
-              - 6
-              - 5
-        
-        ## second point
-        - type: Point
-          def:
-            coordinates:
-              - 3
-              - 8
+
+      - EconLinearEquilibrium:
+          name: equilibrium
+          demand:
+            # must define with xIntercept and invSlope
+            # i.e., Q = a - bP
+            name: demand
+            xIntercept: params.QMax
+            invSlope: -20
+
+            # draggable means the student can drag L/R,
+            # changing the x intercept
+            # requires xIntercept to be a parameter
+            draggable: true
+
+          supply:
+            # must define with yIntercept and slope
+            # i.e., MC = a + bQ
+            name: supply
+            yIntercept: params.MC
+            slope: 0.05
+            draggable: true
+
+          equilibrium: {}
+          showCS: true
+          showPS: true
               
 </div>
 
-<script>
-    KG.addView("playground", {
-  "params": [
-    {
-      "name": "p",
-      "value": 0.4,
-      "min": 0,
-      "max": 1,
-        "round": 0.01
-    }
-  ],
-        "calcs": {
-            "evEarly": "(4*params.p)",
-            "evLate": "(2 + params.p)",
-            "optimalY": "(math.max(calcs.evEarly, calcs.evLate))",
-            "betterEarly": "(calcs.evEarly > calcs.evLate)",
-            "betterLate": "(calcs.evEarly < calcs.evLate)",
-            "bothSame": "(calcs.evEarly == calcs.evLate)",
-            "optimalColor": "(calcs.betterEarly ? 'blue' : calcs.betterLate ? 'green' : 'gray')"
-        },
-  "layout": {
-    "type": "OneGraphPlusSidebar",
-    "def": {
-      "graph": {
-        "xAxis": {
-          "title": "Fraction Planting Early, $p$",
-          "orient": "bottom",
-          "min": 0,
-          "max": 1
-        },
-        "yAxis": {
-          "title": "Expected Payoff",
-          "orient": "left",
-          "min": 0,
-          "max": 5
-        },
-        "objects": [
-          {
-            "type": "Line",
-            "def": {
-              "yIntercept": 0,
-              "slope": 4,
-              "color": "blue",
-              "label": {
-                "text": "\\text{Plant early}",
-                "x": 0.2
-              }
-            }
-          },
-          {
-            "type": "Line",
-            "def": {
-              "yIntercept": 2,
-              "slope": 1,
-              "color": "green",
-              "label": {
-                "text": "\\text{Plant late}",
-                "x": 0.2
-              }
-            }
-          },
-          {
-            "type": "Point",
-            "def": {
-              "coordinates": [
-                "params.p",
-                "calcs.optimalY"
-              ],
-                "color": "(calcs.betterEarly ? 'blue' : calcs.betterLate ? 'green' : 'gray')",
-              "droplines": {
-                "vertical": "params.p.toFixed(2)",
-                  "horizontal": "calcs.optimalY.toFixed(2)"
-              },
-              "drag": [
-                {
-                  "directions": "x",
-                  "param": "p",
-                  "expression": "params.p + drag.dx"
-                }
-              ]
-            }
-          }
-        ]
-      },
-      "sidebar": {
-        "controls": [
-          {
-            "title": "Risk Dominance",
-            "sliders": [
-              {
-                "param": "p",
-                "label": "p"
-              }
-            ],
-              "divs": [
-                  {
-                      "html": "<p>It's better to plant early.</p>",
-                      "show": "calcs.betterEarly"
-                  },
-                  {
-                      "html": "<p>It's better to plant late.</p>",
-                      "show": "calcs.betterLate"
-                  }
-              ]
-          }
-        ]
-      }
-    }
-  }
-})
-</script>
 </body>
 </html>

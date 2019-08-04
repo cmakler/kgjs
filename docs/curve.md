@@ -230,3 +230,25 @@ layout:
 
 </div>
 
+If you would like to shade in the area above or below a curve, you can use the `areaAbove` and `areaBelow` attributes, which will shade in the area above and below the curve, respectively. 
+
+`areaAbove` and `areaBelow` can be customized for opacity, fill, etc. Anything that can be altered in a `graphObject` can also apply to the areas defined here. If you do not specify a fill color or an opacity, the area attributes will default to the color of the curve and an opacity of 0.2.
+
+<div width="500" height="425" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Curve:
+          univariateFunction:
+            fn: 1 + 2*(x)
+            ind: x
+          color: colors.red
+          label:
+            text: "'f(x) = 1 + 2x'"
+            x: 2
+          areaAbove: {fill: colors.blue, opacity: 0.6}
+          areaBelow: {}
+          
+</div>
