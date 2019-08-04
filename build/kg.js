@@ -1510,10 +1510,20 @@ var KGAuthor;
             c.type = 'Curve';
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
-            if (def.hasOwnProperty('area')) {
-                var areaDef = def.boundedArea;
-                areaDef.univariateFunction1 = def.univariateFunction;
-                c.subObjects.push(new KGAuthor.Area(areaDef, graph));
+            if (def.hasOwnProperty('areaBelow')) {
+                var areaBelowDef = KG.setDefaults(def.areaBelow, {
+                    univariateFunction1: def.univariateFunction,
+                    fill: def.color
+                });
+                c.subObjects.push(new KGAuthor.Area(areaBelowDef, graph));
+            }
+            if (def.hasOwnProperty('areaAbove')) {
+                var areaAboveDef = KG.setDefaults(def.areaAbove, {
+                    univariateFunction1: def.univariateFunction,
+                    fill: def.color,
+                    above: true
+                });
+                c.subObjects.push(new KGAuthor.Area(areaAboveDef, graph));
             }
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
@@ -3930,7 +3940,8 @@ var KGAuthor;
                 p2: 1,
                 max1: 100,
                 max2: 100,
-                curvature: 0.5
+                curvature: 0.5,
+                shadeFeasible: false
             });
             if (def.linear) {
                 def.curvature = 1;

@@ -7,7 +7,8 @@ module KGAuthor {
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
         pts?: {name: string; x?: string; y?: string;}[];
-        area?: AreaDefinition;
+        areaBelow?: AreaDefinition;
+        areaAbove?: AreaDefinition;
     }
 
     export class Curve extends GraphObject {
@@ -26,10 +27,21 @@ module KGAuthor {
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
 
-            if (def.hasOwnProperty('area')) {
-                let areaDef = def.boundedArea;
-                areaDef.univariateFunction1 = def.univariateFunction;
-                c.subObjects.push(new Area(areaDef, graph));
+            if (def.hasOwnProperty('areaBelow')) {
+                let areaBelowDef = KG.setDefaults(def.areaBelow, {
+                    univariateFunction1: def.univariateFunction,
+                    fill: def.color
+                });
+                c.subObjects.push(new Area(areaBelowDef, graph));
+            }
+
+            if (def.hasOwnProperty('areaAbove')) {
+                let areaAboveDef = KG.setDefaults(def.areaAbove, {
+                    univariateFunction1: def.univariateFunction,
+                    fill: def.color,
+                    above: true
+                });
+                c.subObjects.push(new Area(areaAboveDef, graph));
             }
 
             if (def.hasOwnProperty('label')) {

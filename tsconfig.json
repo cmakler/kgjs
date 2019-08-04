@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "sourceMap": true,
-        "outFile": "build/kg.js"
+        "outFile": "build/kg.js",
+        "commonjs": true
     },
     "files": [
         "src/ts/kg.ts"
