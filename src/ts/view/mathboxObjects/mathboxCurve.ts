@@ -21,7 +21,7 @@ module KG {
             def.fn = setDefaults(def.fn,{
                 model: def.model,
                 samplePoints: 100
-            })
+            });
             this.fn = new UnivariateFunction(def.fn).update(true);
         }
 

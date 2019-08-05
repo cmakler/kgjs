@@ -38,6 +38,7 @@
 /// <reference path="graphObjects/dropline.ts"/>
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
+/// <reference path="graphObjects/contour.ts"/>
 
 /// <reference path="mathboxObjects/mathboxObject.ts"/>
 /// <reference path="mathboxObjects/mathboxAxis.ts"/>
@@ -53,7 +54,5 @@
 /// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
 /// <reference path="divObjects/mathbox.ts"/>
-
-
 
 /// <reference path="econ/eg.ts"/>

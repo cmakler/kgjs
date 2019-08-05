@@ -12,7 +12,8 @@ bundles = [
             'docs/playground/code/',
             '../electric-book/assets/js/',
             '../bh-textbook/code/',
-            '../core-interactives/code/'
+            '../core-interactives/code/',
+            '../econgraphs/static/js/'
         ],
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
@@ -30,7 +31,8 @@ bundles = [
             'docs/css/',
             'docs/playground/code/',
             '../bh-textbook/code/',
-            '../core-interactives/code/'
+            '../core-interactives/code/',
+            '../econgraphs/static/css/'
         ],
         "order": [
             "build/lib/kg-lib.css",

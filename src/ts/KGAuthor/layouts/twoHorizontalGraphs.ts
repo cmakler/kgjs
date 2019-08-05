@@ -204,6 +204,43 @@ module KGAuthor {
 
     }
 
+    export class GameMatrixPlusGraph extends Layout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let graphDef = def['graph'];
+
+            let gameDivDef = {
+                position: {
+                    x: 0.05,
+                    y: 0.25,
+                    width: 0.45,
+                    height: 0.5
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.game
+                    }
+                ]
+            };
+
+            graphDef.position = {
+                x: 0.6,
+                y: 0.2,
+                width: 0.3,
+                height: 0.6
+            };
+
+            l.subObjects.push(new DivContainer(gameDivDef));
+            l.subObjects.push(new Graph(graphDef));
+
+        }
+
+    }
+
     export class GeoGebraPlusGraph extends Layout {
 
         constructor(def) {

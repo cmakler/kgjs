@@ -321,15 +321,15 @@ var KGAuthor;
         function Schema(def) {
             var _this = this;
             var palette = {
-                blue: 'd3.schemeCategory20c[0]',
-                orange: 'd3.schemeCategory20c[4]',
-                green: 'd3.schemeCategory20c[8]',
-                purple: 'd3.schemeCategory20c[12]',
-                grey: 'd3.schemeCategory20c[16]',
-                olive: 'd3.schemeCategory20b[4]',
-                brown: 'd3.schemeCategory20b[8]',
-                red: 'd3.schemeCategory20[6]',
-                magenta: 'd3.schemeCategory20b[16]' //#7b4173
+                blue: 'd3.schemeCategory10[0]',
+                orange: 'd3.schemeCategory10[1]',
+                green: 'd3.schemeCategory10[2]',
+                red: 'd3.schemeCategory10[3]',
+                purple: 'd3.schemeCategory10[4]',
+                brown: 'd3.schemeCategory10[5]',
+                magenta: 'd3.schemeCategory10[6]',
+                grey: 'd3.schemeCategory10[7]',
+                olive: 'd3.schemeCategory10[8]' //#637939
             };
             for (var color in def.colors) {
                 var colorName = def.colors[color];
@@ -687,6 +687,39 @@ var KGAuthor;
         return MathboxPlusGraph;
     }(KGAuthor.Layout));
     KGAuthor.MathboxPlusGraph = MathboxPlusGraph;
+    var GameMatrixPlusGraph = /** @class */ (function (_super) {
+        __extends(GameMatrixPlusGraph, _super);
+        function GameMatrixPlusGraph(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'];
+            var gameDivDef = {
+                position: {
+                    x: 0.05,
+                    y: 0.25,
+                    width: 0.45,
+                    height: 0.5
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.game
+                    }
+                ]
+            };
+            graphDef.position = {
+                x: 0.6,
+                y: 0.2,
+                width: 0.3,
+                height: 0.6
+            };
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            return _this;
+        }
+        return GameMatrixPlusGraph;
+    }(KGAuthor.Layout));
+    KGAuthor.GameMatrixPlusGraph = GameMatrixPlusGraph;
     var GeoGebraPlusGraph = /** @class */ (function (_super) {
         __extends(GeoGebraPlusGraph, _super);
         function GeoGebraPlusGraph(def) {
@@ -1449,7 +1482,7 @@ var KGAuthor;
                 else {
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
-                        x: graph.xScale.min,
+                        x: graph.xScale.max,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
                         xPixelOffset: 50,
                         rotate: 270
@@ -1943,6 +1976,24 @@ var KGAuthor;
         return Rectangle;
     }(KGAuthor.GraphObject));
     KGAuthor.Rectangle = Rectangle;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Contour = /** @class */ (function (_super) {
+        __extends(Contour, _super);
+        function Contour(def, graph) {
+            var _this = this;
+            def = KGAuthor.setStrokeColor(def);
+            _this = _super.call(this, def, graph) || this;
+            var c = _this;
+            c.type = 'Contour';
+            c.layer = def.layer || 1;
+            return _this;
+        }
+        return Contour;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Contour = Contour;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -3940,8 +3991,7 @@ var KGAuthor;
                 p2: 1,
                 max1: 100,
                 max2: 100,
-                curvature: 0.5,
-                shadeFeasible: false
+                curvature: 0.5
             });
             if (def.linear) {
                 def.curvature = 1;
@@ -4373,6 +4423,7 @@ var KGAuthor;
 /// <reference path="graphObjects/dropline.ts"/>
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
+/// <reference path="graphObjects/contour.ts"/>
 /// <reference path="mathboxObjects/mathboxObject.ts"/>
 /// <reference path="mathboxObjects/mathboxAxis.ts"/>
 /// <reference path="mathboxObjects/mathboxPoint.ts"/>
@@ -5889,6 +5940,69 @@ var KG;
     }(KG.ViewObject));
     KG.GeoGebraObject = GeoGebraObject;
 })(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Contour = /** @class */ (function (_super) {
+        __extends(Contour, _super);
+        function Contour(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: "#666666",
+                strokeWidth: 10,
+                opacity: 0.2
+            });
+            _this = _super.call(this, def) || this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        Contour.prototype.draw = function (layer) {
+            var c = this;
+            c.rootElement = layer.append('g');
+            c.path = c.rootElement.append('path')
+                .attr("fill", "none")
+                .attr("stroke", "lightsteelblue");
+            return c.addClipPathAndArrows();
+        };
+        Contour.prototype.redraw = function () {
+            var c = this;
+            // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
+            var n = 200, m = 200, values = new Array(n * m);
+            for (var j = 0, k = 0; j < m; ++j) {
+                for (var i = 0; i < n; ++i, ++k) {
+                    values[k] = Math.min(i, j);
+                }
+            }
+            var transform = function (_a) {
+                var type = _a.type, value = _a.value, coordinates = _a.coordinates;
+                return {
+                    type: type, value: value, coordinates: coordinates.map(function (rings) {
+                        return rings.map(function (points) {
+                            return points.map(function (_a) {
+                                var x = _a[0], y = _a[1];
+                                return ([c.xScale.scale(x), c.yScale.scale(y)]);
+                            });
+                        });
+                    })
+                };
+            };
+            var p = d3.geoPath();
+            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+            var contours = d3.contours().size([n, m]).contour(values, 40);
+            console.log(contours.coordinates[0][0]);
+            contours = transform(contours);
+            console.log(contours.coordinates[0][0]);
+            c.path.attr("d", p(contours));
+            return c;
+        };
+        return Contour;
+    }(KG.ViewObject));
+    KG.Contour = Contour;
+})(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
@@ -6893,6 +7007,7 @@ var KG;
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/viewObjects/ggbObject.ts" />
+/// <reference path="view/viewObjects/contour.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/positionedDiv.ts" />
 /// <reference path="view/divObjects/div.ts" />
@@ -6922,10 +7037,11 @@ window.addEventListener("load", function () {
         // if there is no src attribute
         if (!src) {
             try {
-                doc = jsyaml.safeLoad(d.innerHTML);
-                txt = JSON.stringify(doc).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
-                backToJSON = JSON.parse(txt);
-                views.push(new KG.View(d, backToJSON));
+                // read inner HTML of div as YAML
+                var y = jsyaml.safeLoad(d.innerHTML);
+                // convert it to JSON, un-escaping HTML <, >, and & signs
+                var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                views.push(new KG.View(d, j));
             }
             catch (e) {
                 console.log(e);
@@ -6938,7 +7054,7 @@ window.addEventListener("load", function () {
         }
         else {
             // then look to see if the src is available by a URL
-            d3.json(src + "?update=true", function (data) {
+            d3.json(src + "?update=true").then(function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
                 }
@@ -6950,7 +7066,6 @@ window.addEventListener("load", function () {
         }
         d.classList.add('kg-loaded');
     };
-    var doc, txt, backToJSON;
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (var i = 0; i < viewDivs.length; i++) {
         _loop_1(i);

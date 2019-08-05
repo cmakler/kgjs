@@ -33,6 +33,7 @@
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/viewObjects/ggbObject.ts" />
+/// <reference path="view/viewObjects/contour.ts" />
 
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/positionedDiv.ts" />
@@ -75,10 +76,14 @@ window.addEventListener("load", function () {
         // if there is no src attribute
         if (!src) {
             try {
-                var doc = jsyaml.safeLoad(d.innerHTML);
-                var txt = JSON.stringify(doc).replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&');
-                var backToJSON = JSON.parse(txt);
-                views.push(new KG.View(d, backToJSON));
+
+                // read inner HTML of div as YAML
+                const y = jsyaml.safeLoad(d.innerHTML);
+
+                // convert it to JSON, un-escaping HTML <, >, and & signs
+                const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&'));
+
+                views.push(new KG.View(d, j));
             } catch (e) {
                 console.log(e);
             }
@@ -90,7 +95,7 @@ window.addEventListener("load", function () {
             views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
         } else {
             // then look to see if the src is available by a URL
-            d3.json(src + "?update=true", function (data) {
+            d3.json(src + "?update=true").then(function (data) {
                 if (!data) {
                     viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
                 } else {
@@ -102,7 +107,7 @@ window.addEventListener("load", function () {
         d.classList.add('kg-loaded');
     }
     
-})
+});
 
 
 // if the window changes size, update the dimensions of the containers
