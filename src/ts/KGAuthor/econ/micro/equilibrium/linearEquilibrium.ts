@@ -29,46 +29,24 @@ module KGAuthor {
 
             let le = this;
 
+            def.demand.price = `calcs.${le.name}.P`;
+            def.supply.price = `calcs.${le.name}.P`;
+
             le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
             le.supply = new KGAuthor.EconLinearSupply(def.supply, graph);
+
+            le.subObjects.push(this.demand);
+            le.subObjects.push(this.supply);
 
             let eq = lineIntersection(le.demand, le.supply);
 
             le.Q = eq[0];
             le.P = eq[1];
 
-            le.subObjects.push(this.demand);
-            le.subObjects.push(this.supply);
-
             if (graph) {
 
-                le.subObjects.push(new Area({
-                    univariateFunction1: {
-                        fn: `${le.demand.yIntercept} + (${le.demand.slope})*(x)`,
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.demand",
-                    show: def.showCS
-                }, graph));
-
-                le.subObjects.push(new Area({
-                    univariateFunction1: {
-                        fn: `${le.supply.yIntercept} + (${le.supply.slope})*(x)`,
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.supply",
-                    show: def.showPS
-                }, graph));
-
-                let equilibriumPointDef = {
+                if(def.hasOwnProperty('equilibrium')) {
+                    def.equilibrium = KG.setDefaults(def.equilibrium, {
                     "color": "colors.equilibriumPrice",
                     "x": le.Q,
                     "y": le.P,
@@ -76,12 +54,9 @@ module KGAuthor {
                         "vertical": "Q^*",
                         "horizontal": "P^*"
                     }
-                };
-
-                if(def.hasOwnProperty('equilibrium')) {
-                    def.equilibrium = KG.setDefaults(def.equilibrium, equilibriumPointDef)
+                });
                     le.subObjects.push(new Point(def.equilibrium, graph));
-                };
+                }
 
             }
 

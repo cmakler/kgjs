@@ -3854,7 +3854,8 @@ var KGAuthor;
                             "x": KGAuthor.multiplyDefs(0.6, ld.xIntercept)
                         }
                     });
-                    ld.subObjects.push(new KGAuthor.Line(marginalRevenueDef, graph));
+                    ld.marginalRevenue = new KGAuthor.Line(marginalRevenueDef, graph);
+                    ld.subObjects.push(ld.marginalRevenue);
                 }
                 if (def.hasOwnProperty('surplus')) {
                     var surplusDef = KG.setDefaults(def.surplus || {}, {
@@ -3997,52 +3998,28 @@ var KGAuthor;
             });
             _this = _super.call(this, def, graph) || this;
             var le = _this;
+            def.demand.price = "calcs." + le.name + ".P";
+            def.supply.price = "calcs." + le.name + ".P";
             le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
             le.supply = new KGAuthor.EconLinearSupply(def.supply, graph);
+            le.subObjects.push(_this.demand);
+            le.subObjects.push(_this.supply);
             var eq = KGAuthor.lineIntersection(le.demand, le.supply);
             le.Q = eq[0];
             le.P = eq[1];
-            le.subObjects.push(_this.demand);
-            le.subObjects.push(_this.supply);
             if (graph) {
-                le.subObjects.push(new KGAuthor.Area({
-                    univariateFunction1: {
-                        fn: le.demand.yIntercept + " + (" + le.demand.slope + ")*(x)",
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.demand",
-                    show: def.showCS
-                }, graph));
-                le.subObjects.push(new KGAuthor.Area({
-                    univariateFunction1: {
-                        fn: le.supply.yIntercept + " + (" + le.supply.slope + ")*(x)",
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.supply",
-                    show: def.showPS
-                }, graph));
-                var equilibriumPointDef = {
-                    "color": "colors.equilibriumPrice",
-                    "x": le.Q,
-                    "y": le.P,
-                    "droplines": {
-                        "vertical": "Q^*",
-                        "horizontal": "P^*"
-                    }
-                };
                 if (def.hasOwnProperty('equilibrium')) {
-                    def.equilibrium = KG.setDefaults(def.equilibrium, equilibriumPointDef);
+                    def.equilibrium = KG.setDefaults(def.equilibrium, {
+                        "color": "colors.equilibriumPrice",
+                        "x": le.Q,
+                        "y": le.P,
+                        "droplines": {
+                            "vertical": "Q^*",
+                            "horizontal": "P^*"
+                        }
+                    });
                     le.subObjects.push(new KGAuthor.Point(def.equilibrium, graph));
                 }
-                ;
             }
             return _this;
         }
@@ -4207,74 +4184,10 @@ var KGAuthor;
     var EconLinearMC = /** @class */ (function (_super) {
         __extends(EconLinearMC, _super);
         function EconLinearMC(def, graph) {
-            var _this = this;
-            def = KGAuthor.setStrokeColor(def);
-            KG.setDefaults(def, {
-                color: 'colors.supply',
-                strokeWidth: 2,
-                lineStyle: 'solid'
-            });
-            if (def.draggable && typeof (def.slope) == 'string') {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.slope),
-                        'expression': KGAuthor.divideDefs(KGAuthor.subtractDefs('drag.y', def.yIntercept), 'drag.x')
-                    }];
-            }
-            else if (def.draggable && typeof (def.invSlope) == 'string') {
-                def.drag = [{
-                        'directions': 'xy',
-                        'param': KGAuthor.paramName(def.invSlope),
-                        'expression': KGAuthor.divideDefs('drag.x', KGAuthor.subtractDefs('drag.y', def.yIntercept))
-                    }];
-            }
-            else if (def.draggable && typeof (def.yIntercept) == 'string') {
-                def.drag = [{
-                        'directions': 'y',
-                        'param': KGAuthor.paramName(def.yIntercept),
-                        'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
-                    }];
-            }
-            _this = _super.call(this, def, graph) || this;
-            var ld = _this;
-            if (graph) {
-                var subObjects = ld.subObjects;
-                var yInterceptPointDef = {
-                    coordinates: [0, ld.yIntercept],
-                    color: def.color,
-                    r: 4
-                };
-                if (def.draggable && typeof (ld.yIntercept) == 'string') {
-                    yInterceptPointDef['drag'] = [{
-                            directions: 'y',
-                            param: KGAuthor.paramName(ld.yIntercept),
-                            expression: KGAuthor.addDefs(ld.yIntercept, 'drag.dy')
-                        }];
-                }
-                if (def.hasOwnProperty('yInterceptLabel')) {
-                    yInterceptPointDef['droplines'] = {
-                        horizontal: def.yInterceptLabel
-                    };
-                }
-                ld.yInterceptPoint = new KGAuthor.Point(yInterceptPointDef, graph);
-                if (def.handles) {
-                    subObjects.push(ld.yInterceptPoint);
-                }
-            }
-            return _this;
+            return _super.call(this, def, graph) || this;
         }
-        EconLinearMC.prototype.parseSelf = function (parsedData) {
-            var ld = this;
-            parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                invSlope: ld.invSlope.toString()
-            };
-            return parsedData;
-        };
         return EconLinearMC;
-    }(KGAuthor.Line));
+    }(KGAuthor.EconLinearSupply));
     KGAuthor.EconLinearMC = EconLinearMC;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
@@ -4285,65 +4198,36 @@ var KGAuthor;
         function EconLinearMonopoly(def, graph) {
             var _this = this;
             KG.setDefaults(def, {
+                name: 'monopoly',
                 showCS: false,
                 showPS: false,
                 showProfit: false
             });
             _this = _super.call(this, def, graph) || this;
-            var le = _this;
-            le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
-            le.cost = new KGAuthor.EconLinearMC(def.cost, graph);
-            le.P = KGAuthor.addDefs(le.supply.yIntercept, KGAuthor.multiplyDefs(le.supply.slope, le.Q));
-            le.subObjects.push(_this.demand);
-            le.subObjects.push(_this.supply);
+            var lm = _this;
+            def.demand.price = "calcs." + lm.name + ".P";
+            def.cost.price = "calcs." + lm.name + ".P";
+            if (def.cost.hasOwnProperty('surplus')) {
+                def.cost.surplus.quantity = "calcs." + lm.name + ".Q";
+            }
+            lm.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
+            lm.cost = new KGAuthor.EconLinearMC(def.cost, graph);
+            var intersectMRMC = KGAuthor.lineIntersection(lm.demand.marginalRevenue, lm.cost);
+            lm.Q = intersectMRMC[0];
+            lm.P = lm.demand.yOfX(lm.Q);
+            lm.MRMC =
+                lm.subObjects.push(_this.demand);
+            lm.subObjects.push(_this.cost);
             if (graph) {
-                le.subObjects.push(new KGAuthor.Area({
-                    univariateFunction1: {
-                        fn: le.demand.yIntercept + " + (" + le.demand.slope + ")*(x)",
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.demand",
-                    show: def.showCS
-                }, graph));
-                le.subObjects.push(new KGAuthor.Area({
-                    univariateFunction1: {
-                        fn: le.supply.yIntercept + " + (" + le.supply.slope + ")*(x)",
-                        max: le.Q
-                    },
-                    univariateFunction2: {
-                        fn: le.P,
-                        max: le.Q
-                    },
-                    fill: "colors.supply",
-                    show: def.showPS
-                }, graph));
-                var equilibriumPointDef = {
-                    "color": "colors.equilibriumPrice",
-                    "x": le.Q,
-                    "y": le.P,
-                    "droplines": {
-                        "vertical": "Q^*",
-                        "horizontal": "P^*"
-                    }
-                };
-                if (def.hasOwnProperty('equilibrium')) {
-                    def.equilibrium = KG.setDefaults(def.equilibrium, equilibriumPointDef);
-                    le.subObjects.push(new KGAuthor.Point(def.equilibrium, graph));
-                }
-                ;
             }
             return _this;
         }
         EconLinearMonopoly.prototype.parseSelf = function (parsedData) {
-            var le = this;
+            var lm = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            parsedData.calcs[le.name] = {
-                Q: le.Q.toString(),
-                P: le.P.toString()
+            parsedData.calcs[lm.name] = {
+                Q: lm.Q.toString(),
+                P: lm.P.toString()
             };
             return parsedData;
         };

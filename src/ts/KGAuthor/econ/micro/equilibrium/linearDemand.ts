@@ -18,8 +18,10 @@ module KGAuthor {
 
     export class EconLinearDemand extends Line {
 
-        private xInterceptPoint;
-        private yInterceptPoint;
+        public xInterceptPoint;
+        public yInterceptPoint;
+        public marginalRevenue: Line;
+        public price;
 
         constructor(def: EconLinearDemandDefinition, graph) {
 
@@ -133,7 +135,8 @@ module KGAuthor {
                             "x": multiplyDefs(0.6, ld.xIntercept)
                         }
                     });
-                    ld.subObjects.push(new Line(marginalRevenueDef, graph));
+                    ld.marginalRevenue = new Line(marginalRevenueDef, graph);
+                    ld.subObjects.push(ld.marginalRevenue);
                 }
 
 
