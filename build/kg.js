@@ -1778,9 +1778,13 @@ var KGAuthor;
             if (def.hasOwnProperty('droplines')) {
                 if (def.droplines.hasOwnProperty('vertical')) {
                     var verticalDroplineDef = KGAuthor.copyJSON(def);
+                    // only drag vertical droplines horizontally
+                    if (verticalDroplineDef.hasOwnProperty('drag')) {
+                        verticalDroplineDef.drag = verticalDroplineDef.drag.filter(function (value, index, arr) { return (value.directions == 'x'); });
+                    }
                     if (def.droplines.hasOwnProperty('top')) {
                         verticalDroplineDef.y = graph.yScale.max;
-                        var xTopAxisLabelDef = KGAuthor.copyJSON(def);
+                        var xTopAxisLabelDef = KGAuthor.copyJSON(verticalDroplineDef);
                         xTopAxisLabelDef.y = 'OPPAXIS';
                         KG.setDefaults(xTopAxisLabelDef, {
                             text: def.droplines.top,
@@ -1789,7 +1793,7 @@ var KGAuthor;
                         p.subObjects.push(new KGAuthor.Label(xTopAxisLabelDef, graph));
                     }
                     p.subObjects.push(new KGAuthor.VerticalDropline(verticalDroplineDef, graph));
-                    var xAxisLabelDef = KGAuthor.copyJSON(def);
+                    var xAxisLabelDef = KGAuthor.copyJSON(verticalDroplineDef);
                     xAxisLabelDef.y = 'AXIS';
                     KG.setDefaults(xAxisLabelDef, {
                         text: def.droplines.vertical,
@@ -1799,8 +1803,12 @@ var KGAuthor;
                 }
                 if (def.droplines.hasOwnProperty('horizontal')) {
                     var horizontalDroplineDef = KGAuthor.copyJSON(def);
+                    // only drag horizontal droplines vertically
+                    if (horizontalDroplineDef.hasOwnProperty('drag')) {
+                        horizontalDroplineDef.drag = horizontalDroplineDef.drag.filter(function (value, index, arr) { return (value.directions == 'y'); });
+                    }
                     p.subObjects.push(new KGAuthor.HorizontalDropline(horizontalDroplineDef, graph));
-                    var yAxisLabelDef = KGAuthor.copyJSON(def);
+                    var yAxisLabelDef = KGAuthor.copyJSON(horizontalDroplineDef);
                     yAxisLabelDef.x = 'AXIS';
                     KG.setDefaults(yAxisLabelDef, {
                         text: def.droplines.horizontal,
@@ -5062,6 +5070,16 @@ var KG;
         __extends(DragListener, _super);
         function DragListener(def) {
             var _this = this;
+            if (def.hasOwnProperty('vertical')) {
+                def.directions = 'y';
+                def.param = def.vertical;
+                def.expression = "params." + def.vertical + " + drag.dy";
+            }
+            if (def.hasOwnProperty('horizontal')) {
+                def.directions = 'x';
+                def.param = def.horizontal;
+                def.expression = "params." + def.horizontal + " + drag.dx";
+            }
             KG.setDefaults(def, {
                 directions: "xy"
             });

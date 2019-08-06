@@ -4,7 +4,9 @@ module KG {
 
     export interface DragListenerDefinition extends ListenerDefinition {
         draggable?: string;
-        directions: string;
+        directions?: string;
+        vertical?: string;
+        horizontal?: string;
     }
 
     export interface IDragListener extends IListener {
@@ -26,6 +28,16 @@ module KG {
         public draggable;
 
         constructor(def: DragListenerDefinition) {
+            if(def.hasOwnProperty('vertical')) {
+                def.directions = 'y';
+                def.param = def.vertical;
+                def.expression = `params.${def.vertical} + drag.dy`
+            }
+            if(def.hasOwnProperty('horizontal')) {
+                def.directions = 'x';
+                def.param = def.horizontal;
+                def.expression = `params.${def.horizontal} + drag.dx`
+            }
             setDefaults(def, {
                 directions: "xy"
             });
