@@ -215,9 +215,9 @@ module KGAuthor {
             let gameDivDef = {
                 position: {
                     x: 0.05,
-                    y: 0.25,
-                    width: 0.45,
-                    height: 0.5
+                    y: 0.1,
+                    width: 0.35,
+                    height: 0.7
                 },
                 children: [
                     {
@@ -229,9 +229,9 @@ module KGAuthor {
 
             graphDef.position = {
                 x: 0.6,
-                y: 0.2,
-                width: 0.3,
-                height: 0.6
+                y: 0.1,
+                width: 0.35,
+                height: 0.7
             };
 
             l.subObjects.push(new DivContainer(gameDivDef));

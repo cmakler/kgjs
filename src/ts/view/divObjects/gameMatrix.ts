@@ -3,26 +3,25 @@
 
 module KG {
 
-    export interface GamePlayer {
-        name: string;
-        strategies: string[];
-        payoffs: string[][];
-    }
-
     export interface GameMatrixDefinition extends DivObjectDefinition {
-        player1: GamePlayer;
-        player2: GamePlayer;
+        players?: string[];
+        strategies: string[][];
+        payoffs: any[][][];
     }
 
     export class GameMatrix extends DivObject {
 
-        private player1;
-        private player2;
+        private players;
+        private strategies;
+        private payoffs;
+        private payoffNodes: any[][][];
 
         constructor(def: GameMatrixDefinition) {
-            def.player1.name = def.player1.name || 'Player 1';
-            def.player2.name = def.player2.name || 'Player 2';
-            setProperties(def,'constants',['player1','player2']);
+            KG.setDefaults(def, {
+                players: ["Player 1","Player 2"]
+            });
+            setProperties(def,'constants',['players','strategies']);
+            setProperties(def,'updatables',['payoffs']);
             super(def);
         }
 
@@ -30,11 +29,8 @@ module KG {
         draw(layer) {
             let gameMatrix = this;
 
-            const player1 = gameMatrix.player1,
-                player2 = gameMatrix.player2;
-
-            let numStrategies1 = player1.strategies.length,
-                numStrategies2 = player2.strategies.length;
+            const numStrategies1 = gameMatrix.strategies[0].length,
+                numStrategies2 = gameMatrix.strategies[1].length;
 
             gameMatrix.rootElement = layer.append('div');
 
@@ -46,30 +42,33 @@ module KG {
             topRow.append('td')
                 .attr('colspan',numStrategies2*2)
                 .attr('class', 'player2 strategy empty')
-                .text(player2.name);
+                .text(gameMatrix.players[1]);
 
             let secondRow = table.append('tr');
 
             secondRow.append('td').attr('colspan','2').attr('class', 'empty');
-            player2.strategies.forEach(function (s) {
+            gameMatrix.strategies[1].forEach(function (s) {
                 secondRow.append('td').attr('colspan','2').attr('class', 'player2 strategy').text(s);
             });
 
+            gameMatrix.payoffNodes = [];
+
             for(let i = 0; i < numStrategies1; i++) {
                 let row = table.append('tr');
+                let payoffRow = [];
                 if(i == 0) {
                     row.append('td')
                         .attr('rowSpan', numStrategies1)
                         .attr('class','player1 strategy empty')
-                        .text(player1.name)
+                        .text(gameMatrix.players[0])
                 }
-                row.append('td').text(player1.strategies[i]).attr('class','player1 strategy');
+                row.append('td').text(gameMatrix.strategies[0][i]).attr('class','player1 strategy');
                 for(let j = 0; j < numStrategies2; j++) {
                     let payoff1 = row.append('td').attr('class', 'player1 payoff');
-                    katex.render(player1.payoffs[i][j].toString(),payoff1.node());
                     let payoff2 = row.append('td').attr('class', 'player2 payoff');
-                    katex.render(player2.payoffs[i][j].toString(),payoff2.node());
+                    payoffRow.push([payoff1,payoff2]);
                 }
+                gameMatrix.payoffNodes.push(payoffRow);
             }
 
             return gameMatrix;
@@ -78,6 +77,19 @@ module KG {
 
          redraw() {
             let gameMatrix = this;
+
+            const strategies1 = gameMatrix.strategies[0],
+                strategies2 = gameMatrix.strategies[1];
+
+            let numStrategies1 = strategies1.length,
+                numStrategies2 = strategies2.length;
+            for(let i = 0; i < numStrategies1; i++) {
+                for(let j = 0; j < numStrategies2; j++) {
+                    let cell = gameMatrix.payoffNodes[i][j]
+                    katex.render(gameMatrix.payoffs[i][j][0].toString(),cell[0].node());
+                    katex.render(gameMatrix.payoffs[i][j][1].toString(),cell[1].node());
+                }
+            }
             return gameMatrix;
         }
     }

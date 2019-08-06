@@ -47,17 +47,38 @@ module KG {
             ul.model.addUpdateListener(this);
         }
 
+        private updateArray(a: any[]) {
+            let u = this;
+            return a.map(function(d) {
+                if(Array.isArray(d)) {
+                    return u.updateArray(d)
+                } else {
+                    const initialValue = d;
+                    let newValue = u.model.eval(d);
+                    if(initialValue != newValue) {
+                        u.hasChanged = true;
+                    }
+                    return newValue;
+                }
+            })
+        }
+
         private updateDef(name: string) {
             let u = this;
             if (u.def.hasOwnProperty(name)) {
                 const d = u.def[name],
                     initialValue = u[name];
-                let newValue = u.model.eval(d);
-                if (initialValue != newValue) {
-                    u.hasChanged = true;
-                    u[name] = newValue;
-                    //console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
+                if (Array.isArray(d)) {
+                    u[name] = u.updateArray(d);
+                } else {
+                    let newValue = u.model.eval(d);
+                    if (initialValue != newValue) {
+                        u.hasChanged = true;
+                        u[name] = newValue;
+                    }
                 }
+                console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
+
             }
             return u;
         }

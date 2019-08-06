@@ -696,9 +696,9 @@ var KGAuthor;
             var gameDivDef = {
                 position: {
                     x: 0.05,
-                    y: 0.25,
-                    width: 0.45,
-                    height: 0.5
+                    y: 0.1,
+                    width: 0.35,
+                    height: 0.7
                 },
                 children: [
                     {
@@ -709,9 +709,9 @@ var KGAuthor;
             };
             graphDef.position = {
                 x: 0.6,
-                y: 0.2,
-                width: 0.3,
-                height: 0.6
+                y: 0.1,
+                width: 0.35,
+                height: 0.7
             };
             l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
             l.subObjects.push(new KGAuthor.Graph(graphDef));
@@ -4682,16 +4682,37 @@ var KG;
             ul.id = randomString(10);
             ul.model.addUpdateListener(this);
         }
+        UpdateListener.prototype.updateArray = function (a) {
+            var u = this;
+            return a.map(function (d) {
+                if (Array.isArray(d)) {
+                    return u.updateArray(d);
+                }
+                else {
+                    var initialValue = d;
+                    var newValue = u.model.eval(d);
+                    if (initialValue != newValue) {
+                        u.hasChanged = true;
+                    }
+                    return newValue;
+                }
+            });
+        };
         UpdateListener.prototype.updateDef = function (name) {
             var u = this;
             if (u.def.hasOwnProperty(name)) {
                 var d = u.def[name], initialValue = u[name];
-                var newValue = u.model.eval(d);
-                if (initialValue != newValue) {
-                    u.hasChanged = true;
-                    u[name] = newValue;
-                    //console.log(u.constructor['name'],name,'changed from',initialValue,'to',newValue);
+                if (Array.isArray(d)) {
+                    u[name] = u.updateArray(d);
                 }
+                else {
+                    var newValue = u.model.eval(d);
+                    if (initialValue != newValue) {
+                        u.hasChanged = true;
+                        u[name] = newValue;
+                    }
+                }
+                console.log(u.constructor['name'], name, 'changed from', initialValue, 'to', u[name]);
             }
             return u;
         };
@@ -6338,17 +6359,18 @@ var KG;
         __extends(GameMatrix, _super);
         function GameMatrix(def) {
             var _this = this;
-            def.player1.name = def.player1.name || 'Player 1';
-            def.player2.name = def.player2.name || 'Player 2';
-            KG.setProperties(def, 'constants', ['player1', 'player2']);
+            KG.setDefaults(def, {
+                players: ["Player 1", "Player 2"]
+            });
+            KG.setProperties(def, 'constants', ['players', 'strategies']);
+            KG.setProperties(def, 'updatables', ['payoffs']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create div for text
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
-            var player1 = gameMatrix.player1, player2 = gameMatrix.player2;
-            var numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            var numStrategies1 = gameMatrix.strategies[0].length, numStrategies2 = gameMatrix.strategies[1].length;
             gameMatrix.rootElement = layer.append('div');
             var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             var topRow = table.append('tr');
@@ -6356,32 +6378,43 @@ var KG;
             topRow.append('td')
                 .attr('colspan', numStrategies2 * 2)
                 .attr('class', 'player2 strategy empty')
-                .text(player2.name);
+                .text(gameMatrix.players[1]);
             var secondRow = table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty');
-            player2.strategies.forEach(function (s) {
+            gameMatrix.strategies[1].forEach(function (s) {
                 secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy').text(s);
             });
+            gameMatrix.payoffNodes = [];
             for (var i = 0; i < numStrategies1; i++) {
                 var row = table.append('tr');
+                var payoffRow = [];
                 if (i == 0) {
                     row.append('td')
                         .attr('rowSpan', numStrategies1)
                         .attr('class', 'player1 strategy empty')
-                        .text(player1.name);
+                        .text(gameMatrix.players[0]);
                 }
-                row.append('td').text(player1.strategies[i]).attr('class', 'player1 strategy');
+                row.append('td').text(gameMatrix.strategies[0][i]).attr('class', 'player1 strategy');
                 for (var j = 0; j < numStrategies2; j++) {
                     var payoff1 = row.append('td').attr('class', 'player1 payoff');
-                    katex.render(player1.payoffs[i][j].toString(), payoff1.node());
                     var payoff2 = row.append('td').attr('class', 'player2 payoff');
-                    katex.render(player2.payoffs[i][j].toString(), payoff2.node());
+                    payoffRow.push([payoff1, payoff2]);
                 }
+                gameMatrix.payoffNodes.push(payoffRow);
             }
             return gameMatrix;
         };
         GameMatrix.prototype.redraw = function () {
             var gameMatrix = this;
+            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1];
+            var numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            for (var i = 0; i < numStrategies1; i++) {
+                for (var j = 0; j < numStrategies2; j++) {
+                    var cell = gameMatrix.payoffNodes[i][j];
+                    katex.render(gameMatrix.payoffs[i][j][0].toString(), cell[0].node());
+                    katex.render(gameMatrix.payoffs[i][j][1].toString(), cell[1].node());
+                }
+            }
             return gameMatrix;
         };
         return GameMatrix;

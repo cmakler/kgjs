@@ -45,6 +45,7 @@ input {
 
 table.gameMatrix {
   border-collapse: collapse;
+    width: 100%;
 }
 
 table.gameMatrix tr td {
