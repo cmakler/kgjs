@@ -33,18 +33,13 @@ module KGAuthor {
             p.extractCoordinates();
 
             if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-                def.drag = [
-                    {
-                        'directions': 'x',
-                        'param': paramName(def.x),
-                        'expression': addDefs(def.x, 'drag.dx')
-                    },
-                    {
-                        'directions': 'y',
-                        'param': paramName(def.y),
-                        'expression': addDefs(def.y, 'drag.dy')
-                    }
-                ]
+                def.drag = [];
+                if(def.x == `params.${paramName(def.x)}`) {
+                    def.drag.push({horizontal: paramName(def.x)})
+                }
+                if(def.y == `params.${paramName(def.y)}`) {
+                    def.drag.push({vertical: paramName(def.y)})
+                }
             }
 
             if (def.hasOwnProperty('label')) {

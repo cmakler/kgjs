@@ -2,96 +2,98 @@
 
 module KGAuthor {
 
-    export interface EconLinearMonopolyDefinition extends LineDefinition {
-        demand: EconLinearDemandDefinition
-        cost: EconLinearMCDefinition
-        showProfit?: any;
+    export interface EconLinearMonopolyDefinition {
+        demand: EconLinearDemandDefinition;
+        cost: EconLinearMCDefinition;
+        profitMax?: PointDefinition;
+        showCS?: any;
         showPS?: any;
-        showDWL?: any;
-        showPQ?: any;
+        showProfit?: any;
     }
 
-    export class EconLinearMonopoly extends Line {
+    export class EconLinearMonopoly extends GraphObjectGenerator {
 
-        public yIntercept;
-        public slope;
-        private yInterceptPoint;
+        public demand: EconLinearDemand;
+        public cost: EconLinearMC;
+        public Q: string;
+        public P: string;
 
-        constructor(def: EconLinearSupplyDefinition, graph) {
-
-            def = setStrokeColor(def);
+        constructor(def: EconLinearMonopolyDefinition, graph) {
 
             KG.setDefaults(def, {
-                color: 'colors.supply',
-                strokeWidth: 2,
-                lineStyle: 'solid'
+                showCS: false,
+                showPS: false,
+                showProfit: false
             });
-
-            if (def.draggable && typeof(def.slope) == 'string') {
-                def.drag = [{
-                    'directions': 'xy',
-                    'param': paramName(def.slope),
-                    'expression': divideDefs(subtractDefs('drag.y',def.yIntercept),'drag.x')
-                }]
-            } else if (def.draggable && typeof(def.invSlope) == 'string') {
-                def.drag = [{
-                    'directions': 'xy',
-                    'param': paramName(def.invSlope),
-                    'expression': divideDefs('drag.x',subtractDefs('drag.y',def.yIntercept))
-                }]
-            } else if (def.draggable && typeof(def.yIntercept) == 'string') {
-                def.drag = [{
-                    'directions': 'y',
-                    'param': paramName(def.yIntercept),
-                    'expression': addDefs(def.yIntercept, 'drag.dy')
-                }]
-            }
 
             super(def, graph);
 
-            let ld = this;
+            let le = this;
 
+            le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
+            le.cost = new KGAuthor.EconLinearMC(def.cost, graph);
+
+
+
+            le.P = addDefs(le.supply.yIntercept, multiplyDefs(le.supply.slope, le.Q));
+
+            le.subObjects.push(this.demand);
+            le.subObjects.push(this.supply);
 
             if (graph) {
-                const subObjects = ld.subObjects;
 
-                let yInterceptPointDef = {
-                    coordinates: [0, ld.yIntercept],
-                    color: def.color,
-                    r: 4
+                le.subObjects.push(new Area({
+                    univariateFunction1: {
+                        fn: `${le.demand.yIntercept} + (${le.demand.slope})*(x)`,
+                        max: le.Q
+                    },
+                    univariateFunction2: {
+                        fn: le.P,
+                        max: le.Q
+                    },
+                    fill: "colors.demand",
+                    show: def.showCS
+                }, graph));
+
+                le.subObjects.push(new Area({
+                    univariateFunction1: {
+                        fn: `${le.supply.yIntercept} + (${le.supply.slope})*(x)`,
+                        max: le.Q
+                    },
+                    univariateFunction2: {
+                        fn: le.P,
+                        max: le.Q
+                    },
+                    fill: "colors.supply",
+                    show: def.showPS
+                }, graph));
+
+                let equilibriumPointDef = {
+                    "color": "colors.equilibriumPrice",
+                    "x": le.Q,
+                    "y": le.P,
+                    "droplines": {
+                        "vertical": "Q^*",
+                        "horizontal": "P^*"
+                    }
                 };
 
-                if (def.draggable && typeof(ld.yIntercept) == 'string') {
-                    yInterceptPointDef['drag'] = [{
-                        directions: 'y',
-                        param: paramName(ld.yIntercept),
-                        expression: addDefs(ld.yIntercept, 'drag.dy')
-                    }]
-                }
-
-                if (def.hasOwnProperty('yInterceptLabel')) {
-                    yInterceptPointDef['droplines'] = {
-                        horizontal: def.yInterceptLabel
-                    }
-                }
-
-                ld.yInterceptPoint = new Point(yInterceptPointDef, graph);
-
-                if (def.handles) {
-                    subObjects.push(ld.yInterceptPoint);
-                }
+                if(def.hasOwnProperty('equilibrium')) {
+                    def.equilibrium = KG.setDefaults(def.equilibrium, equilibriumPointDef)
+                    le.subObjects.push(new Point(def.equilibrium, graph));
+                };
 
             }
+
 
         }
 
         parseSelf(parsedData) {
-            let ld = this;
+            let le = this;
             parsedData = super.parseSelf(parsedData);
-            parsedData.calcs[ld.name] = {
-                yIntercept: ld.yIntercept.toString(),
-                slope: ld.slope.toString(),
-                invSlope: ld.invSlope.toString()
+            parsedData.calcs[le.name] = {
+                Q: le.Q.toString(),
+                P: le.P.toString()
             };
 
             return parsedData;

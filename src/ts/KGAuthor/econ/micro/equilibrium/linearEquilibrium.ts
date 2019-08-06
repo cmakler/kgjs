@@ -20,6 +20,7 @@ module KGAuthor {
         constructor(def: EconLinearEquilibriumDefinition, graph) {
 
             KG.setDefaults(def, {
+                name: 'equilibrium',
                 showCS: false,
                 showPS: false
             });
@@ -31,10 +32,10 @@ module KGAuthor {
             le.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
             le.supply = new KGAuthor.EconLinearSupply(def.supply, graph);
 
-            le.Q = divideDefs(addDefs(le.demand.xIntercept, multiplyDefs(le.demand.invSlope, le.supply.yIntercept)),
-                subtractDefs("1", multiplyDefs(le.demand.invSlope, le.supply.slope)));
+            let eq = lineIntersection(le.demand, le.supply);
 
-            le.P = addDefs(le.supply.yIntercept, multiplyDefs(le.supply.slope, le.Q));
+            le.Q = eq[0];
+            le.P = eq[1];
 
             le.subObjects.push(this.demand);
             le.subObjects.push(this.supply);
@@ -83,8 +84,6 @@ module KGAuthor {
                 };
 
             }
-
-            console.log(le);
 
 
         }

@@ -13,6 +13,8 @@ module KGAuthor {
         max?: string|number;
     }
 
+
+
     export class Line extends Curve {
 
         public yIntercept;
@@ -147,6 +149,15 @@ module KGAuthor {
             parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {} ,d);
             return parsedData;
         }
+    }
+
+    export function lineIntersection(l1: Line, l2: Line) {
+        const x = divideDefs(addDefs(l1.xIntercept, multiplyDefs(l1.invSlope, l2.yIntercept)),
+                subtractDefs("1", multiplyDefs(l1.invSlope, l2.slope)));
+
+        const y = l2.yOfX(x);
+
+        return [x,y];
     }
 
 }

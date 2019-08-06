@@ -22,6 +22,7 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             KG.setDefaults(def, {
+                name: 'supply',
                 color: 'colors.supply',
                 strokeWidth: 2,
                 lineStyle: 'solid',

@@ -6,7 +6,7 @@ module KGAuthor {
         label?: LabelDefinition
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
-        pts?: {name: string; x?: string; y?: string;}[];
+        pts?: { name: string; x?: string; y?: string; }[];
         areaBelow?: AreaDefinition;
         areaAbove?: AreaDefinition;
     }
@@ -54,25 +54,16 @@ module KGAuthor {
                 });
                 if (def.hasOwnProperty('univariateFunction')) {
                     if (labelDef.hasOwnProperty('x') && def.univariateFunction.ind != 'y') {
-                        labelDef.coordinates = [
-                            labelDef.x,
-                            `(${replaceVariable(def.univariateFunction.fn, '(x)', `(${labelDef.x})`)})`
-                        ];
+                        labelDef.coordinates = [labelDef.x, c.yOfX(labelDef.x)];
                         c.subObjects.push(new Label(labelDef, graph));
                     } else if (labelDef.hasOwnProperty('y') && def.univariateFunction.ind != 'x') {
-                        labelDef.coordinates = [
-                            `(${replaceVariable(def.univariateFunction.fn, '(y)', `(${labelDef.y})`)})`,
-                            labelDef.y
-                        ];
+                        labelDef.coordinates = [c.xOfY(labelDef.y), labelDef.y];
                         c.subObjects.push(new Label(labelDef, graph));
                     }
                 }
                 if (def.hasOwnProperty('parametricFunction')) {
                     if (labelDef.hasOwnProperty('t')) {
-                        labelDef.coordinates = [
-                            replaceVariable(def.parametricFunction.xFunction, '(t)', `(${labelDef.t})`),
-                            replaceVariable(def.parametricFunction.yFunction, '(t)', `(${labelDef.t})`)
-                        ];
+                        labelDef.coordinates = c.xyOfT(labelDef.t);
                         c.subObjects.push(new Label(labelDef, graph));
                     }
                 }
@@ -81,20 +72,35 @@ module KGAuthor {
             }
         }
 
+        yOfX(x) {
+            return `(${replaceVariable(this.def.univariateFunction.fn, '(x)', `(${x})`)})`
+        }
+
+        xOfY(y) {
+            return `(${replaceVariable(this.def.univariateFunction.yFn, '(y)', `(${y})`)})`
+        }
+
+        xyOfT(t) {
+            return [
+                replaceVariable(this.parametricFunction.xFunction, '(t)', `(${t})`),
+                replaceVariable(this.parametricFunction.yFunction, '(t)', `(${t})`)
+            ]
+        }
+
         parseSelf(parsedData) {
             let c = this;
             parsedData = super.parseSelf(parsedData);
             parsedData.calcs[c.name] = parsedData.calcs[c.name] || {};
-            c.pts.forEach(function(p) {
+            c.pts.forEach(function (p) {
                 if (p.hasOwnProperty('x')) {
                     parsedData.calcs[c.name][p['name']] = {
                         x: p['x'],
-                        y: `(${replaceVariable(c.def.univariateFunction.fn, '(x)', `(${p['x']})`)})`
+                        y: c.yOfX(p['x'])
                     }
                 }
                 if (p.hasOwnProperty('y')) {
                     parsedData.calcs[c.name][p['name']] = {
-                        x: `(${replaceVariable(c.def.univariateFunction.yFn, '(y)', `(${p['y']})`)})`,
+                        x: c.xOfY(p['y']),
                         y: p['y']
                     }
                 }

@@ -77,7 +77,7 @@ module KG {
                         u[name] = newValue;
                     }
                 }
-                console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
+                //console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
 
             }
             return u;
