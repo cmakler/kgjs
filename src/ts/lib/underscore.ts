@@ -52,7 +52,7 @@ module KG {
         return def;
     }
 
-    export function setProperties(def: any, name: 'constants' | 'updatables', props:string[]) {
+    export function setProperties(def: any, name: 'constants' | 'updatables' | 'colorAttributes', props:string[]) {
         def[name] = (def[name] || []).concat(props);
         return def;
     }

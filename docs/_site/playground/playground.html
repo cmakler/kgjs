@@ -17,35 +17,13 @@ params:
 layout:
   OneGraph:
     graph:
-      xAxis: {title: Quantity, max: 100}
-      yAxis: {title: Price}
+      xAxis: {max: 100}
+      yAxis: {max: 100}
       objects:
 
-      - EconLinearEquilibrium:
-          name: equilibrium
-          demand:
-            # must define with xIntercept and invSlope
-            # i.e., Q = a - bP
-            name: demand
-            xIntercept: params.QMax
-            invSlope: -20
-
-            # draggable means the student can drag L/R,
-            # changing the x intercept
-            # requires xIntercept to be a parameter
-            draggable: true
-
-          supply:
-            # must define with yIntercept and slope
-            # i.e., MC = a + bQ
-            name: supply
-            yIntercept: params.MC
-            slope: 0.05
-            draggable: true
-
-          equilibrium: {}
-          showCS: true
-          showPS: true
+      - Contour:
+          fn:
+            fn: ((x)^0.5)*((y)^0.5)
               
 </div>
 

@@ -26,6 +26,8 @@ module KG {
         strokeOpacity?: string;
         lineStyle?: string;
 
+        colorAttributes: string[];
+
         useTopScale?: boolean;
         useRightScale?: boolean;
 
@@ -57,6 +59,7 @@ module KG {
         lineStyle: string;
         startArrow: string;
         endArrow: string;
+
     }
 
     export class ViewObject extends UpdateListener implements IViewObject {
@@ -95,12 +98,20 @@ module KG {
             });
             setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
+            setProperties(def, 'colorAttributes', ['stroke','fill','color']);
 
             if(def.inDef) {def.show = true};
 
             super(def);
 
             let vo = this;
+
+            def.colorAttributes.forEach(function(attr) {
+               let c = def[attr];
+               if(vo.model.colors.hasOwnProperty(c)) {
+                   def[attr] = vo.model.colors[c];
+               }
+            });
 
             // the interaction handler manages drag and hover events
             if (def.interactive) {

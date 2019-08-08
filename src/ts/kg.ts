@@ -56,7 +56,7 @@
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 
-declare function renderMathInElement(node,delimiters);
+declare function renderMathInElement(node, delimiters);
 
 
 // this file provides the interface with the overall web page
@@ -71,42 +71,48 @@ window.addEventListener("load", function () {
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
-        src = d.getAttribute('src');
+            src = d.getAttribute('src');
 
-        // if there is no src attribute
-        if (!src) {
-            try {
-
-                // read inner HTML of div as YAML
-                const y = jsyaml.safeLoad(d.innerHTML);
-
-                // convert it to JSON, un-escaping HTML <, >, and & signs
-                const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g,'>').replace(/&lt;/g,'<').replace(/&amp;/g,'&'));
-
-                views.push(new KG.View(d, j));
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
-        // first look to see if there's a definition in the KG.viewData object
-        else if (KG['viewData'].hasOwnProperty(src)) {
-            viewDivs[i].innerHTML = "";
-            views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+        if (d.innerHTML.indexOf('svg') > -1) {
+            //console.log('already loaded');
         } else {
-            // then look to see if the src is available by a URL
-            d3.json(src + "?update=true").then(function (data) {
-                if (!data) {
-                    viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
-                } else {
-                    viewDivs[i].innerHTML = "";
-                    views.push(new KG.View(viewDivs[i], data));
+
+            // if there is no src attribute
+            if (!src) {
+                console.log('loading yaml');
+                try {
+
+                    // read inner HTML of div as YAML
+                    const y = jsyaml.safeLoad(d.innerHTML);
+
+                    // convert it to JSON, un-escaping HTML <, >, and & signs
+                    const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+
+                    views.push(new KG.View(d, j));
+                } catch (e) {
+                    console.log(e);
                 }
-            })
+            }
+
+            // first look to see if there's a definition in the KG.viewData object
+            else if (KG['viewData'].hasOwnProperty(src)) {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+            } else {
+                // then look to see if the src is available by a URL
+                d3.json(src + "?update=true").then(function (data) {
+                    if (!data) {
+                        viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
+                    } else {
+                        viewDivs[i].innerHTML = "";
+                        views.push(new KG.View(viewDivs[i], data));
+                    }
+                })
+            }
+            d.classList.add('kg-loaded');
         }
-        d.classList.add('kg-loaded');
     }
-    
+
 });
 
 

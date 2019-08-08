@@ -20,7 +20,7 @@ module KG {
         // objects that store definitions of params, calcs, and colors
         private params: Param[];
         private calcs: {};
-        private colors: {};
+        public colors: {};
 
         // objects that store current realized values of params, calcs, and colors
         public currentParamValues: {};

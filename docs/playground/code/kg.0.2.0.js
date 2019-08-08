@@ -5425,12 +5425,19 @@ var KG;
             });
             KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
+            KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
             if (def.inDef) {
                 def.show = true;
             }
             ;
             _this = _super.call(this, def) || this;
             var vo = _this;
+            def.colorAttributes.forEach(function (attr) {
+                var c = def[attr];
+                if (vo.model.colors.hasOwnProperty(c)) {
+                    def[attr] = vo.model.colors[c];
+                }
+            });
             // the interaction handler manages drag and hover events
             if (def.interactive) {
                 def.drag = def.drag || [];
@@ -7046,37 +7053,43 @@ window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
         var d = viewDivs[i], src = d.getAttribute('src');
-        // if there is no src attribute
-        if (!src) {
-            try {
-                // read inner HTML of div as YAML
-                var y = jsyaml.safeLoad(d.innerHTML);
-                // convert it to JSON, un-escaping HTML <, >, and & signs
-                var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
-                views.push(new KG.View(d, j));
-            }
-            catch (e) {
-                console.log(e);
-            }
-        }
-        // first look to see if there's a definition in the KG.viewData object
-        else if (KG['viewData'].hasOwnProperty(src)) {
-            viewDivs[i].innerHTML = "";
-            views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+        if (d.innerHTML.indexOf('svg') > -1) {
+            console.log('already loaded');
         }
         else {
-            // then look to see if the src is available by a URL
-            d3.json(src + "?update=true").then(function (data) {
-                if (!data) {
-                    viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
+            // if there is no src attribute
+            if (!src) {
+                console.log('loading yaml');
+                try {
+                    // read inner HTML of div as YAML
+                    var y = jsyaml.safeLoad(d.innerHTML);
+                    // convert it to JSON, un-escaping HTML <, >, and & signs
+                    var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                    views.push(new KG.View(d, j));
                 }
-                else {
-                    viewDivs[i].innerHTML = "";
-                    views.push(new KG.View(viewDivs[i], data));
+                catch (e) {
+                    console.log(e);
                 }
-            });
+            }
+            // first look to see if there's a definition in the KG.viewData object
+            else if (KG['viewData'].hasOwnProperty(src)) {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+            }
+            else {
+                // then look to see if the src is available by a URL
+                d3.json(src + "?update=true").then(function (data) {
+                    if (!data) {
+                        viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
+                    }
+                    else {
+                        viewDivs[i].innerHTML = "";
+                        views.push(new KG.View(viewDivs[i], data));
+                    }
+                });
+            }
+            d.classList.add('kg-loaded');
         }
-        d.classList.add('kg-loaded');
     };
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (var i = 0; i < viewDivs.length; i++) {
