@@ -10,7 +10,7 @@ module KGAuthor {
             a.type = 'Axis';
             a.layer = 2;
 
-            if (def.hasOwnProperty('title')) {
+            if (def.hasOwnProperty('title') && ("" != def.title)) {
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,

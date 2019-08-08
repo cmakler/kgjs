@@ -103,6 +103,7 @@ module KG {
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
                 y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
+                console.log('drawing label with text ',label.text);
                 katex.render(label.text.toString(), label.rootElement.node());
             }
             label.rootElement.style('left', x + 'px');

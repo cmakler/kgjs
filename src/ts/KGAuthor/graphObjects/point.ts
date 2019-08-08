@@ -61,7 +61,7 @@ module KGAuthor {
 
                     // only drag vertical droplines horizontally
                     if(verticalDroplineDef.hasOwnProperty('drag')) {
-                        verticalDroplineDef.drag = verticalDroplineDef.drag.filter(function(value, index, arr) {return (value.directions == 'x')});
+                        verticalDroplineDef.drag = verticalDroplineDef.drag.filter(function(value, index, arr) {return ((value.directions == 'x') || value.hasOwnProperty('horizontal'))});
                     }
 
                     if (def.droplines.hasOwnProperty('top')) {
@@ -88,7 +88,7 @@ module KGAuthor {
 
                     // only drag horizontal droplines vertically
                     if(horizontalDroplineDef.hasOwnProperty('drag')) {
-                        horizontalDroplineDef.drag = horizontalDroplineDef.drag.filter(function(value, index, arr) {return (value.directions == 'y')});
+                        horizontalDroplineDef.drag = horizontalDroplineDef.drag.filter(function(value, index, arr) {return ((value.directions == 'y') || value.hasOwnProperty('vertical'))});
                     }
 
                     p.subObjects.push(new HorizontalDropline(horizontalDroplineDef, graph));

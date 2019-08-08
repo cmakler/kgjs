@@ -1453,7 +1453,7 @@ var KGAuthor;
             var a = _this;
             a.type = 'Axis';
             a.layer = 2;
-            if (def.hasOwnProperty('title')) {
+            if (def.hasOwnProperty('title') && ("" != def.title)) {
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
@@ -1784,7 +1784,7 @@ var KGAuthor;
                     var verticalDroplineDef = KGAuthor.copyJSON(def);
                     // only drag vertical droplines horizontally
                     if (verticalDroplineDef.hasOwnProperty('drag')) {
-                        verticalDroplineDef.drag = verticalDroplineDef.drag.filter(function (value, index, arr) { return (value.directions == 'x'); });
+                        verticalDroplineDef.drag = verticalDroplineDef.drag.filter(function (value, index, arr) { return ((value.directions == 'x') || value.hasOwnProperty('horizontal')); });
                     }
                     if (def.droplines.hasOwnProperty('top')) {
                         verticalDroplineDef.y = graph.yScale.max;
@@ -1809,7 +1809,7 @@ var KGAuthor;
                     var horizontalDroplineDef = KGAuthor.copyJSON(def);
                     // only drag horizontal droplines vertically
                     if (horizontalDroplineDef.hasOwnProperty('drag')) {
-                        horizontalDroplineDef.drag = horizontalDroplineDef.drag.filter(function (value, index, arr) { return (value.directions == 'y'); });
+                        horizontalDroplineDef.drag = horizontalDroplineDef.drag.filter(function (value, index, arr) { return ((value.directions == 'y') || value.hasOwnProperty('vertical')); });
                     }
                     p.subObjects.push(new KGAuthor.HorizontalDropline(horizontalDroplineDef, graph));
                     var yAxisLabelDef = KGAuthor.copyJSON(horizontalDroplineDef);
@@ -6623,6 +6623,7 @@ var KG;
             label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
+                console.log('drawing label with text ', label.text);
                 katex.render(label.text.toString(), label.rootElement.node());
             }
             label.rootElement.style('left', x + 'px');
