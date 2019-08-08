@@ -1589,7 +1589,13 @@ var KGAuthor;
             return "(" + KGAuthor.replaceVariable(this.def.univariateFunction.fn, '(x)', "(" + x + ")") + ")";
         };
         Curve.prototype.xOfY = function (y) {
-            return "(" + KGAuthor.replaceVariable(this.def.univariateFunction.yFn, '(y)', "(" + y + ")") + ")";
+            var c = this;
+            if (c.def.univariateFunction.hasOwnProperty('yFn')) {
+                return "(" + KGAuthor.replaceVariable(c.def.univariateFunction.yFn, '(y)', "(" + y + ")") + ")";
+            }
+            else {
+                return "(" + KGAuthor.replaceVariable(c.def.univariateFunction.fn, '(y)', "(" + y + ")") + ")";
+            }
         };
         Curve.prototype.xyOfT = function (t) {
             return [
@@ -1878,6 +1884,32 @@ var KGAuthor;
         return CrossGraphSegment;
     }(Segment));
     KGAuthor.CrossGraphSegment = CrossGraphSegment;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Arrow = /** @class */ (function (_super) {
+        __extends(Arrow, _super);
+        function Arrow(def, graph) {
+            var _this = this;
+            def.endArrow = true;
+            if (def.hasOwnProperty('double')) {
+                def.startArrow = def.double;
+            }
+            if (def.hasOwnProperty('trim')) {
+                def.a = [KGAuthor.averageDefs(def.end[0], def.begin[0], def.trim), KGAuthor.averageDefs(def.end[1], def.begin[1], def.trim)];
+                def.b = [KGAuthor.averageDefs(def.begin[0], def.end[0], def.trim), KGAuthor.averageDefs(def.begin[1], def.end[1], def.trim)];
+            }
+            else {
+                def.a = def.begin;
+                def.b = def.end;
+            }
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return Arrow;
+    }(KGAuthor.Segment));
+    KGAuthor.Arrow = Arrow;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2279,6 +2311,7 @@ var KGAuthor;
                 // equilibrium
                 price: 'grey',
                 paretoLens: "'#ffff99'",
+                equilibriumPrice: 'green',
                 // macro
                 consumption: 'blue',
                 depreciation: "red",
@@ -4316,6 +4349,7 @@ var KGAuthor;
 /// <reference path="graphObjects/line.ts"/>
 /// <reference path="graphObjects/point.ts"/>
 /// <reference path="graphObjects/segment.ts"/>
+/// <reference path="graphObjects/arrow.ts"/>
 /// <reference path="graphObjects/dropline.ts"/>
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>

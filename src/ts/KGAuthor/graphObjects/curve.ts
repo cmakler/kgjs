@@ -77,7 +77,13 @@ module KGAuthor {
         }
 
         xOfY(y) {
-            return `(${replaceVariable(this.def.univariateFunction.yFn, '(y)', `(${y})`)})`
+            const c = this;
+            if(c.def.univariateFunction.hasOwnProperty('yFn')) {
+                return `(${replaceVariable(c.def.univariateFunction.yFn, '(y)', `(${y})`)})`
+            } else {
+                return `(${replaceVariable(c.def.univariateFunction.fn, '(y)', `(${y})`)})`
+            }
+
         }
 
         xyOfT(t) {

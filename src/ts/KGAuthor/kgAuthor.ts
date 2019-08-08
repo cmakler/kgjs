@@ -35,6 +35,7 @@
 /// <reference path="graphObjects/line.ts"/>
 /// <reference path="graphObjects/point.ts"/>
 /// <reference path="graphObjects/segment.ts"/>
+/// <reference path="graphObjects/arrow.ts"/>
 /// <reference path="graphObjects/dropline.ts"/>
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
