@@ -31,6 +31,7 @@ layout:
 
 Getting started:
 * [parmameters and calculations](param.html)
+* [drag](drag.html)
 
 Graph objects:
 * [point](point.html)
