@@ -101,7 +101,7 @@ layout:
       - Line:
           slope: 2
           label: {text: "\\text{slope} = 2", x: 3}
-          color: colors.green
+          color: green
           
       # line defined only by a point
       - Line:
@@ -113,11 +113,11 @@ layout:
 </div>
 
 Using our two-points example, let's look at customization. Here are some common attributes you might want to give a line:
-* Color: in the `def` of the line, add the command `"color" : "colors.green"` or whatever basic color you prefer. 
-* Dashed/Dotted: in the `def` of the line, add the command `"lineStyle" : "dashed"` or `"dotted"` to change the texture of the line. 
+* Color: in the `def` of the line, add the command `color : green` or whatever basic color you prefer. 
+* Dashed/Dotted: in the `def` of the line, add the command `lineStyle : dashed` or `dotted` to change the texture of the line. 
 * Line segment: if you want the line to begin and end at particular points, in the `def` of the line, add `min` and `max` commands for the x-coordinate at which you would like the line to begin and end. 
 * Adding a point: to add a point to your line, follow the normal protocol for drawing a point, as demonstrated below. 
-* Line width: use the command `"strokeWidth"` to change the width of the line.
+* Line width: use the command `strokeWidth` to change the width of the line.
 * Labelling: to label a line, add a `label` command to the `def` of the line, which has a `text` attribute (what you want the label to say) and an `x` attribute describing the x-coordinate where you want the label to appear. 
 * Axes: you can add axis labels and the minimum and maximum value of each axis as an attribute of the graph, as shown below. 
 
@@ -134,7 +134,7 @@ layout:
           lineStyle: dotted
           point: [3,4]
           point2: [7,8]
-          color: colors.blue
+          color: blue
 
       # draw a thick line (strokewidth = 4)
       # defined by the same points,
@@ -145,7 +145,7 @@ layout:
           point2: [7,8]
           min: 2
           max: 8
-          color: colors.blue
+          color: blue
           label:
             text: y = x + 3
             x: 5
@@ -159,7 +159,33 @@ layout:
 
 </div>
 
-Now, let's see how we can make a line interactive, such that it can be dragged in a number of ways. The components of the `drag` command are as follows:
+Now, let's see how we can make a line interactive, such that it can be dragged in a number of ways. If you would like to simply drag a line in the vertical or horiztonal direction, you may specify this under the attribute `drag`. You must create a parameter that is changing with the drag, generally either `x` or `y`, and define your line in terms of this parameter. For example, say we want to drag a line with a slope of 1 in the vertical direction:
+
+<div width="500" height="425" class="codePreview">
+    
+params:
+- name: y
+  value: 4
+  min: 2
+  max: 6
+  round: 0.01
+  
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Line:
+          slope: 1
+          yIntercept: params.y
+          drag:
+          - vertical: y
+
+</div>
+
+To be clear, the parameter above could take any name; for example, it could be called `a` and the line would move in the same manner. It only matters that the parameter, the definition of the line, and the parameter for the drag are the same.
+
+If you want to do something more complicated, such as change the slope of the line using drag functionality, you can use a more detailed `drag` attribute that includes the following components: 
+
 * `directions`: the direction of the dragging may be in the x direction, the y direction, or in both the x and y direction (notated `xy` as below).
 * `param`: this is the parameter you will be changing by dragging the line. In the example below, we are changing the intercepts, so `param` is `"intercepts"`.
 * `expression`: the expression describes how the `param` will change based on the amount of dragging done. See below for a concrete example. 
@@ -210,7 +236,7 @@ layout:
       objects:
 
       - Line:
-          color: colors.blue
+          color: blue
           point: [4,5]
           slope: params.m
           drag:
@@ -241,7 +267,7 @@ layout:
       objects:
 
       - Line:
-          color: colors.green
+          color: green
           yIntercept: 4
           slope: params.m
 
@@ -264,13 +290,13 @@ layout:
       objects:
 
       - Line:
-          color: colors.green
+          color: green
           yIntercept: 4
           slope: params.m
 
           # solution
           drag:
-          - directions: xy
+          - directions: y
             param: m
             expression: "(drag.y - 4)/(drag.x)"
 

@@ -36,7 +36,7 @@ layout:
       - Line:
           yIntercept: 3
           slope: 2
-          color: colors.red
+          color: red
           lineStyle: dashed
           label:
             text: y = 3 + 2x
@@ -46,7 +46,7 @@ layout:
           univariateFunction:
             fn: 1 + 2*(x)
             ind: x
-          color: colors.red
+          color: red
           label:
             text: "'f(x) = 1 + 2x'"
             x: 2
@@ -54,7 +54,7 @@ layout:
       - Line:
           xIntercept: 1
           invSlope: 2
-          color: colors.green
+          color: green
           lineStyle: dashed
           label:
             text: x = 1 + 2y
@@ -64,7 +64,7 @@ layout:
           univariateFunction:
             fn: 3 + 2*(y)
             ind: y
-          color: colors.green
+          color: green
           label:
             text: "'f(y) = 3 + 2y'"
             y: 2.5
@@ -84,7 +84,7 @@ layout:
           univariateFunction:
             fn: 1 + (x)^2
             ind: x
-          color: colors.red
+          color: red
           label:
             text: "'f(x) = 1 + x^2'"
             x: 2
@@ -120,7 +120,7 @@ layout:
             yFunction: 8*sin(t)
             min: 0
             max: 1.57
-          color: colors.blue
+          color: blue
 
 
 </div>
@@ -145,7 +145,7 @@ layout:
             yFunction: 0.5*t*sin(t)
             min: 0
             max: 20
-          color: colors.purple
+          color: purple
 
 </div>
 
@@ -219,7 +219,7 @@ layout:
           univariateFunction:
             fn: params.yintercept + (x)^2
             ind: x
-          color: colors.red
+          color: red
           label:
             text: "`f(x) = ${params.yintercept.toFixed(2)} + x^2`"
             x: 2
@@ -244,11 +244,58 @@ layout:
           univariateFunction:
             fn: 1 + 2*(x)
             ind: x
-          color: colors.red
+          color: red
           label:
             text: "'f(x) = 1 + 2x'"
             x: 2
-          areaAbove: {fill: colors.blue, opacity: 0.6}
+          areaAbove: {fill: blue, opacity: 0.6}
           areaBelow: {}
+          
+</div>
+
+By default, the area below the graph will be shaded between the curve and the x-axis. If you would like to customize the upper and lower bounds of the shading, you can do so either in the definition of the curve, or with a new object called `Area` that takes in two curves as parameters. 
+
+Using an existing curve, with the shading ending at y = 0.5x:
+
+<div width="500" height="425" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Curve:
+          univariateFunction:
+            fn: 1 + 2*(x)
+            ind: x
+          color: red
+          label:
+            text: "'f(x) = 1 + 2x'"
+            x: 2
+          areaBelow: 
+            univariateFunction2: 
+              fn: 0.5*x
+              ind: x
+            fill: blue
+            
+          
+</div>
+
+Using the `Area` object and two curve parameters: 
+
+<div width="500" height="425" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Area: 
+          univariateFunction1: 
+            fn: 1 + 2*x
+            ind: x
+          univariateFunction2: 
+            fn: 0.5*x
+            ind: x
+          fill: blue
+            
           
 </div>
