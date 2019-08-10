@@ -292,7 +292,7 @@ layout:
       - Line:
           color: green
           yIntercept: 4
-          slope: params.m
+          slope: params.m**
 
           # solution
           drag:

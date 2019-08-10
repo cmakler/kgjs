@@ -206,7 +206,7 @@ You can also move an entire curve in the x or y direction. Let's try to change t
 <div width="500" height="425" class="codePreview">
 
 params:
-- name: yintercept
+- name: yIntercept
   value: 1
   min: 0
   max: 5
@@ -217,16 +217,14 @@ layout:
       objects:
       - Curve:
           univariateFunction:
-            fn: params.yintercept + (x)^2
+            fn: params.yIntercept + (x)^2
             ind: x
           color: red
           label:
-            text: "`f(x) = ${params.yintercept.toFixed(2)} + x^2`"
+            text: "`f(x) = ${params.yIntercept.toFixed(2)} + x^2`"
             x: 2
           drag:
-          - directions: y
-            param: yintercept
-            expression: params.yintercept + drag.dy
+            - vertical: yIntercept
 
 </div>
 

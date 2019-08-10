@@ -149,4 +149,24 @@ Let's take a look at our new `drag` components:
 
 Let's talk more about the `expression`. Above, we know that slope = rise/run, where 'rise = new y - old y' and 'run = new x - old x'. The rise of the line is based on `drag.y - 4`, the new y-position, and the run is based on `drag.x - 0` or just `drag.x`, the new x-position. `drag.y` and `drag.x` represent the new position of the object. Other times, we will use `drag.dy` and `drag.dx` which refer to the _change_ in the y- and x-positions, respectively, rather than their absolute new position. For example, if you dragged a point from [2,2] to [2,3], `drag.y` would be 3 while `drag.dy` would be 1. 
 
+Here is another example of a more complicated drag function, dragging a point around a circle of radius 3:
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- {name: theta, value: 0, min: 0, max: 360, round: 5}
+
+calcs:
+  xCoord: "3*(math.cos(params.theta))"
+  yCoord: "3*(math.sin(params.theta))"
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Point: 
+          coordinates: [xCoord, yCoord]
+          
+          
+</div>
+
 More examples of dragging behavior will be shown in the pages on points, lines, and curves. For now, keep note of the information above and see it applied elsewhere!
