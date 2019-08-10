@@ -208,6 +208,9 @@ module KG {
                 if (data.markers.length > 0) {
                     data.markers.forEach(function (def: MarkerDefinition) {
                         const markerURL = randomString(10);
+
+                        //only creates a color once; cannot be a function or if-then for now
+                        const color = view.model.currentColors.hasOwnProperty(def.color) ? view.model.currentColors[def.color] : view.model.eval(def.color);
                         const markerLayer = defLayer.append('marker')
                             .attr('id', markerURL)
                             .attr("refX", def.refX)
@@ -223,7 +226,7 @@ module KG {
 
                         markerLayer.append("svg:path")
                             .attr("d", def.arrowPath)
-                            .attr("fill", view.model.eval(def.color));
+                            .attr("fill", color);
                         defURLS[def.name] = markerURL;
                     });
                 }

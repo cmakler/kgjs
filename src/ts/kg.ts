@@ -90,7 +90,7 @@ window.addEventListener("load", function () {
 
                     views.push(new KG.View(d, j));
                 } catch (e) {
-                    console.log(e);
+                    console.log('Error reading YAML: ', e.message)
                 }
             }
 

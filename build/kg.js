@@ -5248,6 +5248,8 @@ var KG;
                 if (data.markers.length > 0) {
                     data.markers.forEach(function (def) {
                         var markerURL = KG.randomString(10);
+                        //only creates a color once; cannot be a function or if-then for now
+                        var color = view.model.currentColors.hasOwnProperty(def.color) ? view.model.currentColors[def.color] : view.model.eval(def.color);
                         var markerLayer = defLayer_1.append('marker')
                             .attr('id', markerURL)
                             .attr("refX", def.refX)
@@ -5261,7 +5263,7 @@ var KG;
                             .attr("fill", "white");
                         markerLayer.append("svg:path")
                             .attr("d", def.arrowPath)
-                            .attr("fill", view.model.eval(def.color));
+                            .attr("fill", color);
                         defURLS[def.name] = markerURL;
                     });
                 }
@@ -6657,8 +6659,13 @@ var KG;
             label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
-                console.log('drawing label with text ', label.text);
-                katex.render(label.text.toString(), label.rootElement.node());
+                //console.log('drawing label with text ',label.text);
+                try {
+                    katex.render(label.text.toString(), label.rootElement.node());
+                }
+                catch (e) {
+                    console.log("Error rendering KaTeX: ", label.text);
+                }
             }
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');
@@ -7030,7 +7037,7 @@ window.addEventListener("load", function () {
                     views.push(new KG.View(d, j));
                 }
                 catch (e) {
-                    console.log(e);
+                    console.log('Error reading YAML: ', e.message);
                 }
             }
             // first look to see if there's a definition in the KG.viewData object
