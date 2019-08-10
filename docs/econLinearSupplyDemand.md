@@ -77,6 +77,7 @@ layout:
     graph:
       objects:
       - EconLinearEquilibrium:
+          name: ourEquilibrium
           demand: 
             name: ourDemand
             xIntercept: params.demandIntercept
@@ -88,10 +89,9 @@ layout:
             yIntercept: 1
             slope: 1
           equilibrium:
-            name: ourEquilibrium
             droplines:
-              vertical: "`Q_0 = ${calcs.ourEquilibrium.Q}`"
-              horizontal: "`P_0 = ${calcs.ourEquilibrium.P}`"
+              vertical: "`Q_0 = ${calcs.ourEquilibrium.Q.toFixed(2)}`"
+              horizontal: "`P_0 = ${calcs.ourEquilibrium.P.toFixed(2)}`"
           
 
 
