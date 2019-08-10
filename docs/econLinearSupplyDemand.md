@@ -3,7 +3,69 @@ layout: documentation
 title: Econ Linear Supply and Demnad
 ---
 
-A line can be generated in a number of ways. First, let's look at a line defined by two points:
+KGJS includes many economics-specific features, including linear supply, linear demand, and equilbrium. Let's take a look at how to generate a linear demand curve, which is similar to a line: 
+
+<div width="500" height="425" class="codePreview">
+    
+schema: EconSchema
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - EconLinearDemand:
+            name: ourDemand
+            xIntercept: 10
+            invSlope: -1
+
+
+</div>
+
+Note that naming the `EconLinearDemand` curve is optional, but will be helpful later on when designating multiple equilibria. The demand curve here is defined by an x-intercept and an invSlope (the same as the slope, but different notation). Similarly, the linear supply curve should be defined instead using the y-intercept and slope: 
+
+<div width="500" height="425" class="codePreview">
+    
+schema: EconSchema
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - EconLinearSupply:
+            name: ourSupply
+            yIntercept: 1
+            slope: 1
+
+
+</div>
+
+Let's combine the demand and supply curves into an equilibrium object: 
+
+<div width="500" height="425" class="codePreview">
+    
+schema: EconSchema
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - EconLinearEquilibrium:
+          demand: 
+            name: ourDemand
+            xIntercept: 10
+            invSlope: -1
+          supply: 
+            name: ourSupply
+            yIntercept: 1
+            slope: 1
+          equilibrium:
+            droplines:
+              vertical: Q_0
+              horizontal: P_0
+
+
+</div>
+
+As you can see, the `EconLinearEquilibrium` object automatically calculates an equilibrium point when you add the attribute `equilibrium`. We can label the droplines however we wish; here, we've chosen label as Q0 and P0. 
+
+
 
 <div width="500" height="800" class="codePreview">
     
