@@ -65,6 +65,39 @@ layout:
 
 As you can see, the `EconLinearEquilibrium` object automatically calculates an equilibrium point when you add the attribute `equilibrium`. We can label the droplines however we wish; here, we've chosen label as Q0 and P0. 
 
+Of course, we will often want to see what happens when we _shift_ supply or demand and how the new equilibrium is achieved. Let's see how to do this with a change in demand: 
+
+<div width="500" height="425" class="codePreview">
+    
+schema: EconSchema
+params: 
+    - {name: demandIntercept, value: 5, min: 2, max: 10, round: 0.1}
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - EconLinearEquilibrium:
+          demand: 
+            name: ourDemand
+            xIntercept: params.demandIntercept
+            invSlope: -1
+            drag: 
+            - horizontal: demandIntercept
+          supply: 
+            name: ourSupply
+            yIntercept: 1
+            slope: 1
+          equilibrium:
+            name: ourEquilibrium
+            droplines:
+              vertical: "`Q_0 = ${calcs.ourEquilibrium.Q}`"
+              horizontal: "`P_0 = ${calcs.ourEquilibrium.P}`"
+          
+
+
+</div>
+
+BALh
 
 
 <div width="500" height="800" class="codePreview">
