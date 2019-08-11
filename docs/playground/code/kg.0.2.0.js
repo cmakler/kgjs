@@ -5321,8 +5321,8 @@ var KG;
                 if (data.markers.length > 0) {
                     data.markers.forEach(function (def) {
                         var markerURL = KG.randomString(10);
-                        //
-                        var color = view.model.currentColors.hasOwnProperty(def.color) ? view.model.currentColors[def.color] : view.model.eval(def.color);
+                        def.url = markerURL;
+                        defURLS[def.name] = markerURL;
                         var markerLayer = defLayer_1.append('marker')
                             .attr('id', markerURL)
                             .attr("refX", def.refX)
@@ -5331,13 +5331,8 @@ var KG;
                             .attr("markerHeight", 13)
                             .attr("orient", "auto")
                             .attr("markerUnits", "userSpaceOnUse");
-                        markerLayer.append("svg:path")
-                            .attr("d", def.maskPath)
-                            .attr("fill", "white");
-                        markerLayer.append("svg:path")
-                            .attr("d", def.arrowPath)
-                            .attr("fill", color);
-                        defURLS[def.name] = markerURL;
+                        view.addViewToDef(def, markerLayer);
+                        new KG.Marker(def);
                     });
                 }
                 // add layers of objects
@@ -5566,6 +5561,36 @@ var KG;
         return ViewObject;
     }(KG.UpdateListener));
     KG.ViewObject = ViewObject;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var Marker = /** @class */ (function (_super) {
+        __extends(Marker, _super);
+        function Marker(def) {
+            var _this = this;
+            KG.setProperties(def, 'constants', ['maskPath', 'arrowPath']);
+            KG.setProperties(def, 'updatables', ['color']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Marker.prototype.draw = function (layer) {
+            var m = this;
+            layer.append("svg:path")
+                .attr("d", m.maskPath)
+                .attr("fill", "white");
+            m.arrowElement = layer.append("svg:path")
+                .attr("d", m.arrowPath);
+            return m;
+        };
+        Marker.prototype.redraw = function () {
+            var m = this;
+            console.log('redrawing marker', m);
+            m.arrowElement.attr("fill", m.color);
+            return m;
+        };
+        return Marker;
+    }(KG.ViewObject));
+    KG.Marker = Marker;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -7061,6 +7086,7 @@ var KG;
 /// <reference path="view/view.ts"/>
 /// <reference path="view/scale.ts" />
 /// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/marker.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />

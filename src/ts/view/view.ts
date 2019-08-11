@@ -12,14 +12,6 @@ module KG {
         paths: TypeAndDef[];
     }
 
-    export interface MarkerDefinition {
-        name: string;
-        refX: number;
-        maskPath: string;
-        arrowPath: string;
-        color: string;
-    }
-
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
@@ -208,9 +200,9 @@ module KG {
                 if (data.markers.length > 0) {
                     data.markers.forEach(function (def: MarkerDefinition) {
                         const markerURL = randomString(10);
+                        def.url = markerURL;
+                        defURLS[def.name] = markerURL;
 
-                        //only creates a color once; cannot be a function or if-then for now
-                        const color = view.model.currentColors.hasOwnProperty(def.color) ? view.model.currentColors[def.color] : view.model.eval(def.color);
                         const markerLayer = defLayer.append('marker')
                             .attr('id', markerURL)
                             .attr("refX", def.refX)
@@ -220,14 +212,8 @@ module KG {
                             .attr("orient", "auto")
                             .attr("markerUnits", "userSpaceOnUse");
 
-                        markerLayer.append("svg:path")
-                            .attr("d", def.maskPath)
-                            .attr("fill", "white");
-
-                        markerLayer.append("svg:path")
-                            .attr("d", def.arrowPath)
-                            .attr("fill", color);
-                        defURLS[def.name] = markerURL;
+                        view.addViewToDef(def,markerLayer);
+                        new Marker(def);
                     });
                 }
 

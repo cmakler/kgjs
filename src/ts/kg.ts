@@ -26,6 +26,7 @@
 /// <reference path="view/scale.ts" />
 
 /// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/marker.ts" />
 /// <reference path="view/viewObjects/segment.ts" />
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
