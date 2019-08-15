@@ -29,6 +29,39 @@ layout:
 
 </div>
 
+The key to an interactive graph, of course, is interactivity: that is, the ability of the user to change things. KGJS handles this by defining a set of parameters that the user can change, and then making it easy to adjust the parameters by dragging objects or using sliders:
+
+<div width="500" height="410" class="codePreview">
+params:
+
+- name: blueX    # x-coordinate of blue point
+  value: 6
+
+- name: redY     # y-coordinate of red point
+  value: 3
+  min: 2
+  max: 6
+  round: 0.25
+    
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Point:
+          coordinates: [params.blueX, 4]
+          draggable: true
+      - Point:
+          coordinates: [3, params.redY]
+          color: red
+          draggable: true
+
+</div>
+
+Notice that the min, max, and round attributes of `blueX` aren't set; KGJS will set sensible defaults (round to the nearest integer, don't allow dragging off the graph) whenever possible. By contrast, these attributes _are_ set for `redY`, so the dot snaps to every 0.25 instead of every integer.
+
+This documentation starts of by describing the way in which user-changeable parameters are used; it then describes generic graph objects like points, lines, and curves; and finally some specialty macros designed for creating graphs for economics.
+
+
 Getting started:
 * [parmameters and calculations](param.html)
 * [drag](drag.html)
