@@ -21,6 +21,7 @@ module KG {
                 strokeWidth: 10,
                 opacity: 0.2
             });
+            setProperties(def, 'constants', ['level']);
             super(def);
             def.fn = setDefaults(def.fn, {
                 model: def.model,
@@ -33,7 +34,7 @@ module KG {
             let c = this;
             c.rootElement = layer.append('g');
             c.path = c.rootElement.append('path')
-                .attr("fill", "none")
+                .attr("fill", "lightsteelblue")
                 .attr("stroke", "lightsteelblue")
 
 
@@ -42,36 +43,39 @@ module KG {
 
         redraw() {
             let c = this;
-            // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
-            var n = 200, m = 200, values = new Array(n * m);
-            for (var j = 0, k = 0; j < m; ++j) {
-                for (var i = 0; i < n; ++i, ++k) {
-                    values[k] = Math.min(i,j);
+            console.log('v14');
+            console.log(c.fn);
+            const xMax = c.xScale.domainMax,
+                yMax = c.yScale.domainMax;
+            if (undefined != c.fn) {
+                var n = 110, m = 110, values = new Array(n * m);
+                for (var j = 0.5, k = 0; j < m; ++j) {
+                    for (var i = 0.5; i < n; ++i, ++k) {
+                        let x = i * xMax * 1.1 / n,
+                            y = j * yMax * 1.1 / m;
+                        values[k] = c.fn.eval(x, y);
+                    }
                 }
+
+                let transform = ({type, value, coordinates}) => {
+                    return {
+                        type, value, coordinates: coordinates.map(rings => {
+                            return rings.map(points => {
+                                return points.map(([x, y]) => ([c.xScale.scale(x * xMax / 100), c.yScale.scale(y * yMax / 100)]));
+                            });
+                        })
+                    };
+                }
+
+                const p = d3.geoPath();
+
+                // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+                var contours = d3.contours().size([n, m]).contour(values, c.level);
+
+                c.path.attr("d", p(transform(contours)));
+
             }
 
-            let transform = ({type, value, coordinates}) => {
-                return {
-                    type, value, coordinates: coordinates.map(rings => {
-                        return rings.map(points => {
-                            return points.map(([x, y]) => ([c.xScale.scale(x), c.yScale.scale(y)]));
-                        });
-                    })
-                };
-            }
-
-            const p = d3.geoPath();
-
-            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
-            var contours = d3.contours().size([n, m]).contour(values,40);
-
-            console.log(contours.coordinates[0][0]);
-
-            contours = transform(contours);
-
-            console.log(contours.coordinates[0][0]);
-
-            c.path.attr("d", p(contours));
 
             return c;
         }

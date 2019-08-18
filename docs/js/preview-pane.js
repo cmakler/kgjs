@@ -36,11 +36,13 @@ function createCodeMirror(def) {
 
     newMirror.mirror = srcCodeMirror;
     newMirror.update = function () {
+        let authorYAML;
         try {
-            const authorYAML = jsyaml.safeLoad(newMirror.mirror.getValue());
-            new KG.View(newMirror.dest, authorYAML);
+            authorYAML = jsyaml.safeLoad(newMirror.mirror.getValue());
         } catch (e) {
             console.log('Error reading YAML: ', e.message)
+        } finally {
+            new KG.View(newMirror.dest, authorYAML);
         }
         return newMirror;
     }

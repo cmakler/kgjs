@@ -70,6 +70,7 @@ Graph objects:
 * [point](point.html)
 * [line](line.html)
 * [curve](curve.html)
+* [contours](contour.html)
 
 Econ Stuff: 
 * [Econ Linear Supply, Demand, Equilibrium](econLinearSupplyDemand.html)

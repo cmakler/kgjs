@@ -81,17 +81,18 @@ window.addEventListener("load", function () {
             // if there is no src attribute
             if (!src) {
                 console.log('loading yaml');
+                let j;
                 try {
-
                     // read inner HTML of div as YAML
                     const y = jsyaml.safeLoad(d.innerHTML);
 
                     // convert it to JSON, un-escaping HTML <, >, and & signs
-                    const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                    j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
 
-                    views.push(new KG.View(d, j));
                 } catch (e) {
                     console.log('Error reading YAML: ', e.message)
+                } finally {
+                    views.push(new KG.View(d, j));
                 }
             }
 

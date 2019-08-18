@@ -5947,6 +5947,7 @@ var KG;
                 strokeWidth: 10,
                 opacity: 0.2
             });
+            KG.setProperties(def, 'constants', ['level']);
             _this = _super.call(this, def) || this;
             def.fn = KG.setDefaults(def.fn, {
                 model: def.model,
@@ -5959,39 +5960,41 @@ var KG;
             var c = this;
             c.rootElement = layer.append('g');
             c.path = c.rootElement.append('path')
-                .attr("fill", "none")
+                .attr("fill", "lightsteelblue")
                 .attr("stroke", "lightsteelblue");
             return c.addClipPathAndArrows();
         };
         Contour.prototype.redraw = function () {
             var c = this;
-            // Populate a grid of n×m values where -2 ≤ x ≤ 2 and -2 ≤ y ≤ 1.
-            var n = 200, m = 200, values = new Array(n * m);
-            for (var j = 0, k = 0; j < m; ++j) {
-                for (var i = 0; i < n; ++i, ++k) {
-                    values[k] = Math.min(i, j);
+            console.log('v14');
+            console.log(c.fn);
+            var xMax = c.xScale.domainMax, yMax = c.yScale.domainMax;
+            if (undefined != c.fn) {
+                var n = 110, m = 110, values = new Array(n * m);
+                for (var j = 0.5, k = 0; j < m; ++j) {
+                    for (var i = 0.5; i < n; ++i, ++k) {
+                        var x = i * xMax * 1.1 / n, y = j * yMax * 1.1 / m;
+                        values[k] = c.fn.eval(x, y);
+                    }
                 }
-            }
-            var transform = function (_a) {
-                var type = _a.type, value = _a.value, coordinates = _a.coordinates;
-                return {
-                    type: type, value: value, coordinates: coordinates.map(function (rings) {
-                        return rings.map(function (points) {
-                            return points.map(function (_a) {
-                                var x = _a[0], y = _a[1];
-                                return ([c.xScale.scale(x), c.yScale.scale(y)]);
+                var transform = function (_a) {
+                    var type = _a.type, value = _a.value, coordinates = _a.coordinates;
+                    return {
+                        type: type, value: value, coordinates: coordinates.map(function (rings) {
+                            return rings.map(function (points) {
+                                return points.map(function (_a) {
+                                    var x = _a[0], y = _a[1];
+                                    return ([c.xScale.scale(x * xMax / 100), c.yScale.scale(y * yMax / 100)]);
+                                });
                             });
-                        });
-                    })
+                        })
+                    };
                 };
-            };
-            var p = d3.geoPath();
-            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
-            var contours = d3.contours().size([n, m]).contour(values, 40);
-            console.log(contours.coordinates[0][0]);
-            contours = transform(contours);
-            console.log(contours.coordinates[0][0]);
-            c.path.attr("d", p(contours));
+                var p = d3.geoPath();
+                // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+                var contours = d3.contours().size([n, m]).contour(values, c.level);
+                c.path.attr("d", p(transform(contours)));
+            }
             return c;
         };
         return Contour;
@@ -7055,15 +7058,18 @@ window.addEventListener("load", function () {
             // if there is no src attribute
             if (!src) {
                 console.log('loading yaml');
+                var j = void 0;
                 try {
                     // read inner HTML of div as YAML
                     var y = jsyaml.safeLoad(d.innerHTML);
                     // convert it to JSON, un-escaping HTML <, >, and & signs
-                    var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
-                    views.push(new KG.View(d, j));
+                    j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                 }
                 catch (e) {
                     console.log('Error reading YAML: ', e.message);
+                }
+                finally {
+                    views.push(new KG.View(d, j));
                 }
             }
             // first look to see if there's a definition in the KG.viewData object
