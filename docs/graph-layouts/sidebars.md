@@ -43,8 +43,13 @@ layout:
       
 </div>
 
-Available graphs with sidebars are:
+Available layouts with sidebars are:
 
+* OneWideGraphPlusSidebar
+* TwoVerticalGraphsPlusSidebar
+* TwoHorizontalGraphsPlusSidebar
+
+3D graphs with sidebars will be coming soon...
 
 
 ## Layouts with Multiple Controls
@@ -65,9 +70,9 @@ layout:
       xAxis: {title: Right X Axis}
       yAxis: {title: Right Y Axis}
     rightControls:
-      title: Left Graph
+      title: Right Graph
       description: Description of right graph
       
 </div>
 
-The ThreeHorizontalGraphs also has this capability; see [this example](https://www.econgraphs.org/graphs/micro/equilibrium/partial_equilibrium/total_surplus) of how these two layouts work in practice.
+The ThreeHorizontalGraphs also has this capability; see [this example](https://www.econgraphs.org/graphs/micro/equilibrium/partial_equilibrium/total_surplus).

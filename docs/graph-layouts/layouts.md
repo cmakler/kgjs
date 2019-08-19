@@ -15,9 +15,9 @@ layout:
   OneGraph:
     graph: 
       xAxis:
-        title: Left X Axis
+        title: X Axis
       yAxis:
-        title: Left Y Axis
+        title: Y Axis
    
       
 </div>
@@ -30,10 +30,10 @@ layout:
   OneWideGraph:
     graph: 
       xAxis:
-        title: Left X Axis
+        title: X Axis
         ticks: 10
       yAxis:
-        title: Left Y Axis
+        title: Y Axis
         max: 5
       
 </div>
@@ -96,9 +96,9 @@ layout:
 </div>
 
 There are also layouts for larger numbers of graphs:
-* ThreeHorizontalGraphs takes children `leftGraph`, `middleGraph`, and `rightGraph`.
+* ThreeHorizontalGraphs takes children `leftGraph`, `middleGraph`, and `rightGraph`. Here's an [example](https://www.econgraphs.org/graphs/micro/equilibrium/partial_equilibrium/summing_two_individuals_linear_demands).
 * SquarePlusTwoVerticalGraphs takes children `bigGraph`, `topGraph`, and `bottomGraph`. Here's an [example](https://www.econgraphs.org/graphs/micro/equilibrium/general_equilibrium/ppf_and_production_functions).
-* FourGraphs takes children `topLeftGraph`, `topRightGraph`, `bottomLeftGraph`, and `bottomRightGraph`.
+* FourGraphs takes children `topLeftGraph`, `topRightGraph`, `bottomLeftGraph`, and `bottomRightGraph`. I've never actually used this one! :)
 These all do basically what you would imagine.
 
 There are some additional specialty layouts for economics, which handle things like game matrices and Edgeworth Boxes.
