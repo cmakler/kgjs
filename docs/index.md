@@ -1,6 +1,6 @@
 ---
 layout: documentation
-title: KGJS
+title: KineticGraphs JavaScript Engine (KGJS)
 ---
 
 KGJS is a JavaScript engine that takes a description of an interactive graph and renders that graph in a browser.
@@ -59,18 +59,4 @@ layout:
 
 Notice that the min, max, and round attributes of `blueX` aren't set; KGJS will set sensible defaults (round to the nearest integer, don't allow dragging off the graph) whenever possible. By contrast, these attributes _are_ set for `redY`, so the dot snaps to every 0.25 instead of every integer.
 
-This documentation starts of by describing the way in which user-changeable parameters are used; it then describes generic graph objects like points, lines, and curves; and finally some specialty macros designed for creating graphs for economics.
-
-
-Getting started:
-* [parmameters and calculations](param.html)
-* [drag](drag.html)
-
-Graph objects:
-* [point](point.html)
-* [line](line.html)
-* [curve](curve.html)
-* [contours](contour.html)
-
-Econ Stuff: 
-* [Econ Linear Supply, Demand, Equilibrium](econLinearSupplyDemand.html)
+Use the navigation links to the left to learn about drawing graph objects, defining user interactions, and creating complex layouts with multiple graphs.

@@ -268,6 +268,16 @@ label.margin-toggle:not(.sidenote-number) { display: none; }
 
 
 
+body.documentation {
+    width: 100%;
+    padding-left: 20px;
+    max-width: 1200px;
+}
+
+body.documentation p {
+    width: 1000px;
+}
+
 div.kg-container text {
     cursor: default;
     -webkit-user-select: none;
@@ -315,6 +325,7 @@ input {
 
 table.gameMatrix {
   border-collapse: collapse;
+    width: 100%;
 }
 
 table.gameMatrix tr td {
@@ -346,5 +357,61 @@ table.gameMatrix tr td.player2.payoff {
 
 table.gameMatrix tr td.strategy {
     font-weight: bolder;
+}
+
+.kg-container:fullscreen {
+    background-color: white;
+}
+
+.contents {
+    position: fixed;
+    width: 180px;
+    top: 10px;
+    left: 10px;
+    border-right: thin solid gray;
+    padding: 20px;
+}
+
+.kgjs-title {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 36px;
+    position: absolute;
+    left: 72px;
+    top: 18px;
+    letter-spacing: 0px;
+    font-weight: 500;
+    margin-block-end: 10px;
+    color: #666666;
+}
+
+
+.contents-category {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #959595;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+}
+
+.contents-category a {
+    background: none;
+}
+
+.contents p {
+    margin-left: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+.contents p a {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    padding: 3px;
+    background: none;
+    color: rgb(31, 119, 180);
 }
 

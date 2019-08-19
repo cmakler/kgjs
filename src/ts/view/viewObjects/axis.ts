@@ -35,6 +35,7 @@ module KG {
         draw(layer) {
             let a = this;
             a.rootElement = layer.append('g').attr('class', 'axis');
+            console.log('foo');
             return a;
         }
 

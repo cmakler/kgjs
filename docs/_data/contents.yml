@@ -1,0 +1,25 @@
+- name: Graph Objects
+  folder: graph-objects
+  pages:
+    - title: Points
+      url: point
+    - title: Lines
+      url: line
+    - title: Curves
+      url: curve
+
+- name: User Interactions
+  folder: user-interactions
+  pages:
+    - title: Parameters
+      url: params
+    - title: Calculations
+      url: calcs
+    - title: Dragging
+      url: drag
+
+- name: Economics
+  folder: econ
+  pages:
+    - title: Supply and Demand
+      url: linear-supply-demand

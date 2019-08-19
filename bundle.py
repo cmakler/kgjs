@@ -3,18 +3,29 @@ import codecs
 
 __author__ = 'cmakler'
 
+js_directories = [
+    'build/bundled/',
+    'docs/js/',
+    'docs/playground/code/',
+    '../electric-book/assets/js/',
+    '../bh-textbook/code/',
+    '../core-interactives/code/',
+    '../econgraphs/static/js/'
+]
+
+css_directories = [
+    'build/bundled/',
+    'docs/css/',
+    'docs/playground/code/',
+    '../bh-textbook/code/',
+    '../core-interactives/code/',
+    '../econgraphs/static/css/'
+]
+
 bundles = [
     {
         "name": "kg.0.2.0.js",
-        "dest_directories": [
-            'build/bundled/',
-            'docs/js/',
-            'docs/playground/code/',
-            '../electric-book/assets/js/',
-            '../bh-textbook/code/',
-            '../core-interactives/code/',
-            '../econgraphs/static/js/'
-        ],
+        "dest_directories": js_directories,
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
             "src/lib/katex/katex.min.js",
@@ -25,15 +36,15 @@ bundles = [
         ]
     },
     {
+        "name": "kg.js.map",
+        "dest_directories": js_directories,
+        "order": [
+            "build/kg.js.map"
+        ]
+    },
+    {
         "name": "kg.0.2.0.css",
-        "dest_directories": [
-            'build/bundled/',
-            'docs/css/',
-            'docs/playground/code/',
-            '../bh-textbook/code/',
-            '../core-interactives/code/',
-            '../econgraphs/static/css/'
-        ],
+        "dest_directories": css_directories,
         "order": [
             "build/lib/kg-lib.css",
             "build/kg.css"
@@ -41,7 +52,7 @@ bundles = [
     },
     {
         "name": "kg-tufte.0.2.0.css",
-        "dest_directories": ['build/bundled/'],
+        "dest_directories": css_directories,
         "order": [
             "build/lib/kg-tufte.css",
             "build/kg.css"

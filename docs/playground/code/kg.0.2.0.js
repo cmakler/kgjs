@@ -402,6 +402,7 @@ var KGAuthor;
                 brown: 'd3.schemeCategory10[5]',
                 magenta: 'd3.schemeCategory10[6]',
                 grey: 'd3.schemeCategory10[7]',
+                gray: 'd3.schemeCategory10[7]',
                 olive: 'd3.schemeCategory10[8]' //#637939
             };
             for (var color in def.colors) {
@@ -1820,6 +1821,50 @@ var KGAuthor;
         return [x, y];
     }
     KGAuthor.lineIntersection = lineIntersection;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def, graph) {
+            var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.blue',
+                opacity: 0.2
+            });
+            def = KGAuthor.setFillColor(def);
+            def = KGAuthor.setStrokeColor(def);
+            _this = _super.call(this, def, graph) || this;
+            var c = _this;
+            c.type = 'Circle';
+            c.layer = def.layer || 0;
+            c.extractCoordinates();
+            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
+                def.drag = [];
+                if (def.x == "params." + KGAuthor.paramName(def.x)) {
+                    def.drag.push({ horizontal: KGAuthor.paramName(def.x) });
+                }
+                if (def.y == "params." + KGAuthor.paramName(def.y)) {
+                    def.drag.push({ vertical: KGAuthor.paramName(def.y) });
+                }
+            }
+            if (def.hasOwnProperty('label')) {
+                var labelDef = KGAuthor.copyJSON(def);
+                delete labelDef.label;
+                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(labelDef, {
+                    fontSize: 10,
+                    color: def.color,
+                    bgcolor: null
+                });
+                c.subObjects.push(new KGAuthor.Label(labelDef, graph));
+            }
+            return _this;
+        }
+        return Circle;
+    }(KGAuthor.GraphObject));
+    KGAuthor.Circle = Circle;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -4420,6 +4465,7 @@ var KGAuthor;
 /// <reference path="graphObjects/grid.ts"/>
 /// <reference path="graphObjects/curve.ts"/>
 /// <reference path="graphObjects/line.ts"/>
+/// <reference path="graphObjects/circle.ts"/>
 /// <reference path="graphObjects/point.ts"/>
 /// <reference path="graphObjects/segment.ts"/>
 /// <reference path="graphObjects/arrow.ts"/>
@@ -5758,6 +5804,7 @@ var KG;
         Axis.prototype.draw = function (layer) {
             var a = this;
             a.rootElement = layer.append('g').attr('class', 'axis');
+            console.log('foo');
             return a;
         };
         Axis.prototype.redraw = function () {
@@ -5829,6 +5876,48 @@ var KG;
         return Point;
     }(KG.ViewObject));
     KG.Point = Point;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'colors.blue',
+                opacity: 1,
+                stroke: 'colors.blue',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 1
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Circle.prototype.draw = function (layer) {
+            var c = this;
+            c.rootElement = layer.append('circle');
+            return c.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Circle.prototype.redraw = function () {
+            var c = this;
+            c.rootElement.attr('cx', c.xScale.scale(c.x));
+            c.rootElement.attr('cy', c.yScale.scale(c.y));
+            c.rootElement.attr('r', c.xScale.scale(c.r) - c.xScale.scale(0));
+            c.rootElement.style('fill', c.fill);
+            c.rootElement.style('fill-opacity', c.opacity);
+            c.rootElement.style('stroke', c.stroke);
+            c.rootElement.style('stroke-width', c.strokeWidth + "px");
+            c.rootElement.style('stroke-opacity', c.strokeOpacity);
+            return c;
+        };
+        return Circle;
+    }(KG.ViewObject));
+    KG.Circle = Circle;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -7094,6 +7183,7 @@ var KG;
 /// <reference path="view/viewObjects/curve.ts" />
 /// <reference path="view/viewObjects/axis.ts" />
 /// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/circle.ts" />
 /// <reference path="view/viewObjects/rectangle.ts" />
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/viewObjects/ggbObject.ts" />

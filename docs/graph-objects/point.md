@@ -16,7 +16,6 @@ layout:
       - Point:
           coordinates: [6,4]
 
-
 </div>
 
 ## Droplines

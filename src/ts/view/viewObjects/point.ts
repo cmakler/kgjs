@@ -5,6 +5,7 @@ module KG {
     export interface PointDefinition extends ViewObjectDefinition {
         x: any;
         y: any;
+        r?: any;
     }
 
     export class Point extends ViewObject {

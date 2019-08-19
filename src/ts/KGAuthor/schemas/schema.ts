@@ -17,6 +17,7 @@ module KGAuthor {
                 brown: 'd3.schemeCategory10[5]',    //#8c6d31
                 magenta: 'd3.schemeCategory10[6]',  //#7b4173
                 grey: 'd3.schemeCategory10[7]',     //#636363
+                gray: 'd3.schemeCategory10[7]',     //#636363
                 olive: 'd3.schemeCategory10[8]'     //#637939
             };
 

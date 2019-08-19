@@ -33,6 +33,7 @@
 /// <reference path="graphObjects/grid.ts"/>
 /// <reference path="graphObjects/curve.ts"/>
 /// <reference path="graphObjects/line.ts"/>
+/// <reference path="graphObjects/circle.ts"/>
 /// <reference path="graphObjects/point.ts"/>
 /// <reference path="graphObjects/segment.ts"/>
 /// <reference path="graphObjects/arrow.ts"/>

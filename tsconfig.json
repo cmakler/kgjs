@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "sourceMap": true,
+        "sourceRoot": "/Users/cmakler/code/applications/kgjs/src/ts",
         "outFile": "build/kg.js"
     },
     "files": [
