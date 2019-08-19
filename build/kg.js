@@ -543,7 +543,7 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'];
-            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 0.75, width = 0.3, controlHeight = 0.25;
+            var leftX = 0.15, rightX = 0.65, topY = 0.1, bottomY = 0.9, width = 0.3, controlHeight = 0.25;
             var includeControls = false;
             console.log('layout: ', l);
             if (def.hasOwnProperty('leftControls')) {
