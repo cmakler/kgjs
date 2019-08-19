@@ -4939,7 +4939,9 @@ var KG;
     var MultivariateFunction = /** @class */ (function (_super) {
         __extends(MultivariateFunction, _super);
         function MultivariateFunction(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def.samplePoints = 100;
+            _this = _super.call(this, def) || this;
             _this.fnStringDef = def.fn;
             _this.domainConditionStringDef = def.domainCondition;
             return _this;
@@ -6032,31 +6034,27 @@ var KG;
         function Contour(def) {
             var _this = this;
             KG.setDefaults(def, {
-                fill: "#666666",
-                strokeWidth: 10,
-                opacity: 0.2
+                opacity: 0.2,
+                stroke: "grey",
+                fill: "none"
             });
-            KG.setProperties(def, 'constants', ['level']);
+            KG.setProperties(def, 'updatables', ['level']);
             _this = _super.call(this, def) || this;
-            def.fn = KG.setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            var fnDef = {
+                fn: def.fn,
+                model: def.model
+            };
+            _this.fn = new KG.MultivariateFunction(fnDef).update(true);
             return _this;
         }
         Contour.prototype.draw = function (layer) {
             var c = this;
             c.rootElement = layer.append('g');
-            c.path = c.rootElement.append('path')
-                .attr("fill", "lightsteelblue")
-                .attr("stroke", "lightsteelblue");
+            c.path = c.rootElement.append('path');
             return c.addClipPathAndArrows();
         };
         Contour.prototype.redraw = function () {
             var c = this;
-            console.log('v14');
-            console.log(c.fn);
             var xMax = c.xScale.domainMax, yMax = c.yScale.domainMax;
             if (undefined != c.fn) {
                 var n = 110, m = 110, values = new Array(n * m);
@@ -6083,6 +6081,11 @@ var KG;
                 // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
                 var contours = d3.contours().size([n, m]).contour(values, c.level);
                 c.path.attr("d", p(transform(contours)));
+                c.path.style('fill', c.fill);
+                c.path.style('opacity', c.opacity);
+                c.path.style('stroke', c.stroke);
+                c.path.style('stroke-width', c.strokeWidth);
+                c.path.style('stroke-opacity', c.strokeOpacity);
             }
             return c;
         };
@@ -7193,4 +7196,3 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
-//# sourceMappingURL=kg.js.map

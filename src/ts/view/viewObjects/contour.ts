@@ -3,8 +3,8 @@
 module KG {
 
     export interface ContourDefinition extends ViewObjectDefinition {
-        fn?: MultivariateFunctionDefinition;
-        level?: any;
+        fn: string;
+        level: any;
         areaAbove?: AreaDefinition;
         areaBelow?: AreaDefinition;
     }
@@ -17,34 +17,28 @@ module KG {
 
         constructor(def: ContourDefinition) {
             setDefaults(def, {
-                fill: "#666666",
-                strokeWidth: 10,
-                opacity: 0.2
+                opacity: 0.2,
+                stroke: "grey",
+                fill: "none"
             });
-            setProperties(def, 'constants', ['level']);
+            setProperties(def, 'updatables', ['level']);
             super(def);
-            def.fn = setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            this.fn = new MultivariateFunction(def.fn).update(true);
+            const fnDef = {
+                fn: def.fn,
+                model: def.model
+            };
+            this.fn = new MultivariateFunction(fnDef).update(true);
         }
 
         draw(layer) {
             let c = this;
             c.rootElement = layer.append('g');
-            c.path = c.rootElement.append('path')
-                .attr("fill", "lightsteelblue")
-                .attr("stroke", "lightsteelblue")
-
-
+            c.path = c.rootElement.append('path');
             return c.addClipPathAndArrows();
         }
 
         redraw() {
             let c = this;
-            console.log('v14');
-            console.log(c.fn);
             const xMax = c.xScale.domainMax,
                 yMax = c.yScale.domainMax;
             if (undefined != c.fn) {
@@ -72,7 +66,12 @@ module KG {
                 // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
                 var contours = d3.contours().size([n, m]).contour(values, c.level);
 
-                c.path.attr("d", p(transform(contours)));
+                c.path.attr("d", p(transform(contours)))
+                c.path.style('fill', c.fill);
+                c.path.style('opacity', c.opacity);
+                c.path.style('stroke', c.stroke);
+                c.path.style('stroke-width', c.strokeWidth);
+                c.path.style('stroke-opacity', c.strokeOpacity);
 
             }
 

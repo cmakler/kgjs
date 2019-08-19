@@ -17,6 +17,8 @@
       url: line
     - title: Curves
       url: curve
+    - title: Contours
+      url: contour
 
 - name: User Interactions
   folder: user-interactions

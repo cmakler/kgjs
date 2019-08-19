@@ -6,7 +6,7 @@ module KG {
 
     export interface MultivariateFunctionDefinition extends MathFunctionDefinition {
         fn: string;
-        domainCondition: string;
+        domainCondition?: string;
     }
 
     export interface IMultivariateFunction extends IMathFunction {
@@ -26,6 +26,7 @@ module KG {
         private compiledDomainCondition;
 
         constructor(def: MultivariateFunctionDefinition) {
+            def.samplePoints = 100;
             super(def);
             this.fnStringDef = def.fn;
             this.domainConditionStringDef = def.domainCondition;

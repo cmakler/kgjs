@@ -26,7 +26,7 @@ module KG {
         strokeOpacity?: string;
         lineStyle?: string;
 
-        colorAttributes: string[];
+        colorAttributes?: string[];
 
         useTopScale?: boolean;
         useRightScale?: boolean;

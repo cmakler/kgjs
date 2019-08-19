@@ -3,7 +3,7 @@ function createCodeMirror(def) {
         filename = parent.attr('filename'),
         previewWidth = +parent.attr('width') || 800,
         height = +parent.attr('height') || 500,
-        initialCode = parent.node().innerHTML.trim();
+        initialCode = parent.node().innerHTML.trim().replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
 
     parent.node().innerHTML = '';
 
