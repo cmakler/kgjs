@@ -26,7 +26,7 @@ layout:
 
 </div>
 
-They are actually closed paths, so if you fill them in you fill in the area above them:
+They are actually closed paths, so if you fill them in you fill in the area above them -- that is, the set of points for which the value of the function is greater than the level:
 
 <div width="500" height="410" class="codePreview">
 
