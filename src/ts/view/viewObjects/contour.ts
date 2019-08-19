@@ -19,7 +19,8 @@ module KG {
             setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                fill: "none"
+                fill: "none",
+                strokeOpacity: 1
             });
             setProperties(def, 'updatables', ['level']);
             super(def);
@@ -68,7 +69,7 @@ module KG {
 
                 c.path.attr("d", p(transform(contours)))
                 c.path.style('fill', c.fill);
-                c.path.style('opacity', c.opacity);
+                c.path.style('fill-opacity', c.opacity);
                 c.path.style('stroke', c.stroke);
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);

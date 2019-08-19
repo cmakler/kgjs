@@ -11,17 +11,13 @@ Contours are used to draw contour lines. They take a multivariate function and a
 layout:
   OneGraph:
     graph:
-      xAxis:
-        max: 20
-      yAxis:
-        max: 20
       objects:
       - Contour:
-          level: 25
+          level: 16
           fn: "(x)*(y)"
       - Label:
-          coordinates: [5,5]
-          text: "'xy = 25'"
+          coordinates: [4,4]
+          text: "'xy = 16'"
           color: grey
 
 </div>
@@ -33,18 +29,14 @@ They are actually closed paths, so if you fill them in you fill in the area abov
 layout:
   OneGraph:
     graph:
-      xAxis:
-        max: 20
-      yAxis:
-        max: 20
       objects:
       - Contour:
-          level: 25
+          level: 16
           fn: "(x)*(y)"
           fill: green
       - Label:
-          coordinates: [15,15]
-          text: xy > 25
+          coordinates: [8,8]
+          text: xy > 16
           color: green
           bgcolor: none
 
@@ -57,18 +49,14 @@ If you want to fill in the area _below_ the contour line, change the sign of bot
 layout:
   OneGraph:
     graph:
-      xAxis:
-        max: 20
-      yAxis:
-        max: 20
       objects:
       - Contour:
-          level: -25
+          level: -16
           fn: "-(x)*(y)"
           fill: red
       - Label:
-          coordinates: [3,3]
-          text: xy < 25
+          coordinates: [2,2]
+          text: xy < 16
           color: red
           bgcolor: none
 

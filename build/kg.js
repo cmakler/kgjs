@@ -5796,7 +5796,7 @@ var KG;
             p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
             p.circle.attr('r', p.r);
             p.circle.style('fill', p.fill);
-            p.circle.style('opacity', p.opacity);
+            p.circle.style('fill-opacity', p.opacity);
             p.circle.style('stroke', p.stroke);
             p.circle.style('stroke-width', p.strokeWidth + "px");
             p.circle.style('stroke-opacity', p.strokeOpacity);
@@ -6036,7 +6036,8 @@ var KG;
             KG.setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                fill: "none"
+                fill: "none",
+                strokeOpacity: 1
             });
             KG.setProperties(def, 'updatables', ['level']);
             _this = _super.call(this, def) || this;
@@ -6082,7 +6083,7 @@ var KG;
                 var contours = d3.contours().size([n, m]).contour(values, c.level);
                 c.path.attr("d", p(transform(contours)));
                 c.path.style('fill', c.fill);
-                c.path.style('opacity', c.opacity);
+                c.path.style('fill-opacity', c.opacity);
                 c.path.style('stroke', c.stroke);
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);
