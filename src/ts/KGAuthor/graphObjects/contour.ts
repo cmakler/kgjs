@@ -14,7 +14,7 @@ module KGAuthor {
 
     export class Contour extends GraphObject {
 
-        constructor(def, graph) {
+        constructor(def: ContourDefinition, graph) {
             def = setStrokeColor(def);
             super(def, graph);
             let c = this;
@@ -26,6 +26,33 @@ module KGAuthor {
             }
         }
 
+    }
+
+    // A contour map is an authoring-only object which generates multiple Contour objects. TODO use built-in D3 map to do exactly the same thing.
+
+    export interface ContourMapDefinition extends ContourDefinition {
+        levels: any[];
+    }
+
+    export class ContourMap extends GraphObject {
+
+        constructor(def: ContourMapDefinition, graph) {
+            KG.setDefaults(def,{
+                color: "grey",
+                strokeWidth: 0.5
+            });
+            super(def,graph);
+            let m = this;
+            m.type = 'ContourMap';
+            m.layer = def.layer || 1;
+            m.subObjects = def.levels.map(function(level) {
+                let contourDef = copyJSON(def);
+                delete contourDef.levels;
+                contourDef.level = level;
+                return new Contour(contourDef, graph);
+            });
+            console.log('contours: ', m.subObjects);
+        }
     }
 
 }

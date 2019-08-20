@@ -62,3 +62,17 @@ layout:
           color: red
           bgcolor: none
 </div>
+
+A ContourMap object takes a function and an array of levels and generates the contours for them. By default, it makes the contour lines thin (0.5px) and grey:
+
+<div width="500" height="410" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - ContourMap:
+          levels: [1, 4, 9, 16, 25, 36, 49, 64, 81]
+          fn: "(x)*(y)"
+      
+</div>

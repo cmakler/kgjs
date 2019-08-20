@@ -2087,6 +2087,30 @@ var KGAuthor;
         return Contour;
     }(KGAuthor.GraphObject));
     KGAuthor.Contour = Contour;
+    var ContourMap = /** @class */ (function (_super) {
+        __extends(ContourMap, _super);
+        function ContourMap(def, graph) {
+            var _this = this;
+            KG.setDefaults(def, {
+                color: "grey",
+                strokeWidth: 0.5
+            });
+            _this = _super.call(this, def, graph) || this;
+            var m = _this;
+            m.type = 'ContourMap';
+            m.layer = def.layer || 1;
+            m.subObjects = def.levels.map(function (level) {
+                var contourDef = KGAuthor.copyJSON(def);
+                delete contourDef.levels;
+                contourDef.level = level;
+                return new Contour(contourDef, graph);
+            });
+            console.log('contours: ', m.subObjects);
+            return _this;
+        }
+        return ContourMap;
+    }(KGAuthor.GraphObject));
+    KGAuthor.ContourMap = ContourMap;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -6112,6 +6136,14 @@ var KG;
         return Contour;
     }(KG.ViewObject));
     KG.Contour = Contour;
+    var ContourMap = /** @class */ (function (_super) {
+        __extends(ContourMap, _super);
+        function ContourMap(def) {
+            return _super.call(this, def) || this;
+        }
+        return ContourMap;
+    }(KG.ViewObject));
+    KG.ContourMap = ContourMap;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;

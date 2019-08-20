@@ -78,4 +78,11 @@ module KG {
 
     }
 
+    export class ContourMap extends ViewObject {
+
+        constructor(def) {
+            super(def);
+        }
+    }
+
 }
