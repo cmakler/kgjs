@@ -15,6 +15,7 @@ module KGAuthor {
         drag?: any;
         click?: any;
         show?: string;
+        clipPaths?: any[];
     }
 
     export class GraphObject extends GraphObjectGenerator {
@@ -31,6 +32,22 @@ module KGAuthor {
             let g = this;
             if(def.hasOwnProperty('color')) {
                 g.color = def.color;
+            }
+            if(def.hasOwnProperty("clipPaths")) {
+                const clipPathName = KG.randomString(10);
+                let clipPathObjects = [new Rectangle({
+                    x1: graph.def.xAxis.min,
+                    x2: graph.def.xAxis.max,
+                    y1: graph.def.yAxis.min,
+                    y2: graph.def.yAxis.max,
+                    inDef: true
+                }, graph)];
+                def.overlapShapes.forEach(function(shape) {
+                    const shapeType = Object.keys(shape)[0];
+                    let shapeDef = shape[shapeType];
+                    shapeDef.inDef = true;
+                    clipPathObjects.push(new KGAuthor[shapeType](shapeDef, graph));
+                })
             }
         }
 

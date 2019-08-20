@@ -11,18 +11,19 @@ module KG {
 
     export class Contour extends ViewObject {
 
-        public curveData;
         private fn: MultivariateFunction;
-
+        private negativeFn: MultivariateFunction;
 
         constructor(def: ContourDefinition) {
             setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                fill: "none",
+                areaAbove: "none",
+                areaBelow: "none",
                 strokeOpacity: 1
             });
-            setProperties(def, 'updatables', ['level']);
+            setProperties(def, 'colorAttributes', ['areaAbove','areaBelow']);
+            setProperties(def, 'updatables', ['level','areaBelow','areaAbove']);
             super(def);
             const fnDef = {
                 fn: def.fn,

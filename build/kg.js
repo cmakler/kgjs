@@ -1434,6 +1434,22 @@ var KGAuthor;
             if (def.hasOwnProperty('color')) {
                 g.color = def.color;
             }
+            if (def.hasOwnProperty("clipPaths")) {
+                var clipPathName = KG.randomString(10);
+                var clipPathObjects_1 = [new KGAuthor.Rectangle({
+                        x1: graph.def.xAxis.min,
+                        x2: graph.def.xAxis.max,
+                        y1: graph.def.yAxis.min,
+                        y2: graph.def.yAxis.max,
+                        inDef: true
+                    }, graph)];
+                def.overlapShapes.forEach(function (shape) {
+                    var shapeType = Object.keys(shape)[0];
+                    var shapeDef = shape[shapeType];
+                    shapeDef.inDef = true;
+                    clipPathObjects_1.push(new KGAuthor[shapeType](shapeDef, graph));
+                });
+            }
             return _this;
         }
         GraphObject.prototype.parseSelf = function (parsedData) {
@@ -6036,10 +6052,12 @@ var KG;
             KG.setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                fill: "none",
+                areaAbove: "none",
+                areaBelow: "none",
                 strokeOpacity: 1
             });
-            KG.setProperties(def, 'updatables', ['level']);
+            KG.setProperties(def, 'colorAttributes', ['areaAbove', 'areaBelow']);
+            KG.setProperties(def, 'updatables', ['level', 'areaBelow', 'areaAbove']);
             _this = _super.call(this, def) || this;
             var fnDef = {
                 fn: def.fn,

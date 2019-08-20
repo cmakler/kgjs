@@ -6109,10 +6109,10 @@ var KG;
             KG.setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                fill: "none",
                 strokeOpacity: 1
             });
-            KG.setProperties(def, 'updatables', ['level']);
+            KG.setProperties(def, 'colorAttributes', ['areaAbove', 'areaBelow']);
+            KG.setProperties(def, 'updatables', ['level', 'xMin', 'xMax', 'yMin', 'yMax', 'areaBelow', 'areaAbove']);
             _this = _super.call(this, def) || this;
             var fnDef = {
                 fn: def.fn,
@@ -6129,12 +6129,12 @@ var KG;
         };
         Contour.prototype.redraw = function () {
             var c = this;
-            var xMax = c.xScale.domainMax, yMax = c.yScale.domainMax;
+            var xMin = c.xMin || c.xScale.domainMin, yMin = c.yMin || c.yScale.domainMin, xMax = c.xMax || c.xScale.domainMax, yMax = c.yMax || c.yScale.domainMax, xRange = xMax - xMin, yRange = yMax - yMin;
             if (undefined != c.fn) {
                 var n = 110, m = 110, values = new Array(n * m);
                 for (var j = 0.5, k = 0; j < m; ++j) {
                     for (var i = 0.5; i < n; ++i, ++k) {
-                        var x = i * xMax * 1.1 / n, y = j * yMax * 1.1 / m;
+                        var x = xMin + i * xRange * 1.1 / n, y = yMin + j * yRange * 1.1 / m;
                         values[k] = c.fn.eval(x, y);
                     }
                 }
