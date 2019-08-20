@@ -11,8 +11,15 @@ module KG {
 
     export class Contour extends ViewObject {
 
-        private fn: MultivariateFunction;
-        private negativeFn: MultivariateFunction;
+        private path;
+        private negativePath;
+
+        public fn: MultivariateFunction;
+        public negativeFn: MultivariateFunction;
+        public level;
+
+        private areaAbove;
+        private areaBelow;
 
         constructor(def: ContourDefinition) {
             setDefaults(def, {
@@ -22,58 +29,46 @@ module KG {
                 areaBelow: "none",
                 strokeOpacity: 1
             });
-            setProperties(def, 'colorAttributes', ['areaAbove','areaBelow']);
-            setProperties(def, 'updatables', ['level','areaBelow','areaAbove']);
+            setProperties(def, 'colorAttributes', ['areaAbove', 'areaBelow']);
+            setProperties(def, 'updatables', ['level', 'areaBelow', 'areaAbove']);
             super(def);
-            const fnDef = {
+
+            // used for shading area above
+            this.fn = new MultivariateFunction({
                 fn: def.fn,
                 model: def.model
-            };
-            this.fn = new MultivariateFunction(fnDef).update(true);
+            }).update(true);
+
+            // used for shading area below
+            this.negativeFn = new MultivariateFunction({
+                fn: `-1*(${def.fn})`,
+                model: def.model
+            }).update(true);
         }
 
         draw(layer) {
             let c = this;
             c.rootElement = layer.append('g');
+            c.negativePath = c.rootElement.append('path');
             c.path = c.rootElement.append('path');
             return c.addClipPathAndArrows();
         }
 
         redraw() {
             let c = this;
-            const xMax = c.xScale.domainMax,
-                yMax = c.yScale.domainMax;
             if (undefined != c.fn) {
-                var n = 110, m = 110, values = new Array(n * m);
-                for (var j = 0.5, k = 0; j < m; ++j) {
-                    for (var i = 0.5; i < n; ++i, ++k) {
-                        let x = i * xMax * 1.1 / n,
-                            y = j * yMax * 1.1 / m;
-                        values[k] = c.fn.eval(x, y);
-                    }
-                }
 
-                let transform = ({type, value, coordinates}) => {
-                    return {
-                        type, value, coordinates: coordinates.map(rings => {
-                            return rings.map(points => {
-                                return points.map(([x, y]) => ([c.xScale.scale(x * xMax / 100), c.yScale.scale(y * yMax / 100)]));
-                            });
-                        })
-                    };
-                }
 
-                const p = d3.geoPath();
-
-                // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
-                var contours = d3.contours().size([n, m]).contour(values, c.level);
-
-                c.path.attr("d", p(transform(contours)))
-                c.path.style('fill', c.fill);
+                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
+                c.path.style('fill', c.areaAbove);
                 c.path.style('fill-opacity', c.opacity);
                 c.path.style('stroke', c.stroke);
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);
+
+                c.negativePath.attr("d", c.negativeFn.contour(-1*c.level, c.xScale, c.yScale));
+                c.negativePath.style('fill', c.areaBelow);
+                c.negativePath.style('fill-opacity', c.opacity);
 
             }
 
