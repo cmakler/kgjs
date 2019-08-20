@@ -25,6 +25,9 @@ module KGAuthor {
         public color: any;
 
         constructor(def, graph?) {
+            if(def.hasOwnProperty('clipPaths')) {
+                def.clipPathName = KG.randomString(10)
+            }
             KG.setDefaults(def,{
                 name: KG.randomString(10)
             });
@@ -34,20 +37,13 @@ module KGAuthor {
                 g.color = def.color;
             }
             if(def.hasOwnProperty("clipPaths")) {
-                const clipPathName = KG.randomString(10);
-                let clipPathObjects = [new Rectangle({
-                    x1: graph.def.xAxis.min,
-                    x2: graph.def.xAxis.max,
-                    y1: graph.def.yAxis.min,
-                    y2: graph.def.yAxis.max,
-                    inDef: true
-                }, graph)];
-                def.overlapShapes.forEach(function(shape) {
+                let clipPathObjects = def.clipPaths.map(function(shape) {
                     const shapeType = Object.keys(shape)[0];
                     let shapeDef = shape[shapeType];
                     shapeDef.inDef = true;
-                    clipPathObjects.push(new KGAuthor[shapeType](shapeDef, graph));
-                })
+                    return new KGAuthor[shapeType](shapeDef, graph);
+                });
+                g.subObjects.push(new ClipPath({name:def.clipPathName, paths:clipPathObjects},graph));
             }
         }
 
