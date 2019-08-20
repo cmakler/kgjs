@@ -13,6 +13,7 @@ module KG {
         inDomain: (x: number, y: number, z: number) => boolean;
         eval: (x: number, y: number) => number;
         mathboxFn: (maxY, maxZ, minY?, minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y: number, i?: number, j?: number, t?: number) => void;
+        contour: (level: number, xScale: Scale, yScale: Scale) => string;
     }
 
     export class MultivariateFunction extends MathFunction implements IMultivariateFunction {
@@ -56,6 +57,38 @@ module KG {
             return function (emit, x, y) {
                 emit(y, fn.eval(x, y), x);
             };
+        }
+
+        contour(level, xScale, yScale) {
+            const fn = this;
+            const xMax = xScale.domainMax,
+                yMax = yScale.domainMax;
+
+            let n = 110, m = 110, values = new Array(n * m);
+                for (let j = 0.5, k = 0; j < m; ++j) {
+                    for (let i = 0.5; i < n; ++i, ++k) {
+                        let x = i * xMax * 1.1 / n,
+                            y = j * yMax * 1.1 / m;
+                        values[k] = fn.eval(x, y);
+                    }
+                }
+
+                let transform = ({type, value, coordinates}) => {
+                    return {
+                        type, value, coordinates: coordinates.map(rings => {
+                            return rings.map(points => {
+                                return points.map(([x, y]) => ([xScale.scale(x * xMax / 100), yScale.scale(y * yMax / 100)]));
+                            });
+                        })
+                    };
+                };
+
+                const p = d3.geoPath();
+
+                // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+                const contourLine = d3.contours().size([n, m]).contour(values, level);
+
+                return p(transform(contourLine));
         }
 
         update(force) {
