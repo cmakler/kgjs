@@ -16,18 +16,16 @@ Each KineticGraph maintains its aspect ratio as the page window changes dimensio
 
 ## Dependencies
 
-This project is made possible by two incredible open-source technologies:
+Fundamentally, it uses a number of amazing open-source JavaScript technologies:
 
-* [D3](https://d3js.org/) for drawing
-* [KaTeX](https://khan.github.io/KaTeX/) for rendering math
+* [D3](https://d3js.org) for drawing 2D diagrams
+* [MathBox](https://github.com/unconed/mathbox) for drawing 3D diagrams
+* [mathjs](https://mathjs.org/) for easy math description
+* [KaTeX](https://katex.org) for displaying math
+* [underscore](https://underscorejs.org/) and [js-yaml](https://github.com/nodeca/js-yaml) for parsing things
 
 For convenience, minified versions of the JS and CSS dependencies are included in this repository in the build/lib folder. This folder includes the necessary JS and CSS files as well as the fonts required for KaTex and Tufte CSS. To use these, add kg-lib.js and either kg-lib.css or kg-tufte.css. If your project already includes those libraries, you can just use kg.js.
 
-## Quick Start
-
-This library is very much in flux and there isn't much documentation for that reason. As I create graphs, I often find that there are better ways of specifying things.
-
-That said, if you want to play around with some JSON, try downloading [playground.zip](playground.zip). It's a self-contained folder with everything you need to get started with no external dependencies.
 
 ## Code Development
 
