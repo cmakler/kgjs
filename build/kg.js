@@ -2078,6 +2078,10 @@ var KGAuthor;
             var c = _this;
             c.type = 'Contour';
             c.layer = def.layer || 1;
+            c.extractCoordinates();
+            if (!def.hasOwnProperty('level')) {
+                def.level = def.fn.replace('(x)', "(" + def.x + ")").replace('(y)', "(" + def.y + ")");
+            }
             return _this;
         }
         return Contour;
@@ -6064,12 +6068,12 @@ var KG;
             KG.setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                areaAbove: "none",
-                areaBelow: "none",
+                fillAbove: "none",
+                fillBelow: "none",
                 strokeOpacity: 1
             });
-            KG.setProperties(def, 'colorAttributes', ['areaAbove', 'areaBelow']);
-            KG.setProperties(def, 'updatables', ['level', 'areaBelow', 'areaAbove']);
+            KG.setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
+            KG.setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove']);
             _this = _super.call(this, def) || this;
             // used for shading area above
             _this.fn = new KG.MultivariateFunction({
@@ -6094,13 +6098,13 @@ var KG;
             var c = this;
             if (undefined != c.fn) {
                 c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
-                c.path.style('fill', c.areaAbove);
+                c.path.style('fill', c.fillAbove);
                 c.path.style('fill-opacity', c.opacity);
                 c.path.style('stroke', c.stroke);
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);
                 c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
-                c.negativePath.style('fill', c.areaBelow);
+                c.negativePath.style('fill', c.fillBelow);
                 c.negativePath.style('fill-opacity', c.opacity);
             }
             return c;

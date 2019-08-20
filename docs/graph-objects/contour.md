@@ -22,7 +22,23 @@ layout:
 
 </div>
 
-You can shade the areas above and below the contour line by specifying colors in the `areaAbove` and `areaBelow` attributes:
+You can either define a threshold level directly, or via a point. For example, the following code draws a contour line for f(x,y) = f(4,4):
+
+<div width="500" height="410" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Contour:
+          coordinates: [4,4]
+          fn: "(x)*(y)"
+      - Point:
+          coordinates: [4,4]
+
+</div>
+
+You can shade the areas above and below the contour line by specifying colors in the `fillAbove` and `fillBelow` attributes:
 
 <div width="500" height="410" class="codePreview">
 
@@ -33,8 +49,8 @@ layout:
       - Contour:
           level: 16
           fn: "(x)*(y)"
-          areaAbove: green
-          areaBelow: red
+          fillAbove: green
+          fillBelow: red
       - Label:
           coordinates: [8,8]
           text: xy > 16

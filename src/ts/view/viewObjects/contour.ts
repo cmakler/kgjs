@@ -5,8 +5,8 @@ module KG {
     export interface ContourDefinition extends ViewObjectDefinition {
         fn: string;
         level: any;
-        areaAbove?: AreaDefinition;
-        areaBelow?: AreaDefinition;
+        fillAbove?: AreaDefinition;
+        fillBelow?: AreaDefinition;
     }
 
     export class Contour extends ViewObject {
@@ -18,19 +18,19 @@ module KG {
         public negativeFn: MultivariateFunction;
         public level;
 
-        private areaAbove;
-        private areaBelow;
+        private fillAbove;
+        private fillBelow;
 
         constructor(def: ContourDefinition) {
             setDefaults(def, {
                 opacity: 0.2,
                 stroke: "grey",
-                areaAbove: "none",
-                areaBelow: "none",
+                fillAbove: "none",
+                fillBelow: "none",
                 strokeOpacity: 1
             });
-            setProperties(def, 'colorAttributes', ['areaAbove', 'areaBelow']);
-            setProperties(def, 'updatables', ['level', 'areaBelow', 'areaAbove']);
+            setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
+            setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove']);
             super(def);
 
             // used for shading area above
@@ -60,14 +60,14 @@ module KG {
 
 
                 c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
-                c.path.style('fill', c.areaAbove);
+                c.path.style('fill', c.fillAbove);
                 c.path.style('fill-opacity', c.opacity);
                 c.path.style('stroke', c.stroke);
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);
 
                 c.negativePath.attr("d", c.negativeFn.contour(-1*c.level, c.xScale, c.yScale));
-                c.negativePath.style('fill', c.areaBelow);
+                c.negativePath.style('fill', c.fillBelow);
                 c.negativePath.style('fill-opacity', c.opacity);
 
             }
