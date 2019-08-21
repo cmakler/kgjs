@@ -88,8 +88,8 @@ module KGAuthor {
 
         xyOfT(t) {
             return [
-                replaceVariable(this.parametricFunction.xFunction, '(t)', `(${t})`),
-                replaceVariable(this.parametricFunction.yFunction, '(t)', `(${t})`)
+                replaceVariable(this.def.parametricFunction.xFunction, '(t)', `(${t})`),
+                replaceVariable(this.def.parametricFunction.yFunction, '(t)', `(${t})`)
             ]
         }
 

@@ -41,6 +41,7 @@
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
 /// <reference path="graphObjects/contour.ts"/>
+/// <reference path="graphObjects/angle.ts"/>
 
 /// <reference path="mathboxObjects/mathboxObject.ts"/>
 /// <reference path="mathboxObjects/mathboxAxis.ts"/>

@@ -1426,6 +1426,9 @@ var KGAuthor;
         __extends(GraphObject, _super);
         function GraphObject(def, graph) {
             var _this = this;
+            if (def.hasOwnProperty('clipPaths')) {
+                def.clipPathName = KG.randomString(10);
+            }
             KG.setDefaults(def, {
                 name: KG.randomString(10)
             });
@@ -1433,6 +1436,15 @@ var KGAuthor;
             var g = _this;
             if (def.hasOwnProperty('color')) {
                 g.color = def.color;
+            }
+            if (def.hasOwnProperty("clipPaths")) {
+                var clipPathObjects = def.clipPaths.map(function (shape) {
+                    var shapeType = Object.keys(shape)[0];
+                    var shapeDef = shape[shapeType];
+                    shapeDef.inDef = true;
+                    return new KGAuthor[shapeType](shapeDef, graph);
+                });
+                g.subObjects.push(new KGAuthor.ClipPath({ name: def.clipPathName, paths: clipPathObjects }, graph));
             }
             return _this;
         }
@@ -1600,8 +1612,8 @@ var KGAuthor;
         };
         Curve.prototype.xyOfT = function (t) {
             return [
-                KGAuthor.replaceVariable(this.parametricFunction.xFunction, '(t)', "(" + t + ")"),
-                KGAuthor.replaceVariable(this.parametricFunction.yFunction, '(t)', "(" + t + ")")
+                KGAuthor.replaceVariable(this.def.parametricFunction.xFunction, '(t)', "(" + t + ")"),
+                KGAuthor.replaceVariable(this.def.parametricFunction.yFunction, '(t)', "(" + t + ")")
             ];
         };
         Curve.prototype.parseSelf = function (parsedData) {
@@ -2024,7 +2036,17 @@ var KGAuthor;
     var Area = /** @class */ (function (_super) {
         __extends(Area, _super);
         function Area(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
+            if (!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn')) {
+                def.univariateFunction1 = { fn: def.fn };
+            }
+            if (!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn1')) {
+                def.univariateFunction1 = { fn: def.fn1 };
+            }
+            if (!def.hasOwnProperty('univariateFunction2') && def.hasOwnProperty('fn2')) {
+                def.univariateFunction1 = { fn: def.fn2 };
+            }
+            _this = _super.call(this, def, graph) || this;
             _this.type = 'Area';
             _this.layer = def.layer || 0;
             return _this;
@@ -2065,6 +2087,36 @@ var KGAuthor;
         return Rectangle;
     }(KGAuthor.GraphObject));
     KGAuthor.Rectangle = Rectangle;
+    var Overlap = /** @class */ (function (_super) {
+        __extends(Overlap, _super);
+        function Overlap(def, graph) {
+            var _this = this;
+            var shape1name = KG.randomString(10), shape2name = KG.randomString(10);
+            def = KGAuthor.setFillColor(def);
+            KG.setDefaults(def, {
+                x1: graph.def.xAxis.min,
+                x2: graph.def.xAxis.max,
+                y1: graph.def.yAxis.min,
+                y2: graph.def.yAxis.max,
+                clipPathName: shape1name,
+                clipPathName2: shape2name
+            });
+            _this = _super.call(this, def, graph) || this;
+            var r = _this;
+            var clipPathObjects = def.shapes.map(function (shape) {
+                var shapeType = Object.keys(shape)[0];
+                var shapeDef = shape[shapeType];
+                shapeDef.inDef = true;
+                return new KGAuthor[shapeType](shapeDef, graph);
+            });
+            // As of now this does at most two; can make more recursive in the future but this handles 80% of the use cases
+            r.subObjects.push(new KGAuthor.ClipPath({ name: shape1name, paths: [clipPathObjects[0]] }, graph));
+            r.subObjects.push(new KGAuthor.ClipPath({ name: shape2name, paths: [clipPathObjects[1]] }, graph));
+            return _this;
+        }
+        return Overlap;
+    }(Rectangle));
+    KGAuthor.Overlap = Overlap;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2111,6 +2163,70 @@ var KGAuthor;
         return ContourMap;
     }(KGAuthor.GraphObject));
     KGAuthor.ContourMap = ContourMap;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var DegreeMarker = /** @class */ (function (_super) {
+        __extends(DegreeMarker, _super);
+        function DegreeMarker(def, graph) {
+            var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.grey',
+                point: [0, 0],
+                radians: false,
+                start: 0,
+                r: KGAuthor.multiplyDefs(0.05, KGAuthor.subtractDefs(graph.def.xAxis.max, graph.def.xAxis.min)),
+                showLabel: true,
+                strokeWidth: 0.75
+            });
+            def = KGAuthor.setStrokeColor(def);
+            if (def.hasOwnProperty("measure")) {
+                def.end = KGAuthor.addDefs(def.start, def.measure);
+            }
+            else {
+                def.measure = KGAuthor.subtractDefs(def.end, def.start);
+            }
+            // convert to radians unless already radians
+            var start = def.radians ? def.start : KGAuthor.multiplyDefs(def.start, 0.01745329252), measure = def.radians ? def.measure : KGAuthor.multiplyDefs(def.measure, 0.01745329252), end = def.radians ? def.end : KGAuthor.multiplyDefs(def.end, 0.01745329252), mid = KGAuthor.addDefs(start, KGAuthor.multiplyDefs(0.5, measure));
+            def.parametricFunction = {
+                xFunction: KGAuthor.addDefs(def.point[0], KGAuthor.multiplyDefs(def.r, "cos(t)")),
+                yFunction: KGAuthor.addDefs(def.point[1], KGAuthor.multiplyDefs(def.r, "sin(t)")),
+                min: start,
+                max: end
+            };
+            _this = _super.call(this, def, graph) || this;
+            var dm = _this;
+            var measureDegrees = def.radians ? KGAuthor.multiplyDefs(def.measure, 57.2957795131) : def.measure, labelTextRadians = "`${(" + KGAuthor.divideDefs(measure, Math.PI) + ").toFixed(2)}\\\\pi`", labelTextDegrees = "`${(" + measureDegrees + ").toFixed(0)}^{\\\\circ}`";
+            dm.subObjects.push(new KGAuthor.Label({
+                text: def.labelRadians ? labelTextRadians : labelTextDegrees,
+                x: KGAuthor.addDefs(def.point[0], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "cos(" + mid + ")")),
+                y: KGAuthor.addDefs(def.point[1], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "sin(" + mid + ")")),
+                fontSize: 8,
+                bgcolor: "none",
+                show: def.showLabel
+            }, graph));
+            return _this;
+        }
+        return DegreeMarker;
+    }(KGAuthor.Curve));
+    KGAuthor.DegreeMarker = DegreeMarker;
+    var Angle = /** @class */ (function (_super) {
+        __extends(Angle, _super);
+        function Angle(def, graph) {
+            var _this = this;
+            def.start = "atan2(" + def.A[1] + "-" + def.B[1] + "," + def.A[0] + "-" + def.B[0] + ")";
+            def.end = "atan2(" + def.C[1] + "-" + def.B[1] + "," + def.C[0] + "-" + def.B[0] + ")";
+            def.point = def.B;
+            _this = _super.call(this, def, graph) || this;
+            var a = _this;
+            if (def.showSegments) {
+            }
+            return _this;
+        }
+        return Angle;
+    }(DegreeMarker));
+    KGAuthor.Angle = Angle;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -4428,6 +4544,7 @@ var KGAuthor;
 /// <reference path="graphObjects/area.ts"/>
 /// <reference path="graphObjects/rectangle.ts"/>
 /// <reference path="graphObjects/contour.ts"/>
+/// <reference path="graphObjects/angle.ts"/>
 /// <reference path="mathboxObjects/mathboxObject.ts"/>
 /// <reference path="mathboxObjects/mathboxAxis.ts"/>
 /// <reference path="mathboxObjects/mathboxPoint.ts"/>

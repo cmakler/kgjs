@@ -6,6 +6,7 @@ module KGAuthor {
         text: string;
         x?: any;
         y?: any;
+        t?: any;
         coordinates?: any[];
         fontSize?: number;
         xPixelOffset?: number;
@@ -13,6 +14,7 @@ module KGAuthor {
         rotate?: number;
         align?: string;
         position?: string;
+        bgcolor?: string;
     }
 
     export class Label extends DivObject {

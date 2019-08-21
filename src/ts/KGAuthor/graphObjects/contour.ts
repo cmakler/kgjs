@@ -21,8 +21,8 @@ module KGAuthor {
             c.type = 'Contour';
             c.layer = def.layer || 1;
             c.extractCoordinates();
-            if(!def.hasOwnProperty('level')) {
-                def.level = def.fn.replace('(x)',`(${def.x})`).replace('(y)',`(${def.y})`);
+            if (!def.hasOwnProperty('level')) {
+                def.level = def.fn.replace('(x)', `(${def.x})`).replace('(y)', `(${def.y})`);
             }
         }
 
@@ -37,15 +37,15 @@ module KGAuthor {
     export class ContourMap extends GraphObject {
 
         constructor(def: ContourMapDefinition, graph) {
-            KG.setDefaults(def,{
+            KG.setDefaults(def, {
                 color: "grey",
                 strokeWidth: 0.5
             });
-            super(def,graph);
+            super(def, graph);
             let m = this;
             m.type = 'ContourMap';
             m.layer = def.layer || 1;
-            m.subObjects = def.levels.map(function(level) {
+            m.subObjects = def.levels.map(function (level) {
                 let contourDef = copyJSON(def);
                 delete contourDef.levels;
                 contourDef.level = level;
@@ -54,5 +54,10 @@ module KGAuthor {
             console.log('contours: ', m.subObjects);
         }
     }
+
+
+
+
+
 
 }
