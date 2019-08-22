@@ -2,44 +2,50 @@
 
 module KGAuthor {
 
-    export interface DegreeMarkerDefinition extends CurveDefinition {
+    export interface AngleMarkerLabelDefinition extends LabelDefinition {
+        radians?: boolean;
+    }
+
+    export interface AngleMarkerDefinition extends CurveDefinition {
         point?: any[];
         measure?: any;
         start?: any;
         end?: any;
         r?: any;
         radians?: boolean;
-        showLabel?: any;
-        labelRadians?: boolean;
+        label?: LabelDefinition
     }
 
-    export class DegreeMarker extends Curve {
+    export class AngleMarker extends Curve {
 
-        constructor(def: DegreeMarkerDefinition, graph) {
+        public measureDegrees;
+        public measureRadians;
 
-            KG.setDefaults(def,{
+        constructor(def: AngleMarkerDefinition, graph) {
+
+            KG.setDefaults(def, {
+                name: 'angle',
                 color: 'colors.grey',
-                point: [0,0],
+                point: [0, 0],
                 radians: false,
                 start: 0,
-                r: multiplyDefs(0.05,subtractDefs(graph.def.xAxis.max,graph.def.xAxis.min)),
-                showLabel: true,
+                r: multiplyDefs(0.05, subtractDefs(graph.def.xAxis.max, graph.def.xAxis.min)),
                 strokeWidth: 0.75
             });
 
             def = setStrokeColor(def);
 
-            if(def.hasOwnProperty("measure")) {
+            if (def.hasOwnProperty("measure")) {
                 def.end = addDefs(def.start, def.measure)
             } else {
                 def.measure = subtractDefs(def.end, def.start)
             }
 
             // convert to radians unless already radians
-            let start = def.radians ? def.start : multiplyDefs(def.start,0.01745329252),
-                measure = def.radians ? def.measure :  multiplyDefs(def.measure,0.01745329252),
-                end = def.radians ? def.end :  multiplyDefs(def.end,0.01745329252),
-                mid = addDefs(start, multiplyDefs(0.5,measure));
+            let start = def.radians ? def.start : multiplyDefs(def.start, 0.01745329252),
+                measure = def.radians ? def.measure : multiplyDefs(def.measure, 0.01745329252),
+                end = def.radians ? def.end : multiplyDefs(def.end, 0.01745329252),
+                mid = addDefs(start, multiplyDefs(0.5, measure));
 
 
             def.parametricFunction = {
@@ -53,45 +59,88 @@ module KGAuthor {
 
             let dm = this;
 
-            const measureDegrees = def.radians ? multiplyDefs(def.measure, 57.2957795131) : def.measure,
-                labelTextRadians = "`${(" + divideDefs(measure, Math.PI) + ").toFixed(2)}\\\\pi`",
-                labelTextDegrees = "`${(" + measureDegrees + ").toFixed(0)}^{\\\\circ}`";
+            dm.measureDegrees = def.radians ? multiplyDefs(def.measure, 57.2957795131) : def.measure;
+            dm.measureRadians = divideDefs(measure, Math.PI);
 
-            dm.subObjects.push(new Label({
-                text: def.labelRadians ? labelTextRadians : labelTextDegrees,
-                x: addDefs(def.point[0], multiplyDefs(multiplyDefs(1.7,def.r), `cos(${mid})`)),
-                y: addDefs(def.point[1], multiplyDefs(multiplyDefs(1.7,def.r), `sin(${mid})`)),
+            let labelDef = KG.setDefaults(def.label || {}, {
+                x: addDefs(def.point[0], multiplyDefs(multiplyDefs(1.7, def.r), `cos(${mid})`)),
+                y: addDefs(def.point[1], multiplyDefs(multiplyDefs(1.7, def.r), `sin(${mid})`)),
                 fontSize: 8,
+                color: def.stroke,
                 bgcolor: "none",
-                show: def.showLabel
-            },graph))
+                radians: false
+            });
+
+            const labelTextRadians = "`${calcs." + dm.name + ".measureRadians.toFixed(2)}\\\\pi`",
+                labelTextDegrees = "`${calcs." + dm.name + ".measureDegrees.toFixed(0)}^{\\\\circ}`";
+
+            labelDef.text = labelDef.hasOwnProperty('text') ? def.label.text : labelDef.radians ? labelTextRadians : labelTextDegrees;
+
+            dm.subObjects.push(new Label(labelDef, graph))
 
         }
 
+        parseSelf(parsedData) {
+            let dm = this;
+            parsedData = super.parseSelf(parsedData);
+            parsedData.calcs[dm.name] = {
+                measureDegrees: dm.measureDegrees,
+                measureRadians: dm.measureRadians
+            };
+
+            return parsedData;
+        }
+
+
     }
 
-    export interface AngleDefinition extends DegreeMarkerDefinition {
-        A: any[];
-        B: any[];
-        C: any[];
+    export interface AngleDefinition extends AngleMarkerDefinition {
+        pointA: PointDefinition;
+        pointB: PointDefinition;
+        pointC: PointDefinition;
         showSegments: boolean;
-        showPoints: boolean;
     }
 
-    export class Angle extends DegreeMarker {
+    export class Angle extends AngleMarker {
 
         constructor(def: AngleDefinition, graph) {
 
-            def.start = `atan2(${def.A[1]}-${def.B[1]},${def.A[0]}-${def.B[0]})`;
-            def.end = `atan2(${def.C[1]}-${def.B[1]},${def.C[0]}-${def.B[0]})`;
-            def.point = def.B;
+            const A = new Point(def.pointA, graph),
+                B = new Point(def.pointB, graph),
+                C = new Point(def.pointC, graph);
 
-            super(def,graph);
+            def.start = `atan2(${A.y} - ${B.y},${A.x} - ${B.x})`;
+            def.end = `atan2(${C.y} - ${B.y},${C.x} - ${B.x})`;
+            def.point = [B.x,B.y];
+            def.radians = true;
+
+            KG.setDefaults(def,{
+                label: {
+                    radians: false
+                }
+            });
+
+            super(def, graph);
 
             let a = this;
 
-            if(def.showSegments) {
-                
+            a.subObjects.push(A);
+            a.subObjects.push(B);
+            a.subObjects.push(C);
+
+            if (def.showSegments) {
+                let ABdef = copyJSON(def),
+                    CBdef = copyJSON(def);
+
+                ABdef.a = [B.x,B.y];
+                ABdef.b = [A.x,A.y];
+                delete ABdef.label;
+                a.subObjects.push(new Segment(ABdef, graph));
+
+                CBdef.a = [B.x,B.y];
+                CBdef.b = [C.x,C.y];
+                delete CBdef.label;
+                a.subObjects.push(new Segment(CBdef, graph));
             }
 
         }

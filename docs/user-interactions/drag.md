@@ -157,38 +157,24 @@ params:
 - {name: theta, value: 0.78, min: -6.28, max: 6.28, round: 0.01}
 
 calcs:
-  xCoord: "(5 + 3*(cos(params.theta)))"
-  yCoord: "(5 + 3*(sin(params.theta)))"
-  ySlope: "(tan(params.theta))"
+  x: "(5 + 3*(cos(params.theta)))"
+  y: "(5 + 3*(sin(params.theta)))"
+  
 layout:
   OneGraph:
     graph:
       objects:
-      - Point:
-          coordinates: [calcs.xCoord, calcs.yCoord]
-          drag:
-          - directions: xy
-            param: theta
-            expression: atan2(drag.y-5,drag.x-5)
-      - Circle:
-          coordinates: [5,5]
-          r: 3
-          fill: white
-      - DegreeMarker:
-          point: [5,5]
-          degrees: params.theta
-          radians: true
-      - Segment:
-          a: [5,5]
-          b: [calcs.xCoord, calcs.yCoord]
-          strokeWidth: 0.75
-          color: grey
-      - Segment:
-          a: [5,5]
-          b: [8,5]
-          strokeWidth: 0.75
-          color: grey
-          
+      - Circle: {coordinates: [5,5], r: 3}
+      - Angle:
+          showSegments: true
+          pointA: {coordinates: [8,5], show: false}
+          pointB: {coordinates: [5,5], show: false}
+          pointC:
+            coordinates: [calcs.x, calcs.y]
+            drag:
+            - directions: xy
+              param: theta
+              expression: atan2(drag.y-5,drag.x-5)
 </div>
 
 More examples of dragging behavior will be shown in the pages on points, lines, and curves. For now, keep note of the information above and see it applied elsewhere!

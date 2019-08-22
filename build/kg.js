@@ -2167,17 +2167,17 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var DegreeMarker = /** @class */ (function (_super) {
-        __extends(DegreeMarker, _super);
-        function DegreeMarker(def, graph) {
+    var AngleMarker = /** @class */ (function (_super) {
+        __extends(AngleMarker, _super);
+        function AngleMarker(def, graph) {
             var _this = this;
             KG.setDefaults(def, {
+                name: 'angle',
                 color: 'colors.grey',
                 point: [0, 0],
                 radians: false,
                 start: 0,
                 r: KGAuthor.multiplyDefs(0.05, KGAuthor.subtractDefs(graph.def.xAxis.max, graph.def.xAxis.min)),
-                showLabel: true,
                 strokeWidth: 0.75
             });
             def = KGAuthor.setStrokeColor(def);
@@ -2197,35 +2197,67 @@ var KGAuthor;
             };
             _this = _super.call(this, def, graph) || this;
             var dm = _this;
-            var measureDegrees = def.radians ? KGAuthor.multiplyDefs(def.measure, 57.2957795131) : def.measure, labelTextRadians = "`${(" + KGAuthor.divideDefs(measure, Math.PI) + ").toFixed(2)}\\\\pi`", labelTextDegrees = "`${(" + measureDegrees + ").toFixed(0)}^{\\\\circ}`";
-            dm.subObjects.push(new KGAuthor.Label({
-                text: def.labelRadians ? labelTextRadians : labelTextDegrees,
+            dm.measureDegrees = def.radians ? KGAuthor.multiplyDefs(def.measure, 57.2957795131) : def.measure;
+            dm.measureRadians = KGAuthor.divideDefs(measure, Math.PI);
+            var labelDef = KG.setDefaults(def.label || {}, {
                 x: KGAuthor.addDefs(def.point[0], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "cos(" + mid + ")")),
                 y: KGAuthor.addDefs(def.point[1], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "sin(" + mid + ")")),
                 fontSize: 8,
+                color: def.stroke,
                 bgcolor: "none",
-                show: def.showLabel
-            }, graph));
+                radians: false
+            });
+            var labelTextRadians = "`${calcs." + dm.name + ".measureRadians.toFixed(2)}\\\\pi`", labelTextDegrees = "`${calcs." + dm.name + ".measureDegrees.toFixed(0)}^{\\\\circ}`";
+            labelDef.text = labelDef.hasOwnProperty('text') ? def.label.text : labelDef.radians ? labelTextRadians : labelTextDegrees;
+            dm.subObjects.push(new KGAuthor.Label(labelDef, graph));
             return _this;
         }
-        return DegreeMarker;
+        AngleMarker.prototype.parseSelf = function (parsedData) {
+            var dm = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[dm.name] = {
+                measureDegrees: dm.measureDegrees,
+                measureRadians: dm.measureRadians
+            };
+            return parsedData;
+        };
+        return AngleMarker;
     }(KGAuthor.Curve));
-    KGAuthor.DegreeMarker = DegreeMarker;
+    KGAuthor.AngleMarker = AngleMarker;
     var Angle = /** @class */ (function (_super) {
         __extends(Angle, _super);
         function Angle(def, graph) {
             var _this = this;
-            def.start = "atan2(" + def.A[1] + "-" + def.B[1] + "," + def.A[0] + "-" + def.B[0] + ")";
-            def.end = "atan2(" + def.C[1] + "-" + def.B[1] + "," + def.C[0] + "-" + def.B[0] + ")";
-            def.point = def.B;
+            var A = new KGAuthor.Point(def.pointA, graph), B = new KGAuthor.Point(def.pointB, graph), C = new KGAuthor.Point(def.pointC, graph);
+            def.start = "atan2(" + A.y + " - " + B.y + "," + A.x + " - " + B.x + ")";
+            def.end = "atan2(" + C.y + " - " + B.y + "," + C.x + " - " + B.x + ")";
+            def.point = [B.x, B.y];
+            def.radians = true;
+            KG.setDefaults(def, {
+                label: {
+                    radians: false
+                }
+            });
             _this = _super.call(this, def, graph) || this;
             var a = _this;
+            a.subObjects.push(A);
+            a.subObjects.push(B);
+            a.subObjects.push(C);
             if (def.showSegments) {
+                var ABdef = KGAuthor.copyJSON(def), CBdef = KGAuthor.copyJSON(def);
+                ABdef.a = [B.x, B.y];
+                ABdef.b = [A.x, A.y];
+                delete ABdef.label;
+                a.subObjects.push(new KGAuthor.Segment(ABdef, graph));
+                CBdef.a = [B.x, B.y];
+                CBdef.b = [C.x, C.y];
+                delete CBdef.label;
+                a.subObjects.push(new KGAuthor.Segment(CBdef, graph));
             }
             return _this;
         }
         return Angle;
-    }(DegreeMarker));
+    }(AngleMarker));
     KGAuthor.Angle = Angle;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
@@ -5906,7 +5938,6 @@ var KG;
         Axis.prototype.draw = function (layer) {
             var a = this;
             a.rootElement = layer.append('g').attr('class', 'axis');
-            console.log('foo');
             return a;
         };
         Axis.prototype.redraw = function () {
