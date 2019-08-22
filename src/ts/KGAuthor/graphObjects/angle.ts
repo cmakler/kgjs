@@ -84,8 +84,8 @@ module KGAuthor {
             let dm = this;
             parsedData = super.parseSelf(parsedData);
             parsedData.calcs[dm.name] = {
-                measureDegrees: dm.measureDegrees,
-                measureRadians: dm.measureRadians
+                measureDegrees: dm.measureDegrees.toString(),
+                measureRadians: dm.measureRadians.toString()
             };
 
             return parsedData;

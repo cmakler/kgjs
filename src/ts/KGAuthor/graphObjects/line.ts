@@ -21,6 +21,7 @@ module KGAuthor {
         public xIntercept;
         public slope;
         public invSlope;
+        public fixedPoint;
 
         constructor(def, graph) {
 
@@ -141,11 +142,19 @@ module KGAuthor {
                 invSlope: l.invSlope.toString()
             };
             if (l.xIntercept) {
-                d.xIntercept = l.xIntercept.toString()
-            };
+                d.xIntercept = l.xIntercept.toString();
+            }
             if (l.yIntercept) {
-                d.yIntercept = l.yIntercept.toString()
-            };
+                d.yIntercept = l.yIntercept.toString();
+
+            }
+            if (!l.xIntercept) {
+                d.fixedPoint = `((${d.yIntercept})/(1 - ${l.slope.toString()}))`;
+            } else if (!l.yIntercept) {
+                d.fixedPoint = `((${d.xIntercept})/(1 - ${l.invSlope.toString()}))`
+            } else {
+                d.fixedPoint = `(${d.invSlope} == 0 ? (${d.xIntercept})/(1 - ${l.invSlope.toString()}) : (${d.yIntercept})/(1 - ${l.slope.toString()}))`
+            }
             parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {} ,d);
             return parsedData;
         }

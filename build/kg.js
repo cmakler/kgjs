@@ -1743,11 +1743,18 @@ var KGAuthor;
             if (l.xIntercept) {
                 d.xIntercept = l.xIntercept.toString();
             }
-            ;
             if (l.yIntercept) {
                 d.yIntercept = l.yIntercept.toString();
             }
-            ;
+            if (!l.xIntercept) {
+                d.fixedPoint = "((" + d.yIntercept + ")/(1 - " + l.slope.toString() + "))";
+            }
+            else if (!l.yIntercept) {
+                d.fixedPoint = "((" + d.xIntercept + ")/(1 - " + l.invSlope.toString() + "))";
+            }
+            else {
+                d.fixedPoint = "(" + d.invSlope + " == 0 ? (" + d.xIntercept + ")/(1 - " + l.invSlope.toString() + ") : (" + d.yIntercept + ")/(1 - " + l.slope.toString() + "))";
+            }
             parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {}, d);
             return parsedData;
         };
@@ -2216,8 +2223,8 @@ var KGAuthor;
             var dm = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[dm.name] = {
-                measureDegrees: dm.measureDegrees,
-                measureRadians: dm.measureRadians
+                measureDegrees: dm.measureDegrees.toString(),
+                measureRadians: dm.measureRadians.toString()
             };
             return parsedData;
         };

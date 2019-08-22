@@ -1,0 +1,146 @@
+---
+layout: documentation
+title: Line Dragging
+---
+Now, let's see how we can make a line interactive, such that it can be dragged in a number of ways. If you would like to simply drag a line in the vertical or horiztonal direction, you may specify this under the attribute `drag`. You must create a parameter that is changing with the drag, generally either `x` or `y`, and define your line in terms of this parameter. For example, say we want to drag a line with a slope of 1 in the vertical direction:
+
+<div width="500" height="425" class="codePreview">
+    
+params:
+- name: y
+  value: 4
+  min: 2
+  max: 6
+  round: 0.01
+  
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Line:
+          slope: 1
+          yIntercept: params.y
+          drag:
+          - vertical: y
+
+</div>
+
+To be clear, the parameter above could take any name; for example, it could be called `a` and the line would move in the same manner. It only matters that the parameter, the definition of the line, and the parameter for the drag are the same.
+
+If you want to do something more complicated, such as change the slope of the line using drag functionality, you can use a more detailed `drag` attribute that includes the following components: 
+
+* `directions`: the direction of the dragging may be in the x direction, the y direction, or in both the x and y direction (notated `xy` as below).
+* `param`: this is the parameter you will be changing by dragging the line. In the example below, we are changing the intercepts, so `param` is `"intercepts"`.
+* `expression`: the expression describes how the `param` will change based on the amount of dragging done. See below for a concrete example. 
+
+First, let's see how to drag a line defined by intercepts. We want to drag the line so that it is always parallel to its starting position; in other words, the x- and y-intercepts will always be equal to each other. 
+
+* The direction of dragging can be in the x- or y-direction, so `directions` is `xy`. 
+* We are given the parameter `intercepts`, and that is what we want to change. So `param` is `intercepts`. 
+* `expression` is a bit trickier to come up with. Notice that our line is of the equation _y = intercept - x_. We could also write this as _intercept = x + y_. Thus, the change in the intercept is the sum of the change in x and y. We write this as `drag.x + drag.y`, where drag is the amount that the cursor drags the line. 
+
+<div width="500" height="425" class="codePreview">
+    
+params:
+- name: intercepts
+  value: 6
+  min: 2
+  max: 10
+  round: 0.01
+  
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Line:
+          xIntercept: params.intercepts
+          yIntercept: params.intercepts
+          drag:
+          - directions: xy
+            param: intercepts
+            expression: drag.x+drag.y
+
+</div>
+
+Now, let's add a feature where you can change the slope by dragging the line. The slope of a line is defined by /frac{y2 - y1}{x2 - x1}, so we will follow the same form here for our `expression`, where y2 and x2 are drag.y and drag.x, respectively, and y1 and x1 are the coordinates of the point we have chosen, (4,5). See how the slope of the line revolves around our chosen point: 
+
+<div width="500" height="425" class="codePreview">
+    
+params:
+- name: m
+  value: 1
+  min: -10
+  max: 10
+  round: 0.01
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+
+      - Line:
+          color: blue
+          point: [4,5]
+          slope: params.m
+          drag:
+          - directions: xy
+            param: m
+            expression: "(drag.y-5)/(drag.x-4)"
+
+      - Point:
+          coordinates: [4,5]
+      
+
+</div>
+
+Here is a template for a graph with several lines. Try implementing the following dragging ability: Drag the green line's slope around its y-intercept. 
+
+<div filename="line/drag_exercises" width="500" height="425" class="codePreview">
+    
+params:
+- name: m
+  value: 1
+  min: -10
+  max: 10
+  round: 0.01
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+
+      - Line:
+          color: green
+          yIntercept: 4
+          slope: params.m
+
+</div>
+
+Solution key: 
+
+<div width="500" height="425" class="codePreview">
+
+params:
+- name: m
+  value: 1
+  min: -10
+  max: 10
+  round: 0.01
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+
+      - Line:
+          color: green
+          yIntercept: 4
+          slope: params.m**
+
+          # solution
+          drag:
+          - directions: y
+            param: m
+            expression: "(drag.y - 4)/(drag.x)"
+
+</div>
