@@ -134,3 +134,18 @@ layout:
           - Circle: {c: [6,4], r: 2}
           
 </div>
+
+To see why this is useful, notice what happens if you just overlap two circles: 
+
+<div width="300" height="250" class="codePreview">
+      
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Circle: {c: [4,4], r: 2, fill: purple}
+      - Circle: {c: [6,4], r: 2, fill: purple}
+          
+</div>
+
+The area of overlap is a bit darker, because it's being shaded twice (each time with 20% opacity).
