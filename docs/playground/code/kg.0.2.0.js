@@ -351,6 +351,40 @@ var KGAuthor;
         return "(" + target.split(search).join(replacement) + ")";
     }
     KGAuthor.replaceVariable = replaceVariable;
+    // allow author to specify a function using a single string rather than a function object
+    function parseFn(def, authorName, codeName) {
+        if (!def.hasOwnProperty(codeName) && def.hasOwnProperty(authorName)) {
+            def[codeName] = {
+                fn: def[authorName],
+                ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
+                min: def.min,
+                max: def.max,
+                samplePoints: def[authorName].samplePoints
+            };
+        }
+    }
+    KGAuthor.parseFn = parseFn;
+    // allow author to set a fill color rather than a fill object
+    function parseFill(def, attr) {
+        var v = def[attr];
+        if (typeof v == 'string') {
+            def[attr] = { fill: v };
+        }
+        if (typeof v == 'boolean' && v) {
+            var fillColor = def.hasOwnProperty('fill') ? def.fill : def.color;
+            def[attr] = { fill: fillColor };
+        }
+    }
+    KGAuthor.parseFill = parseFill;
+    // inherit properties from a parent
+    function inheritFromParent(props, parent, child) {
+        props.forEach(function (prop) {
+            if (parent.hasOwnProperty(prop) && !child.hasOwnProperty(prop)) {
+                child[prop] = parent[prop];
+            }
+        });
+    }
+    KGAuthor.inheritFromParent = inheritFromParent;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1624,25 +1658,24 @@ var KGAuthor;
         function Curve(def, graph) {
             var _this = this;
             def = KGAuthor.setStrokeColor(def);
+            KGAuthor.parseFn(def, 'fn', 'univariateFunction');
             _this = _super.call(this, def, graph) || this;
             var c = _this;
             c.type = 'Curve';
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
             if (def.hasOwnProperty('areaBelow')) {
-                var areaBelowDef = KG.setDefaults(def.areaBelow, {
-                    univariateFunction1: def.univariateFunction,
-                    fill: def.color
-                });
-                c.subObjects.push(new KGAuthor.Area(areaBelowDef, graph));
+                KGAuthor.parseFill(def, 'areaBelow');
+                KG.setDefaults(def.areaBelow, def.univariateFunction);
+                KGAuthor.parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                c.subObjects.push(new KGAuthor.Area(def.areaBelow, graph));
             }
             if (def.hasOwnProperty('areaAbove')) {
-                var areaAboveDef = KG.setDefaults(def.areaAbove, {
-                    univariateFunction1: def.univariateFunction,
-                    fill: def.color,
-                    above: true
-                });
-                c.subObjects.push(new KGAuthor.Area(areaAboveDef, graph));
+                KGAuthor.parseFill(def, 'areaAbove');
+                KG.setDefaults(def.areaAbove, def.univariateFunction);
+                KGAuthor.parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                def.areaAbove.above = true;
+                c.subObjects.push(new KGAuthor.Area(def.areaAbove, graph));
             }
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
@@ -2131,15 +2164,9 @@ var KGAuthor;
                 opacity: 0.2
             });
             def = KGAuthor.setFillColor(def);
-            if (!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn')) {
-                def.univariateFunction1 = { fn: def.fn };
-            }
-            if (!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn1')) {
-                def.univariateFunction1 = { fn: def.fn1 };
-            }
-            if (!def.hasOwnProperty('univariateFunction2') && def.hasOwnProperty('fn2')) {
-                def.univariateFunction2 = { fn: def.fn2 };
-            }
+            KGAuthor.parseFn(def, 'fn', 'univariateFunction1');
+            KGAuthor.parseFn(def, 'fn1', 'univariateFunction1');
+            KGAuthor.parseFn(def, 'fn2', 'univariateFunction2');
             _this = _super.call(this, def, graph) || this;
             _this.type = 'Area';
             _this.layer = def.layer || 0;
@@ -6271,12 +6298,11 @@ var KG;
                 fn2.generateData(scale.domainMin, scale.domainMax);
                 area.areaPath
                     .data([d3.zip(fn1.data, fn2.data)])
-                    .attr('d', area.areaShape)
-                    .style('fill', area.fill)
-                    .style('opacity', area.opacity);
+                    .attr('d', area.areaShape);
+                area.drawFill(area.areaPath);
             }
             else {
-                console.log('area functions undefined');
+                //console.log('area functions undefined')
             }
             return area;
         };

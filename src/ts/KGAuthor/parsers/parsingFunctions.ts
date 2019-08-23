@@ -7,7 +7,7 @@ module KGAuthor {
 
 
     export function extractTypeAndDef(def) {
-        if(def.hasOwnProperty('type')) {
+        if (def.hasOwnProperty('type')) {
             return def
         } else {
             def.type = Object.keys(def)[0];
@@ -81,27 +81,27 @@ module KGAuthor {
     }
 
     export function addDefs(def1, def2) {
-        if(def1 == 0) {
+        if (def1 == 0) {
             return def2;
         }
-        if(def2 == 0) {
+        if (def2 == 0) {
             return def1;
         }
         return binaryFunction(def1, def2, '+');
     }
 
     export function subtractDefs(def1, def2) {
-        if(def2 == 0) {
+        if (def2 == 0) {
             return def1;
         }
         return binaryFunction(def1, def2, '-');
     }
 
     export function divideDefs(def1, def2) {
-        if(def1 == 0) {
+        if (def1 == 0) {
             return 0;
         }
-        if(def2 == 1) {
+        if (def2 == 1) {
             return def1;
         }
         return binaryFunction(def1, def2, '/');
@@ -112,13 +112,13 @@ module KGAuthor {
     }
 
     export function multiplyDefs(def1, def2) {
-        if(def1 == 0 || def2 == 0) {
+        if (def1 == 0 || def2 == 0) {
             return 0;
         }
-        if(def1 == 1) {
+        if (def1 == 1) {
             return def2;
         }
-        if(def2 == 1) {
+        if (def2 == 1) {
             return def1;
         }
         return binaryFunction(def1, def2, '*');
@@ -126,7 +126,7 @@ module KGAuthor {
 
     export function averageDefs(def1, def2, weight?) {
         weight = weight || 0.5;
-        return addDefs(multiplyDefs(weight,def1),multiplyDefs(subtractDefs(1,weight),def2));
+        return addDefs(multiplyDefs(weight, def1), multiplyDefs(subtractDefs(1, weight), def2));
     }
 
     export function squareDef(def) {
@@ -142,7 +142,7 @@ module KGAuthor {
     }
 
     export function paramName(def) {
-        if (typeof(def) == 'string') {
+        if (typeof (def) == 'string') {
             return def.replace('params.', '');
         } else {
             return def
@@ -202,4 +202,40 @@ module KGAuthor {
     export function replaceVariable(target, search, replacement) {
         return `(${target.split(search).join(replacement)})`;
     }
+
+    // allow author to specify a function using a single string rather than a function object
+    export function parseFn(def, authorName, codeName) {
+        if (!def.hasOwnProperty(codeName) && def.hasOwnProperty(authorName)) {
+            def[codeName] = {
+                fn: def[authorName],
+                ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
+                min: def.min,
+                max: def.max,
+                samplePoints: def[authorName].samplePoints
+            }
+        }
+    }
+
+    // allow author to set a fill color rather than a fill object
+    export function parseFill(def, attr) {
+        const v = def[attr];
+        if (typeof v == 'string') {
+            def[attr] = {fill: v}
+        }
+        if (typeof v == 'boolean' && v) {
+            const fillColor = def.hasOwnProperty('fill') ? def.fill : def.color
+            def[attr] = {fill: fillColor}
+        }
+    }
+
+    // inherit properties from a parent
+    export function inheritFromParent(props: string[], parent, child) {
+        props.forEach(function (prop) {
+            if (parent.hasOwnProperty(prop) && !child.hasOwnProperty(prop)) {
+                child[prop] = parent[prop];
+            }
+        })
+
+    }
+
 }

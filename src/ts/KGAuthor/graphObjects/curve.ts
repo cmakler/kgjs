@@ -4,11 +4,12 @@ module KGAuthor {
 
     export interface CurveDefinition extends GraphObjectDefinition {
         label?: LabelDefinition
+        fn?: string;
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
         pts?: { name: string; x?: string; y?: string; }[];
-        areaBelow?: AreaDefinition;
-        areaAbove?: AreaDefinition;
+        areaBelow?: string | AreaDefinition;
+        areaAbove?: string | AreaDefinition;
     }
 
     export class Curve extends GraphObject {
@@ -20,6 +21,9 @@ module KGAuthor {
 
         constructor(def, graph) {
             def = setStrokeColor(def);
+
+            parseFn(def, 'fn', 'univariateFunction');
+
             super(def, graph);
 
             const c = this;
@@ -28,20 +32,18 @@ module KGAuthor {
             c.pts = def.pts || [];
 
             if (def.hasOwnProperty('areaBelow')) {
-                let areaBelowDef = KG.setDefaults(def.areaBelow, {
-                    univariateFunction1: def.univariateFunction,
-                    fill: def.color
-                });
-                c.subObjects.push(new Area(areaBelowDef, graph));
+                parseFill(def, 'areaBelow');
+                KG.setDefaults(def.areaBelow, def.univariateFunction);
+                parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                c.subObjects.push(new Area(def.areaBelow, graph));
             }
 
             if (def.hasOwnProperty('areaAbove')) {
-                let areaAboveDef = KG.setDefaults(def.areaAbove, {
-                    univariateFunction1: def.univariateFunction,
-                    fill: def.color,
-                    above: true
-                });
-                c.subObjects.push(new Area(areaAboveDef, graph));
+                parseFill(def, 'areaAbove');
+                KG.setDefaults(def.areaAbove, def.univariateFunction);
+                parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                def.areaAbove.above = true;
+                c.subObjects.push(new Area(def.areaAbove, graph));
             }
 
             if (def.hasOwnProperty('label')) {
@@ -78,7 +80,7 @@ module KGAuthor {
 
         xOfY(y) {
             const c = this;
-            if(c.def.univariateFunction.hasOwnProperty('yFn')) {
+            if (c.def.univariateFunction.hasOwnProperty('yFn')) {
                 return `(${replaceVariable(c.def.univariateFunction.yFn, '(y)', `(${y})`)})`
             } else {
                 return `(${replaceVariable(c.def.univariateFunction.fn, '(y)', `(${y})`)})`

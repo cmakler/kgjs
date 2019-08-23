@@ -25,17 +25,23 @@ module KGAuthor {
         public color: any;
 
         constructor(def, graph?) {
+
             if(def.hasOwnProperty('clipPaths')) {
                 def.clipPathName = KG.randomString(10)
             }
+
             KG.setDefaults(def,{
                 name: KG.randomString(10)
             });
+
             super(def,graph);
+
             let g = this;
+
             if(def.hasOwnProperty('color')) {
                 g.color = def.color;
             }
+
             if(def.hasOwnProperty("clipPaths")) {
                 let clipPathObjects = def.clipPaths.map(function(shape) {
                     const shapeType = Object.keys(shape)[0];

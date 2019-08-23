@@ -22,16 +22,9 @@ module KGAuthor {
             });
 
             def = setFillColor(def);
-
-            if(!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn')) {
-                def.univariateFunction1 = {fn: def.fn};
-            }
-            if(!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn1')) {
-                def.univariateFunction1 = {fn: def.fn1};
-            }
-            if(!def.hasOwnProperty('univariateFunction2') && def.hasOwnProperty('fn2')) {
-                def.univariateFunction2 = {fn: def.fn2};
-            }
+            parseFn(def,'fn','univariateFunction1');
+            parseFn(def,'fn1','univariateFunction1');
+            parseFn(def,'fn2','univariateFunction2');
             super(def, graph);
             this.type = 'Area';
             this.layer = def.layer || 0;
