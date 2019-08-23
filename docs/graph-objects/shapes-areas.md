@@ -123,11 +123,8 @@ layout:
   OneGraph:
     graph:
       objects:
-      
       - Circle: {c: [4,4], r: 2, fill: none}
-      
       - Circle: {c: [6,4], r: 2, fill: none}
-      
       - Rectangle:
           a: [0,0]
           b: [10,10]
