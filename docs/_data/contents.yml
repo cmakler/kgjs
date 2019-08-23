@@ -19,6 +19,8 @@
       url: curve
     - title: Contours
       url: contour
+    - title: Shapes and Areas
+      url: shapes-areas
 
 - name: User Interactions
   folder: user-interactions

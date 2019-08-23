@@ -90,8 +90,11 @@ module KG {
             setDefaults(def, {
                 alwaysUpdate: false,
                 interactive: true,
-                stroke: 'black',
+                fill: 'colors.blue',
+                fillOpacity: 0.2,
+                stroke: 'colors.blue',
                 strokeWidth: 1,
+                stokeOpacity: 1,
                 show: true,
                 inDef: false,
                 lineStyle: 'solid'
@@ -173,6 +176,25 @@ module KG {
 
         redraw() {
             return this;
+        }
+
+        drawStroke(el) {
+            const vo = this;
+            el.attr('stroke', vo.stroke);
+            el.attr('stroke-width', vo.strokeWidth);
+            el.style('stroke-opacity', vo.strokeOpacity);
+            if (vo.lineStyle == 'dashed') {
+                el.style('stroke-dashArray', '10,10');
+            }
+            if (vo.lineStyle == 'dotted') {
+                el.style('stroke-dashArray', '1,2');
+            }
+        }
+
+        drawFill(el) {
+            const vo = this;
+            el.style('fill', vo.fill);
+            el.style('fill-opacity', vo.opacity);
         }
 
         displayElement(show: boolean) {

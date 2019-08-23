@@ -13,7 +13,7 @@ module KGAuthor {
             rect.layer = def.layer || 0;
             rect.extractCoordinates('a', 'x1', 'y1');
             rect.extractCoordinates('b', 'x2', 'y2');
-
+            console.log('Rectangle object: ',rect);
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);
                 delete labelDef.label;

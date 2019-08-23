@@ -32,7 +32,15 @@ module KGAuthor {
             const c = this;
             c.type = 'Circle';
             c.layer = def.layer || 0;
-            c.extractCoordinates();
+
+            // may define the center using 'coordinates' or 'center' or 'c':
+            if(def.hasOwnProperty('c')) {
+                c.extractCoordinates('c');
+            } else if(def.hasOwnProperty('center')) {
+                c.extractCoordinates('center');
+            } else {
+                c.extractCoordinates();
+            }
 
             if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
                 def.drag = [];

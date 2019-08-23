@@ -92,11 +92,11 @@ module KG {
 
                 area.areaPath
                     .data([d3.zip(fn1.data, fn2.data)])
-                    .attr('d', area.areaShape)
-                    .style('fill', area.fill)
-                    .style('opacity', area.opacity);
+                    .attr('d', area.areaShape);
+
+                area.drawFill(area.areaPath);
             } else {
-                console.log('area functions undefined')
+                //console.log('area functions undefined')
             }
 
             return area;

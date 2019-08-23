@@ -1310,10 +1310,10 @@ var KGAuthor;
             if (def.hasOwnProperty(coordinatesKey) && def[coordinatesKey] != undefined) {
                 def[xKey] = def[coordinatesKey][0].toString();
                 def[yKey] = def[coordinatesKey][1].toString();
-                obj[xKey] = def[coordinatesKey][0].toString();
-                obj[yKey] = def[coordinatesKey][1].toString();
                 delete def[coordinatesKey];
             }
+            obj[xKey] = def[xKey].toString();
+            obj[yKey] = def[yKey].toString();
         };
         return GraphObjectGenerator;
     }(KGAuthor.AuthoringObject));
@@ -1785,7 +1785,16 @@ var KGAuthor;
             var c = _this;
             c.type = 'Circle';
             c.layer = def.layer || 0;
-            c.extractCoordinates();
+            // may define the center using 'coordinates' or 'center' or 'c':
+            if (def.hasOwnProperty('c')) {
+                c.extractCoordinates('c');
+            }
+            else if (def.hasOwnProperty('center')) {
+                c.extractCoordinates('center');
+            }
+            else {
+                c.extractCoordinates();
+            }
             if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
                 def.drag = [];
                 if (def.x == "params." + KGAuthor.paramName(def.x)) {
@@ -2044,6 +2053,11 @@ var KGAuthor;
         __extends(Area, _super);
         function Area(def, graph) {
             var _this = this;
+            KG.setDefaults(def, {
+                color: 'colors.blue',
+                opacity: 0.2
+            });
+            def = KGAuthor.setFillColor(def);
             if (!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn')) {
                 def.univariateFunction1 = { fn: def.fn };
             }
@@ -2051,7 +2065,7 @@ var KGAuthor;
                 def.univariateFunction1 = { fn: def.fn1 };
             }
             if (!def.hasOwnProperty('univariateFunction2') && def.hasOwnProperty('fn2')) {
-                def.univariateFunction1 = { fn: def.fn2 };
+                def.univariateFunction2 = { fn: def.fn2 };
             }
             _this = _super.call(this, def, graph) || this;
             _this.type = 'Area';
@@ -2076,6 +2090,7 @@ var KGAuthor;
             rect.layer = def.layer || 0;
             rect.extractCoordinates('a', 'x1', 'y1');
             rect.extractCoordinates('b', 'x2', 'y2');
+            console.log('Rectangle object: ', rect);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2137,7 +2152,9 @@ var KGAuthor;
             var c = _this;
             c.type = 'Contour';
             c.layer = def.layer || 1;
-            c.extractCoordinates();
+            if (def.hasOwnProperty('coordinates')) {
+                c.extractCoordinates();
+            }
             if (!def.hasOwnProperty('level')) {
                 def.level = def.fn.replace('(x)', "(" + def.x + ")").replace('(y)', "(" + def.y + ")");
             }
@@ -5125,6 +5142,7 @@ var KG;
         function MultivariateFunction(def) {
             var _this = this;
             def.samplePoints = 100;
+            KG.setProperties(def, 'constants', ['fn']);
             _this = _super.call(this, def) || this;
             _this.fnStringDef = def.fn;
             _this.domainConditionStringDef = def.domainCondition;
@@ -5635,8 +5653,11 @@ var KG;
             KG.setDefaults(def, {
                 alwaysUpdate: false,
                 interactive: true,
-                stroke: 'black',
+                fill: 'colors.blue',
+                fillOpacity: 0.2,
+                stroke: 'colors.blue',
                 strokeWidth: 1,
+                stokeOpacity: 1,
                 show: true,
                 inDef: false,
                 lineStyle: 'solid'
@@ -5711,6 +5732,23 @@ var KG;
         };
         ViewObject.prototype.redraw = function () {
             return this;
+        };
+        ViewObject.prototype.drawStroke = function (el) {
+            var vo = this;
+            el.attr('stroke', vo.stroke);
+            el.attr('stroke-width', vo.strokeWidth);
+            el.style('stroke-opacity', vo.strokeOpacity);
+            if (vo.lineStyle == 'dashed') {
+                el.style('stroke-dashArray', '10,10');
+            }
+            if (vo.lineStyle == 'dotted') {
+                el.style('stroke-dashArray', '1,2');
+            }
+        };
+        ViewObject.prototype.drawFill = function (el) {
+            var vo = this;
+            el.style('fill', vo.fill);
+            el.style('fill-opacity', vo.opacity);
         };
         ViewObject.prototype.displayElement = function (show) {
             var vo = this;
@@ -5808,23 +5846,18 @@ var KG;
         // update properties
         Segment.prototype.redraw = function () {
             var segment = this;
-            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale2.scale(segment.y1), y2 = segment.yScale2.scale(segment.y2), stroke = segment.stroke, strokeWidth = segment.strokeWidth;
-            segment.dragLine.attr("x1", x1);
-            segment.dragLine.attr("y1", y1);
-            segment.dragLine.attr("x2", x2);
-            segment.dragLine.attr("y2", y2);
-            segment.line.attr("x1", x1);
-            segment.line.attr("y1", y1);
-            segment.line.attr("x2", x2);
-            segment.line.attr("y2", y2);
-            segment.line.attr("stroke", stroke);
-            segment.line.attr('stroke-width', strokeWidth);
-            if (segment.lineStyle == 'dashed') {
-                segment.line.style('stroke-dashArray', '10,10');
-            }
-            if (segment.lineStyle == 'dotted') {
-                segment.line.style('stroke-dashArray', '1,2');
-            }
+            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale2.scale(segment.y1), y2 = segment.yScale2.scale(segment.y2);
+            segment.dragLine
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.line
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.drawStroke(segment.line);
             return segment;
         };
         return Segment;
@@ -5896,14 +5929,7 @@ var KG;
                 curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
                 curve.path.data([fn.data]).attr('d', curve.dataLine);
             }
-            curve.path.attr('stroke', curve.stroke);
-            curve.path.attr('stroke-width', curve.strokeWidth);
-            if (curve.lineStyle == 'dashed') {
-                curve.path.style('stroke-dashArray', '10,10');
-            }
-            if (curve.lineStyle == 'dotted') {
-                curve.path.style('stroke-dashArray', '1,2');
-            }
+            curve.drawStroke(curve.path);
             return curve;
         };
         // update self and functions
@@ -6024,6 +6050,10 @@ var KG;
         __extends(Circle, _super);
         function Circle(def) {
             var _this = this;
+            if (def.hasOwnProperty('radius')) {
+                def.r = def.radius;
+                delete def.radius;
+            }
             KG.setDefaults(def, {
                 fill: 'colors.blue',
                 opacity: 1,
@@ -6048,11 +6078,8 @@ var KG;
             c.rootElement.attr('cx', c.xScale.scale(c.x));
             c.rootElement.attr('cy', c.yScale.scale(c.y));
             c.rootElement.attr('r', c.xScale.scale(c.r) - c.xScale.scale(0));
-            c.rootElement.style('fill', c.fill);
-            c.rootElement.style('fill-opacity', c.opacity);
-            c.rootElement.style('stroke', c.stroke);
-            c.rootElement.style('stroke-width', c.strokeWidth + "px");
-            c.rootElement.style('stroke-opacity', c.strokeOpacity);
+            c.drawFill(c.rootElement);
+            c.drawStroke(c.rootElement);
             return c;
         };
         return Circle;
@@ -6067,7 +6094,8 @@ var KG;
         function Rectangle(def) {
             var _this = this;
             KG.setDefaults(def, {
-                opacity: 0.2
+                opacity: 0.2,
+                stroke: "none"
             });
             KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
             _this = _super.call(this, def) || this;
@@ -6098,8 +6126,11 @@ var KG;
                 .attr('y', Math.min(y1, y2))
                 .attr('width', Math.abs(x2 - x1))
                 .attr('height', Math.abs(y2 - y1))
-                .attr('fill', rect.fill)
-                .style('opacity', rect.opacity);
+                .style('fill', rect.fill)
+                .style('fill-opacity', rect.opacity)
+                .style('stroke', rect.stroke)
+                .style('stroke-width', rect.strokeWidth + "px")
+                .style('stroke-opacity', rect.strokeOpacity);
             return rect;
         };
         return Rectangle;
@@ -6167,12 +6198,11 @@ var KG;
                 fn2.generateData(scale.domainMin, scale.domainMax);
                 area.areaPath
                     .data([d3.zip(fn1.data, fn2.data)])
-                    .attr('d', area.areaShape)
-                    .style('fill', area.fill)
-                    .style('opacity', area.opacity);
+                    .attr('d', area.areaShape);
+                area.drawFill(area.areaPath);
             }
             else {
-                console.log('area functions undefined');
+                //console.log('area functions undefined')
             }
             return area;
         };
@@ -6285,6 +6315,16 @@ var KG;
                 c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
                 c.negativePath.style('fill', c.fillBelow);
                 c.negativePath.style('fill-opacity', c.opacity);
+            }
+            return c;
+        };
+        // update self and functions
+        Contour.prototype.update = function (force) {
+            var c = _super.prototype.update.call(this, force);
+            if (!c.hasChanged) {
+                if (c.fn.hasChanged) {
+                    c.redraw();
+                }
             }
             return c;
         };

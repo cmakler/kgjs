@@ -20,7 +20,9 @@ module KGAuthor {
             let c = this;
             c.type = 'Contour';
             c.layer = def.layer || 1;
-            c.extractCoordinates();
+            if (def.hasOwnProperty('coordinates')) {
+                c.extractCoordinates();
+            }
             if (!def.hasOwnProperty('level')) {
                 def.level = def.fn.replace('(x)', `(${def.x})`).replace('(y)', `(${def.y})`);
             }
@@ -54,10 +56,6 @@ module KGAuthor {
             console.log('contours: ', m.subObjects);
         }
     }
-
-
-
-
 
 
 }

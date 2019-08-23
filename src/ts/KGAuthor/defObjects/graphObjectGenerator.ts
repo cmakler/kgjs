@@ -33,10 +33,11 @@ module KGAuthor {
             if (def.hasOwnProperty(coordinatesKey) && def[coordinatesKey] != undefined) {
                 def[xKey] = def[coordinatesKey][0].toString();
                 def[yKey] = def[coordinatesKey][1].toString();
-                obj[xKey] = def[coordinatesKey][0].toString();
-                obj[yKey] = def[coordinatesKey][1].toString();
                 delete def[coordinatesKey];
             }
+            obj[xKey] = def[xKey].toString();
+            obj[yKey] = def[yKey].toString();
+
         }
     }
 

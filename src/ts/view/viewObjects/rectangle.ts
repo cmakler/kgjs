@@ -20,16 +20,17 @@ module KG {
 
         constructor(def: RectangleDefinition) {
             setDefaults(def, {
-                opacity: 0.2
+                opacity: 0.2,
+                stroke: "none"
             });
-            setProperties(def, 'updatables',['x1', 'x2', 'y1', 'y2']);
+            setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
             super(def);
         }
 
         // create SVG elements
         draw(layer) {
             let rect = this;
-            if(rect.inDef){
+            if (rect.inDef) {
                 rect.rootElement = layer;
             } else {
                 rect.rootElement = layer.append('g');
@@ -50,10 +51,14 @@ module KG {
             rect.rootElement2
                 .attr('x', Math.min(x1, x2))
                 .attr('y', Math.min(y1, y2))
-                .attr('width', Math.abs(x2-x1))
-                .attr('height', Math.abs(y2-y1))
-                .attr('fill', rect.fill)
-                .style('opacity', rect.opacity);
+                .attr('width', Math.abs(x2 - x1))
+                .attr('height', Math.abs(y2 - y1))
+                .style('fill', rect.fill)
+                .style('fill-opacity', rect.opacity)
+                .style('stroke', rect.stroke)
+                .style('stroke-width', `${rect.strokeWidth}px`)
+                .style('stroke-opacity', rect.strokeOpacity)
+            ;
             return rect;
         }
     }

@@ -6,6 +6,7 @@ module KG {
         x: any;
         y: any;
         r?: any;
+        radius?: any;
     }
 
     export class Circle extends ViewObject {
@@ -16,6 +17,11 @@ module KG {
         private r;
 
         constructor(def: CircleDefinition) {
+
+            if(def.hasOwnProperty('radius')) {
+                def.r = def.radius;
+                delete def.radius;
+            }
 
             setDefaults(def, {
                 fill: 'colors.blue',
@@ -42,11 +48,8 @@ module KG {
             c.rootElement.attr('cx', c.xScale.scale(c.x));
             c.rootElement.attr('cy', c.yScale.scale(c.y));
             c.rootElement.attr('r', c.xScale.scale(c.r) - c.xScale.scale(0));
-            c.rootElement.style('fill', c.fill);
-            c.rootElement.style('fill-opacity', c.opacity);
-            c.rootElement.style('stroke', c.stroke);
-            c.rootElement.style('stroke-width', `${c.strokeWidth}px`);
-            c.rootElement.style('stroke-opacity', c.strokeOpacity);
+            c.drawFill(c.rootElement);
+            c.drawStroke(c.rootElement);
             return c;
         }
     }

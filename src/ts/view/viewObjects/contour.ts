@@ -57,8 +57,6 @@ module KG {
         redraw() {
             let c = this;
             if (undefined != c.fn) {
-
-
                 c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
                 c.path.style('fill', c.fillAbove);
                 c.path.style('fill-opacity', c.opacity);
@@ -66,13 +64,21 @@ module KG {
                 c.path.style('stroke-width', c.strokeWidth);
                 c.path.style('stroke-opacity', c.strokeOpacity);
 
-                c.negativePath.attr("d", c.negativeFn.contour(-1*c.level, c.xScale, c.yScale));
+                c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
                 c.negativePath.style('fill', c.fillBelow);
                 c.negativePath.style('fill-opacity', c.opacity);
-
             }
+            return c;
+        }
 
-
+        // update self and functions
+        update(force) {
+            let c = super.update(force);
+            if (!c.hasChanged) {
+                if (c.fn.hasChanged) {
+                    c.redraw();
+                }
+            }
             return c;
         }
 

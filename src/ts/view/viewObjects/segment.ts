@@ -51,25 +51,18 @@ module KG {
             const x1 = segment.xScale.scale(segment.x1),
                 x2 = segment.xScale.scale(segment.x2),
                 y1 = segment.yScale2.scale(segment.y1),
-                y2 = segment.yScale2.scale(segment.y2),
-                stroke = segment.stroke,
-                strokeWidth = segment.strokeWidth;
-            segment.dragLine.attr("x1", x1);
-            segment.dragLine.attr("y1", y1);
-            segment.dragLine.attr("x2", x2);
-            segment.dragLine.attr("y2", y2);
-            segment.line.attr("x1", x1);
-            segment.line.attr("y1", y1);
-            segment.line.attr("x2", x2);
-            segment.line.attr("y2", y2);
-            segment.line.attr("stroke", stroke);
-            segment.line.attr('stroke-width', strokeWidth);
-            if(segment.lineStyle == 'dashed') {
-                segment.line.style('stroke-dashArray','10,10');
-            }
-            if(segment.lineStyle == 'dotted') {
-                segment.line.style('stroke-dashArray','1,2');
-            }
+                y2 = segment.yScale2.scale(segment.y2);
+            segment.dragLine
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.line
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.drawStroke(segment.line);
             return segment;
         }
     }

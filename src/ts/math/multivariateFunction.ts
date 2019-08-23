@@ -28,6 +28,7 @@ module KG {
 
         constructor(def: MultivariateFunctionDefinition) {
             def.samplePoints = 100;
+            setProperties(def, 'constants', ['fn']);
             super(def);
             this.fnStringDef = def.fn;
             this.domainConditionStringDef = def.domainCondition;

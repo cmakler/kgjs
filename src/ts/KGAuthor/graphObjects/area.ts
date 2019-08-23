@@ -15,6 +15,14 @@ module KGAuthor {
     export class Area extends GraphObject {
 
         constructor(def:AreaDefinition, graph) {
+
+            KG.setDefaults(def,{
+                color: 'colors.blue',
+                opacity: 0.2
+            });
+
+            def = setFillColor(def);
+
             if(!def.hasOwnProperty('univariateFunction1') && def.hasOwnProperty('fn')) {
                 def.univariateFunction1 = {fn: def.fn};
             }
@@ -22,7 +30,7 @@ module KGAuthor {
                 def.univariateFunction1 = {fn: def.fn1};
             }
             if(!def.hasOwnProperty('univariateFunction2') && def.hasOwnProperty('fn2')) {
-                def.univariateFunction1 = {fn: def.fn2};
+                def.univariateFunction2 = {fn: def.fn2};
             }
             super(def, graph);
             this.type = 'Area';

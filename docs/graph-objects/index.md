@@ -22,23 +22,19 @@ layout:
     graph:
       objects:
       - Circle:
-          x: 3
-          y: 7
+          center: [3,7]
           color: red
           label: {text: A}
       - Circle:
-          x: 7
-          y: 7
+          center: [7,7]
           color: d3.schemeDark2[2]
           label: {text: B}
       - Circle:
-          x: 3
-          y: 3
+          center: [3,3]
           color: "'#224466'"
           label: {text: C}
       - Circle:
-          x: 7
-          y: 3
+          center: [7,3]
           color: rgb(245, 215, 66)
           label: {text: D}
          
@@ -57,8 +53,7 @@ layout:
     graph:
       objects:
       - Circle:
-          x: 5
-          y: 5
+          center: [5,5]
           color: PurpleCow
       - Arrow:
           begin: [2,2]
@@ -79,19 +74,16 @@ layout:
       
       # color not specified (blue is default)
       - Circle:
-          x: 2
-          y: 5
+          center: [2,5]
           
       # red specified, used for stroke and fill
       - Circle:
-          x: 5
-          y: 5
+          center: [5,5]
           color: red
           
       # different stroke and fill colors specified
       - Circle:
-          x: 8
-          y: 5
+          center: [8,5]
           stroke: blue
           fill: red        
 
@@ -144,19 +136,16 @@ layout:
       
       # default opacity (0.2)
       - Circle:
-          x: 2
-          y: 5
+          center: [2,5]
           
       # medium opacity (0.5)
       - Circle:
-          x: 5
-          y: 5
+          center: [5,5]
           opacity: 0.5
           
       # not opaque at all (1)   
       - Circle:
-          x: 8
-          y: 5 
+          center: [8,5]
           opacity: 1        
 
 </div>
