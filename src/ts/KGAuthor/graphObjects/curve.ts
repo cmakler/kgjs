@@ -32,6 +32,9 @@ module KGAuthor {
             c.pts = def.pts || [];
 
             if (def.hasOwnProperty('areaBelow')) {
+                KG.setDefaults(def.areaBelow,{
+                    color: def.color
+                });
                 parseFill(def, 'areaBelow');
                 KG.setDefaults(def.areaBelow, def.univariateFunction);
                 parseFn(def.areaBelow, 'fn', 'univariateFunction1');
@@ -39,6 +42,9 @@ module KGAuthor {
             }
 
             if (def.hasOwnProperty('areaAbove')) {
+                KG.setDefaults(def.areaBelow,{
+                    color: def.color
+                });
                 parseFill(def, 'areaAbove');
                 KG.setDefaults(def.areaAbove, def.univariateFunction);
                 parseFn(def.areaBelow, 'fn', 'univariateFunction1');

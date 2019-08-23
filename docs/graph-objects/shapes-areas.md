@@ -71,7 +71,7 @@ layout:
           fill: green
 </div>
 
-Note that if you draw a [Curve](curve.html), you can also use `areaAbove` and `areaBelow` to shade in the area above and below the curve; in fact, all this does is generate an Area object using the curve's function as the base function. Note that the `min` and `max` will inherit, but can be overridden if you only want to shade a region under the curve!
+Note that if you draw a [Curve](curve.html), you can also use `areaAbove` and `areaBelow` to shade in the area above and below the curve; in fact, all this does is generate an Area object using the curve's function as the base function. You can specify just `areaBelow: true` to shade the entire area under the curve the same color as the curve itself, with an opacity of 0.2; or you can specify a string color; or you can specify an entire definition of an Area. Note that the `color`, `min`, and `max` attributes will inherit from the **Curve** parent, but can be overridden if you only want to shade a region under the curve!
 
 <div width="300" height="250" class="codePreview">
 
@@ -81,9 +81,13 @@ layout:
       objects:
       - Curve:
           fn: 1 + 0.05*(x)^2
-          min: 2
-          max: 8
-          areaBelow: {min: 4}
+          max: 5
+          areaBelow: true
+      - Curve:
+          fn: 1 + 0.05*(x)^2
+          min: 5
+          color: red
+          areaBelow: {min: 8, opacity: 0.8}
           areaAbove: green
       
 </div>

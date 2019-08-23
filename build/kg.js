@@ -1592,12 +1592,18 @@ var KGAuthor;
             c.layer = def.layer || 1;
             c.pts = def.pts || [];
             if (def.hasOwnProperty('areaBelow')) {
+                KG.setDefaults(def.areaBelow, {
+                    color: def.color
+                });
                 KGAuthor.parseFill(def, 'areaBelow');
                 KG.setDefaults(def.areaBelow, def.univariateFunction);
                 KGAuthor.parseFn(def.areaBelow, 'fn', 'univariateFunction1');
                 c.subObjects.push(new KGAuthor.Area(def.areaBelow, graph));
             }
             if (def.hasOwnProperty('areaAbove')) {
+                KG.setDefaults(def.areaBelow, {
+                    color: def.color
+                });
                 KGAuthor.parseFill(def, 'areaAbove');
                 KG.setDefaults(def.areaAbove, def.univariateFunction);
                 KGAuthor.parseFn(def.areaBelow, 'fn', 'univariateFunction1');
