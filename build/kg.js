@@ -4664,7 +4664,7 @@ var KG;
             });
             model.updateListeners = [];
             model.currentParamValues = model.evalParams();
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.evalCalcs();
             model.currentColors = model.evalObject(model.colors);
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -4677,6 +4677,23 @@ var KG;
                 p[param.name] = param.value;
             });
             return p;
+        };
+        // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
+        Model.prototype.evalCalcs = function () {
+            var model = this;
+            // clear calculatios so old values aren't used;
+            model.currentCalcValues = {};
+            // generate as many calculations from params as possible
+            model.currentCalcValues = model.evalObject(model.calcs);
+            // calculate values based on other calculations (up to a depth of 5)
+            for (var i = 0; i < 5; i++) {
+                for (var calcName in model.currentCalcValues) {
+                    if (isNaN(model.currentCalcValues[calcName])) {
+                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
+                    }
+                }
+            }
+            return model.currentCalcValues;
         };
         Model.prototype.evalObject = function (obj) {
             var model = this;
@@ -4780,7 +4797,7 @@ var KG;
         Model.prototype.update = function (force) {
             var model = this;
             model.currentParamValues = model.evalParams();
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.evalCalcs();
             console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {

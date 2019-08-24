@@ -47,6 +47,29 @@ layout:
 
 Note that calculations work best when all terms are surrounded by parentheses. For example, `((params.a)^(params.b))` is more robust than `params.a^params.b`. Without parentheses, the expression may be evaluated incorrectly. 
 
+Calcs can exist to a depth of 5:
+
+<div width="800" height="320" class="codePreview">
+params:
+- {name: a, value: 3, min: 0, max: 10}
+
+calcs:
+  b: (2 * params.a)
+  c: (2 * calcs.b)
+  d: (2 * calcs.c)
+  e: (2 * calcs.d)
+
+layout:
+  HTMLPlusSidebarLayout:
+    html: "`<p>$b = 2a = ${calcs.b}$</p><p>$c = 2b = ${calcs.c}$</p><p>$d = 2c = ${calcs.d}$</p><p>$e = 2d = ${calcs.e}$</p>`"
+    sidebar:
+      controls:
+      - title: Parameters
+        sliders:
+        - {param: a, label: a}
+</div>
+        
+        
 Taking a closer look at the code structure using calculations, notice that the HTML text is surrounded by the \` symbols.
 
 
