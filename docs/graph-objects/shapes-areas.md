@@ -102,11 +102,8 @@ layout:
   OneGraph:
     graph:
       objects:
-      
       - Circle: {c: [4,4], r: 2, fill: none}
-      
       - Circle: {c: [6,4], r: 2, fill: none}
-      
       - Overlap:
           fill: purple
           shapes:

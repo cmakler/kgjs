@@ -24,7 +24,7 @@ css_directories = [
 
 bundles = [
     {
-        "name": "kg.0.2.0.js",
+        "name": "kg.0.2.1.js",
         "dest_directories": js_directories,
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
@@ -43,7 +43,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.0.css",
+        "name": "kg.0.2.1.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-lib.css",
@@ -51,7 +51,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.2.0.css",
+        "name": "kg-tufte.0.2.1.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-tufte.css",
