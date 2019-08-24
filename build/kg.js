@@ -4686,7 +4686,10 @@ var KG;
             // calculate values based on other calculations (up to a depth of 5)
             for (var i = 0; i < 5; i++) {
                 for (var calcName in model.currentCalcValues) {
-                    if (isNaN(model.currentCalcValues[calcName]) && typeof model.currentCalcValues[calcName] == 'string') {
+                    if (typeof model.calcs[calcName] == 'object') {
+                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName]);
+                    }
+                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
                         model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
                     }
                 }
