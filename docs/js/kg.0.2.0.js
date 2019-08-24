@@ -4765,10 +4765,6 @@ var KG;
                     else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
                         model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
                     }
-                    else {
-                        console.log('tried to evaluate something that was not a string: ', calcName);
-                        console.log('current value is ', model.currentCalcValues[calcName]);
-                    }
                 }
             }
             return model.currentCalcValues;
