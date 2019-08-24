@@ -2123,6 +2123,7 @@ var KGAuthor;
             rect.layer = def.layer || 0;
             rect.extractCoordinates('a', 'x1', 'y1');
             rect.extractCoordinates('b', 'x2', 'y2');
+            console.log('Rectangle object: ', rect);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2432,6 +2433,7 @@ var KGAuthor;
         __extends(PositionedDiv, _super);
         function PositionedDiv(def, divContainer) {
             var _this = this;
+            console.log('PositionedDiv def ', def);
             delete def.xAxis;
             delete def.yAxis;
             def.xScaleName = divContainer.xScale.name;
