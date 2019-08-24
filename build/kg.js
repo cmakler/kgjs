@@ -4662,7 +4662,7 @@ var KG;
             });
             model.updateListeners = [];
             model.currentParamValues = model.evalParams();
-            model.evalCalcs();
+            model.currentCalcValues = model.evalObject(model.calcs);
             model.currentColors = model.evalObject(model.colors);
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -4675,26 +4675,6 @@ var KG;
                 p[param.name] = param.value;
             });
             return p;
-        };
-        // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
-        Model.prototype.evalCalcs = function () {
-            var model = this;
-            // clear calculatios so old values aren't used;
-            model.currentCalcValues = {};
-            // generate as many calculations from params as possible
-            model.currentCalcValues = model.evalObject(model.calcs);
-            // calculate values based on other calculations (up to a depth of 5)
-            for (var i = 0; i < 5; i++) {
-                for (var calcName in model.currentCalcValues) {
-                    if (typeof model.calcs[calcName] == 'object') {
-                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName]);
-                    }
-                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
-                    }
-                }
-            }
-            return model.currentCalcValues;
         };
         Model.prototype.evalObject = function (obj) {
             var model = this;
@@ -4798,7 +4778,7 @@ var KG;
         Model.prototype.update = function (force) {
             var model = this;
             model.currentParamValues = model.evalParams();
-            model.evalCalcs();
+            model.currentCalcValues = model.evalObject(model.calcs);
             console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
@@ -4819,7 +4799,7 @@ var KG;
                 if (!match) {
                     return 0;
                 }
-                return Math.max(0, 
+                return Math.max(0,
                 // Number of digits right of decimal point.
                 (match[1] ? match[1].length : 0)
                     // Adjust for scientific notation.
@@ -5860,6 +5840,7 @@ var KG;
         };
         Marker.prototype.redraw = function () {
             var m = this;
+            console.log('redrawing marker', m);
             m.arrowElement.attr("fill", m.color);
             return m;
         };
@@ -6096,43 +6077,6 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Ellipse = /** @class */ (function (_super) {
-        __extends(Ellipse, _super);
-        function Ellipse(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                fill: 'colors.blue',
-                opacity: 1,
-                stroke: 'colors.blue',
-                strokeWidth: 1,
-                strokeOpacity: 1,
-                rx: 1,
-                ry: 1
-            });
-            KG.setProperties(def, 'updatables', ['x', 'y', 'rx', 'ry']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create SVG elements
-        Ellipse.prototype.draw = function (layer) {
-            var c = this;
-            c.rootElement = layer.append('ellipse');
-            return c.addClipPathAndArrows().addInteraction();
-        };
-        // update properties
-        Ellipse.prototype.redraw = function () {
-            var c = this;
-            c.rootElement.attr('cx', c.xScale.scale(c.x));
-            c.rootElement.attr('cy', c.yScale.scale(c.y));
-            c.rootElement.attr('rx', c.xScale.scale(c.rx) - c.xScale.scale(0));
-            c.rootElement.attr('ry', c.yScale.scale(c.ry) - c.yScale.scale(0));
-            c.drawFill(c.rootElement);
-            c.drawStroke(c.rootElement);
-            return c;
-        };
-        return Ellipse;
-    }(KG.ViewObject));
-    KG.Ellipse = Ellipse;
     var Circle = /** @class */ (function (_super) {
         __extends(Circle, _super);
         function Circle(def) {
@@ -6141,15 +6085,36 @@ var KG;
                 def.r = def.radius;
                 delete def.radius;
             }
-            if (def.hasOwnProperty('r')) {
-                def.rx = def.r;
-                def.ry = def.r;
-            }
+            KG.setDefaults(def, {
+                fill: 'colors.blue',
+                opacity: 1,
+                stroke: 'colors.blue',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 1
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
             _this = _super.call(this, def) || this;
             return _this;
         }
+        // create SVG elements
+        Circle.prototype.draw = function (layer) {
+            var c = this;
+            c.rootElement = layer.append('circle');
+            return c.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Circle.prototype.redraw = function () {
+            var c = this;
+            c.rootElement.attr('cx', c.xScale.scale(c.x));
+            c.rootElement.attr('cy', c.yScale.scale(c.y));
+            c.rootElement.attr('r', c.xScale.scale(c.r) - c.xScale.scale(0));
+            c.drawFill(c.rootElement);
+            c.drawStroke(c.rootElement);
+            return c;
+        };
         return Circle;
-    }(Ellipse));
+    }(KG.ViewObject));
     KG.Circle = Circle;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />

@@ -24,7 +24,7 @@ css_directories = [
 
 bundles = [
     {
-        "name": "kg.0.2.1.js",
+        "name": "kg.0.2.0.js",
         "dest_directories": js_directories,
         "order": [
             "src/lib/katex/contrib/auto-render.min.js",
