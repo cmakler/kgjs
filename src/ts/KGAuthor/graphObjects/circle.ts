@@ -2,26 +2,32 @@
 
 module KGAuthor {
 
-    export interface CircleDefinition extends GraphObjectDefinition {
+    export interface EllipseDefinition extends GraphObjectDefinition {
         label?: LabelDefinition;
         draggable?: boolean;
         x?: any;
         y?: any;
         coordinates?: any[];
-        r?: any;
+        center?: any[];
+        c?: any[];
+        rx?: any;
+        ry?: any;
     }
 
-    export class Circle extends GraphObject {
+    export class Ellipse extends GraphObject {
 
         public x;
         public y;
-        public r;
+        public rx;
+        public ry;
 
-        constructor(def: PointDefinition, graph) {
+        constructor(def: EllipseDefinition, graph) {
 
             KG.setDefaults(def,{
                 color: 'colors.blue',
-                opacity: 0.2
+                opacity: 0.2,
+                rx: 1,
+                ry: def.rx
             });
 
             def = setFillColor(def);
@@ -63,6 +69,35 @@ module KGAuthor {
                 });
                 c.subObjects.push(new Label(labelDef, graph));
             }
+
+        }
+
+    }
+
+    export interface CircleDefinition extends EllipseDefinition {
+        radius?: any;
+        r?: any;
+    }
+
+    export class Circle extends Ellipse {
+
+        public x;
+        public y;
+        public r;
+
+        constructor(def: CircleDefinition, graph) {
+
+            if(def.hasOwnProperty('radius')) {
+                def.r = def.radius;
+                delete def.radius;
+            }
+
+            if(def.hasOwnProperty('r')) {
+                def.rx = def.r;
+                def.ry = def.r;
+            }
+
+            super(def, graph);
 
         }
 

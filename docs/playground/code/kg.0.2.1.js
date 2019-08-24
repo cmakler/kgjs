@@ -513,7 +513,6 @@ var KGAuthor;
             var l = _this;
             l.nosvg = true;
             var divDef = { "html": def['html'] };
-            console.log("divDef: ", divDef);
             l.subObjects.push(new KGAuthor.Div(divDef));
             return _this;
         }
@@ -1883,13 +1882,15 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Circle = /** @class */ (function (_super) {
-        __extends(Circle, _super);
-        function Circle(def, graph) {
+    var Ellipse = /** @class */ (function (_super) {
+        __extends(Ellipse, _super);
+        function Ellipse(def, graph) {
             var _this = this;
             KG.setDefaults(def, {
                 color: 'colors.blue',
-                opacity: 0.2
+                opacity: 0.2,
+                rx: 1,
+                ry: def.rx
             });
             def = KGAuthor.setFillColor(def);
             def = KGAuthor.setStrokeColor(def);
@@ -1929,8 +1930,26 @@ var KGAuthor;
             }
             return _this;
         }
-        return Circle;
+        return Ellipse;
     }(KGAuthor.GraphObject));
+    KGAuthor.Ellipse = Ellipse;
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def, graph) {
+            var _this = this;
+            if (def.hasOwnProperty('radius')) {
+                def.r = def.radius;
+                delete def.radius;
+            }
+            if (def.hasOwnProperty('r')) {
+                def.rx = def.r;
+                def.ry = def.r;
+            }
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return Circle;
+    }(Ellipse));
     KGAuthor.Circle = Circle;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
@@ -4755,36 +4774,36 @@ var KG;
             // clear calculatios so old values aren't used;
             model.currentCalcValues = {};
             // generate as many calculations from params as possible
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.currentCalcValues = model.evalObject(model.calcs, true);
             // calculate values based on other calculations (up to a depth of 5)
             for (var i = 0; i < 5; i++) {
                 for (var calcName in model.currentCalcValues) {
                     if (typeof model.calcs[calcName] == 'object') {
-                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName]);
+                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true);
                     }
                     else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
+                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName], true);
                     }
                 }
             }
             return model.currentCalcValues;
         };
-        Model.prototype.evalObject = function (obj) {
+        Model.prototype.evalObject = function (obj, onlyJSMath) {
             var model = this;
             var newObj = {};
             for (var stringOrObj in obj) {
                 var def = obj[stringOrObj];
                 if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.eval(def);
+                    newObj[stringOrObj] = model.eval(def, onlyJSMath);
                 }
                 else {
-                    newObj[stringOrObj] = model.evalObject(def);
+                    newObj[stringOrObj] = model.evalObject(def, onlyJSMath);
                 }
             }
             return newObj;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model
-        Model.prototype.eval = function (name) {
+        Model.prototype.eval = function (name, onlyJSMath) {
             var model = this;
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -4801,20 +4820,25 @@ var KG;
                     calcs: calcs,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
+                console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
             catch (err) {
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
-                try {
-                    var result = eval(name);
-                    //console.log('parsed', name, 'as an expression with value', result);
-                    return result;
-                }
-                catch (err) {
-                    //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
+                if (onlyJSMath) {
                     return name;
+                }
+                else {
+                    try {
+                        var result = eval(name);
+                        console.log('parsed', name, 'as an expression with value', result);
+                        return result;
+                    }
+                    catch (err) {
+                        console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        return name;
+                    }
                 }
             }
         };
@@ -6197,8 +6221,8 @@ var KG;
             var c = this;
             c.rootElement.attr('cx', c.xScale.scale(c.x));
             c.rootElement.attr('cy', c.yScale.scale(c.y));
-            c.rootElement.attr('rx', c.xScale.scale(c.rx) - c.xScale.scale(0));
-            c.rootElement.attr('ry', c.yScale.scale(c.ry) - c.yScale.scale(0));
+            c.rootElement.attr('rx', Math.abs(c.xScale.scale(c.rx) - c.xScale.scale(0)));
+            c.rootElement.attr('ry', Math.abs(c.yScale.scale(c.ry) - c.yScale.scale(0)));
             c.drawFill(c.rootElement);
             c.drawStroke(c.rootElement);
             return c;
@@ -6209,17 +6233,7 @@ var KG;
     var Circle = /** @class */ (function (_super) {
         __extends(Circle, _super);
         function Circle(def) {
-            var _this = this;
-            if (def.hasOwnProperty('radius')) {
-                def.r = def.radius;
-                delete def.radius;
-            }
-            if (def.hasOwnProperty('r')) {
-                def.rx = def.r;
-                def.ry = def.r;
-            }
-            _this = _super.call(this, def) || this;
-            return _this;
+            return _super.call(this, def) || this;
         }
         return Circle;
     }(Ellipse));

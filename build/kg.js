@@ -440,7 +440,6 @@ var KGAuthor;
             var l = _this;
             l.nosvg = true;
             var divDef = { "html": def['html'] };
-            console.log("divDef: ", divDef);
             l.subObjects.push(new KGAuthor.Div(divDef));
             return _this;
         }
@@ -1810,13 +1809,15 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
-    var Circle = /** @class */ (function (_super) {
-        __extends(Circle, _super);
-        function Circle(def, graph) {
+    var Ellipse = /** @class */ (function (_super) {
+        __extends(Ellipse, _super);
+        function Ellipse(def, graph) {
             var _this = this;
             KG.setDefaults(def, {
                 color: 'colors.blue',
-                opacity: 0.2
+                opacity: 0.2,
+                rx: 1,
+                ry: def.rx
             });
             def = KGAuthor.setFillColor(def);
             def = KGAuthor.setStrokeColor(def);
@@ -1856,8 +1857,26 @@ var KGAuthor;
             }
             return _this;
         }
-        return Circle;
+        return Ellipse;
     }(KGAuthor.GraphObject));
+    KGAuthor.Ellipse = Ellipse;
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def, graph) {
+            var _this = this;
+            if (def.hasOwnProperty('radius')) {
+                def.r = def.radius;
+                delete def.radius;
+            }
+            if (def.hasOwnProperty('r')) {
+                def.rx = def.r;
+                def.ry = def.r;
+            }
+            _this = _super.call(this, def, graph) || this;
+            return _this;
+        }
+        return Circle;
+    }(Ellipse));
     KGAuthor.Circle = Circle;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
@@ -2123,7 +2142,6 @@ var KGAuthor;
             rect.layer = def.layer || 0;
             rect.extractCoordinates('a', 'x1', 'y1');
             rect.extractCoordinates('b', 'x2', 'y2');
-            console.log('Rectangle object: ', rect);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2433,7 +2451,6 @@ var KGAuthor;
         __extends(PositionedDiv, _super);
         function PositionedDiv(def, divContainer) {
             var _this = this;
-            console.log('PositionedDiv def ', def);
             delete def.xAxis;
             delete def.yAxis;
             def.xScaleName = divContainer.xScale.name;
@@ -4664,7 +4681,7 @@ var KG;
             });
             model.updateListeners = [];
             model.currentParamValues = model.evalParams();
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.evalCalcs();
             model.currentColors = model.evalObject(model.colors);
         }
         Model.prototype.addUpdateListener = function (updateListener) {
@@ -4678,22 +4695,43 @@ var KG;
             });
             return p;
         };
-        Model.prototype.evalObject = function (obj) {
+        // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
+        Model.prototype.evalCalcs = function () {
+            var model = this;
+            // clear calculatios so old values aren't used;
+            model.currentCalcValues = {};
+            // generate as many calculations from params as possible
+            model.currentCalcValues = model.evalObject(model.calcs, true);
+            // calculate values based on other calculations (up to a depth of 5)
+            for (var i = 0; i < 5; i++) {
+                for (var calcName in model.currentCalcValues) {
+                    if (typeof model.calcs[calcName] == 'object') {
+                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true);
+                    }
+                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
+                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName], true);
+                    }
+                }
+            }
+            return model.currentCalcValues;
+        };
+        Model.prototype.evalObject = function (obj, onlyJSMath) {
             var model = this;
             var newObj = {};
             for (var stringOrObj in obj) {
                 var def = obj[stringOrObj];
                 if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.eval(def);
+                    newObj[stringOrObj] = model.eval(def, onlyJSMath);
                 }
                 else {
-                    newObj[stringOrObj] = model.evalObject(def);
+                    newObj[stringOrObj] = model.evalObject(def, onlyJSMath);
                 }
             }
             return newObj;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model
-        Model.prototype.eval = function (name) {
+        // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
+        Model.prototype.eval = function (name, onlyJSMath) {
             var model = this;
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -4710,20 +4748,25 @@ var KG;
                     calcs: calcs,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
+                console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
             catch (err) {
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
-                try {
-                    var result = eval(name);
-                    //console.log('parsed', name, 'as an expression with value', result);
-                    return result;
-                }
-                catch (err) {
-                    //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
+                if (onlyJSMath) {
                     return name;
+                }
+                else {
+                    try {
+                        var result = eval(name);
+                        console.log('parsed', name, 'as an expression with value', result);
+                        return result;
+                    }
+                    catch (err) {
+                        console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        return name;
+                    }
                 }
             }
         };
@@ -4780,7 +4823,7 @@ var KG;
         Model.prototype.update = function (force) {
             var model = this;
             model.currentParamValues = model.evalParams();
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.evalCalcs();
             console.log('calcs', model.currentCalcValues);
             model.currentColors = model.evalObject(model.colors);
             model.updateListeners.forEach(function (listener) {
@@ -4801,7 +4844,7 @@ var KG;
                 if (!match) {
                     return 0;
                 }
-                return Math.max(0,
+                return Math.max(0, 
                 // Number of digits right of decimal point.
                 (match[1] ? match[1].length : 0)
                     // Adjust for scientific notation.
@@ -5842,7 +5885,6 @@ var KG;
         };
         Marker.prototype.redraw = function () {
             var m = this;
-            console.log('redrawing marker', m);
             m.arrowElement.attr("fill", m.color);
             return m;
         };
@@ -6079,44 +6121,50 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Circle = /** @class */ (function (_super) {
-        __extends(Circle, _super);
-        function Circle(def) {
+    var Ellipse = /** @class */ (function (_super) {
+        __extends(Ellipse, _super);
+        function Ellipse(def) {
             var _this = this;
-            if (def.hasOwnProperty('radius')) {
-                def.r = def.radius;
-                delete def.radius;
-            }
             KG.setDefaults(def, {
                 fill: 'colors.blue',
                 opacity: 1,
                 stroke: 'colors.blue',
                 strokeWidth: 1,
                 strokeOpacity: 1,
-                r: 1
+                rx: 1,
+                ry: 1
             });
-            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'rx', 'ry']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create SVG elements
-        Circle.prototype.draw = function (layer) {
+        Ellipse.prototype.draw = function (layer) {
             var c = this;
-            c.rootElement = layer.append('circle');
+            c.rootElement = layer.append('ellipse');
             return c.addClipPathAndArrows().addInteraction();
         };
         // update properties
-        Circle.prototype.redraw = function () {
+        Ellipse.prototype.redraw = function () {
             var c = this;
             c.rootElement.attr('cx', c.xScale.scale(c.x));
             c.rootElement.attr('cy', c.yScale.scale(c.y));
-            c.rootElement.attr('r', c.xScale.scale(c.r) - c.xScale.scale(0));
+            c.rootElement.attr('rx', Math.abs(c.xScale.scale(c.rx) - c.xScale.scale(0)));
+            c.rootElement.attr('ry', Math.abs(c.yScale.scale(c.ry) - c.yScale.scale(0)));
             c.drawFill(c.rootElement);
             c.drawStroke(c.rootElement);
             return c;
         };
-        return Circle;
+        return Ellipse;
     }(KG.ViewObject));
+    KG.Ellipse = Ellipse;
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def) {
+            return _super.call(this, def) || this;
+        }
+        return Circle;
+    }(Ellipse));
     KG.Circle = Circle;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />

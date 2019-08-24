@@ -47,7 +47,24 @@ layout:
 
 </div>
 
-For both **Rectangle** and **Circle**, if you have a `label` attribute it will place the label in the center of the shape.
+An **Ellipse** is like a circle, only it can also take two radius attributes, `rx` and `ry`:
+
+<div width="300" height="250" class="codePreview">
+
+layout:
+  OneGraph:
+    graph:
+      objects:
+      - Ellipse:
+          center: [5,5]
+          rx: 4
+          ry: 2
+
+</div>
+
+(In truth, Circle and Ellipse are the same object -- all a Circle object does is create an ellipse with `rx = ry = r`!)
+
+For all of these shapes, if you have a `label` attribute it will place the label in the center of the shape.
 
 ## Areas
 

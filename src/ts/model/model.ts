@@ -64,38 +64,38 @@ module KG {
             model.currentCalcValues = {};
 
             // generate as many calculations from params as possible
-            model.currentCalcValues = model.evalObject(model.calcs);
+            model.currentCalcValues = model.evalObject(model.calcs, true);
 
             // calculate values based on other calculations (up to a depth of 5)
             for (let i = 0; i < 5; i++) {
                 for (const calcName in model.currentCalcValues) {
                     if (typeof model.calcs[calcName] == 'object') {
-                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName])
-                    }
-                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
+                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true)
+                    } else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
+                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName], true);
                     }
                 }
             }
             return model.currentCalcValues;
         }
 
-        evalObject(obj: {}) {
+        evalObject(obj: {}, onlyJSMath?: boolean) {
             const model = this;
             let newObj = {};
             for (const stringOrObj in obj) {
                 const def = obj[stringOrObj];
                 if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.eval(def)
+                    newObj[stringOrObj] = model.eval(def, onlyJSMath)
                 } else {
-                    newObj[stringOrObj] = model.evalObject(def)
+                    newObj[stringOrObj] = model.evalObject(def, onlyJSMath)
                 }
             }
             return newObj;
         }
 
         // the model serves as a model, and can evaluate expressions within the context of that model
-        eval(name: string) {
+        // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
+        eval(name: string, onlyJSMath?: boolean) {
 
             const model = this;
 
@@ -119,26 +119,28 @@ module KG {
                     calcs: calcs,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
+                console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
-            }
-
-            catch
+            } catch
                 (err) {
 
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
 
-                try {
-                    let result = eval(name);
-                    //console.log('parsed', name, 'as an expression with value', result);
-                    return result;
+                if (onlyJSMath) {
+                    return name;
+                } else {
+                    try {
+                        let result = eval(name);
+                        console.log('parsed', name, 'as an expression with value', result);
+                        return result;
+                    } catch (err) {
+                        console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        return name;
+                    }
+
                 }
 
-                catch (err) {
-                    //console.log('unable to parse', name,'as a valid expression; generates error:', err.message);
-                    return name;
-                }
 
             }
 

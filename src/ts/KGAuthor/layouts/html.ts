@@ -6,15 +6,9 @@ module KGAuthor {
 
         constructor(def) {
             super(def);
-
             const l = this;
-
             l.nosvg = true;
-
             let divDef = {"html": def['html']};
-
-            console.log("divDef: ", divDef);
-
             l.subObjects.push(new Div(divDef));
 
         }
