@@ -34,7 +34,6 @@ module KG {
 
         redraw() {
             let m = this;
-            console.log('redrawing marker', m);
             m.arrowElement.attr("fill", m.color);
             return m;
         }

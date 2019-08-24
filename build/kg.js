@@ -2123,7 +2123,6 @@ var KGAuthor;
             rect.layer = def.layer || 0;
             rect.extractCoordinates('a', 'x1', 'y1');
             rect.extractCoordinates('b', 'x2', 'y2');
-            console.log('Rectangle object: ', rect);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2433,7 +2432,6 @@ var KGAuthor;
         __extends(PositionedDiv, _super);
         function PositionedDiv(def, divContainer) {
             var _this = this;
-            console.log('PositionedDiv def ', def);
             delete def.xAxis;
             delete def.yAxis;
             def.xScaleName = divContainer.xScale.name;
@@ -4688,7 +4686,7 @@ var KG;
             // calculate values based on other calculations (up to a depth of 5)
             for (var i = 0; i < 5; i++) {
                 for (var calcName in model.currentCalcValues) {
-                    if (isNaN(model.currentCalcValues[calcName])) {
+                    if (isNaN(model.currentCalcValues[calcName]) && typeof model.currentCalcValues[calcName] == 'string') {
                         model.currentCalcValues[calcName] = model.eval(model.calcs[calcName]);
                     }
                 }
@@ -5859,7 +5857,6 @@ var KG;
         };
         Marker.prototype.redraw = function () {
             var m = this;
-            console.log('redrawing marker', m);
             m.arrowElement.attr("fill", m.color);
             return m;
         };
