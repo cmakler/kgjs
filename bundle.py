@@ -13,6 +13,12 @@ js_directories = [
     '../econgraphs/static/js/'
 ]
 
+js_local_directories = [
+    'build/bundled/',
+    'docs/js/',
+    'docs/playground/code/'
+]
+
 css_directories = [
     'build/bundled/',
     'docs/css/',
@@ -24,7 +30,7 @@ css_directories = [
 
 bundles = [
     {
-        "name": "kg.0.2.1.js",
+        "name": "kg.0.2.2.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg-lib.js",
@@ -32,8 +38,22 @@ bundles = [
         ]
     },
     {
+        "name": "kg-lib.js",
+        "dest_directories": js_local_directories,
+        "order": [
+            "build/lib/kg-lib.js"
+        ]
+    },
+    {
+        "name": "kg.js",
+        "dest_directories": js_local_directories,
+        "order": [
+            "build/kg.js"
+        ]
+    },
+    {
         "name": "kg.js.map",
-        "dest_directories": js_directories,
+        "dest_directories": js_local_directories,
         "order": [
             "build/kg.js.map"
         ]
