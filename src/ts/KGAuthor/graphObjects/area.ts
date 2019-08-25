@@ -10,6 +10,7 @@ module KGAuthor {
         fn2?: string;
         univariateFunction1?: UnivariateFunctionDefinition;
         univariateFunction2?: UnivariateFunctionDefinition;
+        above?: any;
     }
 
     export class Area extends GraphObject {

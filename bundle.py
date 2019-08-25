@@ -27,11 +27,7 @@ bundles = [
         "name": "kg.0.2.1.js",
         "dest_directories": js_directories,
         "order": [
-            "src/lib/katex/contrib/auto-render.min.js",
-            "src/lib/katex/katex.min.js",
-            "src/lib/d3/d3.min.js",
-            "node_modules/mathjs/dist/math.min.js",
-            "src/lib/js-yaml/dist/js-yaml.min.js",
+            "build/lib/kg-lib.js",
             "build/kg.js"
         ]
     },
