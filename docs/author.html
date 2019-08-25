@@ -2,72 +2,43 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Authoring</title>
-    <script src="codemirror/lib/codemirror.js"></script>
-    <link rel="stylesheet" type="text/css" href="codemirror/lib/codemirror.css">
-    <link rel="stylesheet" type="text/css" href="css/kg.0.1.4.css">
-    <script src="codemirror/mode/javascript/javascript.js"></script>
-    <script src="js/kg3d.0.1.4.js"></script>
-    <style>
-
-        .enclosing {
-            width: 1500px;
-        }
-
-        .preview {
-            width: 1000px;
-            float: right;
-        }
-
-        .author {
-            width: 500px;
-        }
-
-        .CodeMirror {
-            width: 100%;
-            height: 800px;
-        }
-    </style>
+    <title>KGJS Authoring Environment</title>
+    <script src="../codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" type="text/css" href="../codemirror/lib/codemirror.css">
+    <link rel="stylesheet" type="text/css" href="../css/kg.0.2.1.css">
+    <link rel="stylesheet" type="text/css" href="../css/preview.css">
+    <script src="../codemirror/mode/yaml/yaml.js"></script>
+    <script src="../js/kg-lib.js"></script>
+    <script src="../js/kg.js"></script>
 </head>
-<body>
-<div class="preview" style="text-align:right;">
-    <button onclick="load('oneGraph')">One Graph</button>
-    <button onclick="load('oneGraphPlusSidebar')">One Graph + Sidebar</button>
-    <button onclick="load('twoVerticalGraphs')">Two Vertical Graphs</button>
+<body class="documentation" style="background-color: #fffff8">
+<div id="author" class="codePreview">
+
+layout:
+  OneGraphPlusSidebar:
+    graph:
+      objects:
+
+      # Point object at coordinates (6,4)
+      - Point:
+          coordinates: [6,4]
+
+      # Red point object at coordinates (3,3)
+      - Point:
+          coordinates: [3,3]
+          color: red
+
+    sidebar:
+      controls:
+      - title: My Title Here
+        description: Have fun!
+
 </div>
-<p>KINETICGRAPHS EDITOR</p>
-<hr/>
-<div class="enclosing">
-    <div id="dest" class="kg-container preview" src="templates/oneGraph.json">Please refresh the page.</div>
-    <div id="src" class="author"></div>
-</div>
+
 <script>
-    const src = document.getElementById("src"),
-        dest = document.getElementById("dest"),
-
-        srcCodeMirror = CodeMirror(src, {
-            mode: "javascript",
-            lineNumbers: true,
-            lineWrapping: true
-        });
-
-    srcCodeMirror.on("change", update);
-
-    function update() {
-        const authorJSON = JSON.parse(srcCodeMirror.getValue());
-        new KG.View(dest, authorJSON)
-    }
-
-    function load(filename) {
-        d3.json('examples/' + filename + '.json', function (data) {
-            srcCodeMirror.setValue(JSON.stringify(data, null, 2));
-            new KG.View(dest, data);
-        });
-    }
-
-    load('oneGraph');
-
-
+    d3.select("#author").attr("width", window.innerWidth - 550).attr("height",window.innerHeight - 50);
 </script>
+<script src="../js/preview-pane.js"></script>
+
 </body>
 </html>

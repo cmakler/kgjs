@@ -7,14 +7,13 @@
     "@types/d3": "latest",
     "@types/d3-contour": "latest",
     "@types/js-yaml": "latest",
-    "@types/katex": "^0.5.0",
+    "@types/katex": "latest",
     "@types/mathjs": "latest",
-    "@types/three": "0.92.14",
+    "@types/three": "latest",
     "http-server": "latest",
-    "typescript": "^3.6.0-dev.20190814"
+    "typescript": "latest"
   },
   "scripts": {
-    "preview": "tsc && http-server -o",
     "build": "tsc --skipLibCheck",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

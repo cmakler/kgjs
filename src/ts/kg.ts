@@ -3,6 +3,9 @@
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
 
+
+
+
 /// <reference path="lib/underscore.ts"/>
 
 /// <reference path="KGAuthor/kgAuthor.ts"/>
@@ -59,7 +62,6 @@
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 
 declare function renderMathInElement(node, delimiters);
-
 
 // this file provides the interface with the overall web page
 

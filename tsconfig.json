@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "lib": ["es2018","dom"],
         "outFile": "build/kg.js"
     },
     "files": [
