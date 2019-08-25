@@ -34,6 +34,11 @@
   },
   "homepage": "https://github.com/cmakler/kgjs#readme",
   "dependencies": {
+    "d3": "^5.11.0",
+    "d3-contour": "^1.3.2",
+    "js-yaml": "^3.13.1",
+    "katex": "^0.11.0",
+    "three": "^0.107.0",
     "mathjs": "^6.0.4"
   }
 }
