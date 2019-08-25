@@ -8,7 +8,7 @@ module KG {
     }
 
     export interface IParametricFunction extends IMathFunction {
-        eval: (input: number) => { x: number, y: number };
+        evaluate: (input: number) => { x: number, y: number };
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
@@ -33,11 +33,11 @@ module KG {
             this.yFunctionStringDef = def.yFunction;
         }
 
-        eval(input) {
+        evaluate(input) {
             let fn = this;
             fn.scope = fn.scope || {params: fn.model.currentParamValues};
             fn.scope.t = input;
-            return {x: fn.xCompiledFunction.eval(fn.scope), y: fn.yCompiledFunction.eval(fn.scope)};
+            return {x: fn.xCompiledFunction.evaluate(fn.scope), y: fn.yCompiledFunction.evaluate(fn.scope)};
         }
 
         generateData(min?, max?) {
@@ -52,7 +52,7 @@ module KG {
             for (let i = 0; i < fn.samplePoints + 1; i++) {
                 let a = i / fn.samplePoints,
                     input = a * min + (1 - a) * max,
-                    output = fn.eval(input);
+                    output = fn.evaluate(input);
                 if (!isNaN(output.x) && output.x != Infinity && output.x != -Infinity && !isNaN(output.y) && output.y != Infinity && output.y != -Infinity) {
                     data.push(output);
                 }

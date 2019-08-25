@@ -26,6 +26,21 @@ module KGAuthor {
                     def.yPixelOffset = 10;
                     def.align = 'left';
                 }
+                if(def.position.toLowerCase() == 'tl') {
+                    def.xPixelOffset = 5;
+                    def.yPixelOffset = -12;
+                    def.align = 'left';
+                }
+                if(def.position.toLowerCase() == 'tr') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = -12;
+                    def.align = 'right';
+                }
+                if(def.position.toLowerCase() == 'br') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = 10;
+                    def.align = 'right';
+                }
                 if(def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
                     def.yPixelOffset = -12;
@@ -36,6 +51,14 @@ module KGAuthor {
                 }
                 if(def.position.toLowerCase() == 'b') {
                     def.yPixelOffset = 12;
+                }
+                if(def.position.toLowerCase() == 'l') {
+                    def.xPixelOffset = -8;
+                    def.align = 'right';
+                }
+                if(def.position.toLowerCase() == 'r') {
+                    def.xPixelOffset = 8;
+                    def.align = 'left';
                 }
             }
             super(def, graph);

@@ -54,7 +54,7 @@ module KG {
                     return u.updateArray(d)
                 } else {
                     const initialValue = d;
-                    let newValue = u.model.eval(d);
+                    let newValue = u.model.evaluate(d);
                     if(initialValue != newValue) {
                         u.hasChanged = true;
                     }
@@ -71,7 +71,7 @@ module KG {
                 if (Array.isArray(d)) {
                     u[name] = u.updateArray(d);
                 } else {
-                    let newValue = u.model.eval(d);
+                    let newValue = u.model.evaluate(d);
                     if (initialValue != newValue) {
                         u.hasChanged = true;
                         u[name] = newValue;

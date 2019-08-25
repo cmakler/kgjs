@@ -2476,6 +2476,21 @@ var KGAuthor;
                     def.yPixelOffset = 10;
                     def.align = 'left';
                 }
+                if (def.position.toLowerCase() == 'tl') {
+                    def.xPixelOffset = 5;
+                    def.yPixelOffset = -12;
+                    def.align = 'left';
+                }
+                if (def.position.toLowerCase() == 'tr') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = -12;
+                    def.align = 'right';
+                }
+                if (def.position.toLowerCase() == 'br') {
+                    def.xPixelOffset = -5;
+                    def.yPixelOffset = 10;
+                    def.align = 'right';
+                }
                 if (def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
                     def.yPixelOffset = -12;
@@ -2486,6 +2501,14 @@ var KGAuthor;
                 }
                 if (def.position.toLowerCase() == 'b') {
                     def.yPixelOffset = 12;
+                }
+                if (def.position.toLowerCase() == 'l') {
+                    def.xPixelOffset = -8;
+                    def.align = 'right';
+                }
+                if (def.position.toLowerCase() == 'r') {
+                    def.xPixelOffset = 8;
+                    def.align = 'left';
                 }
             }
             _this = _super.call(this, def, graph) || this;
@@ -4709,7 +4732,7 @@ var KG;
                         model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true);
                     }
                     else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName], true);
+                        model.currentCalcValues[calcName] = model.evaluate(model.calcs[calcName], true);
                     }
                 }
             }
@@ -4721,7 +4744,7 @@ var KG;
             for (var stringOrObj in obj) {
                 var def = obj[stringOrObj];
                 if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.eval(def, onlyJSMath);
+                    newObj[stringOrObj] = model.evaluate(def, onlyJSMath);
                 }
                 else {
                     newObj[stringOrObj] = model.evalObject(def, onlyJSMath);
@@ -4731,7 +4754,7 @@ var KG;
         };
         // the model serves as a model, and can evaluate expressions within the context of that model
         // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
-        Model.prototype.eval = function (name, onlyJSMath) {
+        Model.prototype.evaluate = function (name, onlyJSMath) {
             var model = this;
             // don't just evaluate numbers
             if (!isNaN(parseFloat(name))) {
@@ -4743,12 +4766,12 @@ var KG;
             // try to evaluate using mathjs
             try {
                 var compiledMath = math.compile(name);
-                var result = compiledMath.eval({
+                var result = compiledMath.evaluate({
                     params: params,
                     calcs: calcs,
                     colors: colors
                 });
-                console.log('parsed', name, 'as a pure math expression with value', result);
+                //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             }
             catch (err) {
@@ -4760,11 +4783,11 @@ var KG;
                 else {
                     try {
                         var result = eval(name);
-                        console.log('parsed', name, 'as an expression with value', result);
+                        //console.log('parsed', name, 'as an expression with value', result);
                         return result;
                     }
                     catch (err) {
-                        console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        //console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
                         return name;
                     }
                 }
@@ -4774,7 +4797,7 @@ var KG;
         Model.prototype.latexColors = function () {
             var result = '%% econ colors %%\n', model = this;
             for (var color in model.colors) {
-                result += "\\definecolor{" + color + "}{HTML}{" + model.eval(model.colors[color]).replace('#', '') + "}\n";
+                result += "\\definecolor{" + color + "}{HTML}{" + model.evaluate(model.colors[color]).replace('#', '') + "}\n";
             }
             console.log(result);
         };
@@ -4903,7 +4926,7 @@ var KG;
             this.max = def.max;
         }
         Restriction.prototype.valid = function (model) {
-            var r = this, value = model.eval(r.expression), min = model.eval(r.min), max = model.eval(r.max);
+            var r = this, value = model.evaluate(r.expression), min = model.evaluate(r.min), max = model.evaluate(r.max);
             // restrictions aren't working right now
             return true;
             //return (value >= min && value <= max);
@@ -4943,7 +4966,7 @@ var KG;
                 }
                 else {
                     var initialValue = d;
-                    var newValue = u.model.eval(d);
+                    var newValue = u.model.evaluate(d);
                     if (initialValue != newValue) {
                         u.hasChanged = true;
                     }
@@ -4959,7 +4982,7 @@ var KG;
                     u[name] = u.updateArray(d);
                 }
                 else {
-                    var newValue = u.model.eval(d);
+                    var newValue = u.model.evaluate(d);
                     if (initialValue != newValue) {
                         u.hasChanged = true;
                         u[name] = newValue;
@@ -5052,28 +5075,28 @@ var KG;
             _this.yFnZStringDef = def.yFnZ;
             return _this;
         }
-        UnivariateFunction.prototype.eval = function (input, z) {
+        UnivariateFunction.prototype.evaluate = function (input, z) {
             var fn = this;
             if (z) {
                 if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
-                    return fn.yzCompiledFunction.eval({ y: input });
+                    return fn.yzCompiledFunction.evaluate({ y: input });
                 }
                 else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
-                    return fn.zCompiledFunction.eval({ y: input });
+                    return fn.zCompiledFunction.evaluate({ y: input });
                 }
                 else if (fn.hasOwnProperty('zCompiledFunction')) {
-                    return fn.zCompiledFunction.eval({ x: input });
+                    return fn.zCompiledFunction.evaluate({ x: input });
                 }
             }
             else {
                 if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                    return fn.yCompiledFunction.eval({ y: input });
+                    return fn.yCompiledFunction.evaluate({ y: input });
                 }
                 else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
-                    return fn.compiledFunction.eval({ y: input });
+                    return fn.compiledFunction.evaluate({ y: input });
                 }
                 else if (fn.hasOwnProperty('compiledFunction')) {
-                    return fn.compiledFunction.eval({ x: input });
+                    return fn.compiledFunction.evaluate({ x: input });
                 }
             }
         };
@@ -5086,7 +5109,7 @@ var KG;
                 max = fn.max;
             }
             for (var i = 0; i < fn.samplePoints + 1; i++) {
-                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
+                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
                 if (!isNaN(output) && output != Infinity && output != -Infinity) {
                     data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
                 }
@@ -5097,7 +5120,7 @@ var KG;
         UnivariateFunction.prototype.mathboxFn = function () {
             var fn = this;
             return function (emit, x) {
-                var y = fn.eval(x), z = fn.eval(x, true);
+                var y = fn.evaluate(x), z = fn.evaluate(x, true);
                 if (y <= 50 && z <= 50) {
                     emit(y, z, x);
                 }
@@ -5160,11 +5183,11 @@ var KG;
             _this.yFunctionStringDef = def.yFunction;
             return _this;
         }
-        ParametricFunction.prototype.eval = function (input) {
+        ParametricFunction.prototype.evaluate = function (input) {
             var fn = this;
             fn.scope = fn.scope || { params: fn.model.currentParamValues };
             fn.scope.t = input;
-            return { x: fn.xCompiledFunction.eval(fn.scope), y: fn.yCompiledFunction.eval(fn.scope) };
+            return { x: fn.xCompiledFunction.evaluate(fn.scope), y: fn.yCompiledFunction.evaluate(fn.scope) };
         };
         ParametricFunction.prototype.generateData = function (min, max) {
             var fn = this, data = [];
@@ -5175,7 +5198,7 @@ var KG;
                 max = fn.max;
             }
             for (var i = 0; i < fn.samplePoints + 1; i++) {
-                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.eval(input);
+                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
                 if (!isNaN(output.x) && output.x != Infinity && output.x != -Infinity && !isNaN(output.y) && output.y != Infinity && output.y != -Infinity) {
                     data.push(output);
                 }
@@ -5227,16 +5250,16 @@ var KG;
         MultivariateFunction.prototype.inDomain = function (x, y, z) {
             var fn = this;
             if (fn.hasOwnProperty('compiledDomainCondition')) {
-                return fn.compiledDomainCondition.eval({ x: x, y: y, z: z });
+                return fn.compiledDomainCondition.evaluate({ x: x, y: y, z: z });
             }
             else {
                 return true;
             }
         };
-        MultivariateFunction.prototype.eval = function (x, y) {
+        MultivariateFunction.prototype.evaluate = function (x, y) {
             var fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
-                var z = fn.compiledFunction.eval({ x: x, y: y });
+                var z = fn.compiledFunction.evaluate({ x: x, y: y });
                 if (fn.inDomain(x, y, z)) {
                     return z;
                 }
@@ -5245,7 +5268,7 @@ var KG;
         MultivariateFunction.prototype.mathboxFn = function () {
             var fn = this;
             return function (emit, x, y) {
-                emit(y, fn.eval(x, y), x);
+                emit(y, fn.evaluate(x, y), x);
             };
         };
         MultivariateFunction.prototype.contour = function (level, xScale, yScale) {
@@ -5255,7 +5278,7 @@ var KG;
             for (var j = 0.5, k = 0; j < m; ++j) {
                 for (var i = 0.5; i < n; ++i, ++k) {
                     var x = i * xMax * 1.1 / n, y = j * yMax * 1.1 / m;
-                    values[k] = fn.eval(x, y);
+                    values[k] = fn.evaluate(x, y);
                 }
             }
             var transform = function (_a) {
@@ -5325,7 +5348,7 @@ var KG;
         }
         Listener.prototype.onChange = function (scope) {
             var l = this, compiledMath = math.compile(l.expression);
-            var parsedMath = compiledMath.eval(scope);
+            var parsedMath = compiledMath.evaluate(scope);
             l.model.updateParam(l.param, parsedMath);
         };
         return Listener;

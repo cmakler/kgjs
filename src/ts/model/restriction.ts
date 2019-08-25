@@ -30,9 +30,9 @@ module KG {
 
         valid(model:Model) {
             const r = this,
-                value = model.eval(r.expression),
-                min = model.eval(r.min),
-                max = model.eval(r.max);
+                value = model.evaluate(r.expression),
+                min = model.evaluate(r.min),
+                max = model.evaluate(r.max);
 
             // restrictions aren't working right now
             return true;

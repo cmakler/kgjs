@@ -11,7 +11,7 @@ module KG {
 
     export interface IMultivariateFunction extends IMathFunction {
         inDomain: (x: number, y: number, z: number) => boolean;
-        eval: (x: number, y: number) => number;
+        evaluate: (x: number, y: number) => number;
         mathboxFn: (maxY, maxZ, minY?, minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y: number, i?: number, j?: number, t?: number) => void;
         contour: (level: number, xScale: Scale, yScale: Scale) => string;
     }
@@ -37,16 +37,16 @@ module KG {
         inDomain(x, y, z) {
             let fn = this;
             if (fn.hasOwnProperty('compiledDomainCondition')) {
-                return fn.compiledDomainCondition.eval({x: x, y: y, z: z});
+                return fn.compiledDomainCondition.evaluate({x: x, y: y, z: z});
             } else {
                 return true;
             }
         }
 
-        eval(x, y) {
+        evaluate(x, y) {
             let fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
-                const z = fn.compiledFunction.eval({x: x, y: y});
+                const z = fn.compiledFunction.evaluate({x: x, y: y});
                 if (fn.inDomain(x, y, z)) {
                     return z;
                 }
@@ -56,7 +56,7 @@ module KG {
         mathboxFn() {
             const fn = this;
             return function (emit, x, y) {
-                emit(y, fn.eval(x, y), x);
+                emit(y, fn.evaluate(x, y), x);
             };
         }
 
@@ -70,7 +70,7 @@ module KG {
                     for (let i = 0.5; i < n; ++i, ++k) {
                         let x = i * xMax * 1.1 / n,
                             y = j * yMax * 1.1 / m;
-                        values[k] = fn.eval(x, y);
+                        values[k] = fn.evaluate(x, y);
                     }
                 }
 

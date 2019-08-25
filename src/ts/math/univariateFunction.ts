@@ -13,7 +13,7 @@ module KG {
     }
 
     export interface IUnivariateFunction extends IMathFunction {
-        eval: (input: number, z?: boolean) => number;
+        evaluate: (input: number, z?: boolean) => number;
         mathboxFn: (maxY,maxZ,minY?,minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y?: number, i?: number, j?: number, t?: number) => void;
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
@@ -52,23 +52,23 @@ module KG {
             this.yFnZStringDef = def.yFnZ;
         }
 
-        eval(input, z?: boolean) {
+        evaluate(input, z?: boolean) {
             let fn = this;
             if (z) {
                 if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
-                    return fn.yzCompiledFunction.eval({y: input});
+                    return fn.yzCompiledFunction.evaluate({y: input});
                 } else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
-                    return fn.zCompiledFunction.eval({y: input});
+                    return fn.zCompiledFunction.evaluate({y: input});
                 } else if (fn.hasOwnProperty('zCompiledFunction')) {
-                    return fn.zCompiledFunction.eval({x: input});
+                    return fn.zCompiledFunction.evaluate({x: input});
                 }
             } else {
                 if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                    return fn.yCompiledFunction.eval({y: input});
+                    return fn.yCompiledFunction.evaluate({y: input});
                 } else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
-                    return fn.compiledFunction.eval({y: input});
+                    return fn.compiledFunction.evaluate({y: input});
                 } else if (fn.hasOwnProperty('compiledFunction')) {
-                    return fn.compiledFunction.eval({x: input});
+                    return fn.compiledFunction.evaluate({x: input});
                 }
             }
 
@@ -86,7 +86,7 @@ module KG {
             for (let i = 0; i < fn.samplePoints + 1; i++) {
                 let a = i / fn.samplePoints,
                     input = a * min + (1 - a) * max,
-                    output = fn.eval(input);
+                    output = fn.evaluate(input);
                 if (!isNaN(output) && output != Infinity && output != -Infinity) {
                     data.push((fn.ind == 'x') ? {x: input, y: output} : {x: output, y: input});
                 }
@@ -98,8 +98,8 @@ module KG {
         mathboxFn() {
             const fn = this;
             return function (emit, x) {
-                const y = fn.eval(x),
-                    z = fn.eval(x,true);
+                const y = fn.evaluate(x),
+                    z = fn.evaluate(x,true);
                 if(y <= 50 && z <= 50) {
                     emit(y, z, x);
                 }

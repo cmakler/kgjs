@@ -3,7 +3,7 @@
 module KG {
 
     export interface IModel {
-        eval: (name: string) => any;
+        evaluate: (name: string) => any;
         addUpdateListener: (updateListener: UpdateListener) => Model;
         getParam: (name: string) => any;
         updateParam: (name: string, value: any) => void;
@@ -72,7 +72,7 @@ module KG {
                     if (typeof model.calcs[calcName] == 'object') {
                         model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true)
                     } else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.eval(model.calcs[calcName], true);
+                        model.currentCalcValues[calcName] = model.evaluate(model.calcs[calcName], true);
                     }
                 }
             }
@@ -85,7 +85,7 @@ module KG {
             for (const stringOrObj in obj) {
                 const def = obj[stringOrObj];
                 if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.eval(def, onlyJSMath)
+                    newObj[stringOrObj] = model.evaluate(def, onlyJSMath)
                 } else {
                     newObj[stringOrObj] = model.evalObject(def, onlyJSMath)
                 }
@@ -95,7 +95,7 @@ module KG {
 
         // the model serves as a model, and can evaluate expressions within the context of that model
         // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
-        eval(name: string, onlyJSMath?: boolean) {
+        evaluate(name: string, onlyJSMath?: boolean) {
 
             const model = this;
 
@@ -114,12 +114,12 @@ module KG {
             // try to evaluate using mathjs
             try {
                 const compiledMath = math.compile(name);
-                let result = compiledMath.eval({
+                let result = compiledMath.evaluate({
                     params: params,
                     calcs: calcs,
                     colors: colors
                 });
-                console.log('parsed', name, 'as a pure math expression with value', result);
+                //console.log('parsed', name, 'as a pure math expression with value', result);
                 return result;
             } catch
                 (err) {
@@ -132,10 +132,10 @@ module KG {
                 } else {
                     try {
                         let result = eval(name);
-                        console.log('parsed', name, 'as an expression with value', result);
+                        //console.log('parsed', name, 'as an expression with value', result);
                         return result;
                     } catch (err) {
-                        console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        //console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
                         return name;
                     }
 
@@ -150,7 +150,7 @@ module KG {
         latexColors() {
             let result = '%% econ colors %%\n', model = this;
             for (const color in model.colors) {
-                result += `\\definecolor{${color}}{HTML}{${model.eval(model.colors[color]).replace('#', '')}}\n`
+                result += `\\definecolor{${color}}{HTML}{${model.evaluate(model.colors[color]).replace('#', '')}}\n`
             }
             console.log(result)
         }

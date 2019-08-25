@@ -34,7 +34,7 @@ module KG {
         onChange(scope) {
             const l = this,
                 compiledMath = math.compile(l.expression);
-            let parsedMath = compiledMath.eval(scope);
+            let parsedMath = compiledMath.evaluate(scope);
             l.model.updateParam(l.param, parsedMath);
         }
 
