@@ -30,6 +30,32 @@ css_directories = [
 
 bundles = [
     {
+        "name": "kg-lib.js",
+        "dest_directories": ["build/lib/"],
+        "order": [
+            "node_modules/katex/dist/contrib/auto-render.min.js",
+            "node_modules/katex/dist/katex.min.js",
+            "node_modules/d3/dist/d3.min.js",
+            "node_modules/mathjs/dist/math.min.js",
+            "node_modules/js-yaml/dist/js-yaml.min.js"
+        ]
+    },
+    {
+        "name": "kg-lib.css",
+        "dest_directories": ["build/lib/"],
+        "order": [
+            "node_modules/katex/dist/katex.min.css"
+        ]
+    },
+    {
+        "name": "kg-tufte.js",
+        "dest_directories": ["build/lib/"],
+        "order": [
+            "node_modules/katex/dist/katex.min.css",
+            "node_modules/tufte-css/tufte.min.css"
+        ]
+    },
+    {
         "name": "kg.0.2.2.js",
         "dest_directories": js_directories,
         "order": [
@@ -59,7 +85,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.1.css",
+        "name": "kg.0.2.2.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-lib.css",
@@ -67,7 +93,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.2.1.css",
+        "name": "kg-tufte.0.2.2.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-tufte.css",
