@@ -47,7 +47,7 @@ module KGAuthor {
                 });
                 parseFill(def, 'areaAbove');
                 KG.setDefaults(def.areaAbove, def.univariateFunction);
-                parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                parseFn(def.areaAbove, 'fn', 'univariateFunction1');
                 def.areaAbove.above = true;
                 c.subObjects.push(new Area(def.areaAbove, graph));
             }

@@ -1605,7 +1605,7 @@ var KGAuthor;
                 });
                 KGAuthor.parseFill(def, 'areaAbove');
                 KG.setDefaults(def.areaAbove, def.univariateFunction);
-                KGAuthor.parseFn(def.areaBelow, 'fn', 'univariateFunction1');
+                KGAuthor.parseFn(def.areaAbove, 'fn', 'univariateFunction1');
                 def.areaAbove.above = true;
                 c.subObjects.push(new KGAuthor.Area(def.areaAbove, graph));
             }
