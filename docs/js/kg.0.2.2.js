@@ -6801,10 +6801,12 @@ var KG;
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
-            var sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%');
-            controls.sliders.forEach(function (slider) {
-                new KG.Slider({ layer: sliderTable, param: slider.param, label: slider.label, model: controls.model });
-            });
+            if (controls.sliders.length > 0) {
+                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%');
+                controls.sliders.forEach(function (slider) {
+                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
+                });
+            }
             controls.checkboxes.forEach(function (checkbox) {
                 checkbox = KG.setDefaults(checkbox, {
                     layer: controls.rootElement,
