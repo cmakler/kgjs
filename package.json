@@ -10,7 +10,8 @@
     "@types/katex": "latest",
     "@types/mathjs": "latest",
     "http-server": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "tufte-css": "latest"
   },
   "scripts": {
     "build": "tsc --skipLibCheck",
