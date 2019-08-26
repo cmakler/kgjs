@@ -33,8 +33,8 @@ bundles = [
         "name": "kg-lib.js",
         "dest_directories": ["build/lib/"],
         "order": [
-            "node_modules/katex/dist/contrib/auto-render.min.js",
             "node_modules/katex/dist/katex.min.js",
+            "node_modules/katex/dist/contrib/auto-render.min.js",
             "node_modules/d3/dist/d3.min.js",
             "node_modules/mathjs/dist/math.min.js",
             "node_modules/js-yaml/dist/js-yaml.min.js"
