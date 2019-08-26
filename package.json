@@ -9,7 +9,6 @@
     "@types/js-yaml": "latest",
     "@types/katex": "latest",
     "@types/mathjs": "latest",
-    "@types/three": "latest",
     "http-server": "latest",
     "typescript": "latest"
   },
