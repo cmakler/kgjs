@@ -39,3 +39,5 @@
   pages:
     - title: Supply and Demand
       url: linear-supply-demand
+    - title: Consumer Optimization
+      url: indifference-curves

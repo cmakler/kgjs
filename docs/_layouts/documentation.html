@@ -34,7 +34,7 @@
         <input type="range" style="width:140px" min="2" max="18" value="10" step="0.01"
                oninput="d3.select('#kgjs-logo-circle').attr('r',this.value)">
         <div style="height:25px"></div>
-        <div>
+        <div style="height:600px; overflow-y: scroll;">
             {% for category in site.data.contents %}
             <div class="contents-category">{{category.name}}</div>
             {% for page in category.pages %}
@@ -46,5 +46,15 @@
 </div>
 
 <script src="../js/preview-pane.js"></script>
+<script>
+    renderMathInElement(document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "\\[", right: "\\]", display: true},
+            {left: "$", right: "$", display: false},
+            {left: "\\(", right: "\\)", display: false}
+        ]
+    });
+</script>
 </body>
 </html>
