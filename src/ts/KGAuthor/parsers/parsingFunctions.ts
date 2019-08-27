@@ -206,12 +206,22 @@ module KGAuthor {
     // allow author to specify a function using a single string rather than a function object
     export function parseFn(def, authorName, codeName) {
         if (!def.hasOwnProperty(codeName) && def.hasOwnProperty(authorName)) {
-            def[codeName] = {
-                fn: def[authorName],
-                ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
-                min: def.min,
-                max: def.max,
-                samplePoints: def[authorName].samplePoints
+            if (codeName == 'parametricFunction') {
+                def.parametricFunction = {
+                    xFunction: def.xFn,
+                    yFunction: def.yFn,
+                    min: def.min,
+                    max: def.max,
+                    samplePoints: def.samplePoints
+                }
+            } else {
+                def[codeName] = {
+                    fn: def[authorName],
+                    ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
+                    min: def.min,
+                    max: def.max,
+                    samplePoints: def.samplePoints
+                }
             }
         }
     }

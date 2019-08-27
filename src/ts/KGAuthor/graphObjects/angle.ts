@@ -7,7 +7,7 @@ module KGAuthor {
     }
 
     export interface AngleMarkerDefinition extends CurveDefinition {
-        point?: any[];
+        coordinates?: any[];
         measure?: any;
         start?: any;
         end?: any;
@@ -26,7 +26,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 name: 'angle',
                 color: 'colors.grey',
-                point: [0, 0],
+                coordinates: [0, 0],
                 radians: false,
                 start: 0,
                 r: multiplyDefs(0.05, subtractDefs(graph.def.xAxis.max, graph.def.xAxis.min)),
@@ -49,8 +49,8 @@ module KGAuthor {
 
 
             def.parametricFunction = {
-                xFunction: addDefs(def.point[0], multiplyDefs(def.r, "cos(t)")),
-                yFunction: addDefs(def.point[1], multiplyDefs(def.r, "sin(t)")),
+                xFunction: addDefs(def.coordinates[0], multiplyDefs(def.r, "cos(t)")),
+                yFunction: addDefs(def.coordinates[1], multiplyDefs(def.r, "sin(t)")),
                 min: start,
                 max: end
             };
@@ -63,8 +63,8 @@ module KGAuthor {
             dm.measureRadians = divideDefs(measure, Math.PI);
 
             let labelDef = KG.setDefaults(def.label || {}, {
-                x: addDefs(def.point[0], multiplyDefs(multiplyDefs(1.7, def.r), `cos(${mid})`)),
-                y: addDefs(def.point[1], multiplyDefs(multiplyDefs(1.7, def.r), `sin(${mid})`)),
+                x: addDefs(def.coordinates[0], multiplyDefs(multiplyDefs(1.7, def.r), `cos(${mid})`)),
+                y: addDefs(def.coordinates[1], multiplyDefs(multiplyDefs(1.7, def.r), `sin(${mid})`)),
                 fontSize: 8,
                 color: def.stroke,
                 bgcolor: "none",
@@ -111,7 +111,7 @@ module KGAuthor {
 
             def.start = `atan2(${A.y} - ${B.y},${A.x} - ${B.x})`;
             def.end = `atan2(${C.y} - ${B.y},${C.x} - ${B.x})`;
-            def.point = [B.x,B.y];
+            def.coordinates = [B.x,B.y];
             def.radians = true;
 
             KG.setDefaults(def,{

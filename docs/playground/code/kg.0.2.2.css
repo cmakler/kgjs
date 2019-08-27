@@ -101,7 +101,6 @@ table.gameMatrix tr td.strategy {
 .contents {
     position: fixed;
     width: 180px;
-    top: 10px;
     left: 10px;
     border-right: thin solid gray;
     padding: 20px;

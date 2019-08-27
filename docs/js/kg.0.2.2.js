@@ -351,13 +351,24 @@ var KGAuthor;
     // allow author to specify a function using a single string rather than a function object
     function parseFn(def, authorName, codeName) {
         if (!def.hasOwnProperty(codeName) && def.hasOwnProperty(authorName)) {
-            def[codeName] = {
-                fn: def[authorName],
-                ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
-                min: def.min,
-                max: def.max,
-                samplePoints: def[authorName].samplePoints
-            };
+            if (codeName == 'parametricFunction') {
+                def.parametricFunction = {
+                    xFunction: def.xFn,
+                    yFunction: def.yFn,
+                    min: def.min,
+                    max: def.max,
+                    samplePoints: def.samplePoints
+                };
+            }
+            else {
+                def[codeName] = {
+                    fn: def[authorName],
+                    ind: (def[authorName].indexOf('(y)') > -1) ? 'y' : 'x',
+                    min: def.min,
+                    max: def.max,
+                    samplePoints: def.samplePoints
+                };
+            }
         }
     }
     KGAuthor.parseFn = parseFn;
@@ -1655,6 +1666,7 @@ var KGAuthor;
             var _this = this;
             def = KGAuthor.setStrokeColor(def);
             KGAuthor.parseFn(def, 'fn', 'univariateFunction');
+            KGAuthor.parseFn(def, 'xFn', 'parametricFunction');
             _this = _super.call(this, def, graph) || this;
             var c = _this;
             c.type = 'Curve';
@@ -2319,7 +2331,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 name: 'angle',
                 color: 'colors.grey',
-                point: [0, 0],
+                coordinates: [0, 0],
                 radians: false,
                 start: 0,
                 r: KGAuthor.multiplyDefs(0.05, KGAuthor.subtractDefs(graph.def.xAxis.max, graph.def.xAxis.min)),
@@ -2335,8 +2347,8 @@ var KGAuthor;
             // convert to radians unless already radians
             var start = def.radians ? def.start : KGAuthor.multiplyDefs(def.start, 0.01745329252), measure = def.radians ? def.measure : KGAuthor.multiplyDefs(def.measure, 0.01745329252), end = def.radians ? def.end : KGAuthor.multiplyDefs(def.end, 0.01745329252), mid = KGAuthor.addDefs(start, KGAuthor.multiplyDefs(0.5, measure));
             def.parametricFunction = {
-                xFunction: KGAuthor.addDefs(def.point[0], KGAuthor.multiplyDefs(def.r, "cos(t)")),
-                yFunction: KGAuthor.addDefs(def.point[1], KGAuthor.multiplyDefs(def.r, "sin(t)")),
+                xFunction: KGAuthor.addDefs(def.coordinates[0], KGAuthor.multiplyDefs(def.r, "cos(t)")),
+                yFunction: KGAuthor.addDefs(def.coordinates[1], KGAuthor.multiplyDefs(def.r, "sin(t)")),
                 min: start,
                 max: end
             };
@@ -2345,8 +2357,8 @@ var KGAuthor;
             dm.measureDegrees = def.radians ? KGAuthor.multiplyDefs(def.measure, 57.2957795131) : def.measure;
             dm.measureRadians = KGAuthor.divideDefs(measure, Math.PI);
             var labelDef = KG.setDefaults(def.label || {}, {
-                x: KGAuthor.addDefs(def.point[0], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "cos(" + mid + ")")),
-                y: KGAuthor.addDefs(def.point[1], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "sin(" + mid + ")")),
+                x: KGAuthor.addDefs(def.coordinates[0], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "cos(" + mid + ")")),
+                y: KGAuthor.addDefs(def.coordinates[1], KGAuthor.multiplyDefs(KGAuthor.multiplyDefs(1.7, def.r), "sin(" + mid + ")")),
                 fontSize: 8,
                 color: def.stroke,
                 bgcolor: "none",
@@ -2376,7 +2388,7 @@ var KGAuthor;
             var A = new KGAuthor.Point(def.pointA, graph), B = new KGAuthor.Point(def.pointB, graph), C = new KGAuthor.Point(def.pointC, graph);
             def.start = "atan2(" + A.y + " - " + B.y + "," + A.x + " - " + B.x + ")";
             def.end = "atan2(" + C.y + " - " + B.y + "," + C.x + " - " + B.x + ")";
-            def.point = [B.x, B.y];
+            def.coordinates = [B.x, B.y];
             def.radians = true;
             KG.setDefaults(def, {
                 label: {

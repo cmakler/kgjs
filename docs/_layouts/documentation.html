@@ -31,14 +31,17 @@
             <div class="kgjs-title">KGJS</div>
             <div class="contents-category" style="margin-top: 0px;">KineticGraphs.org</div>
         </a>
-        <input type="range" style="width:140px" min="2" max="18" value="10" step="0.01" oninput="d3.select('#kgjs-logo-circle').attr('r',this.value)">
+        <input type="range" style="width:140px" min="2" max="18" value="10" step="0.01"
+               oninput="d3.select('#kgjs-logo-circle').attr('r',this.value)">
         <div style="height:25px"></div>
-        {% for category in site.data.contents %}
-        <div class="contents-category"><a href="/{{category.folder}}/">{{category.name}}</a></div>
-        {% for page in category.pages %}
-        <p class="contents-page"><a href="/{{category.folder}}/{{page.url}}.html">{{page.title}}</a></p>
-        {% endfor %}
-        {% endfor %}
+        <div>
+            {% for category in site.data.contents %}
+            <div class="contents-category">{{category.name}}</div>
+            {% for page in category.pages %}
+            <p class="contents-page"><a href="/{{category.folder}}/{{page.url}}.html">{{page.title}}</a></p>
+            {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 </div>
 

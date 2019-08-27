@@ -5,6 +5,8 @@ module KGAuthor {
     export interface CurveDefinition extends GraphObjectDefinition {
         label?: LabelDefinition
         fn?: string;
+        xFn?: string;
+        yFn?: string;
         univariateFunction?: KG.UnivariateFunctionDefinition;
         parametricFunction?: KG.ParametricFunctionDefinition;
         pts?: { name: string; x?: string; y?: string; }[];
@@ -23,6 +25,7 @@ module KGAuthor {
             def = setStrokeColor(def);
 
             parseFn(def, 'fn', 'univariateFunction');
+            parseFn(def, 'xFn', 'parametricFunction');
 
             super(def, graph);
 

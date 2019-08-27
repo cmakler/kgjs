@@ -1,13 +1,7 @@
 ---
 layout: documentation
-title: Graph Objects
+title: Styling Graph Objects
 ---
-
-Graph objects are lines, shapes, and labels which may be placed within the Cartesian plane of a graph.
-
-All graph objects have some basic attributes, which we'll describe here; the following pages will then discuss the particulars of each object type.
-
-## Color attributes
 
 By default, there are named colors called `blue`, `orange`, `green`, `red`, `purple`, `brown`, `magenta`, `grey` or `gray`, and `olive`. These correspond to the colors in [d3.schemeCategory10](https://github.com/d3/d3-scale-chromatic#schemeCategory10){:target="_blank"}. Circle _A_ below is colored this way.
 
