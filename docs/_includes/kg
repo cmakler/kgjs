@@ -1,0 +1,5 @@
+<p>testing: {{include.graph}}</p>
+
+<div class="kg-container" src="/graphs/{{include.graph}}">
+
+</div>

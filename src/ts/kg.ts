@@ -4,8 +4,6 @@
 /// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
 
 
-
-
 /// <reference path="lib/underscore.ts"/>
 
 /// <reference path="KGAuthor/kgAuthor.ts"/>
@@ -75,27 +73,39 @@ window.addEventListener("load", function () {
     // for each div, fetch the JSON definition and create a View object with that div and data
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
-            src = d.getAttribute('src');
+            src = d.getAttribute('src'),
+            fmt = d.getAttribute('format');
 
         if (d.innerHTML.indexOf('svg') > -1) {
             //console.log('already loaded');
         } else {
 
             // if there is no src attribute
-            if (!src) {
+            if (!src || src.indexOf('.yaml') > -1) {
                 console.log('loading yaml');
-                let j;
+                let j, y;
                 try {
-                    // read inner HTML of div as YAML
-                    const y = jsyaml.safeLoad(d.innerHTML);
 
-                    // convert it to JSON, un-escaping HTML <, >, and & signs
-                    j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                    function generateViewFromYamlText(t) {
+                        y = jsyaml.safeLoad(t);
+                        j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                        views.push(new KG.View(d, j));
+                    }
+
+                    if (src) {
+                        // load YAML from source
+                        d3.text(src).then(function (yaml_file) {
+                            generateViewFromYamlText(yaml_file);
+                        });
+
+                    } else {
+                        // read inner HTML of div as YAML
+                        generateViewFromYamlText(d.innerHTML);
+
+                    }
 
                 } catch (e) {
                     console.log('Error reading YAML: ', e.message)
-                } finally {
-                    views.push(new KG.View(d, j));
                 }
             }
 

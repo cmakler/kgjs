@@ -7612,26 +7612,34 @@ var views = [];
 window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
-        var d = viewDivs[i], src = d.getAttribute('src');
+        var d = viewDivs[i], src = d.getAttribute('src'), fmt = d.getAttribute('format');
         if (d.innerHTML.indexOf('svg') > -1) {
             //console.log('already loaded');
         }
         else {
             // if there is no src attribute
-            if (!src) {
+            if (!src || src.indexOf('.yaml') > -1) {
                 console.log('loading yaml');
-                var j = void 0;
+                var j_1, y_1;
                 try {
-                    // read inner HTML of div as YAML
-                    var y = jsyaml.safeLoad(d.innerHTML);
-                    // convert it to JSON, un-escaping HTML <, >, and & signs
-                    j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                    function generateViewFromYamlText(t) {
+                        y_1 = jsyaml.safeLoad(t);
+                        j_1 = JSON.parse(JSON.stringify(y_1).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                        views.push(new KG.View(d, j_1));
+                    }
+                    if (src) {
+                        // load YAML from source
+                        d3.text(src).then(function (yaml_file) {
+                            generateViewFromYamlText(yaml_file);
+                        });
+                    }
+                    else {
+                        // read inner HTML of div as YAML
+                        generateViewFromYamlText(d.innerHTML);
+                    }
                 }
                 catch (e) {
                     console.log('Error reading YAML: ', e.message);
-                }
-                finally {
-                    views.push(new KG.View(d, j));
                 }
             }
             // first look to see if there's a definition in the KG.viewData object

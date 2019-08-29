@@ -1,0 +1,15 @@
+layout:
+  OneGraph:
+    graph:
+      objects:
+
+      # line defined by two points
+      - Line:
+          point: [3,4]
+          point2: [6,5]
+
+      # show points for reference
+      - Point:
+          coordinates: [3,4]
+      - Point:
+          coordinates: [6,5]
