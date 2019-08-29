@@ -7618,17 +7618,15 @@ window.addEventListener("load", function () {
         }
         else {
             // if there is no src attribute
-            if (!src || src.indexOf('.yaml') > -1) {
-                console.log('loading yaml');
-                var j_1, y_1;
+            if (!src || src.indexOf('.yml') > -1) {
                 try {
                     function generateViewFromYamlText(t) {
-                        y_1 = jsyaml.safeLoad(t);
-                        j_1 = JSON.parse(JSON.stringify(y_1).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
-                        views.push(new KG.View(d, j_1));
+                        var y = jsyaml.safeLoad(t);
+                        var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                        views.push(new KG.View(d, j));
                     }
                     if (src) {
-                        // load YAML from source
+                        // load YAML from source file
                         d3.text(src).then(function (yaml_file) {
                             generateViewFromYamlText(yaml_file);
                         });
