@@ -2538,7 +2538,11 @@ var KGAuthor;
     var Sidebar = /** @class */ (function (_super) {
         __extends(Sidebar, _super);
         function Sidebar(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            def.controls.forEach(function (controlDef) {
+                KGAuthor.parseControlsDef(controlDef);
+            });
+            _this = _super.call(this, def) || this;
             _this.type = 'Sidebar';
             return _this;
         }
@@ -2549,10 +2553,24 @@ var KGAuthor;
 /// <reference path="../../kg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    function parseControlsDef(controlDef) {
+        if (controlDef.hasOwnProperty('radioGroup')) {
+            controlDef.radios = controlDef.radioGroup.options.map(function (option, index) {
+                return {
+                    param: controlDef.radioGroup.param,
+                    optionValue: index,
+                    label: "\\text{" + option + "}"
+                };
+            });
+        }
+    }
+    KGAuthor.parseControlsDef = parseControlsDef;
     var Controls = /** @class */ (function (_super) {
         __extends(Controls, _super);
         function Controls(def) {
-            var _this = _super.call(this, def) || this;
+            var _this = this;
+            parseControlsDef(def);
+            _this = _super.call(this, def) || this;
             _this.type = 'Controls';
             return _this;
         }
@@ -6535,8 +6553,8 @@ var KG;
             var div = this;
             div.rootElement = layer.append('div')
                 .style('font-size', div.fontSize + 'pt')
-                .style('padding-top', '10px')
-                .style('padding-bottom', '10px');
+                .style('padding-top', '2px')
+                .style('padding-bottom', '2px');
             return div;
         };
         // update properties
@@ -6606,11 +6624,18 @@ var KG;
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt')
-                .style('text-align', 'right');
+                .style('text-align', 'right')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value);
             }
-            slider.numberInput = slider.rootElement.append('td').append('input')
+            var numberCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+            slider.numberInput = numberCell.append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -6620,6 +6645,9 @@ var KG;
                 .style('background', 'none')
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
+                .style('margin', '0px')
+                .style('padding-top', '0px')
+                .style('padding-bottom', '0px')
                 .style('width', '100%');
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
@@ -6628,12 +6656,18 @@ var KG;
                     slider.model.updateParam(slider.param, +this.value);
                 }
             });
-            slider.rangeInput = slider.rootElement.append('td').append('input')
+            var rangeCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+            slider.rangeInput = rangeCell.append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('width', '100%');
+                .style('padding', '0px')
+                .style('width', '100%')
+                .style('margin', '0px');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
         };
@@ -6739,12 +6773,12 @@ var KG;
         // create div for text
         Controls.prototype.draw = function (layer) {
             var controls = this;
-            controls.rootElement = layer.append('div');
+            controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             if (controls.sliders.length > 0) {
-                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%');
+                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px');
                 controls.sliders.forEach(function (slider) {
                     new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
                 });

@@ -7,7 +7,7 @@ js_directories = [
     'build/bundled/',
     'docs/js/',
     'docs/playground/code/',
-    '../electric-book/assets/js/',
+    '../electric-book/kg/js/',
     '../bh-textbook/code/',
     '../core-interactives/code/',
     '../econgraphs/static/js/'
@@ -56,7 +56,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.2.js",
+        "name": "kg.0.2.3.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg-lib.js",
@@ -85,7 +85,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.2.css",
+        "name": "kg.0.2.3.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-lib.css",
@@ -93,7 +93,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.2.2.css",
+        "name": "kg-tufte.0.2.3.css",
         "dest_directories": css_directories,
         "order": [
             "build/lib/kg-tufte.css",

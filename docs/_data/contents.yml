@@ -1,3 +1,10 @@
+- name: Getting Started
+  folder: ./
+  pages:
+    - title: About the Project
+      url: index
+    - title: Authoring Sandbox
+      url: author
 - name: Graphs & Layouts
   folder: graph-layouts
   pages:

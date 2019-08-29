@@ -33,8 +33,8 @@ module KG {
 
             div.rootElement = layer.append('div')
                 .style('font-size', div.fontSize + 'pt')
-                .style('padding-top', '10px')
-                .style('padding-bottom', '10px');
+                .style('padding-top', '2px')
+                .style('padding-bottom', '2px');
 
             return div;
         }

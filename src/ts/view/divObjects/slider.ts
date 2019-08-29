@@ -32,13 +32,21 @@ module KG {
             const param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .style('font-size', '14pt')
-                .style('text-align','right');
+                .style('text-align','right')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
 
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value)
             }
 
-            slider.numberInput = slider.rootElement.append('td').append('input')
+            let numberCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+
+            slider.numberInput = numberCell.append('input')
                 .attr('type', 'number')
                 .attr('min', param.min)
                 .attr('max', param.max)
@@ -48,6 +56,9 @@ module KG {
                 .style('background', 'none')
                 .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
+                .style('margin', '0px')
+                .style('padding-top', '0px')
+                .style('padding-bottom','0px')
                 .style('width','100%');
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
@@ -55,12 +66,19 @@ module KG {
                 if(event['keyCode'] == 13) {slider.model.updateParam(slider.param, +this.value)}
             });
 
-            slider.rangeInput = slider.rootElement.append('td').append('input')
+            let rangeCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+
+            slider.rangeInput = rangeCell.append('input')
                 .attr('type', 'range')
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('width', '100%');
+                .style('padding', '0px')
+                .style('width', '100%')
+                .style('margin','0px');
             slider.rangeInput.on("input", inputUpdate);
             return slider;
 

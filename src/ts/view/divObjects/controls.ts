@@ -39,12 +39,12 @@ module KG {
         draw(layer) {
             let controls = this;
 
-            controls.rootElement = layer.append('div');
+            controls.rootElement = layer.append('div').style('padding-top','10px').style('padding-bottom','10px');
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             if (controls.sliders.length > 0) {
-                const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%');
+                const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin','0px');
                 controls.sliders.forEach(function (slider) {
                     new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: controls.model})
                 });
