@@ -34,7 +34,7 @@ layout:
 
 Note the following features of this indifference curve: 
 * The curve is automatically labeled 'U' at its right tail to indicate that it is an indifference curve. 
-* The `alpha` value of the Cobb Douglas curve indicates the alpha value for the equation `${((x_1)^α)*((x_2)^(1-α))}`. 
+* The `alpha` value of the Cobb Douglas curve indicates the alpha value for the equation $x_1^\alpha x_2^{1-\alpha}$.
 * The `level` indicates the level of utility that the curve represents–in this case, the curve represents all points where the agent receives a utility of 5. 
 
 We can also write Cobb Douglas using coefficients, indicating the `a` and `b` values in the expression `((x_1)^a)*((x_2)^b)`.
@@ -69,7 +69,9 @@ layout:
 
 </div>
 
-Here, we use `coefficients: [a,b]` in the context of the utility function `a*(x_1) + b*(x_2)`, as in the equation for substitutes. 
+Here, we use `coefficients: [a,b]` in the context of the utility function $a*(x_1) + b*(x_2)$, as in the equation for substitutes. 
+
+Now, here is a quasilinear function:
 
 <div width="500" height="425" class="codePreview">
     
