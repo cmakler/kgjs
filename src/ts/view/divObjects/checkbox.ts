@@ -4,8 +4,6 @@ module KG {
 
     export class Checkbox extends ParamControl {
 
-
-
         private inputElement;
         private labelElement;
 
