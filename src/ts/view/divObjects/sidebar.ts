@@ -7,8 +7,8 @@ module KG {
     }
 
     export interface ISidebar extends IViewObject {
-        positionRight: (width: number) => void;
-        positionBelow: () => void;
+        positionRight: (width: number, height: number) => void;
+        positionBelow: (width: number, height: number) => void;
     }
 
     export class Sidebar extends ViewObject implements ISidebar {
@@ -22,26 +22,27 @@ module KG {
                 controls: [],
                 triggerWidth: 563
             });
-            setProperties(def, 'constants',['controls', 'triggerWidth']);
+            setProperties(def, 'constants', ['controls', 'triggerWidth']);
             super(def);
         }
 
-        positionRight(width) {
+        positionRight(width, height) {
             let sidebar = this;
             sidebar.rootElement
-                .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
-                .style('width', width * 385 / 1260 + 'px')
+                .style('width', (width * 413 / 1260 - 10) + 'px')
+                .style('height', height + 'px')
+                .style('overflow-y', 'scroll')
         }
 
-        positionBelow() {
+        positionBelow(width, height) {
             let sidebar = this;
             sidebar.rootElement
-                .style('position', null)
-                .style('left', null)
-                .style('width', null)
-                .style('padding-top', '40px');
+                .style('left', '10px')
+                .style('top', height + 20 + 'px')
+                .style('width', width - 20 + 'px')
+                .style('height', null)
         }
 
 

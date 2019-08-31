@@ -476,6 +476,10 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             _this.aspectRatio = 2;
             _this.nosvg = false;
+            var l = _this;
+            if (def.hasOwnProperty('explanation')) {
+                l.subObjects.push(new KGAuthor.Explanation(def.explanation));
+            }
             return _this;
         }
         Layout.prototype.parseSelf = function (parsedData) {
@@ -2619,6 +2623,20 @@ var KGAuthor;
         return Sidebar;
     }(KGAuthor.DivObject));
     KGAuthor.Sidebar = Sidebar;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Explanation = /** @class */ (function (_super) {
+        __extends(Explanation, _super);
+        function Explanation(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'Explanation';
+            return _this;
+        }
+        return Explanation;
+    }(KGAuthor.DivObject));
+    KGAuthor.Explanation = Explanation;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -4783,6 +4801,7 @@ var KGAuthor;
 /// <reference path="divObjects/positionedDiv.ts"/>
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
+/// <reference path="divObjects/explanation.ts"/>
 /// <reference path="divObjects/controls.ts"/>
 /// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>
@@ -5652,6 +5671,9 @@ var KG;
                     data.objects.push({ type: layoutType, def: layoutDef });
                 }
             }
+            if (data.hasOwnProperty('explanation')) {
+                data.objects.push({ type: "Explanation", def: data.explanation });
+            }
             if (data.hasOwnProperty('schema')) {
                 data.objects.push({ type: data.schema, def: {} });
             }
@@ -5671,9 +5693,14 @@ var KG;
             // create the div for the view
             view.div = d3.select(div)
                 .style('position', 'relative');
+            // create a spacer div to make sure text flows properly around the graph
+            view.svgContainerDiv = view.div.append('div')
+                .style('position', 'absolute')
+                .style('left', '0px')
+                .style('top', '0px');
             // create the SVG element for the view
             if (!parsedData.nosvg) {
-                view.svg = view.div.append('svg')
+                view.svg = view.svgContainerDiv.append('svg')
                     .style('overflow', 'visible')
                     .style('pointer-events', 'none');
             }
@@ -5770,6 +5797,9 @@ var KG;
                     if (td.type == 'Sidebar') {
                         view.sidebar = newDiv;
                     }
+                    if (td.type == 'Explanation') {
+                        view.explanation = newDiv;
+                    }
                 });
             }
             view.updateDimensions();
@@ -5778,23 +5808,35 @@ var KG;
         View.prototype.updateDimensions = function () {
             var view = this;
             // read the client width of the enclosing div and calculate the height using the aspectRatio
-            var width = view.div.node().clientWidth;
+            var clientWidth = view.div.node().clientWidth, width = clientWidth - 10, height = width / view.aspectRatio;
+            var sidebarHeight = 0, explanationHeight = 0;
+            // position the sidebar to the right if the screen is wide enough, or below if it isn't
             if (view.sidebar) {
                 if (width > view.sidebar.triggerWidth) {
-                    view.sidebar.positionRight(width);
+                    height = height * 77 / 126;
+                    view.sidebar.positionRight(width, height);
                     width = width * 77 / 126; // make width of graph the same width as main Tufte column
                 }
                 else {
-                    view.sidebar.positionBelow();
+                    view.sidebar.positionBelow(width, height);
+                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
                 }
             }
-            var height = width / view.aspectRatio;
+            // position the explanation below
+            if (view.explanation) {
+                view.explanation.position(clientWidth - 10, height + sidebarHeight + 10);
+                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+            }
+            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
             // set the height of the div
-            view.div.style.height = height + 'px';
+            view.svgContainerDiv.style('width', width);
+            view.svgContainerDiv.style('height', height);
             if (view.svg) {
                 // set the dimensions of the svg
                 view.svg.style('width', width);
                 view.svg.style('height', height);
+                view.svg.attr('width', width);
+                view.svg.attr('height', height);
             }
             // adjust all of the scales to be proportional to the new dimensions
             view.scales.forEach(function (scale) {
@@ -7156,21 +7198,22 @@ var KG;
             _this = _super.call(this, def) || this;
             return _this;
         }
-        Sidebar.prototype.positionRight = function (width) {
+        Sidebar.prototype.positionRight = function (width, height) {
             var sidebar = this;
             sidebar.rootElement
-                .style('position', 'absolute')
                 .style('left', width * 847 / 1260 + 'px')
                 .style('top', '0px')
-                .style('width', width * 385 / 1260 + 'px');
+                .style('width', (width * 413 / 1260 - 10) + 'px')
+                .style('height', height + 'px')
+                .style('overflow-y', 'scroll');
         };
-        Sidebar.prototype.positionBelow = function () {
+        Sidebar.prototype.positionBelow = function (width, height) {
             var sidebar = this;
             sidebar.rootElement
-                .style('position', null)
-                .style('left', null)
-                .style('width', null)
-                .style('padding-top', '40px');
+                .style('left', '10px')
+                .style('top', height + 20 + 'px')
+                .style('width', width - 20 + 'px')
+                .style('height', null);
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
@@ -7185,6 +7228,50 @@ var KG;
         return Sidebar;
     }(KG.ViewObject));
     KG.Sidebar = Sidebar;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Explanation = /** @class */ (function (_super) {
+        __extends(Explanation, _super);
+        function Explanation(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                height: 0,
+                divs: [],
+                border: 'none'
+            });
+            KG.setProperties(def, 'constants', ['divs', 'height', 'border']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Explanation.prototype.position = function (width, height) {
+            var explanation = this;
+            explanation.rootElement
+                .style('left', '10px')
+                .style('top', height + 20 + 'px')
+                .style('width', width - 20 + 'px');
+        };
+        Explanation.prototype.draw = function (layer) {
+            var explanation = this;
+            explanation.rootElement = layer.append('div')
+                .style('position', 'absolute')
+                .style('height', explanation.height == 0 ? null : explanation.height + 'px')
+                .style('overflow-y', 'scroll')
+                .style('border', explanation.border);
+            explanation.divs.forEach(function (div) {
+                div = KG.setDefaults(div, {
+                    layer: explanation.rootElement,
+                    model: explanation.model,
+                    fontSize: 14
+                });
+                new KG.Div(div);
+            });
+            return explanation;
+        };
+        return Explanation;
+    }(KG.ViewObject));
+    KG.Explanation = Explanation;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -7599,6 +7686,7 @@ var KG;
 /// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
+/// <reference path="view/divObjects/explanation.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 /// <reference path="view/mathboxObjects/mathboxObject.ts" />
 /// <reference path="view/mathboxObjects/mathboxAxis.ts" />

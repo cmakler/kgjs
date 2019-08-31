@@ -50,6 +50,7 @@
 /// <reference path="view/divObjects/ggbApplet.ts"/>
 /// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
+/// <reference path="view/divObjects/explanation.ts"/>
 /// <reference path="view/viewObjects/label.ts" />
 
 /// <reference path="view/mathboxObjects/mathboxObject.ts" />
