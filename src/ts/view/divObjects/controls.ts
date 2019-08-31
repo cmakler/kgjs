@@ -39,23 +39,27 @@ module KG {
         draw(layer) {
             let controls = this;
 
-            controls.rootElement = layer.append('div').style('padding-top','10px').style('padding-bottom','10px');
+            controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
+            controls.descriptionElement.style('margin-bottom', '10px');
             if (controls.sliders.length > 0) {
-                const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin','0px');
+                const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
                     new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: controls.model})
                 });
             }
-            controls.checkboxes.forEach(function (checkbox) {
-                checkbox = setDefaults(checkbox, {
-                    layer: controls.rootElement,
-                    model: controls.model
+            if (controls.checkboxes.length > 0) {
+                controls.checkboxes.forEach(function (checkbox) {
+                    checkbox = setDefaults(checkbox, {
+                        layer: controls.rootElement,
+                        model: controls.model
+                    });
+                    new Checkbox(checkbox)
                 });
-                new Checkbox(checkbox)
-            });
+            }
+
             controls.radios.forEach(function (radio) {
                 radio = setDefaults(radio, {
                     layer: controls.rootElement,
@@ -69,7 +73,16 @@ module KG {
                     model: controls.model,
                     fontSize: 14
                 });
-                new Div(div)
+                if (div.hasOwnProperty('html')) {
+                    new Div(div)
+                } else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new Table(div)
+                }
+
             });
             return controls;
 
@@ -81,7 +94,7 @@ module KG {
             if (controls.title.length > 0) {
                 controls.titleElement.text(controls.title.toUpperCase());
             }
-            controls.descriptionElement.text(controls.description);
+            controls.descriptionElement.html(controls.description);
             return controls;
         }
     }

@@ -2366,7 +2366,8 @@ var KGAuthor;
                 fontSize: 8,
                 color: def.stroke,
                 bgcolor: "none",
-                radians: false
+                radians: false,
+                show: def.show
             });
             var labelTextRadians = "`${calcs." + dm.name + ".measureRadians.toFixed(2)}\\\\pi`", labelTextDegrees = "`${calcs." + dm.name + ".measureDegrees.toFixed(0)}^{\\\\circ}`";
             labelDef.text = labelDef.hasOwnProperty('text') ? def.label.text : labelDef.radians ? labelTextRadians : labelTextDegrees;
@@ -2548,6 +2549,20 @@ var KGAuthor;
         return PositionedDiv;
     }(KGAuthor.DivObject));
     KGAuthor.PositionedDiv = PositionedDiv;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../kg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var Table = /** @class */ (function (_super) {
+        __extends(Table, _super);
+        function Table(def) {
+            var _this = _super.call(this, def) || this;
+            _this.type = 'Table';
+            return _this;
+        }
+        return Table;
+    }(KGAuthor.Div));
+    KGAuthor.Table = Table;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../kg.ts" />
 var KGAuthor;
@@ -4799,6 +4814,7 @@ var KGAuthor;
 /// <reference path="mathboxObjects/mathboxArea.ts"/>
 /// <reference path="divObjects/divObject.ts"/>
 /// <reference path="divObjects/positionedDiv.ts"/>
+/// <reference path="divObjects/table.ts"/>
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
 /// <reference path="divObjects/explanation.ts"/>
@@ -5814,7 +5830,14 @@ var KG;
             if (view.sidebar) {
                 if (width > view.sidebar.triggerWidth) {
                     height = height * 77 / 126;
-                    view.sidebar.positionRight(width, height);
+                    var s_height = void 0;
+                    if (view.explanation) {
+                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                    }
+                    else {
+                        s_height = height;
+                    }
+                    view.sidebar.positionRight(width, s_height);
                     width = width * 77 / 126; // make width of graph the same width as main Tufte column
                 }
                 else {
@@ -5824,7 +5847,7 @@ var KG;
             }
             // position the explanation below
             if (view.explanation) {
-                view.explanation.position(clientWidth - 10, height + sidebarHeight + 10);
+                view.explanation.position(width, height + sidebarHeight + 10);
                 explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
             }
             view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
@@ -6589,6 +6612,108 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Label = /** @class */ (function (_super) {
+        __extends(Label, _super);
+        function Label(def) {
+            var _this = this;
+            var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
+            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
+            if (def.x == 'AXIS') {
+                def.x = 0;
+                def.align = xAxisReversed ? 'left' : 'right';
+                def.xPixelOffset = xOffset;
+            }
+            if (def.x == 'OPPAXIS') {
+                def.x = def.xScale.domainMax;
+                def.align = xAxisReversed ? 'right' : 'left';
+                def.xPixelOffset = -xOffset;
+            }
+            if (def.y == 'AXIS') {
+                def.y = 0;
+                def.yPixelOffset = yOffset;
+            }
+            if (def.y == 'OPPAXIS') {
+                def.y = def.yScale.domainMax;
+                def.yPixelOffset = -yOffset;
+            }
+            //establish property defaults
+            KG.setDefaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12,
+                align: 'center',
+                valign: 'middle',
+                rotate: 0,
+                color: 'black',
+                bgcolor: 'white'
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Label.prototype.draw = function (layer) {
+            var label = this;
+            label.rootElement = layer.append('div')
+                .attr('class', 'draggable')
+                .style('position', 'absolute')
+                .style('font-size', label.fontSize + 'pt')
+                .style('text-align', 'center')
+                .style('padding-left', '3px')
+                .style('padding-right', '3px');
+            return label.addInteraction();
+        };
+        // update properties
+        Label.prototype.redraw = function () {
+            var label = this;
+            label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
+            if (undefined != label.text) {
+                //console.log('drawing label with text ',label.text);
+                try {
+                    katex.render(label.text.toString(), label.rootElement.node());
+                }
+                catch (e) {
+                    console.log("Error rendering KaTeX: ", label.text);
+                }
+            }
+            label.rootElement.style('left', x + 'px');
+            label.rootElement.style('top', y + 'px');
+            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
+            // Set left pixel margin; default to centered on x coordinate
+            var alignDelta = width * 0.5;
+            if (label.align == 'left') {
+                alignDelta = 0;
+            }
+            else if (label.align == 'right') {
+                // move left by half the width of the div if right aligned
+                alignDelta = width;
+            }
+            label.rootElement.style('left', (x - alignDelta) + 'px');
+            // Set top pixel margin; default to centered on y coordinate
+            var vAlignDelta = height * 0.5;
+            // Default to centered on x coordinate
+            if (label.valign == 'top') {
+                vAlignDelta = 0;
+            }
+            else if (label.valign == 'bottom') {
+                vAlignDelta = height;
+            }
+            label.rootElement.style('top', (y - vAlignDelta) + 'px');
+            var rotate = "rotate(-" + label.rotate + "deg)";
+            label.rootElement.style('-webkit-transform', rotate)
+                .style('transform', rotate);
+            return label;
+        };
+        return Label;
+    }(KG.ViewObject));
+    KG.Label = Label;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
     var DivObject = /** @class */ (function (_super) {
         __extends(DivObject, _super);
         function DivObject() {
@@ -6889,19 +7014,22 @@ var KG;
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
+            controls.descriptionElement.style('margin-bottom', '10px');
             if (controls.sliders.length > 0) {
-                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px');
+                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
                     new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
                 });
             }
-            controls.checkboxes.forEach(function (checkbox) {
-                checkbox = KG.setDefaults(checkbox, {
-                    layer: controls.rootElement,
-                    model: controls.model
+            if (controls.checkboxes.length > 0) {
+                controls.checkboxes.forEach(function (checkbox) {
+                    checkbox = KG.setDefaults(checkbox, {
+                        layer: controls.rootElement,
+                        model: controls.model
+                    });
+                    new KG.Checkbox(checkbox);
                 });
-                new KG.Checkbox(checkbox);
-            });
+            }
             controls.radios.forEach(function (radio) {
                 radio = KG.setDefaults(radio, {
                     layer: controls.rootElement,
@@ -6915,7 +7043,16 @@ var KG;
                     model: controls.model,
                     fontSize: 14
                 });
-                new KG.Div(div);
+                if (div.hasOwnProperty('html')) {
+                    new KG.Div(div);
+                }
+                else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new KG.Table(div);
+                }
             });
             return controls;
         };
@@ -6925,7 +7062,7 @@ var KG;
             if (controls.title.length > 0) {
                 controls.titleElement.text(controls.title.toUpperCase());
             }
-            controls.descriptionElement.text(controls.description);
+            controls.descriptionElement.html(controls.description);
             return controls;
         };
         return Controls;
@@ -7263,9 +7400,18 @@ var KG;
                 div = KG.setDefaults(div, {
                     layer: explanation.rootElement,
                     model: explanation.model,
-                    fontSize: 14
+                    fontSize: 12
                 });
-                new KG.Div(div);
+                if (div.hasOwnProperty('html')) {
+                    new KG.Div(div);
+                }
+                else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new KG.Table(div);
+                }
             });
             return explanation;
         };
@@ -7276,104 +7422,85 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
-    var Label = /** @class */ (function (_super) {
-        __extends(Label, _super);
-        function Label(def) {
+    var Table = /** @class */ (function (_super) {
+        __extends(Table, _super);
+        function Table(def) {
             var _this = this;
-            var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
-            if (def.x == 'AXIS') {
-                def.x = 0;
-                def.align = xAxisReversed ? 'left' : 'right';
-                def.xPixelOffset = xOffset;
-            }
-            if (def.x == 'OPPAXIS') {
-                def.x = def.xScale.domainMax;
-                def.align = xAxisReversed ? 'right' : 'left';
-                def.xPixelOffset = -xOffset;
-            }
-            if (def.y == 'AXIS') {
-                def.y = 0;
-                def.yPixelOffset = yOffset;
-            }
-            if (def.y == 'OPPAXIS') {
-                def.y = def.yScale.domainMax;
-                def.yPixelOffset = -yOffset;
-            }
-            //establish property defaults
             KG.setDefaults(def, {
-                xPixelOffset: 0,
-                yPixelOffset: 0,
-                fontSize: 12,
-                align: 'center',
-                valign: 'middle',
-                rotate: 0,
-                color: 'black',
-                bgcolor: 'white'
+                columns: [],
+                rows: [],
+                fontSize: 8
             });
-            // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
+            KG.setProperties(def, 'constants', ['fontSize']);
+            KG.setProperties(def, 'updatables', ['rows', 'columns']);
             _this = _super.call(this, def) || this;
             return _this;
         }
         // create div for text
-        Label.prototype.draw = function (layer) {
-            var label = this;
-            label.rootElement = layer.append('div')
-                .attr('class', 'draggable')
-                .style('position', 'absolute')
-                .style('font-size', label.fontSize + 'pt')
+        Table.prototype.draw = function (layer) {
+            var t = this;
+            console.log('table is ', t);
+            var numColumns = t.def.hasOwnProperty('columns') ? t.def['columns'].length : t.def['rows'][0].length, numRows = t.def['rows'].length;
+            t.rootElement = layer.append('div');
+            var table = t.rootElement.append('table').attr('class', 'table');
+            table
+                .style('margin-left', 'auto')
+                .style('margin-right', 'auto')
+                .style('font-size', t.fontSize + 'pt')
                 .style('text-align', 'center')
-                .style('padding-left', '3px')
-                .style('padding-right', '3px');
-            return label.addInteraction();
-        };
-        // update properties
-        Label.prototype.redraw = function () {
-            var label = this;
-            label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
-            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
-            if (undefined != label.text) {
-                //console.log('drawing label with text ',label.text);
-                try {
-                    katex.render(label.text.toString(), label.rootElement.node());
+                .style('border-collapse', 'collapse')
+                .style('margin-top', '15pt')
+                .attr('cell-padding', '5px')
+                .style('width', '80%');
+            t.columnCells = [];
+            if (numColumns > 0) {
+                var columnRow = table.append('thead').append('tr');
+                for (var c = 0; c < numColumns; c++) {
+                    var columnCell = columnRow.append('td');
+                    columnCell
+                        .style('font-size', t.fontSize + 'pt')
+                        .style('font-weight', 'bold')
+                        .style('border-bottom', '1px solid black')
+                        .style('text-align', 'center')
+                        .style('padding', '0px 10px 0px 10px');
+                    t.columnCells.push(columnCell);
                 }
-                catch (e) {
-                    console.log("Error rendering KaTeX: ", label.text);
+            }
+            t.rowCells = [];
+            var tableBody = table.append('tbody');
+            for (var r = 0; r < numRows; r++) {
+                var dataRow = [];
+                var tableRow = tableBody.append('tr');
+                for (var c = 0; c < numColumns; c++) {
+                    var rowCell = tableRow.append('td');
+                    rowCell
+                        .style('font-size', t.fontSize + 'pt')
+                        .style('border-bottom', '0.5px solid grey')
+                        .style('text-align', 'center');
+                    dataRow.push(rowCell);
+                }
+                t.rowCells.push(dataRow);
+            }
+            return t;
+        };
+        Table.prototype.redraw = function () {
+            var t = this;
+            var numColumns = t.columns.length, numRows = t.rows.length;
+            if (numColumns > 0) {
+                for (var c = 0; c < numColumns; c++) {
+                    katex.render("\\text{" + t.columns[c].toString() + "}", t.columnCells[c].node());
                 }
             }
-            label.rootElement.style('left', x + 'px');
-            label.rootElement.style('top', y + 'px');
-            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
-            // Set left pixel margin; default to centered on x coordinate
-            var alignDelta = width * 0.5;
-            if (label.align == 'left') {
-                alignDelta = 0;
+            for (var r = 0; r < numRows; r++) {
+                for (var c = 0; c < numColumns; c++) {
+                    katex.render("\\text{" + t.rows[r][c].toString() + "}", t.rowCells[r][c].node());
+                }
             }
-            else if (label.align == 'right') {
-                // move left by half the width of the div if right aligned
-                alignDelta = width;
-            }
-            label.rootElement.style('left', (x - alignDelta) + 'px');
-            // Set top pixel margin; default to centered on y coordinate
-            var vAlignDelta = height * 0.5;
-            // Default to centered on x coordinate
-            if (label.valign == 'top') {
-                vAlignDelta = 0;
-            }
-            else if (label.valign == 'bottom') {
-                vAlignDelta = height;
-            }
-            label.rootElement.style('top', (y - vAlignDelta) + 'px');
-            var rotate = "rotate(-" + label.rotate + "deg)";
-            label.rootElement.style('-webkit-transform', rotate)
-                .style('transform', rotate);
-            return label;
+            return t;
         };
-        return Label;
-    }(KG.ViewObject));
-    KG.Label = Label;
+        return Table;
+    }(KG.DivObject));
+    KG.Table = Table;
 })(KG || (KG = {}));
 /// <reference path="../../kg.ts" />
 var KG;
@@ -7674,6 +7801,7 @@ var KG;
 /// <reference path="view/viewObjects/area.ts" />
 /// <reference path="view/viewObjects/ggbObject.ts" />
 /// <reference path="view/viewObjects/contour.ts" />
+/// <reference path="view/viewObjects/label.ts" />
 /// <reference path="view/divObjects/divObject.ts" />
 /// <reference path="view/divObjects/positionedDiv.ts" />
 /// <reference path="view/divObjects/div.ts" />
@@ -7687,7 +7815,7 @@ var KG;
 /// <reference path="view/divObjects/mathbox.ts"/>
 /// <reference path="view/divObjects/sidebar.ts"/>
 /// <reference path="view/divObjects/explanation.ts"/>
-/// <reference path="view/viewObjects/label.ts" />
+/// <reference path="view/divObjects/table.ts" />
 /// <reference path="view/mathboxObjects/mathboxObject.ts" />
 /// <reference path="view/mathboxObjects/mathboxAxis.ts" />
 /// <reference path="view/mathboxObjects/mathboxPoint.ts" />

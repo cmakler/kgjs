@@ -51,6 +51,7 @@
 
 /// <reference path="divObjects/divObject.ts"/>
 /// <reference path="divObjects/positionedDiv.ts"/>
+/// <reference path="divObjects/table.ts"/>
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
 /// <reference path="divObjects/explanation.ts"/>

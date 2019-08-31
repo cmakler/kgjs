@@ -290,7 +290,13 @@ module KG {
             if (view.sidebar) {
                 if (width > view.sidebar.triggerWidth) {
                     height = height * 77 / 126;
-                    view.sidebar.positionRight(width, height);
+                    let s_height;
+                    if(view.explanation) {
+                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                    } else {
+                        s_height = height;
+                    }
+                    view.sidebar.positionRight(width, s_height);
                     width = width * 77 / 126; // make width of graph the same width as main Tufte column
                 } else {
                     view.sidebar.positionBelow(width, height);
@@ -300,7 +306,7 @@ module KG {
 
             // position the explanation below
             if (view.explanation) {
-                view.explanation.position(clientWidth - 10, height + sidebarHeight + 10);
+                view.explanation.position(width, height + sidebarHeight + 10);
                 explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
             }
 

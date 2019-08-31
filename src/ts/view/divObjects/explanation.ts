@@ -43,9 +43,17 @@ module KG {
                 div = setDefaults(div, {
                     layer: explanation.rootElement,
                     model: explanation.model,
-                    fontSize: 14
+                    fontSize: 12
                 });
-                new Div(div)
+                if (div.hasOwnProperty('html')) {
+                    new Div(div)
+                } else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new Table(div)
+                }
             });
 
             return explanation;

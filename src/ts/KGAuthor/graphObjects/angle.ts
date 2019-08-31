@@ -68,7 +68,8 @@ module KGAuthor {
                 fontSize: 8,
                 color: def.stroke,
                 bgcolor: "none",
-                radians: false
+                radians: false,
+                show: def.show
             });
 
             const labelTextRadians = "`${calcs." + dm.name + ".measureRadians.toFixed(2)}\\\\pi`",
