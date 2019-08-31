@@ -6860,6 +6860,7 @@ var KG;
         }
         Checkbox.prototype.draw = function (layer) {
             var checkbox = this;
+            console.log('foo');
             checkbox.rootElement = layer.append('div').append('label');
             checkbox.inputElement = checkbox.rootElement.append('input');
             checkbox.inputElement
