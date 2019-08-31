@@ -39,7 +39,7 @@ module KGAuthor {
                 } else {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
-                        x: graph.xScale.max,
+                        x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
                         xPixelOffset: 50,
                         rotate: 270

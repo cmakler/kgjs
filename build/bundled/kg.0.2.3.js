@@ -1613,7 +1613,7 @@ var KGAuthor;
                 else {
                     a.subObjects.push(new KGAuthor.Label({
                         text: "\\text{" + def.title + "}",
-                        x: graph.xScale.max,
+                        x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
                         xPixelOffset: 50,
                         rotate: 270
