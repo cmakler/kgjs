@@ -53,6 +53,7 @@
 /// <reference path="divObjects/positionedDiv.ts"/>
 /// <reference path="divObjects/label.ts"/>
 /// <reference path="divObjects/sidebar.ts"/>
+/// <reference path="divObjects/explanation.ts"/>
 /// <reference path="divObjects/controls.ts"/>
 /// <reference path="divObjects/gameMatrix.ts"/>
 /// <reference path="divObjects/ggbApplet.ts"/>

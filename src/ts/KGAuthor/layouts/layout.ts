@@ -11,6 +11,12 @@ module KGAuthor {
             super(def);
             this.aspectRatio = 2;
             this.nosvg = false;
+
+            let l = this;
+
+            if(def.hasOwnProperty('explanation')) {
+                l.subObjects.push(new Explanation(def.explanation));
+            }
         }
 
         parseSelf(parsedData) {

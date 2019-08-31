@@ -23,6 +23,7 @@ module KG {
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
         layout?: TypeAndDef;
+        explanation?: TypeAndDef;
 
         // The rest of these are usually generated
         scales?: ScaleDefinition[];
@@ -52,6 +53,8 @@ module KG {
         private scales: Scale[];
         private aspectRatio: number;
         private sidebar?: any;
+        private explanation?: any;
+        private svgContainerDiv: any;
 
         constructor(div: Element, data: ViewDefinition) {
             this.render(data, div);
@@ -110,6 +113,10 @@ module KG {
                 }
             }
 
+            if (data.hasOwnProperty('explanation')) {
+                data.objects.push({type: "Explanation", def: data.explanation});
+            }
+
             if (data.hasOwnProperty('schema')) {
                 data.objects.push({type: data.schema, def: {}})
             }
@@ -135,9 +142,16 @@ module KG {
             view.div = d3.select(div)
                 .style('position', 'relative');
 
+
+            // create a spacer div to make sure text flows properly around the graph
+            view.svgContainerDiv = view.div.append('div')
+                .style('position', 'absolute')
+                .style('left', '0px')
+                .style('top', '0px');
+
             // create the SVG element for the view
             if (!parsedData.nosvg) {
-                view.svg = view.div.append('svg')
+                view.svg = view.svgContainerDiv.append('svg')
                     .style('overflow', 'visible')
                     .style('pointer-events', 'none');
             }
@@ -212,7 +226,7 @@ module KG {
                             .attr("orient", "auto")
                             .attr("markerUnits", "userSpaceOnUse");
 
-                        view.addViewToDef(def,markerLayer);
+                        view.addViewToDef(def, markerLayer);
                         new Marker(def);
                     });
                 }
@@ -252,6 +266,9 @@ module KG {
                     if (td.type == 'Sidebar') {
                         view.sidebar = newDiv;
                     }
+                    if (td.type == 'Explanation') {
+                        view.explanation = newDiv;
+                    }
                 });
             }
 
@@ -263,26 +280,43 @@ module KG {
             let view = this;
 
             // read the client width of the enclosing div and calculate the height using the aspectRatio
-            let width = view.div.node().clientWidth;
+            let clientWidth = view.div.node().clientWidth,
+                width = clientWidth - 10,
+                height = width / view.aspectRatio;
 
+            let sidebarHeight = 0, explanationHeight = 0;
+
+            // position the sidebar to the right if the screen is wide enough, or below if it isn't
             if (view.sidebar) {
                 if (width > view.sidebar.triggerWidth) {
-                    view.sidebar.positionRight(width);
+                    height = height * 77 / 126;
+                    view.sidebar.positionRight(width, height);
                     width = width * 77 / 126; // make width of graph the same width as main Tufte column
                 } else {
-                    view.sidebar.positionBelow();
+                    view.sidebar.positionBelow(width, height);
+                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
                 }
             }
 
+            // position the explanation below
+            if (view.explanation) {
+                view.explanation.position(clientWidth - 10, height + sidebarHeight + 10);
+                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+            }
 
-            const height = width / view.aspectRatio;
+            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
+
             // set the height of the div
-            view.div.style.height = height + 'px';
+
+            view.svgContainerDiv.style('width', width);
+            view.svgContainerDiv.style('height', height);
 
             if (view.svg) {
                 // set the dimensions of the svg
                 view.svg.style('width', width);
                 view.svg.style('height', height);
+                view.svg.attr('width', width);
+                view.svg.attr('height', height);
             }
 
             // adjust all of the scales to be proportional to the new dimensions

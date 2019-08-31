@@ -2,30 +2,60 @@
 <html class="no-js" lang="">
 <head>
     <title>Econ Example</title>
-    <link href="code/kg.0.2.0.css" rel="stylesheet">
-    <script src="code/kg.0.2.0.js"></script>
+    <link href="code/kg.0.2.3.css" rel="stylesheet">
+    <script src="code/kg.0.2.3.js"></script>
 </head>
 <body>
 
-
+<p>Here is some stuff above the graph.</p>
 <div class="kg-container">
 
-schema: EconSchema #try switching to BowlesHallidaySchema
-params:
-  - {name: QMax, value: 80, min: 50, max: 100}
-  - {name: MC, value: 2, min: 1, max: 3, round: 0.01}
 layout:
-  OneGraph:
-    graph:
-      xAxis: {max: 100}
-      yAxis: {max: 100}
+  TwoHorizontalGraphsPlusSidebar:
+    leftGraph:
       objects:
 
-      - Contour:
-          fn:
-            fn: ((x)^0.5)*((y)^0.5)
+      # Point object at coordinates (6,4)
+      - Point:
+          coordinates: [6,4]
+          label:
+            text: A
+
+      # Red point object at coordinates (3,3)
+      - Point:
+          coordinates: [3,3]
+          color: red
+          label:
+            text: \text{other dot}
+
+    rightGraph:
+      objects:
+
+      # Point object at coordinates (6,4)
+      - Point:
+          coordinates: [6,4]
+          label:
+            text: A
+
+      # Red point object at coordinates (3,3)
+      - Point:
+          coordinates: [3,3]
+          color: red
+          label:
+            text: \text{other dot}
+
+    sidebar:
+      controls:
+      - title: My Title Here
+        description: Have fun!
+
+    explanation:
+      divs:
+      - html: foo
+
               
 </div>
+<p>Here is some stuff below the graph.</p>
 
 </body>
 </html>
