@@ -30,6 +30,10 @@
       url: contour
     - title: Shapes and Areas
       url: shapes-areas
+    - title: Segments and Arrows
+      url: segments-arrows
+    - title: Angles and Angle Markers
+      url: angle-marker
 
 - name: User Interactions
   folder: user-interactions
