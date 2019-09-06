@@ -48,6 +48,8 @@
 - name: Economics
   folder: econ
   pages:
+    - title: Econ Schema
+      url: econ-schema
     - title: Supply and Demand
       url: linear-supply-demand
     - title: Consumer Optimization
