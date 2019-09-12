@@ -11,36 +11,77 @@ For each agent in an exchange equilibrium-style problem, they have some net dema
 
 Let's look at a very simple example of how `EconNetDemandCurve` works, and then we'll add draggability and other features to bring it to life.
 
-<div width="500" height="400" class="codePreview">
+<div width="500" height="500" class="codePreview">
 
 schema: EconSchema
 layout:
   OneGraph:
     graph:
       xAxis: 
-        title: "Demand for Good 1"
+        title: Demand for Good 1
         min: -10
         max: 30
-      yAxis: {min: 0, max: 30}
-        title: "Price of Good 1"
+      yAxis: 
+        title: Price of Good 1
         min: 0
         max: 30
-      objects:
+      objects: 
       - EconNetDemandCurve:
-          name: demandCurve
           utilityFunction:
             CobbDouglas: {alpha: 0.5}
           budgetLine:
             p2: 8
             x: 40
             y: 50
-  
 
 </div>  
 
 In the graph above, `EconNetDemandCurve` relies on the following objects: 
 * Utility Function: the utility function tells the net demand curve what the agent would buy at any price point `p2` given his or her preferences. The agent will maximize utility for any value `p2`, traced out along the net demand curve. 
-* Budget Line: the budget line includes a price for good 2, `p2`, which will stay constant as p1 changes, so it is supplied to the budget line.  
+* Budget Line: the budget line includes a price for good 2, `p2`, which will stay constant as p1 changes, so it is supplied to the budget line. It also includes an `x` and `y` value, the initial endowments of Good 1 and Good 2, respectively. This effectively determines how much the agent can buy of either good by selling the other. 
+
+Of course, the `EconNetDemandCurve` is not very useful as a lone, static object. Let's add a draggable point describing the amount of Good 1 the agent demands at different prices: 
+
+<div width="500" height="500" class="codePreview">
+
+schema: EconSchema
+params: 
+- name: p1
+  value: 7
+  min: 5
+  max: 15
+  round: .01
+calcs: 
+  xCoord: ((200/params.p1) - 20)
+layout:
+  OneGraph:
+    graph:
+      xAxis: 
+        title: Demand for Good 1
+        min: -10
+        max: 30
+      yAxis: 
+        title: Price of Good 1
+        min: 0
+        max: 30
+      objects: 
+      - EconNetDemandCurve:
+          utilityFunction:
+            CobbDouglas: {alpha: 0.5}
+          budgetLine:
+            p2: 8
+            x: 40
+            y: 50
+      - Point: 
+          coordinates: [calcs.xCoord, params.p1]
+          drag: 
+          - vertical: p1
+          label: 
+            text: "`Demand = ${calcs.xCoord.toFixed(2)}`"
+
+</div> 
+
+Now we are able to see how the demand for the good changes as we drag the point across different prices. 
 
 <div width="500" height="1000" class="codePreview">
 
