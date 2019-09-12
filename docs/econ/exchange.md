@@ -7,8 +7,40 @@ We've already looked at linear supply, demand, and equilibrium with an agent (bu
 
 ## Net Demand
 
-For each agent in an exchange equilibrium-style problem, they have some net demand for each good based on the relative prices of both goods–a positive demand if they'd like more of the good, and a negative demand if they'd like to sell that good.   
+For each agent in an exchange equilibrium-style problem, they have some net demand for each good based on the relative prices of both goods–a positive demand if they'd like more of the good, and a negative demand if they'd like to sell that good. On the y-axis we graph the price of good 1, our independent vairable, and on the x-axis we graph the amount of good 1 that the consumer would buy, the dependent variable. We hold the price of good 2 constant to see how demand for good 1 varies as a function of its price alone. 
 
+Let's look at a very simple example of how `EconNetDemandCurve` works, and then we'll add draggability and other features to bring it to life.
+
+<div width="500" height="400" class="codePreview">
+
+schema: EconSchema
+layout:
+  OneGraph:
+    graph:
+      xAxis: 
+        title: "Demand for Good 1"
+        min: -10
+        max: 30
+      yAxis: {min: 0, max: 30}
+        title: "Price of Good 1"
+        min: 0
+        max: 30
+      objects:
+      - EconNetDemandCurve:
+          name: demandCurve
+          utilityFunction:
+            CobbDouglas: {alpha: 0.5}
+          budgetLine:
+            p2: 8
+            x: 40
+            y: 50
+  
+
+</div>  
+
+In the graph above, `EconNetDemandCurve` relies on the following objects: 
+* Utility Function: the utility function tells the net demand curve what the agent would buy at any price point `p2` given his or her preferences. The agent will maximize utility for any value `p2`, traced out along the net demand curve. 
+* Budget Line: the budget line includes a price for good 2, `p2`, which will stay constant as p1 changes, so it is supplied to the budget line.  
 
 <div width="500" height="1000" class="codePreview">
 
@@ -65,19 +97,16 @@ layout:
         min: 0
         max: 50
       objects:
-      - type: EconOptimalBundle
-        def:
+      - EconOptimalBundle:
           name: optimum2
-          utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
           budgetLine:
             p1: 2
             p2: params.p2
             x: params.w1
             y: params.w2
             inMap: true
+          utilityFunction:
+            CobbDouglas: {alpha: params.a}
           indifferenceCurve:
             inMap: true
           label: 
@@ -85,13 +114,10 @@ layout:
           r: 4
           color: colors.offer
           show: params.showPOC
-      - type: EconOptimalBundle
-        def:
+      - EconOptimalBundle: 
           name: optimum4
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a} 
           budgetLine:
             p1: 4
             p2: params.p2
@@ -105,13 +131,10 @@ layout:
           r: 4
           color: colors.offer
           show: params.showPOC
-      - type: EconOptimalBundle
-        def:
+      - EconOptimalBundle: 
           name: optimum6
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           budgetLine:
             p1: 6
             p2: params.p2
@@ -125,13 +148,10 @@ layout:
           r: 4
           color: colors.offer
           show: params.showPOC
-      - type: EconOptimalBundle
-        def:
+      - EconOptimalBundle:
           name: optimum8
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           budgetLine:
             p1: 8
             p2: params.p2
@@ -145,13 +165,10 @@ layout:
           r: 4
           color: colors.offer
           show: params.showPOC
-      - type: EconPriceOfferCurve
-        def:
+      - EconPriceOfferCurve:
           lineStyle: dashed
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           budgetLine:
             p1: params.p1
             p2: params.p2
@@ -159,8 +176,7 @@ layout:
             y: params.w2
           good: 1
           show: params.showPOC
-      - type: EconBundle
-        def:
+      - EconBundle:
           name: endowmentBundle
           coordinates:
           - params.w1
@@ -172,32 +188,22 @@ layout:
             text: W
             position: tr
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           drag:
-          - directions: x
-            param: w1
-            expression: params.w1 + drag.dx
-          - directions: y
-            param: w2
-            expression: params.w2 + drag.dy
-          indifferenceCurve:
+          - horizontal: w1
+          - vertical: w2
             label:
               text: 
             color: colors.endowment
             show: params.showIndW
-      - type: EconOptimalBundle
-        def:
+      - EconOptimalBundle: 
           name: optimum
           label:
             text: X
           droplines:
             vertical: x_1^*
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           color: colors.utility
           budgetLine:
             p1: params.p1
@@ -211,14 +217,9 @@ layout:
             label:
               text: "`BL_{m=${calcs.wealth.toFixed(0)}}`"
           indifferenceCurve: {}
-      - type: Segment
-        def:
-          a:
-          - 0
-          - 8
-          b:
-          - params.w1
-          - 8
+      - Segment: 
+          a: [0,8]
+          b: [params.w1,8]
           endArrow: true
           color: colors.endowment
           label:
@@ -226,14 +227,9 @@ layout:
             location: 0.5
             yPixelOffset: 15
           show: params.showExplanation
-      - type: Segment
-        def:
-          a:
-          - 0
-          - 5
-          b:
-          - calcs.optimum.x
-          - 5
+      - Segment:
+          a: [0,5]
+          b: [calcs.optimum.x,5]
           endArrow: true
           color: colors.utility
           label:
@@ -254,65 +250,54 @@ layout:
         min: 0
         max: 10
       objects:
-      - type: EconNetDemandCurve
-        def:
+      - EconNetDemandCurve:
           name: demandCurve
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           budgetLine:
             p2: params.p2
             x: params.w1
             y: params.w2
           max: calcs.cutoffPrice
-      - type: EconNetDemandCurve
-        def:
+      - EconNetDemandCurve:
           name: demandCurve
           utilityFunction:
-            type: CobbDouglas
-            def:
-              alpha: params.a
+            CobbDouglas: {alpha: params.a}
           budgetLine:
             p2: params.p2
             x: params.w1
             y: params.w2
           color: colors.supply
           min: calcs.cutoffPrice
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum2.x - params.w1
           - 2
           r: 4
           color: colors.demand
           show: params.showPOC
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum4.x - params.w1
           - 4
           r: 4
           color: colors.demand
           show: params.showPOC
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum6.x - params.w1
           - 6
           r: 4
           color: colors.demand
           show: params.showPOC
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum8.x - params.w1
           - 8
           r: 4
           color: colors.demand
           show: params.showPOC
-      - type: Segment
-        def:
+      - Segment:
           a:
           - calcs.bottomGraphLeft
           - params.p1
@@ -327,8 +312,7 @@ layout:
           label:
             text: p_1
             location: 0.05
-      - type: Segment
-        def:
+      - Segment:
           a:
           - calcs.bottomGraphLeft
           - 2
@@ -338,8 +322,7 @@ layout:
           color: colors.budget
           lineStyle: dotted
           show: params.showPOC
-      - type: Segment
-        def:
+      - Segment:
           a:
           - calcs.bottomGraphLeft
           - 4
@@ -349,8 +332,7 @@ layout:
           color: colors.budget
           lineStyle: dotted
           show: params.showPOC
-      - type: Segment
-        def:
+      - Segment:
           a:
           - calcs.bottomGraphLeft
           - 6
@@ -360,8 +342,7 @@ layout:
           color: colors.budget
           lineStyle: dotted
           show: params.showPOC
-      - type: Segment
-        def:
+      - Segment:
           a:
           - calcs.bottomGraphLeft
           - 8
@@ -371,8 +352,7 @@ layout:
           color: colors.budget
           lineStyle: dotted
           show: params.showPOC
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum.x - params.w1
           - params.p1
@@ -382,12 +362,9 @@ layout:
           droplines:
             vertical: (calcs.optimum.x - params.w1).toFixed(0)
           drag:
-          - directions: y
-            param: p1
-            expression: params.p1 + drag.dy
+          - vertical: p1
           show: (params.p1 < calcs.cutoffPrice)
-      - type: Point
-        def:
+      - Point:
           coordinates:
           - calcs.optimum.x - params.w1
           - params.p1
@@ -398,12 +375,9 @@ layout:
           droplines:
             vertical: (calcs.optimum.x - params.w1).toFixed(0)
           drag:
-          - directions: y
-            param: p1
-            expression: params.p1 + drag.dy
+          - vertical: p1
           show: (params.p1 > calcs.cutoffPrice)
-      - type: Segment
-        def:
+      - Segment:
           a:
           - 0
           - 1
@@ -417,8 +391,7 @@ layout:
             location: 0.5
             yPixelOffset: -15
           show: (params.showExplanation && (calcs.optimum.x < params.w1))
-      - type: Segment
-        def:
+      - Segment:
           a:
           - 0
           - 1
@@ -482,5 +455,7 @@ layout:
           show: (params.showExplanation && (params.p1 > calcs.cutoffPrice))
 
 
-</div>
+</div> 
 
+
+Woohoo!
