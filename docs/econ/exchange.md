@@ -81,7 +81,67 @@ layout:
 
 </div> 
 
-Now we are able to see how the demand for the good changes as we drag the point across different prices. 
+Now we are able to see how the demand for the good changes as we drag the point across different prices. We can also allow the endowment to be shiftable, which will change the shape of the net demand curve: 
+
+<div width="500" height="700" class="codePreview">
+
+schema: EconSchema
+params: 
+- name: p1
+  value: 7
+  min: 5
+  max: 15
+  round: .01
+- name: w1
+  value: 40
+  min: 20
+  max: 60
+  round: 0.1
+- name: w2
+  value: 50
+  min: 30
+  max: 70
+  round: 0.1
+calcs: 
+  xCoord: ((params.w1/2) + ((params.w2*8)/(params.p1*2)) - params.w1)
+layout:
+  OneGraphPlusSidebar:
+    graph:
+      xAxis: 
+        title: Demand for Good 1
+        min: -10
+        max: 30
+      yAxis: 
+        title: Price of Good 1
+        min: 0
+        max: 30
+      objects: 
+      - EconNetDemandCurve:
+          utilityFunction:
+            CobbDouglas: {alpha: 0.5}
+          budgetLine:
+            p2: 8
+            x: params.w1
+            y: params.w2
+      - Point: 
+          coordinates: [calcs.xCoord, params.p1]
+          drag: 
+          - vertical: p1
+          label: 
+            text: "`Demand = ${calcs.xCoord.toFixed(2)}`"
+    sidebar: 
+      controls:
+      - title: Utility Function
+        sliders:
+        - param: w1
+          label: "\\omega_1"
+        - param: w2
+          label: "\\omega_2"
+        
+
+</div> 
+
+yay!
 
 <div width="500" height="1000" class="codePreview">
 
