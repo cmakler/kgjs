@@ -5,6 +5,8 @@ title: Consumer Optimization
 
 Consumer optimization takes in a budget line and indifferent curves to determine the consumer's optimal consumption bundle. KGJS offers several ways to combine these concepts to create graphs for consumer optimization. 
 
+## Budget Lines
+
 First, let's look at how to create a budget line. Here is a simple example of a budget line: 
 
 <div width="500" height="450" class="codePreview">
@@ -28,7 +30,7 @@ layout:
 
 Here, `p1` indicates the price of good 1 and `p2` indicates the price of good 2. `m` is the endowment, or the amount of money that the agent has to spend on the two goods in total. The label is similar to other labels, but since the budget line is defined by a segment in the back-end code of KGJS, we define the 'location' of the label by its distance along the segment. Here, we use .9 to say that the label is 9/10ths of the way along the budget line from left-to-right. This is convenient when we drag budget lines, since the label will always be plaecd proportionally along the budget line rather than at a fixed x- or y-value.
 
-
+## Indifference Curves
 
 Next, let's take a look at indifference curves. KGJS includes several built-in indifference curves that are used in introductory economics, including: 
 * Cobb Douglas
@@ -169,6 +171,7 @@ For each type of indifference curve, 'alpha' and 'coefficients' takes on a diffe
     * `alpha: the coefficient in the equation $(\alpha)*((x_1)^r + {1 - \alpha}*(x_2)^r)^(1-r)$`
     * `coefficients: the coefficients a and b in the equation $a*((x_1)^r + b*(x_2)^r)^(1-r)$`
     * `r (required with alpha and coefficients): the power in the equation $(\alpha)*((x_1)^r + {1 - \alpha}*(x_2)^r)^(1-r)$ or $a*((x_1)^r + b*(x_2)^r)^(1-r)$`
+   
     
 One fun feature of indifference curves is the ability to make an indifference curve displaying indifference curves at different levels of utility on the graph. Let's take a look at a Cobb-Douglas example: 
 
@@ -193,4 +196,38 @@ layout:
 
 Rather than specifying a single utility level, you can add as many utility levels as you like to the indifference map. By default, these lines will show up thin and light grey. 
 
+Finally, you can also define an indifference curve not by a level, but by a bundle that it passes through, as shown below: 
+
+# THIS ISN'T WORKING
+
+
+
+
+## Optimal Bundles
+
+The Econ Optimal Bundle can be generated from a budget line and an indifference curve function. The Econ Optimal Bundle takes in these two functions and determines the optimal point for a consumer, as shown below: 
+
+<div width="500" height="450" class="codePreview">
+    
+schema: EconSchema
+layout:
+  OneGraph:
+    graph:
+      xAxis: 
+        title: "Good 1"
+      yAxis: 
+        title: "Good 2"
+      objects: 
+      - EconOptimalBundle:
+          budgetLine:
+            p1: 1
+            p2: 2
+            m: 10
+          utilityFunction:
+            PerfectComplements:
+              coefficients: [1,3]
+
+</div>
+
+Notice that Econ Optimal Bundle automatically creates droplines with labels for the optimal quantity of Good 1 and Good 2 and the point X*, as well as labelling the utility function and the budget line. 
 
