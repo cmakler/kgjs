@@ -14,6 +14,8 @@ module KGAuthor {
 
     export class Contour extends GraphObject {
 
+        private level;
+
         constructor(def: ContourDefinition, graph) {
             def = setStrokeColor(def);
             super(def, graph);
@@ -24,8 +26,16 @@ module KGAuthor {
                 c.extractCoordinates();
             }
             if (!def.hasOwnProperty('level')) {
-                def.level = def.fn.replace('(x)', `(${def.x})`).replace('(y)', `(${def.y})`);
+                def.level = def.fn.replace(/\(x\)/g, `(${def.x})`).replace(/\(y\)/g, `(${def.y})`);
             }
+            c.level = def.level;
+        }
+
+        parseSelf(parsedData) {
+            let le = this;
+            parsedData = super.parseSelf(parsedData);
+            parsedData.calcs.contourLevel = le.level;
+            return parsedData;
         }
 
     }

@@ -2293,10 +2293,17 @@ var KGAuthor;
                 c.extractCoordinates();
             }
             if (!def.hasOwnProperty('level')) {
-                def.level = def.fn.replace('(x)', "(" + def.x + ")").replace('(y)', "(" + def.y + ")");
+                def.level = def.fn.replace(/\(x\)/g, "(" + def.x + ")").replace(/\(y\)/g, "(" + def.y + ")");
             }
+            c.level = def.level;
             return _this;
         }
+        Contour.prototype.parseSelf = function (parsedData) {
+            var le = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs.contourLevel = le.level;
+            return parsedData;
+        };
         return Contour;
     }(KGAuthor.GraphObject));
     KGAuthor.Contour = Contour;
@@ -5395,9 +5402,11 @@ var KG;
             var fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
                 var z = fn.compiledFunction.evaluate({ x: x, y: y });
-                if (fn.inDomain(x, y, z)) {
+                console.log(z);
+                return z || 0;
+                /*if (fn.inDomain(x, y, z)) {
                     return z;
-                }
+                }*/
             }
         };
         MultivariateFunction.prototype.mathboxFn = function () {

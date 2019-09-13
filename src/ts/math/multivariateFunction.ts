@@ -47,9 +47,11 @@ module KG {
             let fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
                 const z = fn.compiledFunction.evaluate({x: x, y: y});
-                if (fn.inDomain(x, y, z)) {
+                console.log(z);
+                return z || 0;
+                /*if (fn.inDomain(x, y, z)) {
                     return z;
-                }
+                }*/
             }
         }
 
