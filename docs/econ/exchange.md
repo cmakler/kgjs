@@ -141,7 +141,7 @@ layout:
 
 </div> 
 
-yay!
+The true power of the `EconNetDemandCurve` is best captured when viewed simultaneously with a traditional `EconOptimalBundle` type graph representing an endowment, budget line, and indifference curve. Below, we show a more complicated two-graph panel that connects an `EconOptimalBundle` to the `EconNetDemandCurve`: 
 
 <div width="500" height="1000" class="codePreview">
 
