@@ -88,7 +88,7 @@ bundles = [
         "name": "kg.0.2.3.css",
         "dest_directories": css_directories,
         "order": [
-            "build/lib/kg-lib.css",
+            "node_modules/katex/dist/katex.min.css",
             "build/kg.css"
         ]
     },
@@ -96,7 +96,8 @@ bundles = [
         "name": "kg-tufte.0.2.3.css",
         "dest_directories": css_directories,
         "order": [
-            "build/lib/kg-tufte.css",
+            "node_modules/katex/dist/katex.min.css",
+            "node_modules/tufte-css/tufte.min.css",
             "build/kg.css"
         ]
     }
