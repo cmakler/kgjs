@@ -10,6 +10,11 @@ module KGAuthor {
         fn: string;
         fillAbove?: string;
         fillBelow?: string;
+        xMin?: any;
+        xMax?: any;
+        yMin?: any;
+        yMax?: any;
+
     }
 
     export class Contour extends GraphObject {

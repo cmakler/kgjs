@@ -5332,11 +5332,9 @@ var KG;
             var fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
                 var z = fn.compiledFunction.evaluate({ x: x, y: y });
-                console.log(z);
-                return z || 0;
-                /*if (fn.inDomain(x, y, z)) {
+                if (fn.inDomain(x, y, z)) {
                     return z;
-                }*/
+                }
             }
         };
         MultivariateFunction.prototype.mathboxFn = function () {
@@ -5345,13 +5343,18 @@ var KG;
                 emit(y, fn.evaluate(x, y), x);
             };
         };
-        MultivariateFunction.prototype.contour = function (level, xScale, yScale) {
+        MultivariateFunction.prototype.contour = function (level, xScale, yScale, bounds) {
             var fn = this;
-            var xMax = xScale.domainMax, yMax = yScale.domainMax;
-            var n = 110, m = 110, values = new Array(n * m);
+            bounds = KG.setDefaults(bounds || {}, {
+                xMin: xScale.domainMin,
+                xMax: xScale.domainMax,
+                yMin: yScale.domainMin,
+                yMax: yScale.domainMax
+            });
+            var n = 100, m = 100, values = new Array(n * m);
             for (var j = 0.5, k = 0; j < m; ++j) {
                 for (var i = 0.5; i < n; ++i, ++k) {
-                    var x = i * xMax * 1.1 / n, y = j * yMax * 1.1 / m;
+                    var x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n, y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
                     values[k] = fn.evaluate(x, y);
                 }
             }
@@ -5362,7 +5365,7 @@ var KG;
                         return rings.map(function (points) {
                             return points.map(function (_a) {
                                 var x = _a[0], y = _a[1];
-                                return ([xScale.scale(x * xMax / 100), yScale.scale(y * yMax / 100)]);
+                                return ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]);
                             });
                         });
                     })
@@ -6490,7 +6493,7 @@ var KG;
                 strokeOpacity: 1
             });
             KG.setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
-            KG.setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove']);
+            KG.setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove', 'xMin', 'xMax', 'yMin', 'yMax']);
             _this = _super.call(this, def) || this;
             // used for shading area above
             _this.fn = new KG.MultivariateFunction({
@@ -6506,23 +6509,42 @@ var KG;
         }
         Contour.prototype.draw = function (layer) {
             var c = this;
-            c.rootElement = layer.append('g');
-            c.negativePath = c.rootElement.append('path');
-            c.path = c.rootElement.append('path');
+            if (c.inDef) {
+                c.rootElement = layer.append('path');
+                c.path = c.rootElement;
+            }
+            else {
+                c.rootElement = layer.append('g');
+                c.negativePath = c.rootElement.append('path');
+                c.path = c.rootElement.append('path');
+            }
             return c.addClipPathAndArrows();
         };
         Contour.prototype.redraw = function () {
             var c = this;
             if (undefined != c.fn) {
-                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
-                c.path.style('fill', c.fillAbove);
-                c.path.style('fill-opacity', c.opacity);
-                c.path.style('stroke', c.stroke);
-                c.path.style('stroke-width', c.strokeWidth);
-                c.path.style('stroke-opacity', c.strokeOpacity);
-                c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
-                c.negativePath.style('fill', c.fillBelow);
-                c.negativePath.style('fill-opacity', c.opacity);
+                var bounds_1 = {};
+                ['xMin', 'xMax', 'yMin', 'yMax'].forEach(function (p) {
+                    if (c.hasOwnProperty(p) && c[p] != undefined) {
+                        bounds_1[p] = c[p];
+                    }
+                });
+                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale, {
+                    xMin: c.xMin,
+                    xMax: c.xMax,
+                    yMin: c.yMin,
+                    yMax: c.yMax
+                }));
+                if (!c.inDef) {
+                    c.path.style('fill', c.fillAbove);
+                    c.path.style('fill-opacity', c.opacity);
+                    c.path.style('stroke', c.stroke);
+                    c.path.style('stroke-width', c.strokeWidth);
+                    c.path.style('stroke-opacity', c.strokeOpacity);
+                    c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
+                    c.negativePath.style('fill', c.fillBelow);
+                    c.negativePath.style('fill-opacity', c.opacity);
+                }
             }
             return c;
         };

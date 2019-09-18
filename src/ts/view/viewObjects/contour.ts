@@ -7,6 +7,10 @@ module KG {
         level: any;
         fillAbove?: AreaDefinition;
         fillBelow?: AreaDefinition;
+        xMin?: any;
+        xMax?: any;
+        yMin?: any;
+        yMax?: any;
     }
 
     export class Contour extends ViewObject {
@@ -20,6 +24,10 @@ module KG {
 
         private fillAbove;
         private fillBelow;
+        private xMin;
+        private xMax;
+        private yMin;
+        private yMax;
 
         constructor(def: ContourDefinition) {
             setDefaults(def, {
@@ -30,7 +38,7 @@ module KG {
                 strokeOpacity: 1
             });
             setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
-            setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove']);
+            setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove', 'xMin', 'xMax', 'yMin', 'yMax']);
             super(def);
 
             // used for shading area above
@@ -48,25 +56,46 @@ module KG {
 
         draw(layer) {
             let c = this;
-            c.rootElement = layer.append('g');
-            c.negativePath = c.rootElement.append('path');
-            c.path = c.rootElement.append('path');
+            if (c.inDef) {
+                c.rootElement = layer.append('path');
+                c.path = c.rootElement;
+            } else {
+                c.rootElement = layer.append('g');
+                c.negativePath = c.rootElement.append('path');
+                c.path = c.rootElement.append('path');
+            }
+
             return c.addClipPathAndArrows();
         }
 
         redraw() {
             let c = this;
             if (undefined != c.fn) {
-                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale));
-                c.path.style('fill', c.fillAbove);
-                c.path.style('fill-opacity', c.opacity);
-                c.path.style('stroke', c.stroke);
-                c.path.style('stroke-width', c.strokeWidth);
-                c.path.style('stroke-opacity', c.strokeOpacity);
+                let bounds = {};
+                ['xMin', 'xMax', 'yMin', 'yMax'].forEach(function (p) {
+                    if (c.hasOwnProperty(p) && c[p] != undefined) {
+                        bounds[p] = c[p];
+                    }
+                });
+                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale, {
+                    xMin: c.xMin,
+                    xMax: c.xMax,
+                    yMin: c.yMin,
+                    yMax: c.yMax
+                }));
 
-                c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
-                c.negativePath.style('fill', c.fillBelow);
-                c.negativePath.style('fill-opacity', c.opacity);
+                if (!c.inDef) {
+                    c.path.style('fill', c.fillAbove);
+                    c.path.style('fill-opacity', c.opacity);
+                    c.path.style('stroke', c.stroke);
+                    c.path.style('stroke-width', c.strokeWidth);
+                    c.path.style('stroke-opacity', c.strokeOpacity);
+
+                    c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
+                    c.negativePath.style('fill', c.fillBelow);
+                    c.negativePath.style('fill-opacity', c.opacity);
+                }
+
             }
             return c;
         }
