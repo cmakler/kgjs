@@ -18,7 +18,6 @@ module KG {
 
     export class MultivariateFunction extends MathFunction implements IMultivariateFunction {
 
-        private fn;
         private fnString;
         private domainConditionString;
         public fnStringDef;
@@ -47,11 +46,9 @@ module KG {
             let fn = this;
             if (fn.hasOwnProperty('compiledFunction')) {
                 const z = fn.compiledFunction.evaluate({x: x, y: y});
-                console.log(z);
-                return z || 0;
-                /*if (fn.inDomain(x, y, z)) {
+                if (fn.inDomain(x, y, z)) {
                     return z;
-                }*/
+                }
             }
         }
 
@@ -62,16 +59,21 @@ module KG {
             };
         }
 
-        contour(level, xScale, yScale) {
+        contour(level, xScale, yScale, bounds?) {
             const fn = this;
-            const xMax = xScale.domainMax,
-                yMax = yScale.domainMax;
 
-            let n = 110, m = 110, values = new Array(n * m);
+            bounds = setDefaults(bounds || {}, {
+                xMin: xScale.domainMin,
+                xMax: xScale.domainMax,
+                yMin: yScale.domainMin,
+                yMax: yScale.domainMax
+            });
+
+            let n = 100, m = 100, values = new Array(n * m);
                 for (let j = 0.5, k = 0; j < m; ++j) {
                     for (let i = 0.5; i < n; ++i, ++k) {
-                        let x = i * xMax * 1.1 / n,
-                            y = j * yMax * 1.1 / m;
+                        let x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n,
+                            y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
                         values[k] = fn.evaluate(x, y);
                     }
                 }
@@ -80,7 +82,7 @@ module KG {
                     return {
                         type, value, coordinates: coordinates.map(rings => {
                             return rings.map(points => {
-                                return points.map(([x, y]) => ([xScale.scale(x * xMax / 100), yScale.scale(y * yMax / 100)]));
+                                return points.map(([x, y]) => ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]));
                             });
                         })
                     };
