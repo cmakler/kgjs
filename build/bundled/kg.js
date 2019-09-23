@@ -7848,5 +7848,24 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
+// if embedded within a slide, send slide transitions to the parent
+document.addEventListener("keyup", function (event) {
+    if (event.key == 'PageDown') {
+        event.preventDefault();
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'next'
+            }), '*');
+        }
+    }
+    if (event.key == 'PageUp') {
+        event.preventDefault();
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'prev'
+            }), '*');
+        }
+    }
+});
 
 
