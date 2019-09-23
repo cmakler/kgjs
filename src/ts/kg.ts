@@ -139,6 +139,27 @@ window.onresize = function () {
     })
 };
 
+// if embedded within a slide, send slide transitions to the parent
+
+document.addEventListener("keyup", event => {
+    if (event.key == 'PageDown') {
+        event.preventDefault();
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'next'
+            }), '*');
+        }
+    }
+    if (event.key == 'PageUp') {
+        event.preventDefault();
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'prev'
+            }), '*');
+        }
+    }
+});
+
 
 
 
