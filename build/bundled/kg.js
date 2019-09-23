@@ -7852,6 +7852,7 @@ window.onresize = function () {
 document.addEventListener("keyup", function (event) {
     if (event.key == 'PageDown') {
         event.preventDefault();
+        console.log('trigger next page');
         if (window != window.parent) {
             window.parent.postMessage(JSON.stringify({
                 method: 'next'
