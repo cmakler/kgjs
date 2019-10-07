@@ -34,6 +34,7 @@ module KG {
                 .style('width', (width * 413 / 1260 - 10) + 'px')
                 .style('height', height + 'px')
                 .style('overflow-y', 'scroll')
+                .style('right', '-17px')
         }
 
         positionBelow(width, height) {

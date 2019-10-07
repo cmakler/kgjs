@@ -54,7 +54,6 @@ module KG {
                 .style('font-size', '14pt')
                 .style('border', 'none')
                 .style('background', 'none')
-                .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
                 .style('margin', '0px')
                 .style('padding-top', '0px')

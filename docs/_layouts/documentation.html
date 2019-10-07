@@ -38,7 +38,11 @@
             {% for category in site.data.contents %}
             <div class="contents-category">{{category.name}}</div>
             {% for page in category.pages %}
+            {% if category.folder != 'none' %}
             <p class="contents-page"><a href="/{{category.folder}}/{{page.url}}.html">{{page.title}}</a></p>
+            {% else %}
+            <p class="contents-page"><a href="/{{page.url}}.html">{{page.title}}</a></p>
+            {% endif %}
             {% endfor %}
             {% endfor %}
         </div>

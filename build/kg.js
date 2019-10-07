@@ -3227,6 +3227,11 @@ var KGAuthor;
                 }
             ];
         };
+        LinearFunction.prototype.optimalBundle = function (budgetLine) {
+            var c = this.coefficients;
+            var buyOnlyGood2 = "((" + c[0] + ")*(" + budgetLine.p2 + ") < (" + c[1] + ")*(" + budgetLine.p1 + "))";
+            return [buyOnlyGood2 + " ? 0 : " + budgetLine.xIntercept, buyOnlyGood2 + " ? " + budgetLine.yIntercept + " : 0"];
+        };
         return LinearFunction;
     }(KGAuthor.EconMultivariateFunction));
     KGAuthor.LinearFunction = LinearFunction;
@@ -6841,7 +6846,6 @@ var KG;
                 .style('font-size', '14pt')
                 .style('border', 'none')
                 .style('background', 'none')
-                .style('padding-left', '5px')
                 .style('font-family', 'KaTeX_Main')
                 .style('margin', '0px')
                 .style('padding-top', '0px')
@@ -7303,7 +7307,8 @@ var KG;
                 .style('top', '0px')
                 .style('width', (width * 413 / 1260 - 10) + 'px')
                 .style('height', height + 'px')
-                .style('overflow-y', 'scroll');
+                .style('overflow-y', 'scroll')
+                .style('right', '-17px');
         };
         Sidebar.prototype.positionBelow = function (width, height) {
             var sidebar = this;

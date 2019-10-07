@@ -30,5 +30,11 @@ module KGAuthor {
                 }
             ]
         }
+
+        optimalBundle(budgetLine: EconBudgetLine) {
+            const c = this.coefficients;
+            const buyOnlyGood2 = `((${c[0]})*(${budgetLine.p2}) < (${c[1]})*(${budgetLine.p1}))`;
+            return [`${buyOnlyGood2} ? 0 : ${budgetLine.xIntercept}`,`${buyOnlyGood2} ? ${budgetLine.yIntercept} : 0`]
+        }
     }
 }
