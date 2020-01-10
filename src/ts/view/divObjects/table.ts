@@ -6,6 +6,7 @@ module KG {
     export interface TableDefinition extends DivObjectDefinition {
         columns?: string[];
         rows: string[][];
+        lines?: boolean;
     }
 
     export class Table extends DivObject {
@@ -14,14 +15,16 @@ module KG {
         public rows: any[][];
         private columnCells: any[];
         private rowCells: any[][];
+        private lines: boolean;
 
         constructor(def: TableDefinition) {
             KG.setDefaults(def, {
                 columns: [],
                 rows: [],
-                fontSize: 8
+                fontSize: 8,
+                lines: true
             });
-            setProperties(def, 'constants', ['fontSize']);
+            setProperties(def, 'constants', ['fontSize', 'lines']);
             setProperties(def, 'updatables', ['rows', 'columns']);
             super(def);
         }
@@ -30,7 +33,8 @@ module KG {
         draw(layer) {
             let t = this;
             console.log('table is ', t);
-            const numColumns = t.def.hasOwnProperty('columns') ? t.def['columns'].length : t.def['rows'][0].length,
+            const hasColumnHeaders = (t.def['columns'].length > 0),
+                numColumns = t.def['rows'][0].length,
                 numRows = t.def['rows'].length;
 
             t.rootElement = layer.append('div');
@@ -50,7 +54,7 @@ module KG {
             t.columnCells = [];
 
 
-            if (numColumns > 0) {
+            if (hasColumnHeaders) {
                 let columnRow = table.append('thead').append('tr');
                 for (let c = 0; c < numColumns; c++) {
                     let columnCell = columnRow.append('td');
@@ -75,8 +79,10 @@ module KG {
                     let rowCell = tableRow.append('td');
                     rowCell
                         .style('font-size', t.fontSize + 'pt')
-                        .style('border-bottom', '0.5px solid grey')
                         .style('text-align', 'center');
+                    if (t.lines) {
+                        rowCell.style('border-bottom', '0.5px solid grey');
+                    }
                     dataRow.push(rowCell);
                 }
                 t.rowCells.push(dataRow);
@@ -88,10 +94,11 @@ module KG {
         redraw() {
             let t = this;
 
-            const numColumns = t.columns.length,
+            const hasColumnHeaders = (t.def['columns'].length > 0),
+                numColumns = t.rows[0].length,
                 numRows = t.rows.length;
 
-            if (numColumns > 0) {
+            if (hasColumnHeaders) {
                 for (let c = 0; c < numColumns; c++) {
                     katex.render("\\text{" + t.columns[c].toString() + "}", t.columnCells[c].node());
                 }

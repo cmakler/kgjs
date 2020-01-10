@@ -78,6 +78,7 @@ module KG {
                 } else if (div.hasOwnProperty('table')) {
                     div.rows = div.table.rows;
                     div.columns = div.table.columns;
+                    div.lines = div.table.lines;
                     div.fontSize = 10;
                     delete div.table;
                     new Table(div)

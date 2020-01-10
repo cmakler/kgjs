@@ -7014,6 +7014,7 @@ var KG;
                 else if (div.hasOwnProperty('table')) {
                     div.rows = div.table.rows;
                     div.columns = div.table.columns;
+                    div.lines = div.table.lines;
                     div.fontSize = 10;
                     delete div.table;
                     new KG.Table(div);
@@ -7395,9 +7396,10 @@ var KG;
             KG.setDefaults(def, {
                 columns: [],
                 rows: [],
-                fontSize: 8
+                fontSize: 8,
+                lines: true
             });
-            KG.setProperties(def, 'constants', ['fontSize']);
+            KG.setProperties(def, 'constants', ['fontSize', 'lines']);
             KG.setProperties(def, 'updatables', ['rows', 'columns']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -7406,7 +7408,7 @@ var KG;
         Table.prototype.draw = function (layer) {
             var t = this;
             console.log('table is ', t);
-            var numColumns = t.def.hasOwnProperty('columns') ? t.def['columns'].length : t.def['rows'][0].length, numRows = t.def['rows'].length;
+            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.def['rows'][0].length, numRows = t.def['rows'].length;
             t.rootElement = layer.append('div');
             var table = t.rootElement.append('table').attr('class', 'table');
             table
@@ -7419,7 +7421,7 @@ var KG;
                 .attr('cell-padding', '5px')
                 .style('width', '80%');
             t.columnCells = [];
-            if (numColumns > 0) {
+            if (hasColumnHeaders) {
                 var columnRow = table.append('thead').append('tr');
                 for (var c = 0; c < numColumns; c++) {
                     var columnCell = columnRow.append('td');
@@ -7441,8 +7443,10 @@ var KG;
                     var rowCell = tableRow.append('td');
                     rowCell
                         .style('font-size', t.fontSize + 'pt')
-                        .style('border-bottom', '0.5px solid grey')
                         .style('text-align', 'center');
+                    if (t.lines) {
+                        rowCell.style('border-bottom', '0.5px solid grey');
+                    }
                     dataRow.push(rowCell);
                 }
                 t.rowCells.push(dataRow);
@@ -7451,8 +7455,8 @@ var KG;
         };
         Table.prototype.redraw = function () {
             var t = this;
-            var numColumns = t.columns.length, numRows = t.rows.length;
-            if (numColumns > 0) {
+            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.rows[0].length, numRows = t.rows.length;
+            if (hasColumnHeaders) {
                 for (var c = 0; c < numColumns; c++) {
                     katex.render("\\text{" + t.columns[c].toString() + "}", t.columnCells[c].node());
                 }

@@ -5,6 +5,7 @@ module KGAuthor {
     export interface TableDefinition extends DivObjectDefinition {
         columns?: string[];
         rows: string[][];
+        lines?: boolean;
     }
 
     export class Table extends Div {
