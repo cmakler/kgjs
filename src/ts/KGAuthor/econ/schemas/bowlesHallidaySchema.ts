@@ -16,7 +16,9 @@ module KGAuthor {
                 // consumer theory
                 demand: purple,
                 supply: blue,
-                equilibriumPrice: green
+                equilibriumPrice: green,
+                indifferenceCurve: green,
+                bestResponse: purple
 
             };
             super(def);

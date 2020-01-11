@@ -1,13 +1,10 @@
----
-layout: documentation
-title: Curves
----
+I"�"<p>Curves can be generated in two ways: by a univariate function or by a parametric function.</p>
 
-Curves can be generated in two ways: by a univariate function or by a parametric function. 
-
-First, let's look at a how a univariate function is generated. There are a few key components of the function code: 
-* `"fn"`: this is the function you want the curve to follow. For example, _x_+2 or 3_y_. See [this page](https://mathjs.org/docs/expressions/syntax.html) for syntax.
-* `"ind"`: this is your independent variable, which can be _x_ or _y_ depending on how your function is defined. In general, _x_ is taken as the default, so if your independent variable is _x_, it does not need to be specified.  
+<p>First, let’s look at a how a univariate function is generated. There are a few key components of the function code:</p>
+<ul>
+  <li><code class="highlighter-rouge">"fn"</code>: this is the function you want the curve to follow. For example, <em>x</em>+2 or 3<em>y</em>. See <a href="https://mathjs.org/docs/expressions/syntax.html">this page</a> for syntax.</li>
+  <li><code class="highlighter-rouge">"ind"</code>: this is your independent variable, which can be <em>x</em> or <em>y</em> depending on how your function is defined. In general, <em>x</em> is taken as the default, so if your independent variable is <em>x</em>, it does not need to be specified.</li>
+</ul>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -25,7 +22,7 @@ layout:
 
 </div>
 
-Notice that the curve is a line, which we've been able to generate using points, slopes, and intercepts. Here is a comparison of the two methods, with dashed lines and solid curves: 
+<p>Notice that the curve is a line, which we’ve been able to generate using points, slopes, and intercepts. Here is a comparison of the two methods, with dashed lines and solid curves:</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -72,7 +69,7 @@ layout:
 
 </div>
 
-Here is a more complicated univariate function, the quadratic function: 
+<p>Here is a more complicated univariate function, the quadratic function:</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -91,12 +88,14 @@ layout:
 
 </div>
 
-We can also create parametric functions, which are especially useful for displaying circles or trigonometric functions. Parametric functions include:
-* `xFunction`: a function in terms of _t_ to show how _x_ changes as the parameter _t_ changes. 
-* `yFunction`: a function in terms of _t_ to show how _y_ changes as the parameter _t_ changes.
-* `min` and `max`: the minimum and maximum values that you want _t_ to take, which may determine the length of the curve generated.
+<p>We can also create parametric functions, which are especially useful for displaying circles or trigonometric functions. Parametric functions include:</p>
+<ul>
+  <li><code class="highlighter-rouge">xFunction</code>: a function in terms of <em>t</em> to show how <em>x</em> changes as the parameter <em>t</em> changes.</li>
+  <li><code class="highlighter-rouge">yFunction</code>: a function in terms of <em>t</em> to show how <em>y</em> changes as the parameter <em>t</em> changes.</li>
+  <li><code class="highlighter-rouge">min</code> and <code class="highlighter-rouge">max</code>: the minimum and maximum values that you want <em>t</em> to take, which may determine the length of the curve generated.</li>
+</ul>
 
-Here is an example of a quarter circle in the first quadrant (note that the max for _t_ is 1.57, approximately _pi/2_):
+<p>Here is an example of a quarter circle in the first quadrant (note that the max for <em>t</em> is 1.57, approximately <em>pi/2</em>):</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -125,7 +124,7 @@ layout:
 
 </div>
 
-You can be very creative with parametric functions, as shown below: 
+<p>You can be very creative with parametric functions, as shown below:</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -149,7 +148,7 @@ layout:
 
 </div>
 
-In general, it is often easier and more successful to draw circles, ellipses, and sinusoidal functions using the parametric form. Below is a univariate function for creating a circle. Notice that it does not format well near the x-axis:
+<p>In general, it is often easier and more successful to draw circles, ellipses, and sinusoidal functions using the parametric form. Below is a univariate function for creating a circle. Notice that it does not format well near the x-axis:</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -165,13 +164,15 @@ layout:
 
 </div>
 
-If you do choose to draw a circular or elliptical curve using a univariate function, there are two ways to smooth out the end of the curve: 
-* Create two functions, one in terms of _x_ and one in terms of _y_ that each handle the area where they are well-defined. 
-* Change the sample point parameter. 
+<p>If you do choose to draw a circular or elliptical curve using a univariate function, there are two ways to smooth out the end of the curve:</p>
+<ul>
+  <li>Create two functions, one in terms of <em>x</em> and one in terms of <em>y</em> that each handle the area where they are well-defined.</li>
+  <li>Change the sample point parameter.</li>
+</ul>
 
-## Drag behavior
+<h2 id="drag-behavior">Drag behavior</h2>
 
-One practical use of curves is to have a point traveling along a curve. In this case, the `drag` of the point will follow the form of the curve, using a calculation, like this: 
+<p>One practical use of curves is to have a point traveling along a curve. In this case, the <code class="highlighter-rouge">drag</code> of the point will follow the form of the curve, using a calculation, like this:</p>
 
 <div width="500" height="425" class="codePreview">
 	
@@ -201,7 +202,7 @@ layout:
 
 </div>
 
-You can also move an entire curve in the x or y direction. Let's try to change the y-intercept of the quadratic curve shown above: 
+<p>You can also move an entire curve in the x or y direction. Let’s try to change the y-intercept of the quadratic curve shown above:</p>
 
 <div width="500" height="425" class="codePreview">
 
@@ -228,9 +229,9 @@ layout:
 
 </div>
 
-If you would like to shade in the area above or below a curve, you can use the `areaAbove` and `areaBelow` attributes, which will shade in the area above and below the curve, respectively. 
+<p>If you would like to shade in the area above or below a curve, you can use the <code class="highlighter-rouge">areaAbove</code> and <code class="highlighter-rouge">areaBelow</code> attributes, which will shade in the area above and below the curve, respectively.</p>
 
-`areaAbove` and `areaBelow` can be customized for opacity, fill, etc. Anything that can be altered in a `graphObject` can also apply to the areas defined here. If you do not specify a fill color or an opacity, the area attributes will default to the color of the curve and an opacity of 0.2.
+<p><code class="highlighter-rouge">areaAbove</code> and <code class="highlighter-rouge">areaBelow</code> can be customized for opacity, fill, etc. Anything that can be altered in a <code class="highlighter-rouge">graphObject</code> can also apply to the areas defined here. If you do not specify a fill color or an opacity, the area attributes will default to the color of the curve and an opacity of 0.2.</p>
 
 <div width="500" height="425" class="codePreview">
 
@@ -251,9 +252,9 @@ layout:
           
 </div>
 
-By default, the area below the graph will be shaded between the curve and the x-axis. If you would like to customize the upper and lower bounds of the shading, you can do so either in the definition of the curve, or with a new object called `Area` that takes in two curves as parameters. 
+<p>By default, the area below the graph will be shaded between the curve and the x-axis. If you would like to customize the upper and lower bounds of the shading, you can do so either in the definition of the curve, or with a new object called <code class="highlighter-rouge">Area</code> that takes in two curves as parameters.</p>
 
-Using an existing curve, with the shading ending at y = 0.5x:
+<p>Using an existing curve, with the shading ending at y = 0.5x:</p>
 
 <div width="500" height="425" class="codePreview">
 
@@ -278,7 +279,7 @@ layout:
           
 </div>
 
-Using the `Area` object and two curve parameters: 
+<p>Using the <code class="highlighter-rouge">Area</code> object and two curve parameters:</p>
 
 <div width="500" height="425" class="codePreview">
 
@@ -297,3 +298,4 @@ layout:
             
           
 </div>
+:ET

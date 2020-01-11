@@ -2797,7 +2797,9 @@ var KGAuthor;
                 // consumer theory
                 demand: purple,
                 supply: blue,
-                equilibriumPrice: green
+                equilibriumPrice: green,
+                indifferenceCurve: green,
+                bestResponse: purple
             };
             _this = _super.call(this, def) || this;
             return _this;
