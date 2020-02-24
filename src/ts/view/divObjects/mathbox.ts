@@ -35,9 +35,12 @@ module KG {
             mb.objectDefs.forEach(function (td) {
                 td.def.mathbox = mb;
                 td.def.model = mb.model;
+                if(td.type.indexOf('Mathbox') < 0) {
+                    td.type = 'Mathbox' + td.type;
+                }
                 mb.objects.push(new KG[td.type](td.def));
             });
-            console.log('created mathbox', mb);
+            //console.log('created mathbox', mb);
         }
 
         initMathbox() {

@@ -37,7 +37,7 @@ module KG {
 
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
-                shaded: false,
+                shaded: true,
                 fill: true,
                 lineX: false,
                 lineY: false,

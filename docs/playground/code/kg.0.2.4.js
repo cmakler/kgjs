@@ -1246,6 +1246,9 @@ var KGAuthor;
                 "log": yLog
             });
             po.subObjects = [po.xScale, po.yScale];
+            if (po.def.hasOwnProperty('objects')) {
+                po.def.objects.map(KGAuthor.extractTypeAndDef);
+            }
             return _this;
         }
         return PositionedObject;
@@ -1287,7 +1290,6 @@ var KGAuthor;
                 def: g.def.yAxis
             });
             g.def.objects.forEach(function (obj) {
-                obj = KGAuthor.extractTypeAndDef(obj);
                 g.subObjects.push(new KGAuthor[obj.type](obj.def, g));
             });
             console.log(g);
@@ -2899,6 +2901,56 @@ var KGAuthor;
         return EdgeworthBoxPlusTwoGraphsPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.EdgeworthBoxPlusTwoGraphsPlusSidebar = EdgeworthBoxPlusTwoGraphsPlusSidebar;
+    var EdgeworthBoxPlusUPF = /** @class */ (function (_super) {
+        __extends(EdgeworthBoxPlusUPF, _super);
+        function EdgeworthBoxPlusUPF(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var agentA = def['agentA'], agentB = def['agentB'], graph1 = def['graph'], graph2 = def['graph2'], sidebarDef = def['sidebar'];
+            var width = 0.738, height = 0.9;
+            if (def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2 * height / def.totalGood1;
+            }
+            if (def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1 * width / def.totalGood2;
+            }
+            agentA.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": width,
+                "height": height
+            };
+            agentB.position = {
+                "x": 0.15 + width,
+                "y": 0.05 + height,
+                "width": -1 * width,
+                "height": -1 * height
+            };
+            graph1.position = {
+                "x": 0.1,
+                "y": height + 0.15,
+                "width": 0.35,
+                "height": 0.85 - height
+            };
+            graph2.position = {
+                "x": 0.6,
+                "y": height + 0.15,
+                "width": 0.35,
+                "height": 0.85 - height
+            };
+            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
+            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
+            agentB.xAxis.orient = 'top';
+            agentB.yAxis.orient = 'right';
+            l.subObjects.push(new KGAuthor.Graph(agentB));
+            l.subObjects.push(new KGAuthor.Graph(agentA));
+            l.subObjects.push(new KGAuthor.Graph(graph));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return EdgeworthBoxPlusUPF;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.EdgeworthBoxPlusUPF = EdgeworthBoxPlusUPF;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -7311,10 +7363,13 @@ var KG;
             mb.objectDefs.forEach(function (td) {
                 td.def.mathbox = mb;
                 td.def.model = mb.model;
+                if (td.type.indexOf('Mathbox') < 0) {
+                    td.type = 'Mathbox' + td.type;
+                }
                 mb.objects.push(new KG[td.type](td.def));
             });
-            console.log('created mathbox', mb);
             return _this;
+            //console.log('created mathbox', mb);
         }
         Mathbox.prototype.initMathbox = function () {
             var mb = this;
@@ -7752,7 +7807,7 @@ var KG;
             });
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
-                shaded: false,
+                shaded: true,
                 fill: true,
                 lineX: false,
                 lineY: false,

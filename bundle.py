@@ -41,6 +41,18 @@ bundles = [
         ]
     },
     {
+        "name": "kg3d-lib.js",
+        "dest_directories": ["build/lib/"],
+        "order": [
+            "node_modules/katex/dist/katex.min.js",
+            "node_modules/katex/dist/contrib/auto-render.min.js",
+            "node_modules/d3/dist/d3.min.js",
+            "node_modules/mathjs/dist/math.min.js",
+            "node_modules/js-yaml/dist/js-yaml.min.js",
+            "build/lib/mathbox-bundle.min.js"
+        ]
+    },
+    {
         "name": "kg-lib.css",
         "dest_directories": ["build/lib/"],
         "order": [
@@ -48,7 +60,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.js",
+        "name": "kg-tufte.css",
         "dest_directories": ["build/lib/"],
         "order": [
             "node_modules/katex/dist/katex.min.css",
@@ -64,12 +76,28 @@ bundles = [
         ]
     },
     {
+        "name": "kg3d.0.2.4.js",
+        "dest_directories": js_directories,
+        "order": [
+            "build/lib/kg3d-lib.js",
+            "build/kg.js"
+        ]
+    },
+    {
         "name": "kg-lib.js",
         "dest_directories": js_local_directories,
         "order": [
             "build/lib/kg-lib.js"
         ]
     },
+    {
+        "name": "kg3d-lib.js",
+        "dest_directories": js_local_directories,
+        "order": [
+            "build/lib/kg3d-lib.js"
+        ]
+    },
+
     {
         "name": "kg.js",
         "dest_directories": js_local_directories,

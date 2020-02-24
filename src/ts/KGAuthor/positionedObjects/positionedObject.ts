@@ -90,6 +90,9 @@ module KGAuthor {
 
             po.subObjects = [po.xScale, po.yScale];
 
+            if(po.def.hasOwnProperty('objects')) {
+                po.def.objects.map(KGAuthor.extractTypeAndDef);
+            }
 
         }
 
