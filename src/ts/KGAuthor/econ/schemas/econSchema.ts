@@ -22,6 +22,7 @@ module KGAuthor {
 
                 // producer theory
                 production: 'blue',
+                mpl: 'olive',
                 marginalCost: 'orange',
                 marginalRevenue: 'olive',
                 supply: 'orange',

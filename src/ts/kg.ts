@@ -76,7 +76,8 @@ window.addEventListener("load", function () {
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
             src = d.getAttribute('src'),
-            fmt = d.getAttribute('format');
+            fmt = d.getAttribute('format'),
+            greenscreen = d.getAttribute('greenscreen') || false;
 
         if (d.innerHTML.indexOf('svg') > -1) {
             //console.log('already loaded');
@@ -89,6 +90,7 @@ window.addEventListener("load", function () {
                     function generateViewFromYamlText(t) {
                         const y = jsyaml.safeLoad(t);
                         const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                        j.greenscreen = greenscreen;
                         views.push(new KG.View(d, j));
                     }
 
@@ -117,10 +119,11 @@ window.addEventListener("load", function () {
                 // then look to see if the src is available by a URL
                 d3.json(src + "?update=true").then(function (data) {
                     if (!data) {
-                        viewDivs[i].innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
+                        d.innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>"
                     } else {
-                        viewDivs[i].innerHTML = "";
-                        views.push(new KG.View(viewDivs[i], data));
+                        d.innerHTML = "";
+                        data.greenscreen = greenscreen;
+                        views.push(new KG.View(d, data));
                     }
                 })
             }
