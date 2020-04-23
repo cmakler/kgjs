@@ -119,6 +119,30 @@ module KGAuthor {
 
     }
 
+    export class MathboxPlusSidebar extends SquareLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let mathboxDef = def['mathbox'],
+                sidebarDef = def['sidebar'];
+
+            mathboxDef.position = {
+                "x": 0.025,
+                "y": 0.025,
+                "width": 0.95,
+                "height": 0.95
+            };
+
+            l.subObjects.push(new MathboxContainer(mathboxDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+
+
+    }
+
 
 
 

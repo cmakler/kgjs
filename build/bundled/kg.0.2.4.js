@@ -140,6 +140,3179 @@ var KG;
     }
     KG.setProperties = setProperties;
 })(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Model = /** @class */ (function () {
+        function Model(parsedData) {
+            var model = this;
+            model.params = parsedData.params.map(function (def) {
+                return new KG.Param(def);
+            });
+            model.calcs = parsedData.calcs;
+            model.colors = parsedData.colors;
+            model.restrictions = (parsedData.restrictions || []).map(function (def) {
+                return new KG.Restriction(def);
+            });
+            model.updateListeners = [];
+            model.currentParamValues = model.evalParams();
+            model.evalCalcs();
+            model.currentColors = model.evalObject(model.colors);
+        }
+        Model.prototype.addUpdateListener = function (updateListener) {
+            this.updateListeners.push(updateListener);
+            return this;
+        };
+        Model.prototype.evalParams = function () {
+            var p = {};
+            this.params.forEach(function (param) {
+                p[param.name] = param.value;
+            });
+            return p;
+        };
+        // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
+        Model.prototype.evalCalcs = function () {
+            var model = this;
+            // clear calculatios so old values aren't used;
+            model.currentCalcValues = {};
+            // generate as many calculations from params as possible
+            model.currentCalcValues = model.evalObject(model.calcs, true);
+            // calculate values based on other calculations (up to a depth of 5)
+            for (var i = 0; i < 5; i++) {
+                for (var calcName in model.currentCalcValues) {
+                    if (typeof model.calcs[calcName] == 'object') {
+                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true);
+                    }
+                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
+                        model.currentCalcValues[calcName] = model.evaluate(model.calcs[calcName], true);
+                    }
+                }
+            }
+            return model.currentCalcValues;
+        };
+        Model.prototype.evalObject = function (obj, onlyJSMath) {
+            var model = this;
+            var newObj = {};
+            for (var stringOrObj in obj) {
+                var def = obj[stringOrObj];
+                if (typeof def === 'string') {
+                    newObj[stringOrObj] = model.evaluate(def, onlyJSMath);
+                }
+                else {
+                    newObj[stringOrObj] = model.evalObject(def, onlyJSMath);
+                }
+            }
+            return newObj;
+        };
+        // the model serves as a model, and can evaluate expressions within the context of that model
+        // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
+        Model.prototype.evaluate = function (name, onlyJSMath) {
+            var model = this;
+            // don't just evaluate numbers
+            if (!isNaN(parseFloat(name))) {
+                //console.log('interpreted ', name, 'as a number.');
+                return parseFloat(name);
+            }
+            // collect current values in a scope object
+            var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors;
+            // try to evaluate using mathjs
+            try {
+                var compiledMath = math.compile(name);
+                var result = compiledMath.evaluate({
+                    params: params,
+                    calcs: calcs,
+                    colors: colors
+                });
+                //console.log('parsed', name, 'as a pure math expression with value', result);
+                return result;
+            }
+            catch (err) {
+                // if that doesn't work, try to evaluate using native js eval
+                //console.log('unable to parse', name, 'as a pure math function, trying general eval');
+                if (onlyJSMath) {
+                    return name;
+                }
+                else {
+                    try {
+                        var result = eval(name);
+                        //console.log('parsed', name, 'as an expression with value', result);
+                        return result;
+                    }
+                    catch (err) {
+                        //console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
+                        return name;
+                    }
+                }
+            }
+        };
+        // This is a utility for exporting currently used colors for use in LaTex documents.
+        Model.prototype.latexColors = function () {
+            var result = '%% econ colors %%\n', model = this;
+            for (var color in model.colors) {
+                result += "\\definecolor{" + color + "}{HTML}{" + model.evaluate(model.colors[color]).replace('#', '') + "}\n";
+            }
+            console.log(result);
+        };
+        Model.prototype.getParam = function (paramName) {
+            var params = this.params;
+            for (var i = 0; i < params.length; i++) {
+                if (params[i].name == paramName) {
+                    return params[i];
+                }
+            }
+        };
+        // method exposed to viewObjects to allow them to try to change a parameter
+        Model.prototype.updateParam = function (name, newValue) {
+            var model = this, param = model.getParam(name);
+            var oldValue = param.value;
+            param.update(newValue);
+            // if param has changed, check to make sure the change is val
+            if (oldValue != param.value) {
+                //restrictions aren't working right now
+                var valid_1 = true;
+                model.restrictions.forEach(function (r) {
+                    if (!r.valid(model)) {
+                        valid_1 = false;
+                    }
+                });
+                if (valid_1) {
+                    model.update(false);
+                }
+                else {
+                    param.update(oldValue);
+                }
+                model.update(false);
+            }
+        };
+        // method exposed to viewObjects to allow them to toggle a binary param
+        Model.prototype.toggleParam = function (name) {
+            var currentValue = this.getParam(name).value;
+            this.updateParam(name, !currentValue);
+        };
+        // method exposed to viewObjects to allow them to cycle a discrete param
+        // increments by 1 if below max value, otherwise sets to zero
+        Model.prototype.cycleParam = function (name) {
+            var param = this.getParam(name);
+            this.updateParam(name, param.value < param.max ? param.value++ : 0);
+        };
+        Model.prototype.update = function (force) {
+            var model = this;
+            model.currentParamValues = model.evalParams();
+            model.evalCalcs();
+            console.log('calcs', model.currentCalcValues);
+            model.currentColors = model.evalObject(model.colors);
+            model.updateListeners.forEach(function (listener) {
+                listener.update(force);
+            });
+        };
+        return Model;
+    }());
+    KG.Model = Model;
+})(KG || (KG = {}));
+/// <reference path="model.ts" />
+var KG;
+(function (KG) {
+    var Param = /** @class */ (function () {
+        function Param(def) {
+            function decimalPlaces(numAsString) {
+                var match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+                if (!match) {
+                    return 0;
+                }
+                return Math.max(0, 
+                // Number of digits right of decimal point.
+                (match[1] ? match[1].length : 0)
+                    // Adjust for scientific notation.
+                    - (match[2] ? +match[2] : 0));
+            }
+            KG.setDefaults(def, { min: 0, max: 10, round: 1, label: '' });
+            this.name = def.name;
+            this.label = def.label;
+            if (typeof def.value == 'boolean') {
+                this.value = +def.value;
+                this.min = 0;
+                this.max = 100;
+                this.round = 1;
+            }
+            else {
+                this.value = parseFloat(def.value);
+                this.min = parseFloat(def.min);
+                this.max = parseFloat(def.max);
+                this.round = parseFloat(def.round);
+                this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
+            }
+        }
+        // Receives an instruction to update the parameter to a new value
+        // Updates to the closest rounded value to the desired newValue within accepted range
+        Param.prototype.update = function (newValue) {
+            var param = this;
+            if (newValue < param.min) {
+                param.value = param.min;
+            }
+            else if (newValue > param.max) {
+                param.value = param.max;
+            }
+            else {
+                param.value = Math.round(newValue / param.round) * param.round;
+            }
+            return param.value;
+        };
+        // Displays current value of the parameter to desired precision
+        // If no precision is given, uses the implied precision given by the rounding parameter
+        Param.prototype.formatted = function (precision) {
+            precision = precision || this.precision;
+            return d3.format("." + precision + "f")(this.value);
+        };
+        return Param;
+    }());
+    KG.Param = Param;
+})(KG || (KG = {}));
+/// <reference path="model.ts" />
+var KG;
+(function (KG) {
+    var Restriction = /** @class */ (function () {
+        function Restriction(def) {
+            this.expression = def.expression;
+            this.type = def.type;
+            this.min = def.min;
+            this.max = def.max;
+        }
+        Restriction.prototype.valid = function (model) {
+            var r = this, value = model.evaluate(r.expression), min = model.evaluate(r.min), max = model.evaluate(r.max);
+            // restrictions aren't working right now
+            return true;
+            //return (value >= min && value <= max);
+        };
+        return Restriction;
+    }());
+    KG.Restriction = Restriction;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    function randomString(length) {
+        var text = "KGID_";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (var i = 0; i < length; i++) {
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
+    }
+    KG.randomString = randomString;
+    var UpdateListener = /** @class */ (function () {
+        function UpdateListener(def) {
+            def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
+            var ul = this;
+            ul.def = def;
+            def.constants.forEach(function (c) {
+                ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
+            });
+            ul.id = randomString(10);
+            ul.model.addUpdateListener(this);
+        }
+        UpdateListener.prototype.updateArray = function (a) {
+            var u = this;
+            return a.map(function (d) {
+                if (Array.isArray(d)) {
+                    return u.updateArray(d);
+                }
+                else {
+                    var initialValue = d;
+                    var newValue = u.model.evaluate(d);
+                    if (initialValue != newValue) {
+                        u.hasChanged = true;
+                    }
+                    return newValue;
+                }
+            });
+        };
+        UpdateListener.prototype.updateDef = function (name) {
+            var u = this;
+            if (u.def.hasOwnProperty(name)) {
+                var d = u.def[name], initialValue = u[name];
+                if (Array.isArray(d)) {
+                    u[name] = u.updateArray(d);
+                }
+                else {
+                    var newValue = u.model.evaluate(d);
+                    if (initialValue != newValue) {
+                        u.hasChanged = true;
+                        u[name] = newValue;
+                    }
+                }
+                //console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
+            }
+            return u;
+        };
+        UpdateListener.prototype.update = function (force) {
+            var u = this;
+            u.hasChanged = !!force;
+            if (u.hasOwnProperty('updatables') && u.updatables != undefined) {
+                u.updatables.forEach(function (name) {
+                    u.updateDef(name);
+                });
+            }
+            return u;
+        };
+        return UpdateListener;
+    }());
+    KG.UpdateListener = UpdateListener;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var MathFunction = /** @class */ (function (_super) {
+        __extends(MathFunction, _super);
+        function MathFunction(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                samplePoints: 50
+            });
+            KG.setProperties(def, 'constants', ['samplePoints']);
+            KG.setProperties(def, 'updatables', ['min', 'max']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathFunction.prototype.updateFunctionString = function (str, scope) {
+            function getCalc(o, s) {
+                s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+                s = s.replace(/^\./, ''); // strip a leading dot
+                var a = s.split('.');
+                for (var i = 0, n = a.length; i < n; ++i) {
+                    var k = a[i];
+                    if (k in o) {
+                        o = o[k];
+                    }
+                    else {
+                        return;
+                    }
+                }
+                return o;
+            }
+            str = str.toString();
+            if (str.indexOf('null') > -1 || str.indexOf('Infinity') > -1) {
+                return null;
+            }
+            var re = /((calcs|params).[.\w]*)+/g;
+            var references = str.match(re);
+            if (references) {
+                references.forEach(function (name) {
+                    str = KGAuthor.replaceVariable(str, name, getCalc(scope, name));
+                });
+            }
+            //console.log('updated function to ',str);
+            return str;
+        };
+        return MathFunction;
+    }(KG.UpdateListener));
+    KG.MathFunction = MathFunction;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var MathFunction = KG.MathFunction;
+    var UnivariateFunction = /** @class */ (function (_super) {
+        __extends(UnivariateFunction, _super);
+        function UnivariateFunction(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                ind: 'x'
+            });
+            KG.setProperties(def, 'constants', ['fn', 'yFn']);
+            KG.setProperties(def, 'updatables', ['ind', 'min', 'max']);
+            _this = _super.call(this, def) || this;
+            _this.fnStringDef = def.fn;
+            _this.fnZStringDef = def.fnZ;
+            _this.yFnStringDef = def.yFn;
+            _this.yFnZStringDef = def.yFnZ;
+            return _this;
+        }
+        UnivariateFunction.prototype.evaluate = function (input, z) {
+            var fn = this;
+            if (z) {
+                if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
+                    return fn.yzCompiledFunction.evaluate({ y: input });
+                }
+                else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
+                    return fn.zCompiledFunction.evaluate({ y: input });
+                }
+                else if (fn.hasOwnProperty('zCompiledFunction')) {
+                    return fn.zCompiledFunction.evaluate({ x: input });
+                }
+            }
+            else {
+                if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
+                    return fn.yCompiledFunction.evaluate({ y: input });
+                }
+                else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
+                    return fn.compiledFunction.evaluate({ y: input });
+                }
+                else if (fn.hasOwnProperty('compiledFunction')) {
+                    return fn.compiledFunction.evaluate({ x: input });
+                }
+            }
+        };
+        UnivariateFunction.prototype.generateData = function (min, max) {
+            var fn = this, data = [];
+            if (undefined != fn.min) {
+                min = fn.min;
+            }
+            if (undefined != fn.max) {
+                max = fn.max;
+            }
+            for (var i = 0; i < fn.samplePoints + 1; i++) {
+                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
+                if (!isNaN(output) && output != Infinity && output != -Infinity) {
+                    data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
+                }
+            }
+            this.data = data;
+            return data;
+        };
+        UnivariateFunction.prototype.mathboxFn = function () {
+            var fn = this;
+            if (fn.ind == 'y') {
+                return function (emit, y) {
+                    var x = fn.evaluate(y), z = fn.evaluate(y, true);
+                    if (x <= 50 && z <= 50) {
+                        emit(y, z, x);
+                    }
+                };
+            }
+            else {
+                return function (emit, x) {
+                    var y = fn.evaluate(x), z = fn.evaluate(x, true);
+                    if (y <= 50 && z <= 50) {
+                        emit(y, z, x);
+                    }
+                };
+            }
+        };
+        UnivariateFunction.prototype.update = function (force) {
+            var fn = _super.prototype.update.call(this, force);
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            var originalString = fn.fnString;
+            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
+                fn.compiledFunction = math.compile(fn.fnString);
+            }
+            if (fn.def.hasOwnProperty('yFn')) {
+                if (fn.yFnString != fn.updateFunctionString(fn.yFnStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.yFnString = fn.updateFunctionString(fn.yFnStringDef, fn.scope);
+                    fn.yCompiledFunction = math.compile(fn.yFnString);
+                }
+            }
+            if (fn.def.hasOwnProperty('fnZ')) {
+                if (fn.fnZString != fn.updateFunctionString(fn.fnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.fnZString = fn.updateFunctionString(fn.fnZStringDef, fn.scope);
+                    fn.zCompiledFunction = math.compile(fn.fnZString);
+                }
+            }
+            if (fn.def.hasOwnProperty('yFnZ')) {
+                if (fn.yFnZString != fn.updateFunctionString(fn.yFnZStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.yFnZString = fn.updateFunctionString(fn.yFnZStringDef, fn.scope);
+                    fn.yzCompiledFunction = math.compile(fn.yFnZString);
+                }
+            }
+            return fn;
+        };
+        return UnivariateFunction;
+    }(MathFunction));
+    KG.UnivariateFunction = UnivariateFunction;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var ParametricFunction = /** @class */ (function (_super) {
+        __extends(ParametricFunction, _super);
+        function ParametricFunction(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                min: 0,
+                max: 10
+            });
+            _this = _super.call(this, def) || this;
+            _this.xFunctionStringDef = def.xFunction;
+            _this.yFunctionStringDef = def.yFunction;
+            return _this;
+        }
+        ParametricFunction.prototype.evaluate = function (input) {
+            var fn = this;
+            fn.scope = fn.scope || { params: fn.model.currentParamValues };
+            fn.scope.t = input;
+            return { x: fn.xCompiledFunction.evaluate(fn.scope), y: fn.yCompiledFunction.evaluate(fn.scope) };
+        };
+        ParametricFunction.prototype.generateData = function (min, max) {
+            var fn = this, data = [];
+            if (undefined != fn.min) {
+                min = fn.min;
+            }
+            if (undefined != fn.max) {
+                max = fn.max;
+            }
+            for (var i = 0; i < fn.samplePoints + 1; i++) {
+                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
+                if (!isNaN(output.x) && output.x != Infinity && output.x != -Infinity && !isNaN(output.y) && output.y != Infinity && output.y != -Infinity) {
+                    data.push(output);
+                }
+            }
+            this.data = data;
+            return data;
+        };
+        ParametricFunction.prototype.update = function (force) {
+            var fn = _super.prototype.update.call(this, force);
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            var originalXFunctionString = fn.xFunctionString;
+            if (originalXFunctionString != fn.updateFunctionString(fn.xFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.xFunctionString = fn.updateFunctionString(fn.xFunctionStringDef, fn.scope);
+                fn.xCompiledFunction = math.compile(fn.xFunctionString);
+            }
+            var originalYFunctionString = fn.yFunctionString;
+            if (originalYFunctionString != fn.updateFunctionString(fn.yFunctionStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.yFunctionString = fn.updateFunctionString(fn.yFunctionStringDef, fn.scope);
+                fn.yCompiledFunction = math.compile(fn.yFunctionString);
+            }
+            return fn;
+        };
+        return ParametricFunction;
+    }(KG.MathFunction));
+    KG.ParametricFunction = ParametricFunction;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var MathFunction = KG.MathFunction;
+    var MultivariateFunction = /** @class */ (function (_super) {
+        __extends(MultivariateFunction, _super);
+        function MultivariateFunction(def) {
+            var _this = this;
+            def.samplePoints = 100;
+            KG.setProperties(def, 'constants', ['fn']);
+            _this = _super.call(this, def) || this;
+            _this.fnStringDef = def.fn;
+            _this.domainConditionStringDef = def.domainCondition;
+            return _this;
+        }
+        MultivariateFunction.prototype.inDomain = function (x, y, z) {
+            var fn = this;
+            if (fn.hasOwnProperty('compiledDomainCondition')) {
+                return fn.compiledDomainCondition.evaluate({ x: x, y: y, z: z });
+            }
+            else {
+                return true;
+            }
+        };
+        MultivariateFunction.prototype.evaluate = function (x, y) {
+            var fn = this;
+            if (fn.hasOwnProperty('compiledFunction')) {
+                var z = fn.compiledFunction.evaluate({ x: x, y: y });
+                if (fn.inDomain(x, y, z)) {
+                    return z;
+                }
+            }
+        };
+        MultivariateFunction.prototype.mathboxFn = function () {
+            var fn = this;
+            return function (emit, x, y) {
+                emit(y, fn.evaluate(x, y), x);
+            };
+        };
+        MultivariateFunction.prototype.contour = function (level, xScale, yScale, bounds) {
+            var fn = this;
+            bounds = KG.setDefaults(bounds || {}, {
+                xMin: xScale.domainMin,
+                xMax: xScale.domainMax,
+                yMin: yScale.domainMin,
+                yMax: yScale.domainMax
+            });
+            var n = 100, m = 100, values = new Array(n * m);
+            for (var j = 0.5, k = 0; j < m; ++j) {
+                for (var i = 0.5; i < n; ++i, ++k) {
+                    var x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n, y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
+                    values[k] = fn.evaluate(x, y);
+                }
+            }
+            var transform = function (_a) {
+                var type = _a.type, value = _a.value, coordinates = _a.coordinates;
+                return {
+                    type: type, value: value, coordinates: coordinates.map(function (rings) {
+                        return rings.map(function (points) {
+                            return points.map(function (_a) {
+                                var x = _a[0], y = _a[1];
+                                return ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]);
+                            });
+                        });
+                    })
+                };
+            };
+            var p = d3.geoPath();
+            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+            var contourLine = d3.contours().size([n, m]).contour(values, level);
+            return p(transform(contourLine));
+        };
+        MultivariateFunction.prototype.update = function (force) {
+            var fn = _super.prototype.update.call(this, force);
+            //console.log('updating; currently ', fn.fnString);
+            fn.scope = {
+                params: fn.model.currentParamValues,
+                calcs: fn.model.currentCalcValues,
+                colors: fn.model.currentColors
+            };
+            var originalString = fn.fnString, originalDomainCondition = fn.domainConditionString;
+            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
+                fn.hasChanged = true;
+                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
+                fn.compiledFunction = math.compile(fn.fnString);
+            }
+            if (fn.domainConditionStringDef != undefined) {
+                if (originalDomainCondition != fn.updateFunctionString(fn.domainConditionStringDef, fn.scope)) {
+                    fn.hasChanged = true;
+                    fn.domainConditionString = fn.updateFunctionString(fn.domainConditionStringDef, fn.scope);
+                    fn.compiledDomainCondition = math.compile(fn.domainConditionString);
+                }
+            }
+            return fn;
+        };
+        return MultivariateFunction;
+    }(MathFunction));
+    KG.MultivariateFunction = MultivariateFunction;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    /*
+
+        A listener is defined by a param and an expression.
+        When the interactionHandler senses a change, it generates a scope of the current state of the model.
+        The listener then determines the current value of its expression within the context of that scope,
+        and sends a signal to the model to update its param.
+
+     */
+    var Listener = /** @class */ (function (_super) {
+        __extends(Listener, _super);
+        function Listener(def) {
+            var _this = this;
+            KG.setProperties(def, 'updatables', ['expression']);
+            KG.setProperties(def, 'constants', ['param']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Listener.prototype.onChange = function (scope) {
+            var l = this, compiledMath = math.compile(l.expression);
+            var parsedMath = compiledMath.evaluate(scope);
+            l.model.updateParam(l.param, parsedMath);
+        };
+        return Listener;
+    }(KG.UpdateListener));
+    KG.Listener = Listener;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    /*
+
+        A DragListener is a special kind of Listener that listens for drag events.
+        In addition to a param and an expression, it has properties for whether it is draggable
+        and, if so, in which directions it is draggable.
+
+     */
+    var DragListener = /** @class */ (function (_super) {
+        __extends(DragListener, _super);
+        function DragListener(def) {
+            var _this = this;
+            if (def.hasOwnProperty('vertical')) {
+                def.directions = 'y';
+                def.param = def.vertical;
+                def.expression = "params." + def.vertical + " + drag.dy";
+            }
+            if (def.hasOwnProperty('horizontal')) {
+                def.directions = 'x';
+                def.param = def.horizontal;
+                def.expression = "params." + def.horizontal + " + drag.dx";
+            }
+            KG.setDefaults(def, {
+                directions: "xy"
+            });
+            KG.setProperties(def, 'updatables', ['draggable', 'directions']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        DragListener.prototype.update = function (force) {
+            var dl = _super.prototype.update.call(this, force);
+            if (!dl.def.hasOwnProperty('draggable')) {
+                dl.draggable = (dl.directions.length > 0);
+            }
+            return dl;
+        };
+        return DragListener;
+    }(KG.Listener));
+    KG.DragListener = DragListener;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ClickListener = /** @class */ (function (_super) {
+        __extends(ClickListener, _super);
+        function ClickListener(def) {
+            return _super.call(this, def) || this;
+        }
+        return ClickListener;
+    }(KG.Listener));
+    KG.ClickListener = ClickListener;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var InteractionHandler = /** @class */ (function (_super) {
+        __extends(InteractionHandler, _super);
+        function InteractionHandler(def) {
+            var _this = this;
+            KG.setDefaults(def, { dragListeners: [], clickListeners: [] });
+            KG.setProperties(def, 'constants', ["viewObject", "dragListeners", "clickListeners"]);
+            _this = _super.call(this, def) || this;
+            _this.update(true);
+            _this.scope = { params: {}, calcs: {}, colors: {}, drag: {} };
+            return _this;
+        }
+        InteractionHandler.prototype.update = function (force) {
+            var ih = _super.prototype.update.call(this, force);
+            // first update dragListeners
+            if (ih.hasChanged && ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
+                var xDrag_1 = false, yDrag_1 = false;
+                ih.dragListeners.forEach(function (dul) {
+                    dul.update(force);
+                    if (dul.directions == "x") {
+                        xDrag_1 = true;
+                    }
+                    else if (dul.directions == "y") {
+                        yDrag_1 = true;
+                    }
+                    else if (dul.directions == "xy") {
+                        xDrag_1 = true;
+                        yDrag_1 = true;
+                    }
+                });
+                ih.element.style("pointer-events", (xDrag_1 || yDrag_1) ? "all" : "none");
+                ih.element.style("cursor", (xDrag_1 && yDrag_1) ? "move" : xDrag_1 ? "ew-resize" : "ns-resize");
+            }
+            return ih;
+        };
+        InteractionHandler.prototype.addTrigger = function (element) {
+            var handler = this;
+            handler.element = element;
+            // add click listeners
+            if (handler.clickListeners.length > 0) {
+                element.on("click", function () {
+                    if (d3.event.defaultPrevented)
+                        return; //dragged)
+                    handler.scope.params = handler.model.currentParamValues;
+                    handler.scope.calcs = handler.model.currentCalcValues;
+                    handler.scope.colors = handler.model.currentColors;
+                    handler.clickListeners.forEach(function (d) {
+                        d.onChange(handler.scope);
+                    });
+                });
+            }
+            // add drag listeners
+            if (handler.dragListeners.length > 0) {
+                element.call(d3.drag()
+                    .on('start', function () {
+                    handler.scope.params = handler.model.currentParamValues;
+                    handler.scope.calcs = handler.model.currentCalcValues;
+                    handler.scope.colors = handler.model.currentColors;
+                    handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
+                    handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
+                })
+                    .on('drag', function () {
+                    var drag = handler.scope.drag;
+                    drag.x = handler.viewObject.xScale.scale.invert(d3.event.x);
+                    drag.y = handler.viewObject.yScale.scale.invert(d3.event.y);
+                    drag.dx = drag.x - drag.x0;
+                    drag.dy = drag.y - drag.y0;
+                    handler.dragListeners.forEach(function (d) {
+                        d.onChange(handler.scope);
+                    });
+                })
+                    .on('end', function () {
+                    //handler.element.style("cursor","default");
+                }));
+            }
+            handler.update(true);
+        };
+        return InteractionHandler;
+    }(KG.UpdateListener));
+    KG.InteractionHandler = InteractionHandler;
+})(KG || (KG = {}));
+/// <reference path='../kg.ts' />
+var KG;
+(function (KG) {
+    KG.viewData = {};
+    function addView(name, def) {
+        KG.viewData[name] = def;
+    }
+    KG.addView = addView;
+    var View = /** @class */ (function () {
+        function View(div, data) {
+            this.render(data, div);
+        }
+        View.prototype.parse = function (data, div) {
+            data.schema = data.schema || "Schema";
+            data.params = (data.params || []).map(function (paramData) {
+                // allow author to override initial parameter values by specifying them as div attributes
+                if (div.hasAttribute(paramData.name)) {
+                    paramData.value = div.getAttribute(paramData.name);
+                }
+                // convert numerical params from strings to numbers
+                paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
+                return paramData;
+            });
+            var parsedData = {
+                aspectRatio: data.aspectRatio || 1,
+                params: data.params || [],
+                calcs: data.calcs || {},
+                colors: data.colors || {},
+                restrictions: data.restrictions,
+                clipPaths: data.clipPaths || [],
+                markers: data.markers || [],
+                scales: data.scales || [{
+                        name: 'x',
+                        axis: 'x',
+                        rangeMin: 0,
+                        rangeMax: 1,
+                        domainMin: 0,
+                        domainMax: 1
+                    },
+                    {
+                        name: 'y',
+                        axis: 'y',
+                        rangeMin: 0,
+                        rangeMax: 1,
+                        domainMin: 0,
+                        domainMax: 1
+                    }],
+                layers: data.layers || [[], [], [], []],
+                divs: data.divs || []
+            };
+            data.objects = data.objects || [];
+            if (data.hasOwnProperty('layout')) {
+                if (data.layout.hasOwnProperty('type')) {
+                    data.objects.push(data.layout);
+                }
+                else {
+                    var layoutType = Object.keys(data.layout)[0], layoutDef = data.layout[layoutType];
+                    data.objects.push({ type: layoutType, def: layoutDef });
+                }
+            }
+            if (data.hasOwnProperty('explanation')) {
+                data.objects.push({ type: "Explanation", def: data.explanation });
+            }
+            if (data.hasOwnProperty('schema')) {
+                data.objects.push({ type: data.schema, def: {} });
+            }
+            return KGAuthor.parse(data.objects, parsedData);
+        };
+        View.prototype.render = function (data, div) {
+            var view = this;
+            var parsedData = view.parse(data, div);
+            div.innerHTML = "";
+            view.aspectRatio = parsedData.aspectRatio || 1;
+            view.model = new KG.Model(parsedData);
+            // create scales
+            view.scales = parsedData.scales.map(function (def) {
+                def.model = view.model;
+                return new KG.Scale(def);
+            });
+            // create the div for the view
+            view.div = d3.select(div)
+                .style('position', 'relative');
+            // create a spacer div to make sure text flows properly around the graph
+            view.svgContainerDiv = view.div.append('div')
+                .style('position', 'absolute')
+                .style('left', '0px')
+                .style('top', '0px');
+            // create the SVG element for the view
+            if (!parsedData.nosvg) {
+                view.svg = view.svgContainerDiv.append('svg')
+                    .style('overflow', 'visible')
+                    .style('pointer-events', 'none');
+            }
+            view.addViewObjects(parsedData);
+            view.parsedData = parsedData;
+            console.log('parsedData: ', parsedData);
+        };
+        // add view information (model, layer, scales) to an object
+        View.prototype.addViewToDef = function (def, layer) {
+            var view = this;
+            function getScale(name) {
+                var result = null;
+                view.scales.forEach(function (scale) {
+                    if (scale.name == name) {
+                        result = scale;
+                    }
+                });
+                return result;
+            }
+            def.model = view.model;
+            def.layer = layer;
+            def.xScale = getScale(def['xScaleName']);
+            def.yScale = getScale(def['yScaleName']);
+            if (def.hasOwnProperty('xScale2Name')) {
+                def.xScale2 = getScale(def['xScale2Name']);
+                def.yScale2 = getScale(def['yScale2Name']);
+            }
+            return def;
+        };
+        // create view objects
+        View.prototype.addViewObjects = function (data) {
+            var view = this;
+            var defURLS = {};
+            if (view.svg) {
+                var defLayer_1 = view.svg.append('defs');
+                // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
+                if (data.clipPaths.length > 0) {
+                    data.clipPaths.forEach(function (def) {
+                        var clipPathURL = KG.randomString(10);
+                        var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
+                        def.paths.forEach(function (td) {
+                            td.def.inDef = true;
+                            new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
+                        });
+                        defURLS[def.name] = clipPathURL;
+                    });
+                }
+                // create Markers, generate their URLs, and add their paths to the SVG defs element.
+                if (data.markers.length > 0) {
+                    data.markers.forEach(function (def) {
+                        var markerURL = KG.randomString(10);
+                        def.url = markerURL;
+                        defURLS[def.name] = markerURL;
+                        var markerLayer = defLayer_1.append('marker')
+                            .attr('id', markerURL)
+                            .attr("refX", def.refX)
+                            .attr("refY", 6)
+                            .attr("markerWidth", 13)
+                            .attr("markerHeight", 13)
+                            .attr("orient", "auto")
+                            .attr("markerUnits", "userSpaceOnUse");
+                        view.addViewToDef(def, markerLayer);
+                        new KG.Marker(def);
+                    });
+                }
+                // add layers of objects
+                data.layers.forEach(function (layerTds) {
+                    if (layerTds.length > 0) {
+                        var layer_1 = view.svg.append('g');
+                        layerTds.forEach(function (td) {
+                            var def = td.def;
+                            if (def.hasOwnProperty('clipPathName')) {
+                                def.clipPath = defURLS[def['clipPathName']];
+                            }
+                            if (def.hasOwnProperty('clipPathName2')) {
+                                def.clipPath2 = defURLS[def['clipPathName2']];
+                            }
+                            if (def.hasOwnProperty('startArrowName')) {
+                                def.startArrow = defURLS[def['startArrowName']];
+                            }
+                            if (def.hasOwnProperty('endArrowName')) {
+                                def.endArrow = defURLS[def['endArrowName']];
+                            }
+                            def = view.addViewToDef(def, layer_1);
+                            new KG[td.type](def);
+                        });
+                    }
+                });
+            }
+            // add divs
+            if (data.divs.length > 0) {
+                data.divs.forEach(function (td) {
+                    var def = view.addViewToDef(td.def, view.div), newDiv = new KG[td.type](def);
+                    if (td.type == 'Sidebar') {
+                        view.sidebar = newDiv;
+                    }
+                    if (td.type == 'Explanation') {
+                        view.explanation = newDiv;
+                    }
+                });
+            }
+            view.updateDimensions();
+        };
+        // update dimensions, either when first rendering or when the window is resized
+        View.prototype.updateDimensions = function () {
+            var view = this;
+            // read the client width of the enclosing div and calculate the height using the aspectRatio
+            var clientWidth = view.div.node().clientWidth, width = clientWidth - 10, height = width / view.aspectRatio;
+            var sidebarHeight = 0, explanationHeight = 0;
+            // position the sidebar to the right if the screen is wide enough, or below if it isn't
+            if (view.sidebar) {
+                if (width > view.sidebar.triggerWidth) {
+                    height = height * 77 / 126;
+                    var s_height = void 0;
+                    if (view.explanation) {
+                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                    }
+                    else {
+                        s_height = height;
+                    }
+                    view.sidebar.positionRight(width, s_height);
+                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
+                }
+                else {
+                    view.sidebar.positionBelow(width, height);
+                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
+                }
+            }
+            // position the explanation below
+            if (view.explanation) {
+                view.explanation.position(width, height + sidebarHeight + 10);
+                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+            }
+            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
+            // set the height of the div
+            view.svgContainerDiv.style('width', width);
+            view.svgContainerDiv.style('height', height);
+            if (view.svg) {
+                // set the dimensions of the svg
+                view.svg.style('width', width);
+                view.svg.style('height', height);
+                view.svg.attr('width', width);
+                view.svg.attr('height', height);
+            }
+            // adjust all of the scales to be proportional to the new dimensions
+            view.scales.forEach(function (scale) {
+                scale.updateDimensions(width, height);
+            });
+            // once the scales are updated, update the coordinates of all view objects
+            view.model.update(true);
+        };
+        return View;
+    }());
+    KG.View = View;
+})(KG || (KG = {}));
+/// <reference path="../kg.ts" />
+var KG;
+(function (KG) {
+    var Scale = /** @class */ (function (_super) {
+        __extends(Scale, _super);
+        function Scale(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                log: false
+            });
+            def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
+            def.updatables = ['domainMin', 'domainMax'];
+            _this = _super.call(this, def) || this;
+            _this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
+            _this.update(true);
+            return _this;
+        }
+        Scale.prototype.update = function (force) {
+            var s = _super.prototype.update.call(this, force);
+            if (s.extent != undefined) {
+                var rangeMin = s.rangeMin * s.extent, rangeMax = s.rangeMax * s.extent;
+                s.scale.domain([s.domainMin, s.domainMax]);
+                s.scale.range([rangeMin, rangeMax]);
+            }
+            return s;
+        };
+        Scale.prototype.updateDimensions = function (width, height) {
+            var s = this;
+            s.extent = (s.axis == 'x') ? width : height;
+            return s.update(true);
+        };
+        return Scale;
+    }(KG.UpdateListener));
+    KG.Scale = Scale;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ViewObject = /** @class */ (function (_super) {
+        __extends(ViewObject, _super);
+        function ViewObject(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                alwaysUpdate: false,
+                interactive: true,
+                fill: 'colors.blue',
+                fillOpacity: 0.2,
+                stroke: 'colors.blue',
+                strokeWidth: 1,
+                stokeOpacity: 1,
+                show: true,
+                inDef: false,
+                lineStyle: 'solid'
+            });
+            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
+            KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
+            if (def.inDef) {
+                def.show = true;
+            }
+            ;
+            _this = _super.call(this, def) || this;
+            var vo = _this;
+            def.colorAttributes.forEach(function (attr) {
+                var c = def[attr];
+                if (vo.model.colors.hasOwnProperty(c)) {
+                    def[attr] = vo.model.colors[c];
+                }
+            });
+            // the interaction handler manages drag and hover events
+            if (def.interactive) {
+                def.drag = def.drag || [];
+                var dragListeners = def.drag.map(function (dragDef) {
+                    dragDef.model = vo.model;
+                    return new KG.DragListener(dragDef);
+                });
+                def.click = def.click || [];
+                var clickListeners = def.click.map(function (clickDef) {
+                    clickDef.model = vo.model;
+                    return new KG.ClickListener(clickDef);
+                });
+                vo.interactionHandler = new KG.InteractionHandler({
+                    viewObject: vo,
+                    model: vo.model,
+                    dragListeners: dragListeners,
+                    clickListeners: clickListeners
+                });
+            }
+            // the draw method creates the DOM elements for the view object
+            // the update method updates their attributes
+            if (def.hasOwnProperty('layer')) {
+                vo.draw(def.layer).update(true).init();
+            }
+            return _this;
+        }
+        ViewObject.prototype.init = function () {
+            return this; //defined at subclass level
+        };
+        ViewObject.prototype.addClipPathAndArrows = function () {
+            var vo = this;
+            if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
+                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
+            }
+            if (vo.hasOwnProperty('clipPath2') && vo.clipPath2 != undefined) {
+                vo.rootElement2.attr('clip-path', "url(#" + vo.clipPath2 + ")");
+            }
+            if (vo.hasOwnProperty('endArrow') && vo.endArrow != undefined) {
+                vo.markedElement.attr("marker-end", "url(#" + vo.endArrow + ")");
+            }
+            if (vo.hasOwnProperty('startArrow') && vo.endArrow != undefined) {
+                vo.markedElement.attr("marker-start", "url(#" + vo.startArrow + ")");
+            }
+            return vo;
+        };
+        ViewObject.prototype.addInteraction = function () {
+            var vo = this;
+            vo.interactionHandler.addTrigger(vo.rootElement);
+            return vo;
+        };
+        ViewObject.prototype.draw = function (layer, inDef) {
+            return this;
+        };
+        ViewObject.prototype.redraw = function () {
+            return this;
+        };
+        ViewObject.prototype.drawStroke = function (el) {
+            var vo = this;
+            el.attr('stroke', vo.stroke);
+            el.attr('stroke-width', vo.strokeWidth);
+            el.style('stroke-opacity', vo.strokeOpacity);
+            if (vo.lineStyle == 'dashed') {
+                el.style('stroke-dashArray', '10,10');
+            }
+            if (vo.lineStyle == 'dotted') {
+                el.style('stroke-dashArray', '1,2');
+            }
+        };
+        ViewObject.prototype.drawFill = function (el) {
+            var vo = this;
+            el.style('fill', vo.fill);
+            el.style('fill-opacity', vo.opacity);
+        };
+        ViewObject.prototype.displayElement = function (show) {
+            var vo = this;
+            if (vo.hasOwnProperty('rootElement')) {
+                vo.rootElement.style('display', show ? null : 'none');
+            }
+        };
+        ViewObject.prototype.onGraph = function () {
+            var vo = this;
+            if (vo.hasOwnProperty('x')) {
+                if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+                    return false;
+                }
+            }
+            if (vo.hasOwnProperty('y')) {
+                if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        ViewObject.prototype.update = function (force) {
+            var vo = _super.prototype.update.call(this, force);
+            if ((vo.show && vo.onGraph()) || vo.inDef) {
+                vo.displayElement(true);
+                if (vo.hasChanged) {
+                    vo.redraw();
+                }
+            }
+            else {
+                vo.displayElement(false);
+            }
+            return vo;
+        };
+        return ViewObject;
+    }(KG.UpdateListener));
+    KG.ViewObject = ViewObject;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var Marker = /** @class */ (function (_super) {
+        __extends(Marker, _super);
+        function Marker(def) {
+            var _this = this;
+            KG.setProperties(def, 'constants', ['maskPath', 'arrowPath']);
+            KG.setProperties(def, 'updatables', ['color']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Marker.prototype.draw = function (layer) {
+            var m = this;
+            layer.append("svg:path")
+                .attr("d", m.maskPath)
+                .attr("fill", "white");
+            m.arrowElement = layer.append("svg:path")
+                .attr("d", m.arrowPath);
+            return m;
+        };
+        Marker.prototype.redraw = function () {
+            var m = this;
+            m.arrowElement.attr("fill", m.color);
+            return m;
+        };
+        return Marker;
+    }(KG.ViewObject));
+    KG.Marker = Marker;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Segment = /** @class */ (function (_super) {
+        __extends(Segment, _super);
+        function Segment(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                xScale2: def.xScale,
+                yScale2: def.yScale,
+                strokeWidth: 2
+            });
+            KG.setProperties(def, 'constants', ['xScale2', 'yScale2', 'startArrow', 'endArrow']);
+            KG.setProperties(def, 'updatables', ['x1', 'y1', 'x2', 'y2']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Segment.prototype.draw = function (layer) {
+            var segment = this;
+            segment.rootElement = layer.append('g');
+            segment.dragLine = segment.rootElement.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
+            segment.line = segment.rootElement.append('line');
+            segment.markedElement = segment.line;
+            return segment.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Segment.prototype.redraw = function () {
+            var segment = this;
+            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale2.scale(segment.y1), y2 = segment.yScale2.scale(segment.y2);
+            segment.dragLine
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.line
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2);
+            segment.drawStroke(segment.line);
+            return segment;
+        };
+        return Segment;
+    }(KG.ViewObject));
+    KG.Segment = Segment;
+})(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Curve = /** @class */ (function (_super) {
+        __extends(Curve, _super);
+        function Curve(def) {
+            var _this = this;
+            var univariateFunction, parametricFunction;
+            KG.setDefaults(def, {
+                interpolation: 'curveBasis',
+                strokeWidth: 2
+            });
+            KG.setProperties(def, 'constants', ['interpolation']);
+            if (def.hasOwnProperty('univariateFunction')) {
+                def.univariateFunction.model = def.model;
+                univariateFunction = new KG.UnivariateFunction(def.univariateFunction);
+                KG.setProperties(def, 'updatables', []);
+            }
+            else if (def.hasOwnProperty('parametricFunction')) {
+                def.parametricFunction.model = def.model;
+                parametricFunction = new KG.ParametricFunction(def.parametricFunction);
+                KG.setProperties(def, 'updatables', []);
+            }
+            _this = _super.call(this, def) || this;
+            var curve = _this;
+            if (def.hasOwnProperty('univariateFunction')) {
+                curve.univariateFunction = univariateFunction;
+            }
+            else if (def.hasOwnProperty('parametricFunction')) {
+                def.parametricFunction.model = def.model;
+                curve.parametricFunction = parametricFunction;
+            }
+            return _this;
+        }
+        // create SVG elements
+        Curve.prototype.draw = function (layer) {
+            var curve = this;
+            curve.dataLine = d3.line()
+                .curve(d3[curve.interpolation])
+                .x(function (d) {
+                return curve.xScale.scale(d.x);
+            })
+                .y(function (d) {
+                return curve.yScale.scale(d.y);
+            });
+            curve.rootElement = layer.append('g');
+            curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
+            curve.path = curve.rootElement.append('path').style('fill', 'none');
+            return curve.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Curve.prototype.redraw = function () {
+            var curve = this;
+            if (curve.hasOwnProperty('univariateFunction')) {
+                var fn = curve.univariateFunction, scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
+                fn.generateData(scale.domainMin, scale.domainMax);
+                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                curve.path.data([fn.data]).attr('d', curve.dataLine);
+            }
+            if (curve.hasOwnProperty('parametricFunction')) {
+                var fn = curve.parametricFunction;
+                fn.generateData();
+                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
+                curve.path.data([fn.data]).attr('d', curve.dataLine);
+            }
+            curve.drawStroke(curve.path);
+            return curve;
+        };
+        // update self and functions
+        Curve.prototype.update = function (force) {
+            var curve = _super.prototype.update.call(this, force);
+            if (!curve.hasChanged) {
+                if (curve.hasOwnProperty('univariateFunction')) {
+                    if (curve.univariateFunction.hasChanged) {
+                        curve.redraw();
+                    }
+                }
+                if (curve.hasOwnProperty('parametricFunction')) {
+                    if (curve.parametricFunction.hasChanged) {
+                        curve.redraw();
+                    }
+                }
+            }
+            return curve;
+        };
+        return Curve;
+    }(KG.ViewObject));
+    KG.Curve = Curve;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var Axis = /** @class */ (function (_super) {
+        __extends(Axis, _super);
+        function Axis(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                ticks: 5,
+                intercept: 0
+            });
+            KG.setProperties(def, 'constants', ['orient']);
+            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label', 'min', 'max', 'otherMin', 'otherMax']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Axis.prototype.draw = function (layer) {
+            var a = this;
+            a.rootElement = layer.append('g').attr('class', 'axis');
+            return a;
+        };
+        Axis.prototype.redraw = function () {
+            var a = this;
+            switch (a.orient) {
+                case 'bottom':
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
+                    return a;
+                case 'left':
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
+                    return a;
+                case 'top':
+                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
+                    a.rootElement.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
+                    return a;
+                case 'right':
+                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
+                    a.rootElement.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
+                    return a;
+            }
+            return a;
+        };
+        return Axis;
+    }(KG.ViewObject));
+    KG.Axis = Axis;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Point = /** @class */ (function (_super) {
+        __extends(Point, _super);
+        function Point(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'colors.blue',
+                opacity: 1,
+                stroke: 'white',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                r: 6
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Point.prototype.draw = function (layer) {
+            var p = this;
+            p.rootElement = layer.append('g'); // SVG group
+            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.circle = p.rootElement.append('circle');
+            //p.addClipPathAndArrows()
+            return p.addInteraction();
+        };
+        // update properties
+        Point.prototype.redraw = function () {
+            var p = this;
+            p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
+            p.circle.attr('r', p.r);
+            p.circle.style('fill', p.fill);
+            p.circle.style('fill-opacity', p.opacity);
+            p.circle.style('stroke', p.stroke);
+            p.circle.style('stroke-width', p.strokeWidth + "px");
+            p.circle.style('stroke-opacity', p.strokeOpacity);
+            return p;
+        };
+        return Point;
+    }(KG.ViewObject));
+    KG.Point = Point;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Ellipse = /** @class */ (function (_super) {
+        __extends(Ellipse, _super);
+        function Ellipse(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: 'colors.blue',
+                opacity: 1,
+                stroke: 'colors.blue',
+                strokeWidth: 1,
+                strokeOpacity: 1,
+                rx: 1,
+                ry: 1
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'rx', 'ry']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Ellipse.prototype.draw = function (layer) {
+            var c = this;
+            c.rootElement = layer.append('ellipse');
+            return c.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Ellipse.prototype.redraw = function () {
+            var c = this;
+            c.rootElement.attr('cx', c.xScale.scale(c.x));
+            c.rootElement.attr('cy', c.yScale.scale(c.y));
+            c.rootElement.attr('rx', Math.abs(c.xScale.scale(c.rx) - c.xScale.scale(0)));
+            c.rootElement.attr('ry', Math.abs(c.yScale.scale(c.ry) - c.yScale.scale(0)));
+            c.drawFill(c.rootElement);
+            c.drawStroke(c.rootElement);
+            return c;
+        };
+        return Ellipse;
+    }(KG.ViewObject));
+    KG.Ellipse = Ellipse;
+    var Circle = /** @class */ (function (_super) {
+        __extends(Circle, _super);
+        function Circle(def) {
+            return _super.call(this, def) || this;
+        }
+        return Circle;
+    }(Ellipse));
+    KG.Circle = Circle;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Rectangle = /** @class */ (function (_super) {
+        __extends(Rectangle, _super);
+        function Rectangle(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                opacity: 0.2,
+                stroke: "none"
+            });
+            KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create SVG elements
+        Rectangle.prototype.draw = function (layer) {
+            var rect = this;
+            if (rect.inDef) {
+                rect.rootElement = layer;
+            }
+            else {
+                rect.rootElement = layer.append('g');
+            }
+            rect.rootElement2 = rect.rootElement.append('rect');
+            //rect.interactionHandler.addTrigger(rect.rootElement);
+            return rect.addClipPathAndArrows().addInteraction();
+        };
+        // update properties
+        Rectangle.prototype.redraw = function () {
+            var rect = this;
+            var x1 = rect.xScale.scale(rect.x1);
+            var y1 = rect.yScale.scale(rect.y1);
+            var x2 = rect.xScale.scale(rect.x2);
+            var y2 = rect.yScale.scale(rect.y2);
+            rect.rootElement2
+                .attr('x', Math.min(x1, x2))
+                .attr('y', Math.min(y1, y2))
+                .attr('width', Math.abs(x2 - x1))
+                .attr('height', Math.abs(y2 - y1))
+                .style('fill', rect.fill)
+                .style('fill-opacity', rect.opacity)
+                .style('stroke', rect.stroke)
+                .style('stroke-width', rect.strokeWidth + "px")
+                .style('stroke-opacity', rect.strokeOpacity);
+            return rect;
+        };
+        return Rectangle;
+    }(KG.ViewObject));
+    KG.Rectangle = Rectangle;
+})(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Area = /** @class */ (function (_super) {
+        __extends(Area, _super);
+        function Area(def) {
+            var _this = this;
+            var minValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMin : def.xScale.domainMin;
+            var maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
+            KG.setDefaults(def, {
+                interpolation: 'curveBasis',
+                ind: 'x',
+                fill: 'lightsteelblue',
+                opacity: 0.2,
+                univariateFunction2: {
+                    "fn": ((def.above && !def.useTopScale) || (!def.above && def.useTopScale)) ? maxValue : minValue,
+                    "ind": def.univariateFunction1['ind'],
+                    "min": def.univariateFunction1['min'],
+                    "max": def.univariateFunction1['max'],
+                    "samplePoints": def.univariateFunction1['samplePoints']
+                }
+            });
+            KG.setProperties(def, 'constants', ['interpolation']);
+            def.univariateFunction1.model = def.model;
+            def.univariateFunction2.model = def.model;
+            // need to initialize the functions before the area, so they exist when it's time to draw the area
+            var univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1), univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
+            _this = _super.call(this, def) || this;
+            _this.univariateFunction1 = univariateFunction1;
+            _this.univariateFunction2 = univariateFunction2;
+            return _this;
+        }
+        // create SVG elements
+        Area.prototype.draw = function (layer) {
+            var ab = this;
+            ab.rootElement = layer.append('path');
+            ab.areaShape = d3.area()
+                .x0(function (d) {
+                return ab.xScale.scale(d[0].x);
+            })
+                .y0(function (d) {
+                return ab.yScale.scale(d[0].y);
+            })
+                .x1(function (d) {
+                return ab.xScale.scale(d[1].x);
+            })
+                .y1(function (d) {
+                return ab.yScale.scale(d[1].y);
+            });
+            ab.areaPath = ab.rootElement;
+            return ab.addClipPathAndArrows();
+        };
+        // update properties
+        Area.prototype.redraw = function () {
+            var area = this;
+            if (area.univariateFunction1 != undefined && area.univariateFunction2 != undefined) {
+                var fn1 = area.univariateFunction1, fn2 = area.univariateFunction2, scale = fn1.ind == 'y' ? area.yScale : area.xScale;
+                fn1.generateData(scale.domainMin, scale.domainMax);
+                fn2.generateData(scale.domainMin, scale.domainMax);
+                area.areaPath
+                    .data([d3.zip(fn1.data, fn2.data)])
+                    .attr('d', area.areaShape);
+                area.drawFill(area.areaPath);
+            }
+            else {
+                //console.log('area functions undefined')
+            }
+            return area;
+        };
+        // update self and functions
+        Area.prototype.update = function (force) {
+            var area = _super.prototype.update.call(this, force);
+            if (!area.hasChanged) {
+                if (area.univariateFunction1.hasChanged || area.univariateFunction2.hasChanged) {
+                    area.redraw();
+                }
+            }
+            return area;
+        };
+        return Area;
+    }(KG.ViewObject));
+    KG.Area = Area;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var GeoGebraObject = /** @class */ (function (_super) {
+        __extends(GeoGebraObject, _super);
+        function GeoGebraObject(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                color: '#999999',
+                lineThickness: 1,
+                lineStyle: 0
+            });
+            KG.setProperties(def, 'constants', ['command', 'color', 'lineThickness', 'lineStyle']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        GeoGebraObject.prototype.establishGGB = function (applet) {
+            // from https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+            function hexToRgb(hex) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+            var obj = this;
+            //console.log('sending commands to applet', applet);
+            // set command
+            var command = obj.name + " = " + obj.command;
+            //console.log('sending command ', obj.name + " = " + obj.command);
+            applet.evalCommand(command);
+            if (obj.hasOwnProperty('opacity')) {
+                applet.setFilling(obj.opacity);
+            }
+            var color = hexToRgb(obj.color);
+            //console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
+            applet.setColor(obj.name, color.r, color.g, color.b);
+            //console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
+            applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
+            //console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
+            applet.setLineStyle(obj.name, obj.lineStyle);
+        };
+        return GeoGebraObject;
+    }(KG.ViewObject));
+    KG.GeoGebraObject = GeoGebraObject;
+})(KG || (KG = {}));
+/// <reference path='../../kg.ts' />
+var KG;
+(function (KG) {
+    var Contour = /** @class */ (function (_super) {
+        __extends(Contour, _super);
+        function Contour(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                opacity: 0.2,
+                stroke: "grey",
+                fillAbove: "none",
+                fillBelow: "none",
+                strokeOpacity: 1
+            });
+            KG.setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
+            KG.setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove', 'xMin', 'xMax', 'yMin', 'yMax']);
+            _this = _super.call(this, def) || this;
+            // used for shading area above
+            _this.fn = new KG.MultivariateFunction({
+                fn: def.fn,
+                model: def.model
+            }).update(true);
+            // used for shading area below
+            _this.negativeFn = new KG.MultivariateFunction({
+                fn: "-1*(" + def.fn + ")",
+                model: def.model
+            }).update(true);
+            return _this;
+        }
+        Contour.prototype.draw = function (layer) {
+            var c = this;
+            if (c.inDef) {
+                c.rootElement = layer.append('path');
+                c.path = c.rootElement;
+            }
+            else {
+                c.rootElement = layer.append('g');
+                c.negativePath = c.rootElement.append('path');
+                c.path = c.rootElement.append('path');
+            }
+            return c.addClipPathAndArrows();
+        };
+        Contour.prototype.redraw = function () {
+            var c = this;
+            if (undefined != c.fn) {
+                var bounds_1 = {};
+                ['xMin', 'xMax', 'yMin', 'yMax'].forEach(function (p) {
+                    if (c.hasOwnProperty(p) && c[p] != undefined) {
+                        bounds_1[p] = c[p];
+                    }
+                });
+                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale, {
+                    xMin: c.xMin,
+                    xMax: c.xMax,
+                    yMin: c.yMin,
+                    yMax: c.yMax
+                }));
+                if (!c.inDef) {
+                    c.path.style('fill', c.fillAbove);
+                    c.path.style('fill-opacity', c.opacity);
+                    c.path.style('stroke', c.stroke);
+                    c.path.style('stroke-width', c.strokeWidth);
+                    c.path.style('stroke-opacity', c.strokeOpacity);
+                    c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
+                    c.negativePath.style('fill', c.fillBelow);
+                    c.negativePath.style('fill-opacity', c.opacity);
+                }
+            }
+            return c;
+        };
+        // update self and functions
+        Contour.prototype.update = function (force) {
+            var c = _super.prototype.update.call(this, force);
+            if (!c.hasChanged) {
+                if (c.fn.hasChanged) {
+                    c.redraw();
+                }
+            }
+            return c;
+        };
+        return Contour;
+    }(KG.ViewObject));
+    KG.Contour = Contour;
+    var ContourMap = /** @class */ (function (_super) {
+        __extends(ContourMap, _super);
+        function ContourMap(def) {
+            return _super.call(this, def) || this;
+        }
+        return ContourMap;
+    }(KG.ViewObject));
+    KG.ContourMap = ContourMap;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Label = /** @class */ (function (_super) {
+        __extends(Label, _super);
+        function Label(def) {
+            var _this = this;
+            var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
+            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
+            if (def.x == 'AXIS') {
+                def.x = 0;
+                def.align = xAxisReversed ? 'left' : 'right';
+                def.xPixelOffset = xOffset;
+            }
+            if (def.x == 'OPPAXIS') {
+                def.x = def.xScale.domainMax;
+                def.align = xAxisReversed ? 'right' : 'left';
+                def.xPixelOffset = -xOffset;
+            }
+            if (def.y == 'AXIS') {
+                def.y = 0;
+                def.yPixelOffset = yOffset;
+            }
+            if (def.y == 'OPPAXIS') {
+                def.y = def.yScale.domainMax;
+                def.yPixelOffset = -yOffset;
+            }
+            //establish property defaults
+            KG.setDefaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12,
+                align: 'center',
+                valign: 'middle',
+                rotate: 0,
+                color: 'black',
+                bgcolor: 'white'
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Label.prototype.draw = function (layer) {
+            var label = this;
+            label.rootElement = layer.append('div')
+                .attr('class', 'draggable')
+                .style('position', 'absolute')
+                .style('font-size', label.fontSize + 'pt')
+                .style('text-align', 'center')
+                .style('padding-left', '3px')
+                .style('padding-right', '3px');
+            return label.addInteraction();
+        };
+        // update properties
+        Label.prototype.redraw = function () {
+            var label = this;
+            label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
+            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
+            if (undefined != label.text) {
+                //console.log('drawing label with text ',label.text);
+                try {
+                    katex.render(label.text.toString(), label.rootElement.node());
+                }
+                catch (e) {
+                    console.log("Error rendering KaTeX: ", label.text);
+                }
+            }
+            label.rootElement.style('left', x + 'px');
+            label.rootElement.style('top', y + 'px');
+            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
+            // Set left pixel margin; default to centered on x coordinate
+            var alignDelta = width * 0.5;
+            if (label.align == 'left') {
+                alignDelta = 0;
+            }
+            else if (label.align == 'right') {
+                // move left by half the width of the div if right aligned
+                alignDelta = width;
+            }
+            label.rootElement.style('left', (x - alignDelta) + 'px');
+            // Set top pixel margin; default to centered on y coordinate
+            var vAlignDelta = height * 0.5;
+            // Default to centered on x coordinate
+            if (label.valign == 'top') {
+                vAlignDelta = 0;
+            }
+            else if (label.valign == 'bottom') {
+                vAlignDelta = height;
+            }
+            label.rootElement.style('top', (y - vAlignDelta) + 'px');
+            var rotate = "rotate(-" + label.rotate + "deg)";
+            label.rootElement.style('-webkit-transform', rotate)
+                .style('transform', rotate);
+            return label;
+        };
+        return Label;
+    }(KG.ViewObject));
+    KG.Label = Label;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var DivObject = /** @class */ (function (_super) {
+        __extends(DivObject, _super);
+        function DivObject() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        DivObject.prototype.redraw = function () {
+            var div = this;
+            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
+            div.rootElement.style('left', div.xScale.scale(0) + 'px');
+            div.rootElement.style('top', div.yScale.scale(1) + 'px');
+            div.rootElement.style('width', width + 'px');
+            div.rootElement.style('height', height + 'px');
+            return div;
+        };
+        return DivObject;
+    }(KG.ViewObject));
+    KG.DivObject = DivObject;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var PositionedDiv = /** @class */ (function (_super) {
+        __extends(PositionedDiv, _super);
+        function PositionedDiv() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        PositionedDiv.prototype.draw = function (layer) {
+            var div = this;
+            div.rootElement = layer.append('div');
+            div.rootElement.style('position', 'absolute');
+            if (div.def.hasOwnProperty('children')) {
+                div.def['children'].forEach(function (child) {
+                    child.def.layer = div.rootElement;
+                    child.def.model = div.model;
+                    new KG[child.type](child.def);
+                });
+            }
+            return div;
+        };
+        PositionedDiv.prototype.redraw = function () {
+            var div = this;
+            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
+            div.rootElement.style('left', div.xScale.scale(0) + 'px');
+            div.rootElement.style('top', div.yScale.scale(1) + 'px');
+            div.rootElement.style('width', width + 'px');
+            div.rootElement.style('height', height + 'px');
+            return div;
+        };
+        return PositionedDiv;
+    }(KG.DivObject));
+    KG.PositionedDiv = PositionedDiv;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Div = /** @class */ (function (_super) {
+        __extends(Div, _super);
+        function Div(def) {
+            var _this = this;
+            //establish property defaults
+            KG.setDefaults(def, {
+                xPixelOffset: 0,
+                yPixelOffset: 0,
+                fontSize: 12
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['fontSize']);
+            KG.setProperties(def, 'updatables', ['html']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Div.prototype.draw = function (layer) {
+            var div = this;
+            div.rootElement = layer.append('div')
+                .style('font-size', div.fontSize + 'pt')
+                .style('padding-top', '2px')
+                .style('padding-bottom', '2px');
+            return div;
+        };
+        // update properties
+        Div.prototype.redraw = function () {
+            var div = this;
+            if (div.show) {
+                div.rootElement.html(div.html);
+                renderMathInElement(div.rootElement.node(), {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "\\[", right: "\\]", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false }
+                    ]
+                });
+            }
+            else {
+                div.rootElement.html(null);
+            }
+            return div;
+        };
+        return Div;
+    }(KG.DivObject));
+    KG.Div = Div;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var ParamControl = /** @class */ (function (_super) {
+        __extends(ParamControl, _super);
+        function ParamControl(def) {
+            var _this = this;
+            // establish property defaults
+            KG.setDefaults(def, {
+                value: 'params.' + def.param,
+                alwaysUpdate: true
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['param']);
+            KG.setProperties(def, 'updatables', ['label', 'value']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return ParamControl;
+    }(KG.DivObject));
+    KG.ParamControl = ParamControl;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Slider = /** @class */ (function (_super) {
+        __extends(Slider, _super);
+        function Slider(def) {
+            var _this = this;
+            // establish property defaults
+            KG.setDefaults(def, {
+                noAxis: false
+            });
+            // define constant and updatable properties
+            KG.setProperties(def, 'constants', ['noAxis']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Slider.prototype.draw = function (layer) {
+            var slider = this;
+            slider.rootElement = layer.append('tr');
+            var param = slider.model.getParam(slider.param);
+            slider.labelElement = slider.rootElement.append('td')
+                .style('font-size', '14pt')
+                .style('text-align', 'right')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+            function inputUpdate() {
+                slider.model.updateParam(slider.param, +this.value);
+            }
+            var numberCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+            slider.numberInput = numberCell.append('input')
+                .attr('type', 'number')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round)
+                .style('font-size', '14pt')
+                .style('border', 'none')
+                .style('background', 'none')
+                .style('font-family', 'KaTeX_Main')
+                .style('margin', '0px')
+                .style('padding-top', '0px')
+                .style('padding-bottom', '0px')
+                .style('width', '100%');
+            slider.numberInput.on("blur", inputUpdate);
+            slider.numberInput.on("click", inputUpdate);
+            slider.numberInput.on("keyup", function () {
+                if (event['keyCode'] == 13) {
+                    slider.model.updateParam(slider.param, +this.value);
+                }
+            });
+            var rangeCell = slider.rootElement.append('td')
+                .style('padding', '0px')
+                .style('margin', '0px')
+                .style('border', 'none');
+            slider.rangeInput = rangeCell.append('input')
+                .attr('type', 'range')
+                .attr('min', param.min)
+                .attr('max', param.max)
+                .attr('step', param.round)
+                .style('padding', '0px')
+                .style('width', '100%')
+                .style('margin', '0px');
+            slider.rangeInput.on("input", inputUpdate);
+            return slider;
+        };
+        // update properties
+        Slider.prototype.redraw = function () {
+            var slider = this;
+            katex.render(slider.label + " = ", slider.labelElement.node());
+            slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+            slider.rangeInput.property('value', slider.value);
+            return slider;
+        };
+        return Slider;
+    }(KG.ParamControl));
+    KG.Slider = Slider;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Checkbox = /** @class */ (function (_super) {
+        __extends(Checkbox, _super);
+        function Checkbox() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Checkbox.prototype.draw = function (layer) {
+            var checkbox = this;
+            checkbox.rootElement = layer.append('div').append('label');
+            checkbox.inputElement = checkbox.rootElement.append('input');
+            checkbox.inputElement
+                .attr('type', 'checkbox');
+            checkbox.inputElement.on("change", function () {
+                checkbox.model.toggleParam(checkbox.param);
+            });
+            checkbox.labelElement = checkbox.rootElement.append('span');
+            checkbox.labelElement.style('padding-left', '10px');
+            return checkbox;
+        };
+        Checkbox.prototype.redraw = function () {
+            var checkbox = this;
+            checkbox.inputElement.property('checked', Boolean(checkbox.value));
+            katex.render(checkbox.label, checkbox.labelElement.node());
+            return checkbox;
+        };
+        return Checkbox;
+    }(KG.ParamControl));
+    KG.Checkbox = Checkbox;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Radio = /** @class */ (function (_super) {
+        __extends(Radio, _super);
+        function Radio(def) {
+            var _this = this;
+            KG.setProperties(def, 'updatables', ['optionValue']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Radio.prototype.draw = function (layer) {
+            var radio = this;
+            radio.rootElement = layer.append('div').append('label');
+            radio.inputElement = radio.rootElement.append('input');
+            radio.inputElement
+                .attr('type', 'radio')
+                .attr('name', 'r_' + radio.param)
+                .attr('value', radio.optionValue);
+            radio.inputElement.on("change", function () {
+                radio.model.updateParam(radio.param, radio.optionValue);
+            });
+            radio.labelElement = radio.rootElement.append('span');
+            radio.labelElement.style('padding-left', '10px');
+            return radio;
+        };
+        Radio.prototype.redraw = function () {
+            var radio = this;
+            radio.inputElement.property('checked', radio.value == radio.optionValue);
+            katex.render(radio.label, radio.labelElement.node());
+            return radio;
+        };
+        return Radio;
+    }(KG.ParamControl));
+    KG.Radio = Radio;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Controls = /** @class */ (function (_super) {
+        __extends(Controls, _super);
+        function Controls(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                title: '',
+                description: '',
+                sliders: [],
+                checkboxes: [],
+                radios: [],
+                divs: []
+            });
+            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
+            KG.setProperties(def, 'updatables', ['title', 'description']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Controls.prototype.draw = function (layer) {
+            var controls = this;
+            controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
+            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.rootElement.append('hr');
+            controls.descriptionElement = controls.rootElement.append('div');
+            controls.descriptionElement.style('margin-bottom', '10px');
+            if (controls.sliders.length > 0) {
+                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
+                controls.sliders.forEach(function (slider) {
+                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
+                });
+            }
+            if (controls.checkboxes.length > 0) {
+                controls.checkboxes.forEach(function (checkbox) {
+                    checkbox = KG.setDefaults(checkbox, {
+                        layer: controls.rootElement,
+                        model: controls.model
+                    });
+                    new KG.Checkbox(checkbox);
+                });
+            }
+            controls.radios.forEach(function (radio) {
+                radio = KG.setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model
+                });
+                new KG.Radio(radio);
+            });
+            controls.divs.forEach(function (div) {
+                div = KG.setDefaults(div, {
+                    layer: controls.rootElement,
+                    model: controls.model,
+                    fontSize: 14
+                });
+                if (div.hasOwnProperty('html')) {
+                    new KG.Div(div);
+                }
+                else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.lines = div.table.lines;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new KG.Table(div);
+                }
+            });
+            return controls;
+        };
+        // update properties
+        Controls.prototype.redraw = function () {
+            var controls = this;
+            if (controls.title.length > 0) {
+                controls.titleElement.text(controls.title.toUpperCase());
+            }
+            controls.descriptionElement.html(controls.description);
+            return controls;
+        };
+        return Controls;
+    }(KG.DivObject));
+    KG.Controls = Controls;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var GameMatrix = /** @class */ (function (_super) {
+        __extends(GameMatrix, _super);
+        function GameMatrix(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                players: ["Player 1", "Player 2"]
+            });
+            KG.setProperties(def, 'constants', ['players', 'strategies']);
+            KG.setProperties(def, 'updatables', ['payoffs']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        GameMatrix.prototype.draw = function (layer) {
+            var gameMatrix = this;
+            var numStrategies1 = gameMatrix.strategies[0].length, numStrategies2 = gameMatrix.strategies[1].length;
+            gameMatrix.rootElement = layer.append('div');
+            var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
+            var topRow = table.append('tr');
+            topRow.append('td').attr('colspan', '2').attr('class', 'empty');
+            topRow.append('td')
+                .attr('colspan', numStrategies2 * 2)
+                .attr('class', 'player2 strategy empty')
+                .text(gameMatrix.players[1]);
+            var secondRow = table.append('tr');
+            secondRow.append('td').attr('colspan', '2').attr('class', 'empty');
+            gameMatrix.strategies[1].forEach(function (s) {
+                secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy').text(s);
+            });
+            gameMatrix.payoffNodes = [];
+            for (var i = 0; i < numStrategies1; i++) {
+                var row = table.append('tr');
+                var payoffRow = [];
+                if (i == 0) {
+                    row.append('td')
+                        .attr('rowSpan', numStrategies1)
+                        .attr('class', 'player1 strategy empty')
+                        .text(gameMatrix.players[0]);
+                }
+                row.append('td').text(gameMatrix.strategies[0][i]).attr('class', 'player1 strategy');
+                for (var j = 0; j < numStrategies2; j++) {
+                    var payoff1 = row.append('td').attr('class', 'player1 payoff');
+                    var payoff2 = row.append('td').attr('class', 'player2 payoff');
+                    payoffRow.push([payoff1, payoff2]);
+                }
+                gameMatrix.payoffNodes.push(payoffRow);
+            }
+            return gameMatrix;
+        };
+        GameMatrix.prototype.redraw = function () {
+            var gameMatrix = this;
+            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1];
+            var numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            for (var i = 0; i < numStrategies1; i++) {
+                for (var j = 0; j < numStrategies2; j++) {
+                    var cell = gameMatrix.payoffNodes[i][j];
+                    katex.render(gameMatrix.payoffs[i][j][0].toString(), cell[0].node());
+                    katex.render(gameMatrix.payoffs[i][j][1].toString(), cell[1].node());
+                }
+            }
+            return gameMatrix;
+        };
+        return GameMatrix;
+    }(KG.DivObject));
+    KG.GameMatrix = GameMatrix;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var GeoGebraApplet = /** @class */ (function (_super) {
+        __extends(GeoGebraApplet, _super);
+        function GeoGebraApplet(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                params: [],
+                objects: [],
+                axisLabels: []
+            });
+            def.params.forEach(function (param) {
+                def[param] = 'params.' + param;
+            });
+            KG.setProperties(def, 'updatables', def.params);
+            KG.setProperties(def, 'constants', ['axes', 'params']);
+            _this = _super.call(this, def) || this;
+            var div = _this;
+            div.objects = def.objects.map(function (objDef) {
+                objDef.model = def.model;
+                return new KG.GeoGebraObject(objDef);
+            });
+            //console.log('created GGB javascript object ', this)
+            div.axesEstablished = false;
+            return _this;
+        }
+        // create div for text
+        GeoGebraApplet.prototype.draw = function (layer) {
+            var div = _super.prototype.draw.call(this, layer);
+            var id = KG.randomString(10);
+            div.rootElement.append('div').attr('id', id);
+            var applet = new GGBApplet({
+                allowStyleBar: true,
+                perspective: "T",
+                borderColor: "#FFFFFF",
+                dataParamId: id
+            }, true);
+            applet.setHTML5Codebase('../../../../GeoGebra/HTML5/5.0/web3d/');
+            applet.inject(id);
+            return div;
+        };
+        GeoGebraApplet.prototype.establishGGB = function (width, height) {
+            var div = this;
+            //console.log('called establishGGB');
+            if (undefined != document['ggbApplet']) {
+                //console.log('applet exists');
+                div.applet = document['ggbApplet'];
+                div.params.forEach(function (p) {
+                    var establishParamCommand = p + " = " + div.model.currentParamValues[p];
+                    //console.log('setting param using command ', establishParamCommand);
+                    div.applet.evalCommand(establishParamCommand);
+                });
+                div.objects.forEach(function (obj) {
+                    obj.establishGGB(div.applet);
+                });
+                div.updateGGB(div.applet, width, height);
+            }
+            else {
+                //console.log('applet does not exist')
+            }
+        };
+        GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
+            var div = this;
+            console.log('called updateGGB');
+            if (undefined != applet) {
+                //console.log('applet exists');
+                //console.log('setting width to ', width);
+                applet.setWidth(width);
+                //console.log('setting height to ', height);
+                applet.setHeight(height);
+                if (div.axes.length == 3) {
+                    //console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max)
+                    applet.setCoordSystem(div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
+                    //console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
+                    //console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
+                    applet.setColor('zAxis', 0, 0, 0);
+                }
+                else {
+                    applet.setCoordSystem(div.axes[0].scale.domainMin, div.axes[0].scale.domainMax, div.axes[1].scale.domainMin, div.axes[1].scale.domainMax);
+                    applet.setAxisSteps(2, div.axes[0].step, div.axes[1].step);
+                    applet.setAxisLabels(2, div.axes[0].label, div.axes[1].label);
+                    applet.setColor('xAxis', 0, 0, 0);
+                    applet.setColor('yAxis', 0, 0, 0);
+                }
+                if (div.hasOwnProperty('params')) {
+                    div.params.forEach(function (param) {
+                        applet.setValue(param, div[param]);
+                    });
+                }
+            }
+            else {
+                //console.log('applet does not exist')
+            }
+        };
+        // update properties
+        GeoGebraApplet.prototype.redraw = function () {
+            var div = _super.prototype.redraw.call(this);
+            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
+            var checkExist = setInterval(function () {
+                if (undefined != div.applet) {
+                    div.updateGGB(div.applet, width, height);
+                    clearInterval(checkExist);
+                }
+                else {
+                    div.establishGGB(width, height);
+                }
+            }, 100); // check every 100ms
+            return div;
+        };
+        return GeoGebraApplet;
+    }(KG.PositionedDiv));
+    KG.GeoGebraApplet = GeoGebraApplet;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Mathbox = /** @class */ (function (_super) {
+        __extends(Mathbox, _super);
+        function Mathbox(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                objects: []
+            });
+            _this = _super.call(this, def) || this;
+            var mb = _this;
+            mb.objectDefs = def.objects;
+            mb.objects = [];
+            mb.objectDefs.forEach(function (td) {
+                td.def.mathbox = mb;
+                td.def.model = mb.model;
+                if (td.type.indexOf('Mathbox') < 0) {
+                    td.type = 'Mathbox' + td.type;
+                }
+                mb.objects.push(new KG[td.type](td.def));
+            });
+            return _this;
+            //console.log('created mathbox', mb);
+        }
+        Mathbox.prototype.initMathbox = function () {
+            var mb = this;
+            mb.mathbox = mathBox({
+                plugins: ['core', 'controls', 'cursor', 'mathbox'],
+                controls: { klass: THREE.OrbitControls },
+                element: mb.rootElement.node()
+            });
+            if (mb.mathbox.fallback)
+                throw "WebGL not supported";
+            mb.three = mb.mathbox.three;
+            mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+            mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
+            mb.mathboxView = mb.mathbox.cartesian({ scale: [0.9, 0.9, 0.9] });
+            mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
+            mb.xAxis.redraw();
+            mb.yAxis.redraw();
+            mb.zAxis.redraw();
+            mb.objects.forEach(function (o) { o.draw().update(); });
+            return mb;
+        };
+        // create mb for mathbox
+        Mathbox.prototype.draw = function (layer) {
+            console.log('creating mathbox container');
+            var mb = this;
+            mb.rootElement = layer.append('div').style('position', 'absolute');
+            return mb;
+        };
+        Mathbox.prototype.redraw = function () {
+            var mb = _super.prototype.redraw.call(this);
+            console.log('called redraw');
+            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10 && mb.zAxis != undefined) {
+                mb.initMathbox();
+            }
+            else {
+                return mb;
+            }
+            return mb;
+        };
+        return Mathbox;
+    }(KG.PositionedDiv));
+    KG.Mathbox = Mathbox;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Sidebar = /** @class */ (function (_super) {
+        __extends(Sidebar, _super);
+        function Sidebar(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                controls: [],
+                triggerWidth: 563
+            });
+            KG.setProperties(def, 'constants', ['controls', 'triggerWidth']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Sidebar.prototype.positionRight = function (width, height) {
+            var sidebar = this;
+            sidebar.rootElement
+                .style('left', width * 847 / 1260 + 'px')
+                .style('top', '0px')
+                .style('width', (width * 413 / 1260 - 10) + 'px')
+                .style('height', height + 'px')
+                .style('overflow-y', 'scroll')
+                .style('right', '-17px');
+        };
+        Sidebar.prototype.positionBelow = function (width, height) {
+            var sidebar = this;
+            sidebar.rootElement
+                .style('left', '10px')
+                .style('top', height + 20 + 'px')
+                .style('width', width - 20 + 'px')
+                .style('height', null);
+        };
+        Sidebar.prototype.draw = function (layer) {
+            var sidebar = this;
+            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.controls.forEach(function (controlsDef) {
+                controlsDef.layer = sidebar.rootElement;
+                controlsDef.model = sidebar.model;
+                new KG.Controls(controlsDef);
+            });
+            return sidebar;
+        };
+        return Sidebar;
+    }(KG.ViewObject));
+    KG.Sidebar = Sidebar;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Explanation = /** @class */ (function (_super) {
+        __extends(Explanation, _super);
+        function Explanation(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                height: 0,
+                divs: [],
+                border: 'none'
+            });
+            KG.setProperties(def, 'constants', ['divs', 'height', 'border']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        Explanation.prototype.position = function (width, height) {
+            var explanation = this;
+            explanation.rootElement
+                .style('left', '10px')
+                .style('top', height + 20 + 'px')
+                .style('width', width - 20 + 'px');
+        };
+        Explanation.prototype.draw = function (layer) {
+            var explanation = this;
+            explanation.rootElement = layer.append('div')
+                .style('position', 'absolute')
+                .style('height', explanation.height == 0 ? null : explanation.height + 'px')
+                .style('overflow-y', 'scroll')
+                .style('border', explanation.border);
+            explanation.divs.forEach(function (div) {
+                div = KG.setDefaults(div, {
+                    layer: explanation.rootElement,
+                    model: explanation.model,
+                    fontSize: 12
+                });
+                if (div.hasOwnProperty('html')) {
+                    new KG.Div(div);
+                }
+                else if (div.hasOwnProperty('table')) {
+                    div.rows = div.table.rows;
+                    div.columns = div.table.columns;
+                    div.fontSize = 10;
+                    delete div.table;
+                    new KG.Table(div);
+                }
+            });
+            return explanation;
+        };
+        return Explanation;
+    }(KG.ViewObject));
+    KG.Explanation = Explanation;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var Table = /** @class */ (function (_super) {
+        __extends(Table, _super);
+        function Table(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                columns: [],
+                rows: [],
+                fontSize: 8,
+                lines: true
+            });
+            KG.setProperties(def, 'constants', ['fontSize', 'lines']);
+            KG.setProperties(def, 'updatables', ['rows', 'columns']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        // create div for text
+        Table.prototype.draw = function (layer) {
+            var t = this;
+            console.log('table is ', t);
+            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.def['rows'][0].length, numRows = t.def['rows'].length;
+            t.rootElement = layer.append('div');
+            var table = t.rootElement.append('table').attr('class', 'table');
+            table
+                .style('margin-left', 'auto')
+                .style('margin-right', 'auto')
+                .style('font-size', t.fontSize + 'pt')
+                .style('text-align', 'center')
+                .style('border-collapse', 'collapse')
+                .style('margin-top', '15pt')
+                .attr('cell-padding', '5px')
+                .style('width', '80%');
+            t.columnCells = [];
+            if (hasColumnHeaders) {
+                var columnRow = table.append('thead').append('tr');
+                for (var c = 0; c < numColumns; c++) {
+                    var columnCell = columnRow.append('td');
+                    columnCell
+                        .style('font-size', t.fontSize + 'pt')
+                        .style('font-weight', 'bold')
+                        .style('border-bottom', '1px solid black')
+                        .style('text-align', 'center')
+                        .style('padding', '0px 10px 0px 10px');
+                    t.columnCells.push(columnCell);
+                }
+            }
+            t.rowCells = [];
+            var tableBody = table.append('tbody');
+            for (var r = 0; r < numRows; r++) {
+                var dataRow = [];
+                var tableRow = tableBody.append('tr');
+                for (var c = 0; c < numColumns; c++) {
+                    var rowCell = tableRow.append('td');
+                    rowCell
+                        .style('font-size', t.fontSize + 'pt')
+                        .style('text-align', 'center');
+                    if (t.lines) {
+                        rowCell.style('border-bottom', '0.5px solid grey');
+                    }
+                    dataRow.push(rowCell);
+                }
+                t.rowCells.push(dataRow);
+            }
+            return t;
+        };
+        Table.prototype.redraw = function () {
+            var t = this;
+            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.rows[0].length, numRows = t.rows.length;
+            if (hasColumnHeaders) {
+                for (var c = 0; c < numColumns; c++) {
+                    katex.render("\\text{" + t.columns[c].toString() + "}", t.columnCells[c].node());
+                }
+            }
+            for (var r = 0; r < numRows; r++) {
+                for (var c = 0; c < numColumns; c++) {
+                    katex.render("\\text{" + t.rows[r][c].toString() + "}", t.rowCells[r][c].node());
+                }
+            }
+            return t;
+        };
+        return Table;
+    }(KG.DivObject));
+    KG.Table = Table;
+})(KG || (KG = {}));
+/// <reference path="../../kg.ts" />
+var KG;
+(function (KG) {
+    var MathboxObject = /** @class */ (function (_super) {
+        __extends(MathboxObject, _super);
+        function MathboxObject(def) {
+            var _this = this;
+            KG.setProperties(def, 'constants', ['mathbox']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxObject.prototype.onGraph = function () {
+            return true; // we won't check yet to see if it's on the graph...
+        };
+        MathboxObject.prototype.displayElement = function (show) {
+            var mbo = this;
+            if (mbo.hasOwnProperty("mo")) {
+                this.mo.set("visible", show);
+            }
+        };
+        return MathboxObject;
+    }(KG.ViewObject));
+    KG.MathboxObject = MathboxObject;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxAxis = /** @class */ (function (_super) {
+        __extends(MathboxAxis, _super);
+        function MathboxAxis(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                ticks: 5,
+                min: 0,
+                max: 10
+            });
+            KG.setProperties(def, 'constants', ['axisNumber', 'ticks']);
+            KG.setProperties(def, 'updatables', ['ticks', 'label', 'min', 'max']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxAxis.prototype.redraw = function () {
+            var a = this;
+            console.log(a);
+            var view = a.mathbox.mathboxView;
+            if (view == undefined) {
+                return a;
+            }
+            view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
+            var axis = view.axis({ axis: a.axisNumber, width: 8, detail: 40, color: "black" });
+            var scale = view.scale({ axis: a.axisNumber, divide: a.ticks, nice: true, zero: true });
+            var ticks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
+            var format = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: scale });
+            var ticklabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: scale, text: format });
+            return a;
+        };
+        return MathboxAxis;
+    }(KG.MathboxObject));
+    KG.MathboxAxis = MathboxAxis;
+    var MathboxXAxis = /** @class */ (function (_super) {
+        __extends(MathboxXAxis, _super);
+        function MathboxXAxis(def) {
+            var _this = this;
+            def.axisNumber = 3;
+            _this = _super.call(this, def) || this;
+            var xAxis = _this;
+            xAxis.mathbox.xAxis = xAxis;
+            return _this;
+        }
+        return MathboxXAxis;
+    }(MathboxAxis));
+    KG.MathboxXAxis = MathboxXAxis;
+    var MathboxYAxis = /** @class */ (function (_super) {
+        __extends(MathboxYAxis, _super);
+        function MathboxYAxis(def) {
+            var _this = this;
+            def.axisNumber = 1;
+            _this = _super.call(this, def) || this;
+            var yAxis = _this;
+            yAxis.mathbox.yAxis = yAxis;
+            return _this;
+        }
+        return MathboxYAxis;
+    }(MathboxAxis));
+    KG.MathboxYAxis = MathboxYAxis;
+    var MathboxZAxis = /** @class */ (function (_super) {
+        __extends(MathboxZAxis, _super);
+        function MathboxZAxis(def) {
+            var _this = this;
+            def.axisNumber = 2;
+            _this = _super.call(this, def) || this;
+            var zAxis = _this;
+            zAxis.mathbox.zAxis = zAxis;
+            return _this;
+        }
+        return MathboxZAxis;
+    }(MathboxAxis));
+    KG.MathboxZAxis = MathboxZAxis;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxPoint = /** @class */ (function (_super) {
+        __extends(MathboxPoint, _super);
+        function MathboxPoint(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                x: 0,
+                y: 0,
+                z: 0
+            });
+            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxPoint.prototype.draw = function () {
+            var p = this;
+            p.pointData = p.mathbox.mathboxView.array({
+                width: 1,
+                channels: 3
+            });
+            p.mo = p.mathbox.mathboxView.point({
+                size: 20,
+                points: p.pointData,
+                zIndex: 4
+            });
+            return p;
+        };
+        MathboxPoint.prototype.redraw = function () {
+            var p = this;
+            p.pointData.set("data", [[p.y, p.z, p.x]]);
+            p.mo.set("color", p.stroke);
+            return p;
+        };
+        return MathboxPoint;
+    }(KG.MathboxObject));
+    KG.MathboxPoint = MathboxPoint;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxCurve = /** @class */ (function (_super) {
+        __extends(MathboxCurve, _super);
+        function MathboxCurve(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                text: "#666666",
+                strokeWidth: 10
+            });
+            _this = _super.call(this, def) || this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            _this.fn = new KG.UnivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        MathboxCurve.prototype.draw = function () {
+            var c = this;
+            c.curveData = c.mathbox.mathboxView.interval({
+                axis: 1,
+                channels: 3,
+                width: c.fn.samplePoints
+            });
+            c.mo = c.mathbox.mathboxView.line({
+                points: c.curveData,
+                zIndex: 3
+            });
+            return c;
+        };
+        MathboxCurve.prototype.redraw = function () {
+            var c = this;
+            console.log(c);
+            c.curveData.set("expr", c.fn.mathboxFn());
+            c.mo.set("color", c.stroke);
+            c.mo.set("width", c.strokeWidth);
+            return c;
+        };
+        return MathboxCurve;
+    }(KG.MathboxObject));
+    KG.MathboxCurve = MathboxCurve;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxSurface = /** @class */ (function (_super) {
+        __extends(MathboxSurface, _super);
+        function MathboxSurface(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: "#666666",
+                strokeWidth: 10,
+                opacity: 0.2
+            });
+            _this = _super.call(this, def) || this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        MathboxSurface.prototype.draw = function () {
+            var s = this;
+            s.surfaceData = s.mathbox.mathboxView.area({
+                axes: [1, 3],
+                channels: 3,
+                width: s.fn.samplePoints,
+                height: s.fn.samplePoints
+            });
+            s.mo = s.mathbox.mathboxView.surface({
+                points: s.surfaceData,
+                shaded: true,
+                fill: true,
+                lineX: false,
+                lineY: false,
+                width: 0,
+                zIndex: 2
+            });
+            return s;
+        };
+        MathboxSurface.prototype.redraw = function () {
+            var c = this;
+            console.log(c);
+            c.surfaceData.set("expr", c.fn.mathboxFn());
+            c.mo.set("color", c.fill);
+            c.mo.set("opacity", c.opacity);
+            return c;
+        };
+        return MathboxSurface;
+    }(KG.MathboxObject));
+    KG.MathboxSurface = MathboxSurface;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxShape = /** @class */ (function (_super) {
+        __extends(MathboxShape, _super);
+        function MathboxShape(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: "#666666",
+                strokeWidth: 10,
+                opacity: 0.2
+            });
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxShape.prototype.draw = function () {
+            var s = this;
+            s.surfaceData = s.mathbox.mathboxView.area({
+                axes: [1, 3],
+                channels: 3,
+                width: s.fn.samplePoints,
+                height: s.fn.samplePoints
+            });
+            s.mo = s.mathbox.mathboxView.surface({
+                points: s.surfaceData,
+                shaded: true,
+                fill: true,
+                lineX: false,
+                lineY: false,
+                width: 0,
+                zIndex: 2
+            });
+            return s;
+        };
+        MathboxShape.prototype.redraw = function () {
+            var c = this;
+            console.log(c);
+            c.surfaceData.set("expr", c.fn.mathboxFn());
+            c.mo.set("color", c.fill);
+            c.mo.set("opacity", c.opacity);
+            return c;
+        };
+        return MathboxShape;
+    }(KG.MathboxObject));
+    KG.MathboxShape = MathboxShape;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxLabel = /** @class */ (function (_super) {
+        __extends(MathboxLabel, _super);
+        function MathboxLabel(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                text: "foo"
+            });
+            KG.setProperties(def, 'updatables', ['text']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxLabel.prototype.draw = function () {
+            var l = this;
+            l.pointData = l.mathbox.mathboxView.array({
+                width: 1,
+                channels: 3
+            });
+            l.labelData = l.mathbox.mathboxView.format({
+                font: "KaTeX_Main",
+                style: "normal"
+            });
+            l.mo = l.mathbox.mathboxView.label({
+                points: l.pointData,
+                zIndex: 4,
+                text: l.labelData
+            });
+            return l;
+        };
+        MathboxLabel.prototype.redraw = function () {
+            var l = _super.prototype.redraw.call(this);
+            l.labelData.set("data", [l.text]);
+            return l;
+        };
+        return MathboxLabel;
+    }(KG.MathboxPoint));
+    KG.MathboxLabel = MathboxLabel;
+})(KG || (KG = {}));
+/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
+/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
+/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
+/// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
+/// <reference path="lib/underscore.ts"/>
+/// <reference path="KGAuthor/kgAuthor.ts"/>
+/// <reference path="model/model.ts"/>
+/// <reference path="model/param.ts" />
+/// <reference path="model/restriction.ts" />
+/// <reference path="model/updateListener.ts" />
+/// <reference path="math/mathFunction.ts" />
+/// <reference path="math/univariateFunction.ts" />
+/// <reference path="math/parametricFunction.ts" />
+/// <reference path="math/multivariateFunction.ts" />
+/// <reference path="controller/listeners/listener.ts" />
+/// <reference path="controller/listeners/dragListener.ts" />
+/// <reference path="controller/listeners/clickListener.ts" />
+/// <reference path="controller/interactionHandler.ts" />
+/// <reference path="view/view.ts"/>
+/// <reference path="view/scale.ts" />
+/// <reference path="view/viewObjects/viewObject.ts" />
+/// <reference path="view/viewObjects/marker.ts" />
+/// <reference path="view/viewObjects/segment.ts" />
+/// <reference path="view/viewObjects/curve.ts" />
+/// <reference path="view/viewObjects/axis.ts" />
+/// <reference path="view/viewObjects/point.ts" />
+/// <reference path="view/viewObjects/circle.ts" />
+/// <reference path="view/viewObjects/rectangle.ts" />
+/// <reference path="view/viewObjects/area.ts" />
+/// <reference path="view/viewObjects/ggbObject.ts" />
+/// <reference path="view/viewObjects/contour.ts" />
+/// <reference path="view/viewObjects/label.ts" />
+/// <reference path="view/divObjects/divObject.ts" />
+/// <reference path="view/divObjects/positionedDiv.ts" />
+/// <reference path="view/divObjects/div.ts" />
+/// <reference path="view/divObjects/paramControl.ts"/>
+/// <reference path="view/divObjects/slider.ts"/>
+/// <reference path="view/divObjects/checkbox.ts"/>
+/// <reference path="view/divObjects/radio.ts"/>
+/// <reference path="view/divObjects/controls.ts"/>
+/// <reference path="view/divObjects/gameMatrix.ts"/>
+/// <reference path="view/divObjects/ggbApplet.ts"/>
+/// <reference path="view/divObjects/mathbox.ts"/>
+/// <reference path="view/divObjects/sidebar.ts"/>
+/// <reference path="view/divObjects/explanation.ts"/>
+/// <reference path="view/divObjects/table.ts" />
+/// <reference path="view/mathboxObjects/mathboxObject.ts" />
+/// <reference path="view/mathboxObjects/mathboxAxis.ts" />
+/// <reference path="view/mathboxObjects/mathboxPoint.ts" />
+/// <reference path="view/mathboxObjects/mathboxCurve.ts" />
+/// <reference path="view/mathboxObjects/mathboxSurface.ts" />
+/// <reference path="view/mathboxObjects/mathboxShape.ts" />
+/// <reference path="view/mathboxObjects/mathboxLabel.ts" />
+// this file provides the interface with the overall web page
+var views = [];
+// initialize the diagram from divs with class kg-container
+window.addEventListener("load", function () {
+    var viewDivs = document.getElementsByClassName('kg-container');
+    var _loop_1 = function (i) {
+        var d = viewDivs[i], src = d.getAttribute('src'), fmt = d.getAttribute('format'), greenscreen = d.getAttribute('greenscreen') || false;
+        if (d.innerHTML.indexOf('svg') > -1) {
+            //console.log('already loaded');
+        }
+        else {
+            // if there is no src attribute
+            if (!src || src.indexOf('.yml') > -1) {
+                try {
+                    function generateViewFromYamlText(t) {
+                        var y = jsyaml.safeLoad(t);
+                        var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
+                        j.greenscreen = greenscreen;
+                        views.push(new KG.View(d, j));
+                    }
+                    if (src) {
+                        // load YAML from source file
+                        d3.text(src).then(function (yaml_file) {
+                            generateViewFromYamlText(yaml_file);
+                        });
+                    }
+                    else {
+                        // read inner HTML of div as YAML
+                        generateViewFromYamlText(d.innerHTML);
+                    }
+                }
+                catch (e) {
+                    console.log('Error reading YAML: ', e.message);
+                }
+            }
+            // first look to see if there's a definition in the KG.viewData object
+            else if (KG['viewData'].hasOwnProperty(src)) {
+                viewDivs[i].innerHTML = "";
+                views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
+            }
+            else {
+                // then look to see if the src is available by a URL
+                d3.json(src + "?update=true").then(function (data) {
+                    if (!data) {
+                        d.innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
+                    }
+                    else {
+                        d.innerHTML = "";
+                        data.greenscreen = greenscreen;
+                        views.push(new KG.View(d, data));
+                    }
+                });
+            }
+            d.classList.add('kg-loaded');
+        }
+    };
+    // for each div, fetch the JSON definition and create a View object with that div and data
+    for (var i = 0; i < viewDivs.length; i++) {
+        _loop_1(i);
+    }
+});
+// if the window changes size, update the dimensions of the containers
+window.onresize = function () {
+    views.forEach(function (c) {
+        c.updateDimensions();
+    });
+};
+// if embedded within a slide, send slide transitions to the parent
+document.addEventListener("keyup", function (event) {
+    if (event.key == 'PageDown') {
+        event.preventDefault();
+        console.log('trigger next page');
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'next'
+            }), '*');
+        }
+    }
+    if (event.key == 'PageUp') {
+        event.preventDefault();
+        if (window != window.parent) {
+            window.parent.postMessage(JSON.stringify({
+                method: 'prev'
+            }), '*');
+        }
+    }
+});
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
@@ -651,6 +3824,25 @@ var KGAuthor;
         return GeoGebraPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.GeoGebraPlusSidebar = GeoGebraPlusSidebar;
+    var MathboxPlusSidebar = /** @class */ (function (_super) {
+        __extends(MathboxPlusSidebar, _super);
+        function MathboxPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var mathboxDef = def['mathbox'], sidebarDef = def['sidebar'];
+            mathboxDef.position = {
+                "x": 0.025,
+                "y": 0.025,
+                "width": 0.95,
+                "height": 0.95
+            };
+            l.subObjects.push(new KGAuthor.MathboxContainer(mathboxDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return MathboxPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.MathboxPlusSidebar = MathboxPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -4890,3122 +8082,20 @@ var KGAuthor;
 /// <reference path="divObjects/ggbApplet.ts"/>
 /// <reference path="divObjects/mathbox.ts"/>
 /// <reference path="econ/eg.ts"/>
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Model = /** @class */ (function () {
-        function Model(parsedData) {
-            var model = this;
-            model.params = parsedData.params.map(function (def) {
-                return new KG.Param(def);
-            });
-            model.calcs = parsedData.calcs;
-            model.colors = parsedData.colors;
-            model.restrictions = (parsedData.restrictions || []).map(function (def) {
-                return new KG.Restriction(def);
-            });
-            model.updateListeners = [];
-            model.currentParamValues = model.evalParams();
-            model.evalCalcs();
-            model.currentColors = model.evalObject(model.colors);
-        }
-        Model.prototype.addUpdateListener = function (updateListener) {
-            this.updateListeners.push(updateListener);
-            return this;
-        };
-        Model.prototype.evalParams = function () {
-            var p = {};
-            this.params.forEach(function (param) {
-                p[param.name] = param.value;
-            });
-            return p;
-        };
-        // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
-        Model.prototype.evalCalcs = function () {
-            var model = this;
-            // clear calculatios so old values aren't used;
-            model.currentCalcValues = {};
-            // generate as many calculations from params as possible
-            model.currentCalcValues = model.evalObject(model.calcs, true);
-            // calculate values based on other calculations (up to a depth of 5)
-            for (var i = 0; i < 5; i++) {
-                for (var calcName in model.currentCalcValues) {
-                    if (typeof model.calcs[calcName] == 'object') {
-                        model.currentCalcValues[calcName] = model.evalObject(model.calcs[calcName], true);
-                    }
-                    else if (isNaN(model.currentCalcValues[calcName]) && typeof model.calcs[calcName] == 'string') {
-                        model.currentCalcValues[calcName] = model.evaluate(model.calcs[calcName], true);
-                    }
-                }
-            }
-            return model.currentCalcValues;
-        };
-        Model.prototype.evalObject = function (obj, onlyJSMath) {
-            var model = this;
-            var newObj = {};
-            for (var stringOrObj in obj) {
-                var def = obj[stringOrObj];
-                if (typeof def === 'string') {
-                    newObj[stringOrObj] = model.evaluate(def, onlyJSMath);
-                }
-                else {
-                    newObj[stringOrObj] = model.evalObject(def, onlyJSMath);
-                }
-            }
-            return newObj;
-        };
-        // the model serves as a model, and can evaluate expressions within the context of that model
-        // if onlyJSMath is selected, it will only try to evaluate using JSMath; this is especially important for calculations.
-        Model.prototype.evaluate = function (name, onlyJSMath) {
-            var model = this;
-            // don't just evaluate numbers
-            if (!isNaN(parseFloat(name))) {
-                //console.log('interpreted ', name, 'as a number.');
-                return parseFloat(name);
-            }
-            // collect current values in a scope object
-            var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors;
-            // try to evaluate using mathjs
-            try {
-                var compiledMath = math.compile(name);
-                var result = compiledMath.evaluate({
-                    params: params,
-                    calcs: calcs,
-                    colors: colors
-                });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
-                return result;
-            }
-            catch (err) {
-                // if that doesn't work, try to evaluate using native js eval
-                //console.log('unable to parse', name, 'as a pure math function, trying general eval');
-                if (onlyJSMath) {
-                    return name;
-                }
-                else {
-                    try {
-                        var result = eval(name);
-                        //console.log('parsed', name, 'as an expression with value', result);
-                        return result;
-                    }
-                    catch (err) {
-                        //console.log('unable to parse', name, 'as a valid expression; generates error:', err.message);
-                        return name;
-                    }
-                }
-            }
-        };
-        // This is a utility for exporting currently used colors for use in LaTex documents.
-        Model.prototype.latexColors = function () {
-            var result = '%% econ colors %%\n', model = this;
-            for (var color in model.colors) {
-                result += "\\definecolor{" + color + "}{HTML}{" + model.evaluate(model.colors[color]).replace('#', '') + "}\n";
-            }
-            console.log(result);
-        };
-        Model.prototype.getParam = function (paramName) {
-            var params = this.params;
-            for (var i = 0; i < params.length; i++) {
-                if (params[i].name == paramName) {
-                    return params[i];
-                }
-            }
-        };
-        // method exposed to viewObjects to allow them to try to change a parameter
-        Model.prototype.updateParam = function (name, newValue) {
-            var model = this, param = model.getParam(name);
-            var oldValue = param.value;
-            param.update(newValue);
-            // if param has changed, check to make sure the change is val
-            if (oldValue != param.value) {
-                //restrictions aren't working right now
-                var valid_1 = true;
-                model.restrictions.forEach(function (r) {
-                    if (!r.valid(model)) {
-                        valid_1 = false;
-                    }
-                });
-                if (valid_1) {
-                    model.update(false);
-                }
-                else {
-                    param.update(oldValue);
-                }
-                model.update(false);
-            }
-        };
-        // method exposed to viewObjects to allow them to toggle a binary param
-        Model.prototype.toggleParam = function (name) {
-            var currentValue = this.getParam(name).value;
-            this.updateParam(name, !currentValue);
-        };
-        // method exposed to viewObjects to allow them to cycle a discrete param
-        // increments by 1 if below max value, otherwise sets to zero
-        Model.prototype.cycleParam = function (name) {
-            var param = this.getParam(name);
-            this.updateParam(name, param.value < param.max ? param.value++ : 0);
-        };
-        Model.prototype.update = function (force) {
-            var model = this;
-            model.currentParamValues = model.evalParams();
-            model.evalCalcs();
-            console.log('calcs', model.currentCalcValues);
-            model.currentColors = model.evalObject(model.colors);
-            model.updateListeners.forEach(function (listener) {
-                listener.update(force);
-            });
-        };
-        return Model;
-    }());
-    KG.Model = Model;
-})(KG || (KG = {}));
-/// <reference path="model.ts" />
-var KG;
-(function (KG) {
-    var Param = /** @class */ (function () {
-        function Param(def) {
-            function decimalPlaces(numAsString) {
-                var match = ('' + numAsString).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
-                if (!match) {
-                    return 0;
-                }
-                return Math.max(0, 
-                // Number of digits right of decimal point.
-                (match[1] ? match[1].length : 0)
-                    // Adjust for scientific notation.
-                    - (match[2] ? +match[2] : 0));
-            }
-            KG.setDefaults(def, { min: 0, max: 10, round: 1, label: '' });
-            this.name = def.name;
-            this.label = def.label;
-            if (typeof def.value == 'boolean') {
-                this.value = +def.value;
-                this.min = 0;
-                this.max = 100;
-                this.round = 1;
-            }
-            else {
-                this.value = parseFloat(def.value);
-                this.min = parseFloat(def.min);
-                this.max = parseFloat(def.max);
-                this.round = parseFloat(def.round);
-                this.precision = parseInt(def.precision) || decimalPlaces(this.round.toString());
-            }
-        }
-        // Receives an instruction to update the parameter to a new value
-        // Updates to the closest rounded value to the desired newValue within accepted range
-        Param.prototype.update = function (newValue) {
-            var param = this;
-            if (newValue < param.min) {
-                param.value = param.min;
-            }
-            else if (newValue > param.max) {
-                param.value = param.max;
-            }
-            else {
-                param.value = Math.round(newValue / param.round) * param.round;
-            }
-            return param.value;
-        };
-        // Displays current value of the parameter to desired precision
-        // If no precision is given, uses the implied precision given by the rounding parameter
-        Param.prototype.formatted = function (precision) {
-            precision = precision || this.precision;
-            return d3.format("." + precision + "f")(this.value);
-        };
-        return Param;
-    }());
-    KG.Param = Param;
-})(KG || (KG = {}));
-/// <reference path="model.ts" />
-var KG;
-(function (KG) {
-    var Restriction = /** @class */ (function () {
-        function Restriction(def) {
-            this.expression = def.expression;
-            this.type = def.type;
-            this.min = def.min;
-            this.max = def.max;
-        }
-        Restriction.prototype.valid = function (model) {
-            var r = this, value = model.evaluate(r.expression), min = model.evaluate(r.min), max = model.evaluate(r.max);
-            // restrictions aren't working right now
-            return true;
-            //return (value >= min && value <= max);
-        };
-        return Restriction;
-    }());
-    KG.Restriction = Restriction;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    function randomString(length) {
-        var text = "KGID_";
-        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        for (var i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
-    }
-    KG.randomString = randomString;
-    var UpdateListener = /** @class */ (function () {
-        function UpdateListener(def) {
-            def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
-            var ul = this;
-            ul.def = def;
-            def.constants.forEach(function (c) {
-                ul[c] = isNaN(parseFloat(def[c])) ? def[c] : +def[c];
-            });
-            ul.id = randomString(10);
-            ul.model.addUpdateListener(this);
-        }
-        UpdateListener.prototype.updateArray = function (a) {
-            var u = this;
-            return a.map(function (d) {
-                if (Array.isArray(d)) {
-                    return u.updateArray(d);
-                }
-                else {
-                    var initialValue = d;
-                    var newValue = u.model.evaluate(d);
-                    if (initialValue != newValue) {
-                        u.hasChanged = true;
-                    }
-                    return newValue;
-                }
-            });
-        };
-        UpdateListener.prototype.updateDef = function (name) {
-            var u = this;
-            if (u.def.hasOwnProperty(name)) {
-                var d = u.def[name], initialValue = u[name];
-                if (Array.isArray(d)) {
-                    u[name] = u.updateArray(d);
-                }
-                else {
-                    var newValue = u.model.evaluate(d);
-                    if (initialValue != newValue) {
-                        u.hasChanged = true;
-                        u[name] = newValue;
-                    }
-                }
-                //console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
-            }
-            return u;
-        };
-        UpdateListener.prototype.update = function (force) {
-            var u = this;
-            u.hasChanged = !!force;
-            if (u.hasOwnProperty('updatables') && u.updatables != undefined) {
-                u.updatables.forEach(function (name) {
-                    u.updateDef(name);
-                });
-            }
-            return u;
-        };
-        return UpdateListener;
-    }());
-    KG.UpdateListener = UpdateListener;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var MathFunction = /** @class */ (function (_super) {
-        __extends(MathFunction, _super);
-        function MathFunction(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                samplePoints: 50
-            });
-            KG.setProperties(def, 'constants', ['samplePoints']);
-            KG.setProperties(def, 'updatables', ['min', 'max']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        MathFunction.prototype.updateFunctionString = function (str, scope) {
-            function getCalc(o, s) {
-                s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
-                s = s.replace(/^\./, ''); // strip a leading dot
-                var a = s.split('.');
-                for (var i = 0, n = a.length; i < n; ++i) {
-                    var k = a[i];
-                    if (k in o) {
-                        o = o[k];
-                    }
-                    else {
-                        return;
-                    }
-                }
-                return o;
-            }
-            str = str.toString();
-            if (str.indexOf('null') > -1 || str.indexOf('Infinity') > -1) {
-                return null;
-            }
-            var re = /((calcs|params).[.\w]*)+/g;
-            var references = str.match(re);
-            if (references) {
-                references.forEach(function (name) {
-                    str = KGAuthor.replaceVariable(str, name, getCalc(scope, name));
-                });
-            }
-            //console.log('updated function to ',str);
-            return str;
-        };
-        return MathFunction;
-    }(KG.UpdateListener));
-    KG.MathFunction = MathFunction;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var MathFunction = KG.MathFunction;
-    var UnivariateFunction = /** @class */ (function (_super) {
-        __extends(UnivariateFunction, _super);
-        function UnivariateFunction(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                ind: 'x'
-            });
-            KG.setProperties(def, 'constants', ['fn', 'yFn']);
-            KG.setProperties(def, 'updatables', ['ind', 'min', 'max']);
-            _this = _super.call(this, def) || this;
-            _this.fnStringDef = def.fn;
-            _this.fnZStringDef = def.fnZ;
-            _this.yFnStringDef = def.yFn;
-            _this.yFnZStringDef = def.yFnZ;
-            return _this;
-        }
-        UnivariateFunction.prototype.evaluate = function (input, z) {
-            var fn = this;
-            if (z) {
-                if (fn.hasOwnProperty('yzCompiledFunction') && fn.ind == 'y') {
-                    return fn.yzCompiledFunction.evaluate({ y: input });
-                }
-                else if (fn.hasOwnProperty('zCompiledFunction') && fn.ind == 'y') {
-                    return fn.zCompiledFunction.evaluate({ y: input });
-                }
-                else if (fn.hasOwnProperty('zCompiledFunction')) {
-                    return fn.zCompiledFunction.evaluate({ x: input });
-                }
-            }
-            else {
-                if (fn.hasOwnProperty('yCompiledFunction') && fn.ind == 'y') {
-                    return fn.yCompiledFunction.evaluate({ y: input });
-                }
-                else if (fn.hasOwnProperty('compiledFunction') && fn.ind == 'y') {
-                    return fn.compiledFunction.evaluate({ y: input });
-                }
-                else if (fn.hasOwnProperty('compiledFunction')) {
-                    return fn.compiledFunction.evaluate({ x: input });
-                }
-            }
-        };
-        UnivariateFunction.prototype.generateData = function (min, max) {
-            var fn = this, data = [];
-            if (undefined != fn.min) {
-                min = fn.min;
-            }
-            if (undefined != fn.max) {
-                max = fn.max;
-            }
-            for (var i = 0; i < fn.samplePoints + 1; i++) {
-                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
-                if (!isNaN(output) && output != Infinity && output != -Infinity) {
-                    data.push((fn.ind == 'x') ? { x: input, y: output } : { x: output, y: input });
-                }
-            }
-            this.data = data;
-            return data;
-        };
-        UnivariateFunction.prototype.mathboxFn = function () {
-            var fn = this;
-            return function (emit, x) {
-                var y = fn.evaluate(x), z = fn.evaluate(x, true);
-                if (y <= 50 && z <= 50) {
-                    emit(y, z, x);
-                }
-            };
-        };
-        UnivariateFunction.prototype.update = function (force) {
-            var fn = _super.prototype.update.call(this, force);
-            //console.log('updating; currently ', fn.fnString);
-            fn.scope = {
-                params: fn.model.currentParamValues,
-                calcs: fn.model.currentCalcValues,
-                colors: fn.model.currentColors
-            };
-            var originalString = fn.fnString;
-            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
-                fn.hasChanged = true;
-                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
-                fn.compiledFunction = math.compile(fn.fnString);
-            }
-            if (fn.def.hasOwnProperty('yFn')) {
-                if (fn.yFnString != fn.updateFunctionString(fn.yFnStringDef, fn.scope)) {
-                    fn.hasChanged = true;
-                    fn.yFnString = fn.updateFunctionString(fn.yFnStringDef, fn.scope);
-                    fn.yCompiledFunction = math.compile(fn.yFnString);
-                }
-            }
-            if (fn.def.hasOwnProperty('fnZ')) {
-                if (fn.fnZString != fn.updateFunctionString(fn.fnZStringDef, fn.scope)) {
-                    fn.hasChanged = true;
-                    fn.fnZString = fn.updateFunctionString(fn.fnZStringDef, fn.scope);
-                    fn.zCompiledFunction = math.compile(fn.fnZString);
-                }
-            }
-            if (fn.def.hasOwnProperty('yFnZ')) {
-                if (fn.yFnZString != fn.updateFunctionString(fn.yFnZStringDef, fn.scope)) {
-                    fn.hasChanged = true;
-                    fn.yFnZString = fn.updateFunctionString(fn.yFnZStringDef, fn.scope);
-                    fn.yzCompiledFunction = math.compile(fn.yFnZString);
-                }
-            }
-            return fn;
-        };
-        return UnivariateFunction;
-    }(MathFunction));
-    KG.UnivariateFunction = UnivariateFunction;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var ParametricFunction = /** @class */ (function (_super) {
-        __extends(ParametricFunction, _super);
-        function ParametricFunction(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                min: 0,
-                max: 10
-            });
-            _this = _super.call(this, def) || this;
-            _this.xFunctionStringDef = def.xFunction;
-            _this.yFunctionStringDef = def.yFunction;
-            return _this;
-        }
-        ParametricFunction.prototype.evaluate = function (input) {
-            var fn = this;
-            fn.scope = fn.scope || { params: fn.model.currentParamValues };
-            fn.scope.t = input;
-            return { x: fn.xCompiledFunction.evaluate(fn.scope), y: fn.yCompiledFunction.evaluate(fn.scope) };
-        };
-        ParametricFunction.prototype.generateData = function (min, max) {
-            var fn = this, data = [];
-            if (undefined != fn.min) {
-                min = fn.min;
-            }
-            if (undefined != fn.max) {
-                max = fn.max;
-            }
-            for (var i = 0; i < fn.samplePoints + 1; i++) {
-                var a = i / fn.samplePoints, input = a * min + (1 - a) * max, output = fn.evaluate(input);
-                if (!isNaN(output.x) && output.x != Infinity && output.x != -Infinity && !isNaN(output.y) && output.y != Infinity && output.y != -Infinity) {
-                    data.push(output);
-                }
-            }
-            this.data = data;
-            return data;
-        };
-        ParametricFunction.prototype.update = function (force) {
-            var fn = _super.prototype.update.call(this, force);
-            //console.log('updating; currently ', fn.fnString);
-            fn.scope = {
-                params: fn.model.currentParamValues,
-                calcs: fn.model.currentCalcValues,
-                colors: fn.model.currentColors
-            };
-            var originalXFunctionString = fn.xFunctionString;
-            if (originalXFunctionString != fn.updateFunctionString(fn.xFunctionStringDef, fn.scope)) {
-                fn.hasChanged = true;
-                fn.xFunctionString = fn.updateFunctionString(fn.xFunctionStringDef, fn.scope);
-                fn.xCompiledFunction = math.compile(fn.xFunctionString);
-            }
-            var originalYFunctionString = fn.yFunctionString;
-            if (originalYFunctionString != fn.updateFunctionString(fn.yFunctionStringDef, fn.scope)) {
-                fn.hasChanged = true;
-                fn.yFunctionString = fn.updateFunctionString(fn.yFunctionStringDef, fn.scope);
-                fn.yCompiledFunction = math.compile(fn.yFunctionString);
-            }
-            return fn;
-        };
-        return ParametricFunction;
-    }(KG.MathFunction));
-    KG.ParametricFunction = ParametricFunction;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var MathFunction = KG.MathFunction;
-    var MultivariateFunction = /** @class */ (function (_super) {
-        __extends(MultivariateFunction, _super);
-        function MultivariateFunction(def) {
-            var _this = this;
-            def.samplePoints = 100;
-            KG.setProperties(def, 'constants', ['fn']);
-            _this = _super.call(this, def) || this;
-            _this.fnStringDef = def.fn;
-            _this.domainConditionStringDef = def.domainCondition;
-            return _this;
-        }
-        MultivariateFunction.prototype.inDomain = function (x, y, z) {
-            var fn = this;
-            if (fn.hasOwnProperty('compiledDomainCondition')) {
-                return fn.compiledDomainCondition.evaluate({ x: x, y: y, z: z });
-            }
-            else {
-                return true;
-            }
-        };
-        MultivariateFunction.prototype.evaluate = function (x, y) {
-            var fn = this;
-            if (fn.hasOwnProperty('compiledFunction')) {
-                var z = fn.compiledFunction.evaluate({ x: x, y: y });
-                if (fn.inDomain(x, y, z)) {
-                    return z;
-                }
-            }
-        };
-        MultivariateFunction.prototype.mathboxFn = function () {
-            var fn = this;
-            return function (emit, x, y) {
-                emit(y, fn.evaluate(x, y), x);
-            };
-        };
-        MultivariateFunction.prototype.contour = function (level, xScale, yScale, bounds) {
-            var fn = this;
-            bounds = KG.setDefaults(bounds || {}, {
-                xMin: xScale.domainMin,
-                xMax: xScale.domainMax,
-                yMin: yScale.domainMin,
-                yMax: yScale.domainMax
-            });
-            var n = 100, m = 100, values = new Array(n * m);
-            for (var j = 0.5, k = 0; j < m; ++j) {
-                for (var i = 0.5; i < n; ++i, ++k) {
-                    var x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n, y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
-                    values[k] = fn.evaluate(x, y);
-                }
-            }
-            var transform = function (_a) {
-                var type = _a.type, value = _a.value, coordinates = _a.coordinates;
-                return {
-                    type: type, value: value, coordinates: coordinates.map(function (rings) {
-                        return rings.map(function (points) {
-                            return points.map(function (_a) {
-                                var x = _a[0], y = _a[1];
-                                return ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]);
-                            });
-                        });
-                    })
-                };
-            };
-            var p = d3.geoPath();
-            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
-            var contourLine = d3.contours().size([n, m]).contour(values, level);
-            return p(transform(contourLine));
-        };
-        MultivariateFunction.prototype.update = function (force) {
-            var fn = _super.prototype.update.call(this, force);
-            //console.log('updating; currently ', fn.fnString);
-            fn.scope = {
-                params: fn.model.currentParamValues,
-                calcs: fn.model.currentCalcValues,
-                colors: fn.model.currentColors
-            };
-            var originalString = fn.fnString, originalDomainCondition = fn.domainConditionString;
-            if (originalString != fn.updateFunctionString(fn.fnStringDef, fn.scope)) {
-                fn.hasChanged = true;
-                fn.fnString = fn.updateFunctionString(fn.fnStringDef, fn.scope);
-                fn.compiledFunction = math.compile(fn.fnString);
-            }
-            if (fn.domainConditionStringDef != undefined) {
-                if (originalDomainCondition != fn.updateFunctionString(fn.domainConditionStringDef, fn.scope)) {
-                    fn.hasChanged = true;
-                    fn.domainConditionString = fn.updateFunctionString(fn.domainConditionStringDef, fn.scope);
-                    fn.compiledDomainCondition = math.compile(fn.domainConditionString);
-                }
-            }
-            return fn;
-        };
-        return MultivariateFunction;
-    }(MathFunction));
-    KG.MultivariateFunction = MultivariateFunction;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    /*
-
-        A listener is defined by a param and an expression.
-        When the interactionHandler senses a change, it generates a scope of the current state of the model.
-        The listener then determines the current value of its expression within the context of that scope,
-        and sends a signal to the model to update its param.
-
-     */
-    var Listener = /** @class */ (function (_super) {
-        __extends(Listener, _super);
-        function Listener(def) {
-            var _this = this;
-            KG.setProperties(def, 'updatables', ['expression']);
-            KG.setProperties(def, 'constants', ['param']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Listener.prototype.onChange = function (scope) {
-            var l = this, compiledMath = math.compile(l.expression);
-            var parsedMath = compiledMath.evaluate(scope);
-            l.model.updateParam(l.param, parsedMath);
-        };
-        return Listener;
-    }(KG.UpdateListener));
-    KG.Listener = Listener;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    /*
-
-        A DragListener is a special kind of Listener that listens for drag events.
-        In addition to a param and an expression, it has properties for whether it is draggable
-        and, if so, in which directions it is draggable.
-
-     */
-    var DragListener = /** @class */ (function (_super) {
-        __extends(DragListener, _super);
-        function DragListener(def) {
-            var _this = this;
-            if (def.hasOwnProperty('vertical')) {
-                def.directions = 'y';
-                def.param = def.vertical;
-                def.expression = "params." + def.vertical + " + drag.dy";
-            }
-            if (def.hasOwnProperty('horizontal')) {
-                def.directions = 'x';
-                def.param = def.horizontal;
-                def.expression = "params." + def.horizontal + " + drag.dx";
-            }
-            KG.setDefaults(def, {
-                directions: "xy"
-            });
-            KG.setProperties(def, 'updatables', ['draggable', 'directions']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        DragListener.prototype.update = function (force) {
-            var dl = _super.prototype.update.call(this, force);
-            if (!dl.def.hasOwnProperty('draggable')) {
-                dl.draggable = (dl.directions.length > 0);
-            }
-            return dl;
-        };
-        return DragListener;
-    }(KG.Listener));
-    KG.DragListener = DragListener;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ClickListener = /** @class */ (function (_super) {
-        __extends(ClickListener, _super);
-        function ClickListener(def) {
-            return _super.call(this, def) || this;
-        }
-        return ClickListener;
-    }(KG.Listener));
-    KG.ClickListener = ClickListener;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var InteractionHandler = /** @class */ (function (_super) {
-        __extends(InteractionHandler, _super);
-        function InteractionHandler(def) {
-            var _this = this;
-            KG.setDefaults(def, { dragListeners: [], clickListeners: [] });
-            KG.setProperties(def, 'constants', ["viewObject", "dragListeners", "clickListeners"]);
-            _this = _super.call(this, def) || this;
-            _this.update(true);
-            _this.scope = { params: {}, calcs: {}, colors: {}, drag: {} };
-            return _this;
-        }
-        InteractionHandler.prototype.update = function (force) {
-            var ih = _super.prototype.update.call(this, force);
-            // first update dragListeners
-            if (ih.hasChanged && ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
-                var xDrag_1 = false, yDrag_1 = false;
-                ih.dragListeners.forEach(function (dul) {
-                    dul.update(force);
-                    if (dul.directions == "x") {
-                        xDrag_1 = true;
-                    }
-                    else if (dul.directions == "y") {
-                        yDrag_1 = true;
-                    }
-                    else if (dul.directions == "xy") {
-                        xDrag_1 = true;
-                        yDrag_1 = true;
-                    }
-                });
-                ih.element.style("pointer-events", (xDrag_1 || yDrag_1) ? "all" : "none");
-                ih.element.style("cursor", (xDrag_1 && yDrag_1) ? "move" : xDrag_1 ? "ew-resize" : "ns-resize");
-            }
-            return ih;
-        };
-        InteractionHandler.prototype.addTrigger = function (element) {
-            var handler = this;
-            handler.element = element;
-            // add click listeners
-            if (handler.clickListeners.length > 0) {
-                element.on("click", function () {
-                    if (d3.event.defaultPrevented)
-                        return; //dragged)
-                    handler.scope.params = handler.model.currentParamValues;
-                    handler.scope.calcs = handler.model.currentCalcValues;
-                    handler.scope.colors = handler.model.currentColors;
-                    handler.clickListeners.forEach(function (d) {
-                        d.onChange(handler.scope);
-                    });
-                });
-            }
-            // add drag listeners
-            if (handler.dragListeners.length > 0) {
-                element.call(d3.drag()
-                    .on('start', function () {
-                    handler.scope.params = handler.model.currentParamValues;
-                    handler.scope.calcs = handler.model.currentCalcValues;
-                    handler.scope.colors = handler.model.currentColors;
-                    handler.scope.drag.x0 = handler.viewObject.xScale.scale.invert(d3.event.x);
-                    handler.scope.drag.y0 = handler.viewObject.yScale.scale.invert(d3.event.y);
-                })
-                    .on('drag', function () {
-                    var drag = handler.scope.drag;
-                    drag.x = handler.viewObject.xScale.scale.invert(d3.event.x);
-                    drag.y = handler.viewObject.yScale.scale.invert(d3.event.y);
-                    drag.dx = drag.x - drag.x0;
-                    drag.dy = drag.y - drag.y0;
-                    handler.dragListeners.forEach(function (d) {
-                        d.onChange(handler.scope);
-                    });
-                })
-                    .on('end', function () {
-                    //handler.element.style("cursor","default");
-                }));
-            }
-            handler.update(true);
-        };
-        return InteractionHandler;
-    }(KG.UpdateListener));
-    KG.InteractionHandler = InteractionHandler;
-})(KG || (KG = {}));
-/// <reference path='../kg.ts' />
-var KG;
-(function (KG) {
-    KG.viewData = {};
-    function addView(name, def) {
-        KG.viewData[name] = def;
-    }
-    KG.addView = addView;
-    var View = /** @class */ (function () {
-        function View(div, data) {
-            this.render(data, div);
-        }
-        View.prototype.parse = function (data, div) {
-            data.schema = data.schema || "Schema";
-            data.params = (data.params || []).map(function (paramData) {
-                // allow author to override initial parameter values by specifying them as div attributes
-                if (div.hasAttribute(paramData.name)) {
-                    paramData.value = div.getAttribute(paramData.name);
-                }
-                // convert numerical params from strings to numbers
-                paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
-                return paramData;
-            });
-            var parsedData = {
-                aspectRatio: data.aspectRatio || 1,
-                params: data.params || [],
-                calcs: data.calcs || {},
-                colors: data.colors || {},
-                restrictions: data.restrictions,
-                clipPaths: data.clipPaths || [],
-                markers: data.markers || [],
-                scales: data.scales || [{
-                        name: 'x',
-                        axis: 'x',
-                        rangeMin: 0,
-                        rangeMax: 1,
-                        domainMin: 0,
-                        domainMax: 1
-                    },
-                    {
-                        name: 'y',
-                        axis: 'y',
-                        rangeMin: 0,
-                        rangeMax: 1,
-                        domainMin: 0,
-                        domainMax: 1
-                    }],
-                layers: data.layers || [[], [], [], []],
-                divs: data.divs || []
-            };
-            data.objects = data.objects || [];
-            if (data.hasOwnProperty('layout')) {
-                if (data.layout.hasOwnProperty('type')) {
-                    data.objects.push(data.layout);
-                }
-                else {
-                    var layoutType = Object.keys(data.layout)[0], layoutDef = data.layout[layoutType];
-                    data.objects.push({ type: layoutType, def: layoutDef });
-                }
-            }
-            if (data.hasOwnProperty('explanation')) {
-                data.objects.push({ type: "Explanation", def: data.explanation });
-            }
-            if (data.hasOwnProperty('schema')) {
-                data.objects.push({ type: data.schema, def: {} });
-            }
-            return KGAuthor.parse(data.objects, parsedData);
-        };
-        View.prototype.render = function (data, div) {
-            var view = this;
-            var parsedData = view.parse(data, div);
-            div.innerHTML = "";
-            view.aspectRatio = parsedData.aspectRatio || 1;
-            view.model = new KG.Model(parsedData);
-            // create scales
-            view.scales = parsedData.scales.map(function (def) {
-                def.model = view.model;
-                return new KG.Scale(def);
-            });
-            // create the div for the view
-            view.div = d3.select(div)
-                .style('position', 'relative');
-            // create a spacer div to make sure text flows properly around the graph
-            view.svgContainerDiv = view.div.append('div')
-                .style('position', 'absolute')
-                .style('left', '0px')
-                .style('top', '0px');
-            // create the SVG element for the view
-            if (!parsedData.nosvg) {
-                view.svg = view.svgContainerDiv.append('svg')
-                    .style('overflow', 'visible')
-                    .style('pointer-events', 'none');
-            }
-            view.addViewObjects(parsedData);
-            view.parsedData = parsedData;
-            console.log('parsedData: ', parsedData);
-        };
-        // add view information (model, layer, scales) to an object
-        View.prototype.addViewToDef = function (def, layer) {
-            var view = this;
-            function getScale(name) {
-                var result = null;
-                view.scales.forEach(function (scale) {
-                    if (scale.name == name) {
-                        result = scale;
-                    }
-                });
-                return result;
-            }
-            def.model = view.model;
-            def.layer = layer;
-            def.xScale = getScale(def['xScaleName']);
-            def.yScale = getScale(def['yScaleName']);
-            if (def.hasOwnProperty('xScale2Name')) {
-                def.xScale2 = getScale(def['xScale2Name']);
-                def.yScale2 = getScale(def['yScale2Name']);
-            }
-            return def;
-        };
-        // create view objects
-        View.prototype.addViewObjects = function (data) {
-            var view = this;
-            var defURLS = {};
-            if (view.svg) {
-                var defLayer_1 = view.svg.append('defs');
-                // create ClipPaths, generate their URLs, and add their paths to the SVG defs element.
-                if (data.clipPaths.length > 0) {
-                    data.clipPaths.forEach(function (def) {
-                        var clipPathURL = KG.randomString(10);
-                        var clipPathLayer = defLayer_1.append('clipPath').attr('id', clipPathURL);
-                        def.paths.forEach(function (td) {
-                            td.def.inDef = true;
-                            new KG[td.type](view.addViewToDef(td.def, clipPathLayer));
-                        });
-                        defURLS[def.name] = clipPathURL;
-                    });
-                }
-                // create Markers, generate their URLs, and add their paths to the SVG defs element.
-                if (data.markers.length > 0) {
-                    data.markers.forEach(function (def) {
-                        var markerURL = KG.randomString(10);
-                        def.url = markerURL;
-                        defURLS[def.name] = markerURL;
-                        var markerLayer = defLayer_1.append('marker')
-                            .attr('id', markerURL)
-                            .attr("refX", def.refX)
-                            .attr("refY", 6)
-                            .attr("markerWidth", 13)
-                            .attr("markerHeight", 13)
-                            .attr("orient", "auto")
-                            .attr("markerUnits", "userSpaceOnUse");
-                        view.addViewToDef(def, markerLayer);
-                        new KG.Marker(def);
-                    });
-                }
-                // add layers of objects
-                data.layers.forEach(function (layerTds) {
-                    if (layerTds.length > 0) {
-                        var layer_1 = view.svg.append('g');
-                        layerTds.forEach(function (td) {
-                            var def = td.def;
-                            if (def.hasOwnProperty('clipPathName')) {
-                                def.clipPath = defURLS[def['clipPathName']];
-                            }
-                            if (def.hasOwnProperty('clipPathName2')) {
-                                def.clipPath2 = defURLS[def['clipPathName2']];
-                            }
-                            if (def.hasOwnProperty('startArrowName')) {
-                                def.startArrow = defURLS[def['startArrowName']];
-                            }
-                            if (def.hasOwnProperty('endArrowName')) {
-                                def.endArrow = defURLS[def['endArrowName']];
-                            }
-                            def = view.addViewToDef(def, layer_1);
-                            new KG[td.type](def);
-                        });
-                    }
-                });
-            }
-            // add divs
-            if (data.divs.length > 0) {
-                data.divs.forEach(function (td) {
-                    var def = view.addViewToDef(td.def, view.div), newDiv = new KG[td.type](def);
-                    if (td.type == 'Sidebar') {
-                        view.sidebar = newDiv;
-                    }
-                    if (td.type == 'Explanation') {
-                        view.explanation = newDiv;
-                    }
-                });
-            }
-            view.updateDimensions();
-        };
-        // update dimensions, either when first rendering or when the window is resized
-        View.prototype.updateDimensions = function () {
-            var view = this;
-            // read the client width of the enclosing div and calculate the height using the aspectRatio
-            var clientWidth = view.div.node().clientWidth, width = clientWidth - 10, height = width / view.aspectRatio;
-            var sidebarHeight = 0, explanationHeight = 0;
-            // position the sidebar to the right if the screen is wide enough, or below if it isn't
-            if (view.sidebar) {
-                if (width > view.sidebar.triggerWidth) {
-                    height = height * 77 / 126;
-                    var s_height = void 0;
-                    if (view.explanation) {
-                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
-                    }
-                    else {
-                        s_height = height;
-                    }
-                    view.sidebar.positionRight(width, s_height);
-                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
-                }
-                else {
-                    view.sidebar.positionBelow(width, height);
-                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
-                }
-            }
-            // position the explanation below
-            if (view.explanation) {
-                view.explanation.position(width, height + sidebarHeight + 10);
-                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
-            }
-            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
-            // set the height of the div
-            view.svgContainerDiv.style('width', width);
-            view.svgContainerDiv.style('height', height);
-            if (view.svg) {
-                // set the dimensions of the svg
-                view.svg.style('width', width);
-                view.svg.style('height', height);
-                view.svg.attr('width', width);
-                view.svg.attr('height', height);
-            }
-            // adjust all of the scales to be proportional to the new dimensions
-            view.scales.forEach(function (scale) {
-                scale.updateDimensions(width, height);
-            });
-            // once the scales are updated, update the coordinates of all view objects
-            view.model.update(true);
-        };
-        return View;
-    }());
-    KG.View = View;
-})(KG || (KG = {}));
-/// <reference path="../kg.ts" />
-var KG;
-(function (KG) {
-    var Scale = /** @class */ (function (_super) {
-        __extends(Scale, _super);
-        function Scale(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                log: false
-            });
-            def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
-            def.updatables = ['domainMin', 'domainMax'];
-            _this = _super.call(this, def) || this;
-            _this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
-            _this.update(true);
-            return _this;
-        }
-        Scale.prototype.update = function (force) {
-            var s = _super.prototype.update.call(this, force);
-            if (s.extent != undefined) {
-                var rangeMin = s.rangeMin * s.extent, rangeMax = s.rangeMax * s.extent;
-                s.scale.domain([s.domainMin, s.domainMax]);
-                s.scale.range([rangeMin, rangeMax]);
-            }
-            return s;
-        };
-        Scale.prototype.updateDimensions = function (width, height) {
-            var s = this;
-            s.extent = (s.axis == 'x') ? width : height;
-            return s.update(true);
-        };
-        return Scale;
-    }(KG.UpdateListener));
-    KG.Scale = Scale;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ViewObject = /** @class */ (function (_super) {
-        __extends(ViewObject, _super);
-        function ViewObject(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                alwaysUpdate: false,
-                interactive: true,
-                fill: 'colors.blue',
-                fillOpacity: 0.2,
-                stroke: 'colors.blue',
-                strokeWidth: 1,
-                stokeOpacity: 1,
-                show: true,
-                inDef: false,
-                lineStyle: 'solid'
-            });
-            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
-            KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
-            if (def.inDef) {
-                def.show = true;
-            }
-            ;
-            _this = _super.call(this, def) || this;
-            var vo = _this;
-            def.colorAttributes.forEach(function (attr) {
-                var c = def[attr];
-                if (vo.model.colors.hasOwnProperty(c)) {
-                    def[attr] = vo.model.colors[c];
-                }
-            });
-            // the interaction handler manages drag and hover events
-            if (def.interactive) {
-                def.drag = def.drag || [];
-                var dragListeners = def.drag.map(function (dragDef) {
-                    dragDef.model = vo.model;
-                    return new KG.DragListener(dragDef);
-                });
-                def.click = def.click || [];
-                var clickListeners = def.click.map(function (clickDef) {
-                    clickDef.model = vo.model;
-                    return new KG.ClickListener(clickDef);
-                });
-                vo.interactionHandler = new KG.InteractionHandler({
-                    viewObject: vo,
-                    model: vo.model,
-                    dragListeners: dragListeners,
-                    clickListeners: clickListeners
-                });
-            }
-            // the draw method creates the DOM elements for the view object
-            // the update method updates their attributes
-            if (def.hasOwnProperty('layer')) {
-                vo.draw(def.layer).update(true).init();
-            }
-            return _this;
-        }
-        ViewObject.prototype.init = function () {
-            return this; //defined at subclass level
-        };
-        ViewObject.prototype.addClipPathAndArrows = function () {
-            var vo = this;
-            if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
-                vo.rootElement.attr('clip-path', "url(#" + vo.clipPath + ")");
-            }
-            if (vo.hasOwnProperty('clipPath2') && vo.clipPath2 != undefined) {
-                vo.rootElement2.attr('clip-path', "url(#" + vo.clipPath2 + ")");
-            }
-            if (vo.hasOwnProperty('endArrow') && vo.endArrow != undefined) {
-                vo.markedElement.attr("marker-end", "url(#" + vo.endArrow + ")");
-            }
-            if (vo.hasOwnProperty('startArrow') && vo.endArrow != undefined) {
-                vo.markedElement.attr("marker-start", "url(#" + vo.startArrow + ")");
-            }
-            return vo;
-        };
-        ViewObject.prototype.addInteraction = function () {
-            var vo = this;
-            vo.interactionHandler.addTrigger(vo.rootElement);
-            return vo;
-        };
-        ViewObject.prototype.draw = function (layer, inDef) {
-            return this;
-        };
-        ViewObject.prototype.redraw = function () {
-            return this;
-        };
-        ViewObject.prototype.drawStroke = function (el) {
-            var vo = this;
-            el.attr('stroke', vo.stroke);
-            el.attr('stroke-width', vo.strokeWidth);
-            el.style('stroke-opacity', vo.strokeOpacity);
-            if (vo.lineStyle == 'dashed') {
-                el.style('stroke-dashArray', '10,10');
-            }
-            if (vo.lineStyle == 'dotted') {
-                el.style('stroke-dashArray', '1,2');
-            }
-        };
-        ViewObject.prototype.drawFill = function (el) {
-            var vo = this;
-            el.style('fill', vo.fill);
-            el.style('fill-opacity', vo.opacity);
-        };
-        ViewObject.prototype.displayElement = function (show) {
-            var vo = this;
-            if (vo.hasOwnProperty('rootElement')) {
-                vo.rootElement.style('display', show ? null : 'none');
-            }
-        };
-        ViewObject.prototype.onGraph = function () {
-            var vo = this;
-            if (vo.hasOwnProperty('x')) {
-                if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
-                    return false;
-                }
-            }
-            if (vo.hasOwnProperty('y')) {
-                if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        ViewObject.prototype.update = function (force) {
-            var vo = _super.prototype.update.call(this, force);
-            if ((vo.show && vo.onGraph()) || vo.inDef) {
-                vo.displayElement(true);
-                if (vo.hasChanged) {
-                    vo.redraw();
-                }
-            }
-            else {
-                vo.displayElement(false);
-            }
-            return vo;
-        };
-        return ViewObject;
-    }(KG.UpdateListener));
-    KG.ViewObject = ViewObject;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var Marker = /** @class */ (function (_super) {
-        __extends(Marker, _super);
-        function Marker(def) {
-            var _this = this;
-            KG.setProperties(def, 'constants', ['maskPath', 'arrowPath']);
-            KG.setProperties(def, 'updatables', ['color']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Marker.prototype.draw = function (layer) {
-            var m = this;
-            layer.append("svg:path")
-                .attr("d", m.maskPath)
-                .attr("fill", "white");
-            m.arrowElement = layer.append("svg:path")
-                .attr("d", m.arrowPath);
-            return m;
-        };
-        Marker.prototype.redraw = function () {
-            var m = this;
-            m.arrowElement.attr("fill", m.color);
-            return m;
-        };
-        return Marker;
-    }(KG.ViewObject));
-    KG.Marker = Marker;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Segment = /** @class */ (function (_super) {
-        __extends(Segment, _super);
-        function Segment(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                xScale2: def.xScale,
-                yScale2: def.yScale,
-                strokeWidth: 2
-            });
-            KG.setProperties(def, 'constants', ['xScale2', 'yScale2', 'startArrow', 'endArrow']);
-            KG.setProperties(def, 'updatables', ['x1', 'y1', 'x2', 'y2']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create SVG elements
-        Segment.prototype.draw = function (layer) {
-            var segment = this;
-            segment.rootElement = layer.append('g');
-            segment.dragLine = segment.rootElement.append('line').attr('stroke-width', '20px').style('stroke-opacity', 0);
-            segment.line = segment.rootElement.append('line');
-            segment.markedElement = segment.line;
-            return segment.addClipPathAndArrows().addInteraction();
-        };
-        // update properties
-        Segment.prototype.redraw = function () {
-            var segment = this;
-            var x1 = segment.xScale.scale(segment.x1), x2 = segment.xScale.scale(segment.x2), y1 = segment.yScale2.scale(segment.y1), y2 = segment.yScale2.scale(segment.y2);
-            segment.dragLine
-                .attr("x1", x1)
-                .attr("y1", y1)
-                .attr("x2", x2)
-                .attr("y2", y2);
-            segment.line
-                .attr("x1", x1)
-                .attr("y1", y1)
-                .attr("x2", x2)
-                .attr("y2", y2);
-            segment.drawStroke(segment.line);
-            return segment;
-        };
-        return Segment;
-    }(KG.ViewObject));
-    KG.Segment = Segment;
-})(KG || (KG = {}));
-/// <reference path='../../kg.ts' />
-var KG;
-(function (KG) {
-    var Curve = /** @class */ (function (_super) {
-        __extends(Curve, _super);
-        function Curve(def) {
-            var _this = this;
-            var univariateFunction, parametricFunction;
-            KG.setDefaults(def, {
-                interpolation: 'curveBasis',
-                strokeWidth: 2
-            });
-            KG.setProperties(def, 'constants', ['interpolation']);
-            if (def.hasOwnProperty('univariateFunction')) {
-                def.univariateFunction.model = def.model;
-                univariateFunction = new KG.UnivariateFunction(def.univariateFunction);
-                KG.setProperties(def, 'updatables', []);
-            }
-            else if (def.hasOwnProperty('parametricFunction')) {
-                def.parametricFunction.model = def.model;
-                parametricFunction = new KG.ParametricFunction(def.parametricFunction);
-                KG.setProperties(def, 'updatables', []);
-            }
-            _this = _super.call(this, def) || this;
-            var curve = _this;
-            if (def.hasOwnProperty('univariateFunction')) {
-                curve.univariateFunction = univariateFunction;
-            }
-            else if (def.hasOwnProperty('parametricFunction')) {
-                def.parametricFunction.model = def.model;
-                curve.parametricFunction = parametricFunction;
-            }
-            return _this;
-        }
-        // create SVG elements
-        Curve.prototype.draw = function (layer) {
-            var curve = this;
-            curve.dataLine = d3.line()
-                .curve(d3[curve.interpolation])
-                .x(function (d) {
-                return curve.xScale.scale(d.x);
-            })
-                .y(function (d) {
-                return curve.yScale.scale(d.y);
-            });
-            curve.rootElement = layer.append('g');
-            curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
-            curve.path = curve.rootElement.append('path').style('fill', 'none');
-            return curve.addClipPathAndArrows().addInteraction();
-        };
-        // update properties
-        Curve.prototype.redraw = function () {
-            var curve = this;
-            if (curve.hasOwnProperty('univariateFunction')) {
-                var fn = curve.univariateFunction, scale = fn.ind == 'y' ? curve.yScale : curve.xScale;
-                fn.generateData(scale.domainMin, scale.domainMax);
-                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
-                curve.path.data([fn.data]).attr('d', curve.dataLine);
-            }
-            if (curve.hasOwnProperty('parametricFunction')) {
-                var fn = curve.parametricFunction;
-                fn.generateData();
-                curve.dragPath.data([fn.data]).attr('d', curve.dataLine);
-                curve.path.data([fn.data]).attr('d', curve.dataLine);
-            }
-            curve.drawStroke(curve.path);
-            return curve;
-        };
-        // update self and functions
-        Curve.prototype.update = function (force) {
-            var curve = _super.prototype.update.call(this, force);
-            if (!curve.hasChanged) {
-                if (curve.hasOwnProperty('univariateFunction')) {
-                    if (curve.univariateFunction.hasChanged) {
-                        curve.redraw();
-                    }
-                }
-                if (curve.hasOwnProperty('parametricFunction')) {
-                    if (curve.parametricFunction.hasChanged) {
-                        curve.redraw();
-                    }
-                }
-            }
-            return curve;
-        };
-        return Curve;
-    }(KG.ViewObject));
-    KG.Curve = Curve;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var Axis = /** @class */ (function (_super) {
-        __extends(Axis, _super);
-        function Axis(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                ticks: 5,
-                intercept: 0
-            });
-            KG.setProperties(def, 'constants', ['orient']);
-            KG.setProperties(def, 'updatables', ['ticks', 'intercept', 'label', 'min', 'max', 'otherMin', 'otherMax']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Axis.prototype.draw = function (layer) {
-            var a = this;
-            a.rootElement = layer.append('g').attr('class', 'axis');
-            return a;
-        };
-        Axis.prototype.redraw = function () {
-            var a = this;
-            switch (a.orient) {
-                case 'bottom':
-                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.rootElement.call(d3.axisBottom(a.xScale.scale).ticks(a.ticks));
-                    return a;
-                case 'left':
-                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.rootElement.call(d3.axisLeft(a.yScale.scale).ticks(a.ticks));
-                    return a;
-                case 'top':
-                    a.rootElement.attr('transform', "translate(0, " + a.yScale.scale(a.intercept) + ")");
-                    a.rootElement.call(d3.axisTop(a.xScale.scale).ticks(a.ticks));
-                    return a;
-                case 'right':
-                    a.rootElement.attr('transform', "translate(" + a.xScale.scale(a.intercept) + ",0)");
-                    a.rootElement.call(d3.axisRight(a.yScale.scale).ticks(a.ticks));
-                    return a;
-            }
-            return a;
-        };
-        return Axis;
-    }(KG.ViewObject));
-    KG.Axis = Axis;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Point = /** @class */ (function (_super) {
-        __extends(Point, _super);
-        function Point(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                fill: 'colors.blue',
-                opacity: 1,
-                stroke: 'white',
-                strokeWidth: 1,
-                strokeOpacity: 1,
-                r: 6
-            });
-            KG.setProperties(def, 'updatables', ['x', 'y', 'r']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create SVG elements
-        Point.prototype.draw = function (layer) {
-            var p = this;
-            p.rootElement = layer.append('g'); // SVG group
-            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
-            p.circle = p.rootElement.append('circle');
-            //p.addClipPathAndArrows()
-            return p.addInteraction();
-        };
-        // update properties
-        Point.prototype.redraw = function () {
-            var p = this;
-            p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
-            p.circle.attr('r', p.r);
-            p.circle.style('fill', p.fill);
-            p.circle.style('fill-opacity', p.opacity);
-            p.circle.style('stroke', p.stroke);
-            p.circle.style('stroke-width', p.strokeWidth + "px");
-            p.circle.style('stroke-opacity', p.strokeOpacity);
-            return p;
-        };
-        return Point;
-    }(KG.ViewObject));
-    KG.Point = Point;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Ellipse = /** @class */ (function (_super) {
-        __extends(Ellipse, _super);
-        function Ellipse(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                fill: 'colors.blue',
-                opacity: 1,
-                stroke: 'colors.blue',
-                strokeWidth: 1,
-                strokeOpacity: 1,
-                rx: 1,
-                ry: 1
-            });
-            KG.setProperties(def, 'updatables', ['x', 'y', 'rx', 'ry']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create SVG elements
-        Ellipse.prototype.draw = function (layer) {
-            var c = this;
-            c.rootElement = layer.append('ellipse');
-            return c.addClipPathAndArrows().addInteraction();
-        };
-        // update properties
-        Ellipse.prototype.redraw = function () {
-            var c = this;
-            c.rootElement.attr('cx', c.xScale.scale(c.x));
-            c.rootElement.attr('cy', c.yScale.scale(c.y));
-            c.rootElement.attr('rx', Math.abs(c.xScale.scale(c.rx) - c.xScale.scale(0)));
-            c.rootElement.attr('ry', Math.abs(c.yScale.scale(c.ry) - c.yScale.scale(0)));
-            c.drawFill(c.rootElement);
-            c.drawStroke(c.rootElement);
-            return c;
-        };
-        return Ellipse;
-    }(KG.ViewObject));
-    KG.Ellipse = Ellipse;
-    var Circle = /** @class */ (function (_super) {
-        __extends(Circle, _super);
-        function Circle(def) {
-            return _super.call(this, def) || this;
-        }
-        return Circle;
-    }(Ellipse));
-    KG.Circle = Circle;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Rectangle = /** @class */ (function (_super) {
-        __extends(Rectangle, _super);
-        function Rectangle(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                opacity: 0.2,
-                stroke: "none"
-            });
-            KG.setProperties(def, 'updatables', ['x1', 'x2', 'y1', 'y2']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create SVG elements
-        Rectangle.prototype.draw = function (layer) {
-            var rect = this;
-            if (rect.inDef) {
-                rect.rootElement = layer;
-            }
-            else {
-                rect.rootElement = layer.append('g');
-            }
-            rect.rootElement2 = rect.rootElement.append('rect');
-            //rect.interactionHandler.addTrigger(rect.rootElement);
-            return rect.addClipPathAndArrows().addInteraction();
-        };
-        // update properties
-        Rectangle.prototype.redraw = function () {
-            var rect = this;
-            var x1 = rect.xScale.scale(rect.x1);
-            var y1 = rect.yScale.scale(rect.y1);
-            var x2 = rect.xScale.scale(rect.x2);
-            var y2 = rect.yScale.scale(rect.y2);
-            rect.rootElement2
-                .attr('x', Math.min(x1, x2))
-                .attr('y', Math.min(y1, y2))
-                .attr('width', Math.abs(x2 - x1))
-                .attr('height', Math.abs(y2 - y1))
-                .style('fill', rect.fill)
-                .style('fill-opacity', rect.opacity)
-                .style('stroke', rect.stroke)
-                .style('stroke-width', rect.strokeWidth + "px")
-                .style('stroke-opacity', rect.strokeOpacity);
-            return rect;
-        };
-        return Rectangle;
-    }(KG.ViewObject));
-    KG.Rectangle = Rectangle;
-})(KG || (KG = {}));
-/// <reference path='../../kg.ts' />
-var KG;
-(function (KG) {
-    var Area = /** @class */ (function (_super) {
-        __extends(Area, _super);
-        function Area(def) {
-            var _this = this;
-            var minValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMin : def.xScale.domainMin;
-            var maxValue = def.univariateFunction1.ind == 'x' ? def.yScale.domainMax : def.xScale.domainMax;
-            KG.setDefaults(def, {
-                interpolation: 'curveBasis',
-                ind: 'x',
-                fill: 'lightsteelblue',
-                opacity: 0.2,
-                univariateFunction2: {
-                    "fn": ((def.above && !def.useTopScale) || (!def.above && def.useTopScale)) ? maxValue : minValue,
-                    "ind": def.univariateFunction1['ind'],
-                    "min": def.univariateFunction1['min'],
-                    "max": def.univariateFunction1['max'],
-                    "samplePoints": def.univariateFunction1['samplePoints']
-                }
-            });
-            KG.setProperties(def, 'constants', ['interpolation']);
-            def.univariateFunction1.model = def.model;
-            def.univariateFunction2.model = def.model;
-            // need to initialize the functions before the area, so they exist when it's time to draw the area
-            var univariateFunction1 = new KG.UnivariateFunction(def.univariateFunction1), univariateFunction2 = new KG.UnivariateFunction(def.univariateFunction2);
-            _this = _super.call(this, def) || this;
-            _this.univariateFunction1 = univariateFunction1;
-            _this.univariateFunction2 = univariateFunction2;
-            return _this;
-        }
-        // create SVG elements
-        Area.prototype.draw = function (layer) {
-            var ab = this;
-            ab.rootElement = layer.append('path');
-            ab.areaShape = d3.area()
-                .x0(function (d) {
-                return ab.xScale.scale(d[0].x);
-            })
-                .y0(function (d) {
-                return ab.yScale.scale(d[0].y);
-            })
-                .x1(function (d) {
-                return ab.xScale.scale(d[1].x);
-            })
-                .y1(function (d) {
-                return ab.yScale.scale(d[1].y);
-            });
-            ab.areaPath = ab.rootElement;
-            return ab.addClipPathAndArrows();
-        };
-        // update properties
-        Area.prototype.redraw = function () {
-            var area = this;
-            if (area.univariateFunction1 != undefined && area.univariateFunction2 != undefined) {
-                var fn1 = area.univariateFunction1, fn2 = area.univariateFunction2, scale = fn1.ind == 'y' ? area.yScale : area.xScale;
-                fn1.generateData(scale.domainMin, scale.domainMax);
-                fn2.generateData(scale.domainMin, scale.domainMax);
-                area.areaPath
-                    .data([d3.zip(fn1.data, fn2.data)])
-                    .attr('d', area.areaShape);
-                area.drawFill(area.areaPath);
-            }
-            else {
-                //console.log('area functions undefined')
-            }
-            return area;
-        };
-        // update self and functions
-        Area.prototype.update = function (force) {
-            var area = _super.prototype.update.call(this, force);
-            if (!area.hasChanged) {
-                if (area.univariateFunction1.hasChanged || area.univariateFunction2.hasChanged) {
-                    area.redraw();
-                }
-            }
-            return area;
-        };
-        return Area;
-    }(KG.ViewObject));
-    KG.Area = Area;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var GeoGebraObject = /** @class */ (function (_super) {
-        __extends(GeoGebraObject, _super);
-        function GeoGebraObject(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                color: '#999999',
-                lineThickness: 1,
-                lineStyle: 0
-            });
-            KG.setProperties(def, 'constants', ['command', 'color', 'lineThickness', 'lineStyle']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        GeoGebraObject.prototype.establishGGB = function (applet) {
-            // from https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-            function hexToRgb(hex) {
-                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : null;
-            }
-            var obj = this;
-            //console.log('sending commands to applet', applet);
-            // set command
-            var command = obj.name + " = " + obj.command;
-            //console.log('sending command ', obj.name + " = " + obj.command);
-            applet.evalCommand(command);
-            if (obj.hasOwnProperty('opacity')) {
-                applet.setFilling(obj.opacity);
-            }
-            var color = hexToRgb(obj.color);
-            //console.log('sending command setColor(', obj.name, ', ', color.r, ',', color.g, ', ', color.b, ')');
-            applet.setColor(obj.name, color.r, color.g, color.b);
-            //console.log('sending command setLineThickness(', obj.name, ', ', obj.lineThickness, ')')
-            applet.evalCommand('SetLineThickness[' + obj.name + ', ' + obj.lineThickness + ']');
-            //console.log('sending command setLineStyle(', obj.name, ', ', obj.lineStyle, ')')
-            applet.setLineStyle(obj.name, obj.lineStyle);
-        };
-        return GeoGebraObject;
-    }(KG.ViewObject));
-    KG.GeoGebraObject = GeoGebraObject;
-})(KG || (KG = {}));
-/// <reference path='../../kg.ts' />
-var KG;
-(function (KG) {
-    var Contour = /** @class */ (function (_super) {
-        __extends(Contour, _super);
-        function Contour(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                opacity: 0.2,
-                stroke: "grey",
-                fillAbove: "none",
-                fillBelow: "none",
-                strokeOpacity: 1
-            });
-            KG.setProperties(def, 'colorAttributes', ['fillAbove', 'fillBelow']);
-            KG.setProperties(def, 'updatables', ['level', 'fillBelow', 'fillAbove', 'xMin', 'xMax', 'yMin', 'yMax']);
-            _this = _super.call(this, def) || this;
-            // used for shading area above
-            _this.fn = new KG.MultivariateFunction({
-                fn: def.fn,
-                model: def.model
-            }).update(true);
-            // used for shading area below
-            _this.negativeFn = new KG.MultivariateFunction({
-                fn: "-1*(" + def.fn + ")",
-                model: def.model
-            }).update(true);
-            return _this;
-        }
-        Contour.prototype.draw = function (layer) {
-            var c = this;
-            if (c.inDef) {
-                c.rootElement = layer.append('path');
-                c.path = c.rootElement;
-            }
-            else {
-                c.rootElement = layer.append('g');
-                c.negativePath = c.rootElement.append('path');
-                c.path = c.rootElement.append('path');
-            }
-            return c.addClipPathAndArrows();
-        };
-        Contour.prototype.redraw = function () {
-            var c = this;
-            if (undefined != c.fn) {
-                var bounds_1 = {};
-                ['xMin', 'xMax', 'yMin', 'yMax'].forEach(function (p) {
-                    if (c.hasOwnProperty(p) && c[p] != undefined) {
-                        bounds_1[p] = c[p];
-                    }
-                });
-                c.path.attr("d", c.fn.contour(c.level, c.xScale, c.yScale, {
-                    xMin: c.xMin,
-                    xMax: c.xMax,
-                    yMin: c.yMin,
-                    yMax: c.yMax
-                }));
-                if (!c.inDef) {
-                    c.path.style('fill', c.fillAbove);
-                    c.path.style('fill-opacity', c.opacity);
-                    c.path.style('stroke', c.stroke);
-                    c.path.style('stroke-width', c.strokeWidth);
-                    c.path.style('stroke-opacity', c.strokeOpacity);
-                    c.negativePath.attr("d", c.negativeFn.contour(-1 * c.level, c.xScale, c.yScale));
-                    c.negativePath.style('fill', c.fillBelow);
-                    c.negativePath.style('fill-opacity', c.opacity);
-                }
-            }
-            return c;
-        };
-        // update self and functions
-        Contour.prototype.update = function (force) {
-            var c = _super.prototype.update.call(this, force);
-            if (!c.hasChanged) {
-                if (c.fn.hasChanged) {
-                    c.redraw();
-                }
-            }
-            return c;
-        };
-        return Contour;
-    }(KG.ViewObject));
-    KG.Contour = Contour;
-    var ContourMap = /** @class */ (function (_super) {
-        __extends(ContourMap, _super);
-        function ContourMap(def) {
-            return _super.call(this, def) || this;
-        }
-        return ContourMap;
-    }(KG.ViewObject));
-    KG.ContourMap = ContourMap;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Label = /** @class */ (function (_super) {
-        __extends(Label, _super);
-        function Label(def) {
-            var _this = this;
-            var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
-            if (def.x == 'AXIS') {
-                def.x = 0;
-                def.align = xAxisReversed ? 'left' : 'right';
-                def.xPixelOffset = xOffset;
-            }
-            if (def.x == 'OPPAXIS') {
-                def.x = def.xScale.domainMax;
-                def.align = xAxisReversed ? 'right' : 'left';
-                def.xPixelOffset = -xOffset;
-            }
-            if (def.y == 'AXIS') {
-                def.y = 0;
-                def.yPixelOffset = yOffset;
-            }
-            if (def.y == 'OPPAXIS') {
-                def.y = def.yScale.domainMax;
-                def.yPixelOffset = -yOffset;
-            }
-            //establish property defaults
-            KG.setDefaults(def, {
-                xPixelOffset: 0,
-                yPixelOffset: 0,
-                fontSize: 12,
-                align: 'center',
-                valign: 'middle',
-                rotate: 0,
-                color: 'black',
-                bgcolor: 'white'
-            });
-            // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
-            KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        Label.prototype.draw = function (layer) {
-            var label = this;
-            label.rootElement = layer.append('div')
-                .attr('class', 'draggable')
-                .style('position', 'absolute')
-                .style('font-size', label.fontSize + 'pt')
-                .style('text-align', 'center')
-                .style('padding-left', '3px')
-                .style('padding-right', '3px');
-            return label.addInteraction();
-        };
-        // update properties
-        Label.prototype.redraw = function () {
-            var label = this;
-            label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
-            var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
-            if (undefined != label.text) {
-                //console.log('drawing label with text ',label.text);
-                try {
-                    katex.render(label.text.toString(), label.rootElement.node());
-                }
-                catch (e) {
-                    console.log("Error rendering KaTeX: ", label.text);
-                }
-            }
-            label.rootElement.style('left', x + 'px');
-            label.rootElement.style('top', y + 'px');
-            var width = label.rootElement.node().clientWidth, height = label.rootElement.node().clientHeight;
-            // Set left pixel margin; default to centered on x coordinate
-            var alignDelta = width * 0.5;
-            if (label.align == 'left') {
-                alignDelta = 0;
-            }
-            else if (label.align == 'right') {
-                // move left by half the width of the div if right aligned
-                alignDelta = width;
-            }
-            label.rootElement.style('left', (x - alignDelta) + 'px');
-            // Set top pixel margin; default to centered on y coordinate
-            var vAlignDelta = height * 0.5;
-            // Default to centered on x coordinate
-            if (label.valign == 'top') {
-                vAlignDelta = 0;
-            }
-            else if (label.valign == 'bottom') {
-                vAlignDelta = height;
-            }
-            label.rootElement.style('top', (y - vAlignDelta) + 'px');
-            var rotate = "rotate(-" + label.rotate + "deg)";
-            label.rootElement.style('-webkit-transform', rotate)
-                .style('transform', rotate);
-            return label;
-        };
-        return Label;
-    }(KG.ViewObject));
-    KG.Label = Label;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var DivObject = /** @class */ (function (_super) {
-        __extends(DivObject, _super);
-        function DivObject() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        DivObject.prototype.redraw = function () {
-            var div = this;
-            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
-            div.rootElement.style('left', div.xScale.scale(0) + 'px');
-            div.rootElement.style('top', div.yScale.scale(1) + 'px');
-            div.rootElement.style('width', width + 'px');
-            div.rootElement.style('height', height + 'px');
-            return div;
-        };
-        return DivObject;
-    }(KG.ViewObject));
-    KG.DivObject = DivObject;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var PositionedDiv = /** @class */ (function (_super) {
-        __extends(PositionedDiv, _super);
-        function PositionedDiv() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        PositionedDiv.prototype.draw = function (layer) {
-            var div = this;
-            div.rootElement = layer.append('div');
-            div.rootElement.style('position', 'absolute');
-            if (div.def.hasOwnProperty('children')) {
-                div.def['children'].forEach(function (child) {
-                    child.def.layer = div.rootElement;
-                    child.def.model = div.model;
-                    new KG[child.type](child.def);
-                });
-            }
-            return div;
-        };
-        PositionedDiv.prototype.redraw = function () {
-            var div = this;
-            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
-            div.rootElement.style('left', div.xScale.scale(0) + 'px');
-            div.rootElement.style('top', div.yScale.scale(1) + 'px');
-            div.rootElement.style('width', width + 'px');
-            div.rootElement.style('height', height + 'px');
-            return div;
-        };
-        return PositionedDiv;
-    }(KG.DivObject));
-    KG.PositionedDiv = PositionedDiv;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Div = /** @class */ (function (_super) {
-        __extends(Div, _super);
-        function Div(def) {
-            var _this = this;
-            //establish property defaults
-            KG.setDefaults(def, {
-                xPixelOffset: 0,
-                yPixelOffset: 0,
-                fontSize: 12
-            });
-            // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['fontSize']);
-            KG.setProperties(def, 'updatables', ['html']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        Div.prototype.draw = function (layer) {
-            var div = this;
-            div.rootElement = layer.append('div')
-                .style('font-size', div.fontSize + 'pt')
-                .style('padding-top', '2px')
-                .style('padding-bottom', '2px');
-            return div;
-        };
-        // update properties
-        Div.prototype.redraw = function () {
-            var div = this;
-            if (div.show) {
-                div.rootElement.html(div.html);
-                renderMathInElement(div.rootElement.node(), {
-                    delimiters: [
-                        { left: "$$", right: "$$", display: true },
-                        { left: "\\[", right: "\\]", display: true },
-                        { left: "$", right: "$", display: false },
-                        { left: "\\(", right: "\\)", display: false }
-                    ]
-                });
-            }
-            else {
-                div.rootElement.html(null);
-            }
-            return div;
-        };
-        return Div;
-    }(KG.DivObject));
-    KG.Div = Div;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var ParamControl = /** @class */ (function (_super) {
-        __extends(ParamControl, _super);
-        function ParamControl(def) {
-            var _this = this;
-            // establish property defaults
-            KG.setDefaults(def, {
-                value: 'params.' + def.param,
-                alwaysUpdate: true
-            });
-            // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['param']);
-            KG.setProperties(def, 'updatables', ['label', 'value']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        return ParamControl;
-    }(KG.DivObject));
-    KG.ParamControl = ParamControl;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Slider = /** @class */ (function (_super) {
-        __extends(Slider, _super);
-        function Slider(def) {
-            var _this = this;
-            // establish property defaults
-            KG.setDefaults(def, {
-                noAxis: false
-            });
-            // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['noAxis']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Slider.prototype.draw = function (layer) {
-            var slider = this;
-            slider.rootElement = layer.append('tr');
-            var param = slider.model.getParam(slider.param);
-            slider.labelElement = slider.rootElement.append('td')
-                .style('font-size', '14pt')
-                .style('text-align', 'right')
-                .style('padding', '0px')
-                .style('margin', '0px')
-                .style('border', 'none');
-            function inputUpdate() {
-                slider.model.updateParam(slider.param, +this.value);
-            }
-            var numberCell = slider.rootElement.append('td')
-                .style('padding', '0px')
-                .style('margin', '0px')
-                .style('border', 'none');
-            slider.numberInput = numberCell.append('input')
-                .attr('type', 'number')
-                .attr('min', param.min)
-                .attr('max', param.max)
-                .attr('step', param.round)
-                .style('font-size', '14pt')
-                .style('border', 'none')
-                .style('background', 'none')
-                .style('font-family', 'KaTeX_Main')
-                .style('margin', '0px')
-                .style('padding-top', '0px')
-                .style('padding-bottom', '0px')
-                .style('width', '100%');
-            slider.numberInput.on("blur", inputUpdate);
-            slider.numberInput.on("click", inputUpdate);
-            slider.numberInput.on("keyup", function () {
-                if (event['keyCode'] == 13) {
-                    slider.model.updateParam(slider.param, +this.value);
-                }
-            });
-            var rangeCell = slider.rootElement.append('td')
-                .style('padding', '0px')
-                .style('margin', '0px')
-                .style('border', 'none');
-            slider.rangeInput = rangeCell.append('input')
-                .attr('type', 'range')
-                .attr('min', param.min)
-                .attr('max', param.max)
-                .attr('step', param.round)
-                .style('padding', '0px')
-                .style('width', '100%')
-                .style('margin', '0px');
-            slider.rangeInput.on("input", inputUpdate);
-            return slider;
-        };
-        // update properties
-        Slider.prototype.redraw = function () {
-            var slider = this;
-            katex.render(slider.label + " = ", slider.labelElement.node());
-            slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
-            slider.rangeInput.property('value', slider.value);
-            return slider;
-        };
-        return Slider;
-    }(KG.ParamControl));
-    KG.Slider = Slider;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Checkbox = /** @class */ (function (_super) {
-        __extends(Checkbox, _super);
-        function Checkbox() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        Checkbox.prototype.draw = function (layer) {
-            var checkbox = this;
-            checkbox.rootElement = layer.append('div').append('label');
-            checkbox.inputElement = checkbox.rootElement.append('input');
-            checkbox.inputElement
-                .attr('type', 'checkbox');
-            checkbox.inputElement.on("change", function () {
-                checkbox.model.toggleParam(checkbox.param);
-            });
-            checkbox.labelElement = checkbox.rootElement.append('span');
-            checkbox.labelElement.style('padding-left', '10px');
-            return checkbox;
-        };
-        Checkbox.prototype.redraw = function () {
-            var checkbox = this;
-            checkbox.inputElement.property('checked', Boolean(checkbox.value));
-            katex.render(checkbox.label, checkbox.labelElement.node());
-            return checkbox;
-        };
-        return Checkbox;
-    }(KG.ParamControl));
-    KG.Checkbox = Checkbox;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Radio = /** @class */ (function (_super) {
-        __extends(Radio, _super);
-        function Radio(def) {
-            var _this = this;
-            KG.setProperties(def, 'updatables', ['optionValue']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Radio.prototype.draw = function (layer) {
-            var radio = this;
-            radio.rootElement = layer.append('div').append('label');
-            radio.inputElement = radio.rootElement.append('input');
-            radio.inputElement
-                .attr('type', 'radio')
-                .attr('name', 'r_' + radio.param)
-                .attr('value', radio.optionValue);
-            radio.inputElement.on("change", function () {
-                radio.model.updateParam(radio.param, radio.optionValue);
-            });
-            radio.labelElement = radio.rootElement.append('span');
-            radio.labelElement.style('padding-left', '10px');
-            return radio;
-        };
-        Radio.prototype.redraw = function () {
-            var radio = this;
-            radio.inputElement.property('checked', radio.value == radio.optionValue);
-            katex.render(radio.label, radio.labelElement.node());
-            return radio;
-        };
-        return Radio;
-    }(KG.ParamControl));
-    KG.Radio = Radio;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Controls = /** @class */ (function (_super) {
-        __extends(Controls, _super);
-        function Controls(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                title: '',
-                description: '',
-                sliders: [],
-                checkboxes: [],
-                radios: [],
-                divs: []
-            });
-            KG.setProperties(def, 'constants', ['sliders', 'checkboxes', 'radios', 'divs']);
-            KG.setProperties(def, 'updatables', ['title', 'description']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        Controls.prototype.draw = function (layer) {
-            var controls = this;
-            controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
-            controls.rootElement.append('hr');
-            controls.descriptionElement = controls.rootElement.append('div');
-            controls.descriptionElement.style('margin-bottom', '10px');
-            if (controls.sliders.length > 0) {
-                var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
-                controls.sliders.forEach(function (slider) {
-                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
-                });
-            }
-            if (controls.checkboxes.length > 0) {
-                controls.checkboxes.forEach(function (checkbox) {
-                    checkbox = KG.setDefaults(checkbox, {
-                        layer: controls.rootElement,
-                        model: controls.model
-                    });
-                    new KG.Checkbox(checkbox);
-                });
-            }
-            controls.radios.forEach(function (radio) {
-                radio = KG.setDefaults(radio, {
-                    layer: controls.rootElement,
-                    model: controls.model
-                });
-                new KG.Radio(radio);
-            });
-            controls.divs.forEach(function (div) {
-                div = KG.setDefaults(div, {
-                    layer: controls.rootElement,
-                    model: controls.model,
-                    fontSize: 14
-                });
-                if (div.hasOwnProperty('html')) {
-                    new KG.Div(div);
-                }
-                else if (div.hasOwnProperty('table')) {
-                    div.rows = div.table.rows;
-                    div.columns = div.table.columns;
-                    div.lines = div.table.lines;
-                    div.fontSize = 10;
-                    delete div.table;
-                    new KG.Table(div);
-                }
-            });
-            return controls;
-        };
-        // update properties
-        Controls.prototype.redraw = function () {
-            var controls = this;
-            if (controls.title.length > 0) {
-                controls.titleElement.text(controls.title.toUpperCase());
-            }
-            controls.descriptionElement.html(controls.description);
-            return controls;
-        };
-        return Controls;
-    }(KG.DivObject));
-    KG.Controls = Controls;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var GameMatrix = /** @class */ (function (_super) {
-        __extends(GameMatrix, _super);
-        function GameMatrix(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                players: ["Player 1", "Player 2"]
-            });
-            KG.setProperties(def, 'constants', ['players', 'strategies']);
-            KG.setProperties(def, 'updatables', ['payoffs']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        GameMatrix.prototype.draw = function (layer) {
-            var gameMatrix = this;
-            var numStrategies1 = gameMatrix.strategies[0].length, numStrategies2 = gameMatrix.strategies[1].length;
-            gameMatrix.rootElement = layer.append('div');
-            var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
-            var topRow = table.append('tr');
-            topRow.append('td').attr('colspan', '2').attr('class', 'empty');
-            topRow.append('td')
-                .attr('colspan', numStrategies2 * 2)
-                .attr('class', 'player2 strategy empty')
-                .text(gameMatrix.players[1]);
-            var secondRow = table.append('tr');
-            secondRow.append('td').attr('colspan', '2').attr('class', 'empty');
-            gameMatrix.strategies[1].forEach(function (s) {
-                secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy').text(s);
-            });
-            gameMatrix.payoffNodes = [];
-            for (var i = 0; i < numStrategies1; i++) {
-                var row = table.append('tr');
-                var payoffRow = [];
-                if (i == 0) {
-                    row.append('td')
-                        .attr('rowSpan', numStrategies1)
-                        .attr('class', 'player1 strategy empty')
-                        .text(gameMatrix.players[0]);
-                }
-                row.append('td').text(gameMatrix.strategies[0][i]).attr('class', 'player1 strategy');
-                for (var j = 0; j < numStrategies2; j++) {
-                    var payoff1 = row.append('td').attr('class', 'player1 payoff');
-                    var payoff2 = row.append('td').attr('class', 'player2 payoff');
-                    payoffRow.push([payoff1, payoff2]);
-                }
-                gameMatrix.payoffNodes.push(payoffRow);
-            }
-            return gameMatrix;
-        };
-        GameMatrix.prototype.redraw = function () {
-            var gameMatrix = this;
-            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1];
-            var numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
-            for (var i = 0; i < numStrategies1; i++) {
-                for (var j = 0; j < numStrategies2; j++) {
-                    var cell = gameMatrix.payoffNodes[i][j];
-                    katex.render(gameMatrix.payoffs[i][j][0].toString(), cell[0].node());
-                    katex.render(gameMatrix.payoffs[i][j][1].toString(), cell[1].node());
-                }
-            }
-            return gameMatrix;
-        };
-        return GameMatrix;
-    }(KG.DivObject));
-    KG.GameMatrix = GameMatrix;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var GeoGebraApplet = /** @class */ (function (_super) {
-        __extends(GeoGebraApplet, _super);
-        function GeoGebraApplet(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                params: [],
-                objects: [],
-                axisLabels: []
-            });
-            def.params.forEach(function (param) {
-                def[param] = 'params.' + param;
-            });
-            KG.setProperties(def, 'updatables', def.params);
-            KG.setProperties(def, 'constants', ['axes', 'params']);
-            _this = _super.call(this, def) || this;
-            var div = _this;
-            div.objects = def.objects.map(function (objDef) {
-                objDef.model = def.model;
-                return new KG.GeoGebraObject(objDef);
-            });
-            //console.log('created GGB javascript object ', this)
-            div.axesEstablished = false;
-            return _this;
-        }
-        // create div for text
-        GeoGebraApplet.prototype.draw = function (layer) {
-            var div = _super.prototype.draw.call(this, layer);
-            var id = KG.randomString(10);
-            div.rootElement.append('div').attr('id', id);
-            var applet = new GGBApplet({
-                allowStyleBar: true,
-                perspective: "T",
-                borderColor: "#FFFFFF",
-                dataParamId: id
-            }, true);
-            applet.setHTML5Codebase('../../../../GeoGebra/HTML5/5.0/web3d/');
-            applet.inject(id);
-            return div;
-        };
-        GeoGebraApplet.prototype.establishGGB = function (width, height) {
-            var div = this;
-            //console.log('called establishGGB');
-            if (undefined != document['ggbApplet']) {
-                //console.log('applet exists');
-                div.applet = document['ggbApplet'];
-                div.params.forEach(function (p) {
-                    var establishParamCommand = p + " = " + div.model.currentParamValues[p];
-                    //console.log('setting param using command ', establishParamCommand);
-                    div.applet.evalCommand(establishParamCommand);
-                });
-                div.objects.forEach(function (obj) {
-                    obj.establishGGB(div.applet);
-                });
-                div.updateGGB(div.applet, width, height);
-            }
-            else {
-                //console.log('applet does not exist')
-            }
-        };
-        GeoGebraApplet.prototype.updateGGB = function (applet, width, height) {
-            var div = this;
-            console.log('called updateGGB');
-            if (undefined != applet) {
-                //console.log('applet exists');
-                //console.log('setting width to ', width);
-                applet.setWidth(width);
-                //console.log('setting height to ', height);
-                applet.setHeight(height);
-                if (div.axes.length == 3) {
-                    //console.log('setting coordinate system ', div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max)
-                    applet.setCoordSystem(div.axes[0].min, div.axes[0].max, div.axes[1].min, div.axes[1].max, div.axes[2].min, div.axes[2].max);
-                    //console.log('setting axis steps ', div.axes[0].step, div.axes[1].step, div.axes[2].step);
-                    applet.setAxisSteps(3, div.axes[0].step, div.axes[1].step, div.axes[2].step);
-                    //console.log('setting axis labels ', div.axes[0].label, div.axes[1].label, div.axes[2].label);
-                    applet.setAxisLabels(3, div.axes[0].label, div.axes[1].label, div.axes[2].label);
-                    applet.setColor('xAxis', 0, 0, 0);
-                    applet.setColor('yAxis', 0, 0, 0);
-                    applet.setColor('zAxis', 0, 0, 0);
-                }
-                else {
-                    applet.setCoordSystem(div.axes[0].scale.domainMin, div.axes[0].scale.domainMax, div.axes[1].scale.domainMin, div.axes[1].scale.domainMax);
-                    applet.setAxisSteps(2, div.axes[0].step, div.axes[1].step);
-                    applet.setAxisLabels(2, div.axes[0].label, div.axes[1].label);
-                    applet.setColor('xAxis', 0, 0, 0);
-                    applet.setColor('yAxis', 0, 0, 0);
-                }
-                if (div.hasOwnProperty('params')) {
-                    div.params.forEach(function (param) {
-                        applet.setValue(param, div[param]);
-                    });
-                }
-            }
-            else {
-                //console.log('applet does not exist')
-            }
-        };
-        // update properties
-        GeoGebraApplet.prototype.redraw = function () {
-            var div = _super.prototype.redraw.call(this);
-            var width = Math.abs(div.xScale.scale(1) - div.xScale.scale(0)), height = Math.abs(div.yScale.scale(1) - div.yScale.scale(0));
-            var checkExist = setInterval(function () {
-                if (undefined != div.applet) {
-                    div.updateGGB(div.applet, width, height);
-                    clearInterval(checkExist);
-                }
-                else {
-                    div.establishGGB(width, height);
-                }
-            }, 100); // check every 100ms
-            return div;
-        };
-        return GeoGebraApplet;
-    }(KG.PositionedDiv));
-    KG.GeoGebraApplet = GeoGebraApplet;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Mathbox = /** @class */ (function (_super) {
-        __extends(Mathbox, _super);
-        function Mathbox(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                objects: []
-            });
-            _this = _super.call(this, def) || this;
-            var mb = _this;
-            mb.objectDefs = def.objects;
-            mb.objects = [];
-            mb.objectDefs.forEach(function (td) {
-                td.def.mathbox = mb;
-                td.def.model = mb.model;
-                if (td.type.indexOf('Mathbox') < 0) {
-                    td.type = 'Mathbox' + td.type;
-                }
-                mb.objects.push(new KG[td.type](td.def));
-            });
-            return _this;
-            //console.log('created mathbox', mb);
-        }
-        Mathbox.prototype.initMathbox = function () {
-            var mb = this;
-            mb.mathbox = mathBox({
-                plugins: ['core', 'controls', 'cursor', 'mathbox'],
-                controls: { klass: THREE.OrbitControls },
-                element: mb.rootElement.node()
-            });
-            if (mb.mathbox.fallback)
-                throw "WebGL not supported";
-            mb.three = mb.mathbox.three;
-            mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
-            mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
-            mb.mathboxView = mb.mathbox.cartesian({ scale: [0.9, 0.9, 0.9] });
-            mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
-            mb.xAxis.redraw();
-            mb.yAxis.redraw();
-            mb.zAxis.redraw();
-            mb.objects.forEach(function (o) { o.draw().update(); });
-            return mb;
-        };
-        // create mb for mathbox
-        Mathbox.prototype.draw = function (layer) {
-            console.log('creating mathbox container');
-            var mb = this;
-            mb.rootElement = layer.append('div').style('position', 'absolute');
-            return mb;
-        };
-        Mathbox.prototype.redraw = function () {
-            var mb = _super.prototype.redraw.call(this);
-            console.log('called redraw');
-            if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10 && mb.zAxis != undefined) {
-                mb.initMathbox();
-            }
-            else {
-                return mb;
-            }
-            return mb;
-        };
-        return Mathbox;
-    }(KG.PositionedDiv));
-    KG.Mathbox = Mathbox;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Sidebar = /** @class */ (function (_super) {
-        __extends(Sidebar, _super);
-        function Sidebar(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                controls: [],
-                triggerWidth: 563
-            });
-            KG.setProperties(def, 'constants', ['controls', 'triggerWidth']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Sidebar.prototype.positionRight = function (width, height) {
-            var sidebar = this;
-            sidebar.rootElement
-                .style('left', width * 847 / 1260 + 'px')
-                .style('top', '0px')
-                .style('width', (width * 413 / 1260 - 10) + 'px')
-                .style('height', height + 'px')
-                .style('overflow-y', 'scroll')
-                .style('right', '-17px');
-        };
-        Sidebar.prototype.positionBelow = function (width, height) {
-            var sidebar = this;
-            sidebar.rootElement
-                .style('left', '10px')
-                .style('top', height + 20 + 'px')
-                .style('width', width - 20 + 'px')
-                .style('height', null);
-        };
-        Sidebar.prototype.draw = function (layer) {
-            var sidebar = this;
-            sidebar.rootElement = layer.append('div').style('position', 'absolute');
-            sidebar.controls.forEach(function (controlsDef) {
-                controlsDef.layer = sidebar.rootElement;
-                controlsDef.model = sidebar.model;
-                new KG.Controls(controlsDef);
-            });
-            return sidebar;
-        };
-        return Sidebar;
-    }(KG.ViewObject));
-    KG.Sidebar = Sidebar;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Explanation = /** @class */ (function (_super) {
-        __extends(Explanation, _super);
-        function Explanation(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                height: 0,
-                divs: [],
-                border: 'none'
-            });
-            KG.setProperties(def, 'constants', ['divs', 'height', 'border']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        Explanation.prototype.position = function (width, height) {
-            var explanation = this;
-            explanation.rootElement
-                .style('left', '10px')
-                .style('top', height + 20 + 'px')
-                .style('width', width - 20 + 'px');
-        };
-        Explanation.prototype.draw = function (layer) {
-            var explanation = this;
-            explanation.rootElement = layer.append('div')
-                .style('position', 'absolute')
-                .style('height', explanation.height == 0 ? null : explanation.height + 'px')
-                .style('overflow-y', 'scroll')
-                .style('border', explanation.border);
-            explanation.divs.forEach(function (div) {
-                div = KG.setDefaults(div, {
-                    layer: explanation.rootElement,
-                    model: explanation.model,
-                    fontSize: 12
-                });
-                if (div.hasOwnProperty('html')) {
-                    new KG.Div(div);
-                }
-                else if (div.hasOwnProperty('table')) {
-                    div.rows = div.table.rows;
-                    div.columns = div.table.columns;
-                    div.fontSize = 10;
-                    delete div.table;
-                    new KG.Table(div);
-                }
-            });
-            return explanation;
-        };
-        return Explanation;
-    }(KG.ViewObject));
-    KG.Explanation = Explanation;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var Table = /** @class */ (function (_super) {
-        __extends(Table, _super);
-        function Table(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                columns: [],
-                rows: [],
-                fontSize: 8,
-                lines: true
-            });
-            KG.setProperties(def, 'constants', ['fontSize', 'lines']);
-            KG.setProperties(def, 'updatables', ['rows', 'columns']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        // create div for text
-        Table.prototype.draw = function (layer) {
-            var t = this;
-            console.log('table is ', t);
-            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.def['rows'][0].length, numRows = t.def['rows'].length;
-            t.rootElement = layer.append('div');
-            var table = t.rootElement.append('table').attr('class', 'table');
-            table
-                .style('margin-left', 'auto')
-                .style('margin-right', 'auto')
-                .style('font-size', t.fontSize + 'pt')
-                .style('text-align', 'center')
-                .style('border-collapse', 'collapse')
-                .style('margin-top', '15pt')
-                .attr('cell-padding', '5px')
-                .style('width', '80%');
-            t.columnCells = [];
-            if (hasColumnHeaders) {
-                var columnRow = table.append('thead').append('tr');
-                for (var c = 0; c < numColumns; c++) {
-                    var columnCell = columnRow.append('td');
-                    columnCell
-                        .style('font-size', t.fontSize + 'pt')
-                        .style('font-weight', 'bold')
-                        .style('border-bottom', '1px solid black')
-                        .style('text-align', 'center')
-                        .style('padding', '0px 10px 0px 10px');
-                    t.columnCells.push(columnCell);
-                }
-            }
-            t.rowCells = [];
-            var tableBody = table.append('tbody');
-            for (var r = 0; r < numRows; r++) {
-                var dataRow = [];
-                var tableRow = tableBody.append('tr');
-                for (var c = 0; c < numColumns; c++) {
-                    var rowCell = tableRow.append('td');
-                    rowCell
-                        .style('font-size', t.fontSize + 'pt')
-                        .style('text-align', 'center');
-                    if (t.lines) {
-                        rowCell.style('border-bottom', '0.5px solid grey');
-                    }
-                    dataRow.push(rowCell);
-                }
-                t.rowCells.push(dataRow);
-            }
-            return t;
-        };
-        Table.prototype.redraw = function () {
-            var t = this;
-            var hasColumnHeaders = (t.def['columns'].length > 0), numColumns = t.rows[0].length, numRows = t.rows.length;
-            if (hasColumnHeaders) {
-                for (var c = 0; c < numColumns; c++) {
-                    katex.render("\\text{" + t.columns[c].toString() + "}", t.columnCells[c].node());
-                }
-            }
-            for (var r = 0; r < numRows; r++) {
-                for (var c = 0; c < numColumns; c++) {
-                    katex.render("\\text{" + t.rows[r][c].toString() + "}", t.rowCells[r][c].node());
-                }
-            }
-            return t;
-        };
-        return Table;
-    }(KG.DivObject));
-    KG.Table = Table;
-})(KG || (KG = {}));
-/// <reference path="../../kg.ts" />
-var KG;
-(function (KG) {
-    var MathboxObject = /** @class */ (function (_super) {
-        __extends(MathboxObject, _super);
-        function MathboxObject(def) {
-            var _this = this;
-            KG.setProperties(def, 'constants', ['mathbox']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        MathboxObject.prototype.onGraph = function () {
-            return true; // we won't check yet to see if it's on the graph...
-        };
-        MathboxObject.prototype.displayElement = function (show) {
-            var mbo = this;
-            if (mbo.hasOwnProperty("mo")) {
-                this.mo.set("visible", show);
-            }
-        };
-        return MathboxObject;
-    }(KG.ViewObject));
-    KG.MathboxObject = MathboxObject;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var MathboxAxis = /** @class */ (function (_super) {
-        __extends(MathboxAxis, _super);
-        function MathboxAxis(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                ticks: 5,
-                min: 0,
-                max: 10
-            });
-            KG.setProperties(def, 'constants', ['axisNumber', 'ticks']);
-            KG.setProperties(def, 'updatables', ['ticks', 'label', 'min', 'max']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        MathboxAxis.prototype.redraw = function () {
-            var a = this;
-            console.log(a);
-            var view = a.mathbox.mathboxView;
-            if (view == undefined) {
-                return a;
-            }
-            view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
-            var axis = view.axis({ axis: a.axisNumber, width: 8, detail: 40, color: "black" });
-            var scale = view.scale({ axis: a.axisNumber, divide: a.ticks, nice: true, zero: true });
-            var ticks = view.ticks({ width: 5, size: 15, color: "black", zBias: 2 });
-            var format = view.format({ digits: 2, font: "KaTeX_Main", style: "normal", source: scale });
-            var ticklabel = view.label({ color: "black", zIndex: 1, offset: [0, 0], points: scale, text: format });
-            return a;
-        };
-        return MathboxAxis;
-    }(KG.MathboxObject));
-    KG.MathboxAxis = MathboxAxis;
-    var MathboxXAxis = /** @class */ (function (_super) {
-        __extends(MathboxXAxis, _super);
-        function MathboxXAxis(def) {
-            var _this = this;
-            def.axisNumber = 3;
-            _this = _super.call(this, def) || this;
-            var xAxis = _this;
-            xAxis.mathbox.xAxis = xAxis;
-            return _this;
-        }
-        return MathboxXAxis;
-    }(MathboxAxis));
-    KG.MathboxXAxis = MathboxXAxis;
-    var MathboxYAxis = /** @class */ (function (_super) {
-        __extends(MathboxYAxis, _super);
-        function MathboxYAxis(def) {
-            var _this = this;
-            def.axisNumber = 1;
-            _this = _super.call(this, def) || this;
-            var yAxis = _this;
-            yAxis.mathbox.yAxis = yAxis;
-            return _this;
-        }
-        return MathboxYAxis;
-    }(MathboxAxis));
-    KG.MathboxYAxis = MathboxYAxis;
-    var MathboxZAxis = /** @class */ (function (_super) {
-        __extends(MathboxZAxis, _super);
-        function MathboxZAxis(def) {
-            var _this = this;
-            def.axisNumber = 2;
-            _this = _super.call(this, def) || this;
-            var zAxis = _this;
-            zAxis.mathbox.zAxis = zAxis;
-            return _this;
-        }
-        return MathboxZAxis;
-    }(MathboxAxis));
-    KG.MathboxZAxis = MathboxZAxis;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var MathboxPoint = /** @class */ (function (_super) {
-        __extends(MathboxPoint, _super);
-        function MathboxPoint(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                x: 0,
-                y: 0,
-                z: 0
-            });
-            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
-            _this = _super.call(this, def) || this;
-            return _this;
-        }
-        MathboxPoint.prototype.draw = function () {
-            var p = this;
-            p.pointData = p.mathbox.mathboxView.array({
-                width: 1,
-                channels: 3
-            });
-            p.mo = p.mathbox.mathboxView.point({
-                size: 20,
-                points: p.pointData,
-                zIndex: 4
-            });
-            return p;
-        };
-        MathboxPoint.prototype.redraw = function () {
-            var p = this;
-            p.pointData.set("data", [[p.y, p.z, p.x]]);
-            p.mo.set("color", p.stroke);
-            return p;
-        };
-        return MathboxPoint;
-    }(KG.MathboxObject));
-    KG.MathboxPoint = MathboxPoint;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var MathboxCurve = /** @class */ (function (_super) {
-        __extends(MathboxCurve, _super);
-        function MathboxCurve(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                text: "#666666",
-                strokeWidth: 10
-            });
-            _this = _super.call(this, def) || this;
-            def.fn = KG.setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            _this.fn = new KG.UnivariateFunction(def.fn).update(true);
-            return _this;
-        }
-        MathboxCurve.prototype.draw = function () {
-            var c = this;
-            c.curveData = c.mathbox.mathboxView.interval({
-                axis: 1,
-                channels: 3,
-                width: c.fn.samplePoints
-            });
-            c.mo = c.mathbox.mathboxView.line({
-                points: c.curveData,
-                zIndex: 3
-            });
-            return c;
-        };
-        MathboxCurve.prototype.redraw = function () {
-            var c = this;
-            console.log(c);
-            c.curveData.set("expr", c.fn.mathboxFn());
-            c.mo.set("color", c.stroke);
-            c.mo.set("width", c.strokeWidth);
-            return c;
-        };
-        return MathboxCurve;
-    }(KG.MathboxObject));
-    KG.MathboxCurve = MathboxCurve;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
-    var MathboxSurface = /** @class */ (function (_super) {
-        __extends(MathboxSurface, _super);
-        function MathboxSurface(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                fill: "#666666",
-                strokeWidth: 10,
-                opacity: 0.2
-            });
-            _this = _super.call(this, def) || this;
-            def.fn = KG.setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
-            return _this;
-        }
-        MathboxSurface.prototype.draw = function () {
-            var s = this;
-            s.surfaceData = s.mathbox.mathboxView.area({
-                axes: [1, 3],
-                channels: 3,
-                width: s.fn.samplePoints,
-                height: s.fn.samplePoints
-            });
-            s.mo = s.mathbox.mathboxView.surface({
-                points: s.surfaceData,
-                shaded: true,
-                fill: true,
-                lineX: false,
-                lineY: false,
-                width: 0,
-                zIndex: 2
-            });
-            return s;
-        };
-        MathboxSurface.prototype.redraw = function () {
-            var c = this;
-            console.log(c);
-            c.surfaceData.set("expr", c.fn.mathboxFn());
-            c.mo.set("color", c.fill);
-            c.mo.set("opacity", c.opacity);
-            return c;
-        };
-        return MathboxSurface;
-    }(KG.MathboxObject));
-    KG.MathboxSurface = MathboxSurface;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var MathboxLabel = /** @class */ (function (_super) {
         __extends(MathboxLabel, _super);
         function MathboxLabel(def) {
-            var _this = this;
-            KG.setDefaults(def, {
-                text: "foo"
-            });
-            KG.setProperties(def, 'updatables', ['text']);
-            _this = _super.call(this, def) || this;
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxLabel';
             return _this;
         }
-        MathboxLabel.prototype.draw = function () {
-            var l = this;
-            l.pointData = l.mathbox.mathboxView.array({
-                width: 1,
-                channels: 3
-            });
-            l.labelData = l.mathbox.mathboxView.format({
-                font: "KaTeX_Main",
-                style: "normal"
-            });
-            l.mo = l.mathbox.mathboxView.label({
-                points: l.pointData,
-                zIndex: 4,
-                text: l.labelData
-            });
-            return l;
-        };
-        MathboxLabel.prototype.redraw = function () {
-            var l = _super.prototype.redraw.call(this);
-            l.labelData.set("data", [l.text]);
-            return l;
-        };
         return MathboxLabel;
-    }(KG.MathboxPoint));
-    KG.MathboxLabel = MathboxLabel;
-})(KG || (KG = {}));
-/// <reference path="../../node_modules/@types/katex/index.d.ts"/>
-/// <reference path="../../node_modules/@types/d3/index.d.ts"/>
-/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
-/// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
-/// <reference path="lib/underscore.ts"/>
-/// <reference path="KGAuthor/kgAuthor.ts"/>
-/// <reference path="model/model.ts"/>
-/// <reference path="model/param.ts" />
-/// <reference path="model/restriction.ts" />
-/// <reference path="model/updateListener.ts" />
-/// <reference path="math/mathFunction.ts" />
-/// <reference path="math/univariateFunction.ts" />
-/// <reference path="math/parametricFunction.ts" />
-/// <reference path="math/multivariateFunction.ts" />
-/// <reference path="controller/listeners/listener.ts" />
-/// <reference path="controller/listeners/dragListener.ts" />
-/// <reference path="controller/listeners/clickListener.ts" />
-/// <reference path="controller/interactionHandler.ts" />
-/// <reference path="view/view.ts"/>
-/// <reference path="view/scale.ts" />
-/// <reference path="view/viewObjects/viewObject.ts" />
-/// <reference path="view/viewObjects/marker.ts" />
-/// <reference path="view/viewObjects/segment.ts" />
-/// <reference path="view/viewObjects/curve.ts" />
-/// <reference path="view/viewObjects/axis.ts" />
-/// <reference path="view/viewObjects/point.ts" />
-/// <reference path="view/viewObjects/circle.ts" />
-/// <reference path="view/viewObjects/rectangle.ts" />
-/// <reference path="view/viewObjects/area.ts" />
-/// <reference path="view/viewObjects/ggbObject.ts" />
-/// <reference path="view/viewObjects/contour.ts" />
-/// <reference path="view/viewObjects/label.ts" />
-/// <reference path="view/divObjects/divObject.ts" />
-/// <reference path="view/divObjects/positionedDiv.ts" />
-/// <reference path="view/divObjects/div.ts" />
-/// <reference path="view/divObjects/paramControl.ts"/>
-/// <reference path="view/divObjects/slider.ts"/>
-/// <reference path="view/divObjects/checkbox.ts"/>
-/// <reference path="view/divObjects/radio.ts"/>
-/// <reference path="view/divObjects/controls.ts"/>
-/// <reference path="view/divObjects/gameMatrix.ts"/>
-/// <reference path="view/divObjects/ggbApplet.ts"/>
-/// <reference path="view/divObjects/mathbox.ts"/>
-/// <reference path="view/divObjects/sidebar.ts"/>
-/// <reference path="view/divObjects/explanation.ts"/>
-/// <reference path="view/divObjects/table.ts" />
-/// <reference path="view/mathboxObjects/mathboxObject.ts" />
-/// <reference path="view/mathboxObjects/mathboxAxis.ts" />
-/// <reference path="view/mathboxObjects/mathboxPoint.ts" />
-/// <reference path="view/mathboxObjects/mathboxCurve.ts" />
-/// <reference path="view/mathboxObjects/mathboxSurface.ts" />
-/// <reference path="view/mathboxObjects/mathboxLabel.ts" />
-// this file provides the interface with the overall web page
-var views = [];
-// initialize the diagram from divs with class kg-container
-window.addEventListener("load", function () {
-    var viewDivs = document.getElementsByClassName('kg-container');
-    var _loop_1 = function (i) {
-        var d = viewDivs[i], src = d.getAttribute('src'), fmt = d.getAttribute('format'), greenscreen = d.getAttribute('greenscreen') || false;
-        if (d.innerHTML.indexOf('svg') > -1) {
-            //console.log('already loaded');
-        }
-        else {
-            // if there is no src attribute
-            if (!src || src.indexOf('.yml') > -1) {
-                try {
-                    function generateViewFromYamlText(t) {
-                        var y = jsyaml.safeLoad(t);
-                        var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
-                        j.greenscreen = greenscreen;
-                        views.push(new KG.View(d, j));
-                    }
-                    if (src) {
-                        // load YAML from source file
-                        d3.text(src).then(function (yaml_file) {
-                            generateViewFromYamlText(yaml_file);
-                        });
-                    }
-                    else {
-                        // read inner HTML of div as YAML
-                        generateViewFromYamlText(d.innerHTML);
-                    }
-                }
-                catch (e) {
-                    console.log('Error reading YAML: ', e.message);
-                }
-            }
-            // first look to see if there's a definition in the KG.viewData object
-            else if (KG['viewData'].hasOwnProperty(src)) {
-                viewDivs[i].innerHTML = "";
-                views.push(new KG.View(viewDivs[i], KG['viewData'][src]));
-            }
-            else {
-                // then look to see if the src is available by a URL
-                d3.json(src + "?update=true").then(function (data) {
-                    if (!data) {
-                        d.innerHTML = "<p>oops, " + src + " doesn't seem to exist.</p>";
-                    }
-                    else {
-                        d.innerHTML = "";
-                        data.greenscreen = greenscreen;
-                        views.push(new KG.View(d, data));
-                    }
-                });
-            }
-            d.classList.add('kg-loaded');
-        }
-    };
-    // for each div, fetch the JSON definition and create a View object with that div and data
-    for (var i = 0; i < viewDivs.length; i++) {
-        _loop_1(i);
-    }
-});
-// if the window changes size, update the dimensions of the containers
-window.onresize = function () {
-    views.forEach(function (c) {
-        c.updateDimensions();
-    });
-};
-// if embedded within a slide, send slide transitions to the parent
-document.addEventListener("keyup", function (event) {
-    if (event.key == 'PageDown') {
-        event.preventDefault();
-        console.log('trigger next page');
-        if (window != window.parent) {
-            window.parent.postMessage(JSON.stringify({
-                method: 'next'
-            }), '*');
-        }
-    }
-    if (event.key == 'PageUp') {
-        event.preventDefault();
-        if (window != window.parent) {
-            window.parent.postMessage(JSON.stringify({
-                method: 'prev'
-            }), '*');
-        }
-    }
-});
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxLabel = MathboxLabel;
+})(KGAuthor || (KGAuthor = {}));
 
 

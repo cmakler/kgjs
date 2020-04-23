@@ -14,7 +14,7 @@ module KG {
 
     export interface IUnivariateFunction extends IMathFunction {
         evaluate: (input: number, z?: boolean) => number;
-        mathboxFn: (maxY,maxZ,minY?,minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y?: number, i?: number, j?: number, t?: number) => void;
+        mathboxFn: (maxY, maxZ, minY?, minZ?) => (emit: (y: number, z: number, x: number) => any, x: number, y?: number, i?: number, j?: number, t?: number) => void;
         generateData: (min?: number, max?: number) => { x: number, y: number }[]
     }
 
@@ -97,14 +97,26 @@ module KG {
 
         mathboxFn() {
             const fn = this;
-            return function (emit, x) {
-                const y = fn.evaluate(x),
-                    z = fn.evaluate(x,true);
-                if(y <= 50 && z <= 50) {
+            if (fn.ind == 'y') {
+                return function (emit, y) {
+                const x = fn.evaluate(y),
+                    z = fn.evaluate(y,true);
+                if(x <= 50 && z <= 50) {
                     emit(y, z, x);
                 }
-
             };
+            }
+            else {
+                return function (emit, x) {
+                    const y = fn.evaluate(x),
+                        z = fn.evaluate(x, true);
+                    if (y <= 50 && z <= 50) {
+                        emit(y, z, x);
+                    }
+
+                };
+            }
+
         }
 
         update(force) {
