@@ -77,6 +77,7 @@ module KG {
         public rootElement2;
         public markedElement;
         public alwaysUpdate: boolean;
+        public checkOnGraph: boolean;
 
         public show;
         public fill;
@@ -97,23 +98,27 @@ module KG {
                 stokeOpacity: 1,
                 show: true,
                 inDef: false,
-                lineStyle: 'solid'
+                lineStyle: 'solid',
+                checkOnGraph: true
             });
             setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef']);
-            setProperties(def, 'colorAttributes', ['stroke','fill','color']);
+            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
+            setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
 
-            if(def.inDef) {def.show = true};
+            if (def.inDef) {
+                def.show = true
+            }
+            ;
 
             super(def);
 
             let vo = this;
 
-            def.colorAttributes.forEach(function(attr) {
-               let c = def[attr];
-               if(vo.model.colors.hasOwnProperty(c)) {
-                   def[attr] = vo.model.colors[c];
-               }
+            def.colorAttributes.forEach(function (attr) {
+                let c = def[attr];
+                if (vo.model.colors.hasOwnProperty(c)) {
+                    def[attr] = vo.model.colors[c];
+                }
             });
 
             // the interaction handler manages drag and hover events
@@ -206,14 +211,16 @@ module KG {
 
         onGraph() {
             const vo = this;
-            if (vo.hasOwnProperty('x')) {
-                if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
-                    return false;
+            if (vo.checkOnGraph) {
+                if (vo.hasOwnProperty('x')) {
+                    if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+                        return false;
+                    }
                 }
-            }
-            if (vo.hasOwnProperty('y')) {
-                if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
-                    return false;
+                if (vo.hasOwnProperty('y')) {
+                    if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+                        return false;
+                    }
                 }
             }
             return true;

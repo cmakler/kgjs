@@ -26,7 +26,8 @@ module KG {
                 strokeWidth: 1,
                 strokeOpacity: 1,
                 rx: 1,
-                ry: 1
+                ry: 1,
+                checkOnGraph: false
             });
             setProperties(def, 'updatables',['x', 'y', 'rx','ry']);
             super(def);
