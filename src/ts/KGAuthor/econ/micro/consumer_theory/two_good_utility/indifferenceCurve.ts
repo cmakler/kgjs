@@ -9,7 +9,7 @@ module KGAuthor {
         if (def.hasOwnProperty('indifferenceCurve')) {
             let indifferenceCurveDef = copyJSON(def.indifferenceCurve);
             indifferenceCurveDef.show = indifferenceCurveDef.show || def.show;
-            indifferenceCurveDef.name = def.name + "_IC"
+            indifferenceCurveDef.name = def.name + "_IC";
             return new EconIndifferenceCurve(indifferenceCurveDef, graph);
         }
         console.log('tried to instantiate a budget line without either a budget line def or object')
