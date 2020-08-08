@@ -11,7 +11,9 @@ module KG {
     // these declarations make it so TypeScript doesn't have a cow
     declare function mathBox({})
 
-    declare class MathBox {
+    declare class THREE {
+        static OrbitControls: any;
+        static Color: any;
     }
 
     export class Mathbox extends PositionedDiv {
@@ -23,6 +25,7 @@ module KG {
         public zAxis;
         private objectDefs;
         public objects;
+        public clearColor;
 
         constructor(def: MathboxDefinition) {
             setDefaults(def, {
@@ -40,6 +43,7 @@ module KG {
                 }
                 mb.objects.push(new KG[td.type](td.def));
             });
+            mb.clearColor = mb.model.clearColor;
             //console.log('created mathbox', mb);
         }
 
@@ -54,7 +58,7 @@ module KG {
             if (mb.mathbox.fallback) throw "WebGL not supported";
 
             mb.three = mb.mathbox.three;
-            mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+            mb.three.renderer.setClearColor(new THREE.Color(mb.clearColor), 1.0);
             mb.mathbox.camera({proxy: true, position: [-3, 1, 1], eulerOrder: "yzx"});
             mb.mathboxView = mb.mathbox.cartesian({scale: [0.9, 0.9, 0.9]});
             mb.mathboxView.grid({axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3});

@@ -21,6 +21,7 @@ module KG {
         private params: Param[];
         private calcs: {};
         public colors: {};
+        public clearColor: string;
 
         // objects that store current realized values of params, calcs, and colors
         public currentParamValues: {};
@@ -34,6 +35,7 @@ module KG {
             });
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
+            model.clearColor = parsedData.clearColor;
             model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new Restriction(def)
             });

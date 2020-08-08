@@ -61,6 +61,7 @@
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
+/// <reference path="view/mathboxObjects/mathboxLine.ts" />
 
 declare function renderMathInElement(node, delimiters);
 
@@ -142,6 +143,33 @@ window.onresize = function () {
         c.updateDimensions()
     })
 };
+
+(function() {
+    var beforePrint = function() {
+        views.forEach(function (c) {
+        c.updateDimensions(true)
+    })
+    };
+    var afterPrint = function() {
+        views.forEach(function (c) {
+        c.updateDimensions(false)
+    })
+    };
+
+    if (window.matchMedia) {
+        var mediaQueryList = window.matchMedia('print');
+        mediaQueryList.addListener(function(mql) {
+            if (mql.matches) {
+                beforePrint();
+            } else {
+                afterPrint();
+            }
+        });
+    }
+
+    window.onbeforeprint = beforePrint;
+    window.onafterprint = afterPrint;
+}());
 
 // if embedded within a slide, send slide transitions to the parent
 

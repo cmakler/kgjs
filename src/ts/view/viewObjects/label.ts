@@ -66,8 +66,7 @@ module KG {
                 align: 'center',
                 valign: 'middle',
                 rotate: 0,
-                color: 'black',
-                bgcolor: 'white'
+                color: 'black'
             });
 
             // define constant and updatable properties
@@ -75,6 +74,8 @@ module KG {
             setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
 
             super(def);
+
+            this.bgcolor = def.model.clearColor;
 
         }
 

@@ -38,19 +38,35 @@ module KG {
         // create div for text
         draw(layer) {
             let controls = this;
+            let controls_id = KG.randomString(5);
 
             controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             controls.descriptionElement.style('margin-bottom', '10px');
+
             if (controls.sliders.length > 0) {
                 const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
                     new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: controls.model})
                 });
             }
+
+            controls.radios.forEach(function (radio) {
+                radio = setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model,
+                    figure_id: controls_id
+                });
+                new Radio(radio)
+            });
+
+
             if (controls.checkboxes.length > 0) {
+                if (controls.radios.length > 0) {
+                    controls.rootElement.append('div').style('margin-bottom', '10px');
+                }
                 controls.checkboxes.forEach(function (checkbox) {
                     checkbox = setDefaults(checkbox, {
                         layer: controls.rootElement,
@@ -60,13 +76,7 @@ module KG {
                 });
             }
 
-            controls.radios.forEach(function (radio) {
-                radio = setDefaults(radio, {
-                    layer: controls.rootElement,
-                    model: controls.model
-                });
-                new Radio(radio)
-            });
+
             controls.divs.forEach(function (div) {
                 div = setDefaults(div, {
                     layer: controls.rootElement,

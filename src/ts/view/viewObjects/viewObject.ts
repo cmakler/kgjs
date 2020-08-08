@@ -25,6 +25,7 @@ module KG {
         strokeWidth?: string;
         strokeOpacity?: string;
         lineStyle?: string;
+        clearColor?: string;
 
         colorAttributes?: string[];
 
@@ -59,6 +60,7 @@ module KG {
         lineStyle: string;
         startArrow: string;
         endArrow: string;
+        clearColor: string;
 
     }
 
@@ -86,6 +88,7 @@ module KG {
         public strokeWidth;
         public strokeOpacity;
         public lineStyle;
+        public clearColor;
 
         constructor(def: ViewObjectDefinition) {
             setDefaults(def, {
@@ -108,7 +111,6 @@ module KG {
             if (def.inDef) {
                 def.show = true
             }
-            ;
 
             super(def);
 

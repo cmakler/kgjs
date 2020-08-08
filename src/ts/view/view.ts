@@ -16,6 +16,7 @@ module KG {
         // These are usually specified by the user
         aspectRatio?: number;
         nosvg?: boolean;
+        clearColor?: string;
         schema?: string;
         params?: ParamDefinition[];
         calcs: {};
@@ -55,6 +56,7 @@ module KG {
         private sidebar?: any;
         private explanation?: any;
         private svgContainerDiv: any;
+        private clearColor: string;
 
         constructor(div: Element, data: ViewDefinition) {
             this.render(data, div);
@@ -73,8 +75,15 @@ module KG {
                 return paramData;
             });
 
+            // allow author to set clear color as div attribute
+            if (div.hasAttribute("clearColor")) {
+                data.clearColor = div.getAttribute("clearColor")
+            }
+
+
             let parsedData: ViewDefinition = {
                 aspectRatio: data.aspectRatio || 1,
+                clearColor: data.clearColor || "#FFFFFF",
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
@@ -158,8 +167,6 @@ module KG {
 
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
-
-            console.log('parsedData: ', parsedData);
         }
 
         // add view information (model, layer, scales) to an object
@@ -276,41 +283,59 @@ module KG {
         }
 
         // update dimensions, either when first rendering or when the window is resized
-        updateDimensions() {
+        updateDimensions(printing?: boolean) {
             let view = this;
 
-            // read the client width of the enclosing div and calculate the height using the aspectRatio
-            let clientWidth = view.div.node().clientWidth,
-                width = clientWidth - 10,
+            printing = !!printing;
+
+            //console.log('printing is ', printing);
+
+            let width = 0, height = 0, displayHeight = 0;
+
+            if (printing) {
+
+                width = 600;
+                height = width / view.aspectRatio;
+                displayHeight = height + 20
+            } else {
+                // read the client width of the enclosing div and calculate the height using the aspectRatio
+                let clientWidth = view.div.node().clientWidth;
+
+                width = clientWidth - 10
                 height = width / view.aspectRatio;
 
-            let sidebarHeight = 0, explanationHeight = 0;
+                let sidebarHeight = 0, explanationHeight = 0;
 
-            // position the sidebar to the right if the screen is wide enough, or below if it isn't
-            if (view.sidebar) {
-                if (width > view.sidebar.triggerWidth) {
-                    height = height * 77 / 126;
-                    let s_height;
-                    if(view.explanation) {
-                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                // position the sidebar to the right if the screen is wide enough, or below if it isn't
+                if (view.sidebar) {
+                    if (width > view.sidebar.triggerWidth) {
+                        height = height * 77 / 126;
+                        let s_height;
+                        if (view.explanation) {
+                            s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                        } else {
+                            s_height = height;
+                        }
+                        view.sidebar.positionRight(width, s_height);
+                        width = width * 77 / 126; // make width of graph the same width as main Tufte column
                     } else {
-                        s_height = height;
+                        view.sidebar.positionBelow(width, height);
+                        sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
                     }
-                    view.sidebar.positionRight(width, s_height);
-                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
-                } else {
-                    view.sidebar.positionBelow(width, height);
-                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
                 }
+
+                // position the explanation below
+                if (view.explanation) {
+                    view.explanation.position(width, height + sidebarHeight + 10);
+                    explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+                }
+
+                displayHeight = height + sidebarHeight + explanationHeight + 10
+
             }
 
-            // position the explanation below
-            if (view.explanation) {
-                view.explanation.position(width, height + sidebarHeight + 10);
-                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
-            }
+            view.div.style('height', displayHeight + 'px');
 
-            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
 
             // set the height of the div
 

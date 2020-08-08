@@ -2441,7 +2441,7 @@ var KGAuthor;
         function MathboxLine(def) {
             var _this = _super.call(this, def) || this;
             var a = _this;
-            a.type = 'MathboxAxis';
+            a.type = 'MathboxLine';
             return _this;
         }
         return MathboxLine;
@@ -4850,6 +4850,7 @@ var KG;
             });
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
+            model.clearColor = parsedData.clearColor;
             model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new KG.Restriction(def);
             });
@@ -5268,12 +5269,12 @@ var KG;
             this.data = data;
             return data;
         };
-        UnivariateFunction.prototype.mathboxFn = function () {
+        UnivariateFunction.prototype.mathboxFn = function (mathbox) {
             var fn = this;
             if (fn.ind == 'y') {
                 return function (emit, y) {
                     var x = fn.evaluate(y), z = fn.evaluate(y, true);
-                    if (x <= 50 && z <= 50) {
+                    if (x >= mathbox.xAxis.min && x <= mathbox.xAxis.max && z >= mathbox.zAxis.min && z <= mathbox.zAxis.max) {
                         emit(y, z, x);
                     }
                 };
@@ -5281,7 +5282,7 @@ var KG;
             else {
                 return function (emit, x) {
                     var y = fn.evaluate(x), z = fn.evaluate(x, true);
-                    if (y <= 50 && z <= 50) {
+                    if (y >= mathbox.yAxis.min && y <= mathbox.yAxis.max && z >= mathbox.zAxis.min && z <= mathbox.zAxis.max) {
                         emit(y, z, x);
                     }
                 };
@@ -5681,8 +5682,13 @@ var KG;
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
             });
+            // allow author to set clear color as div attribute
+            if (div.hasAttribute("clearColor")) {
+                data.clearColor = div.getAttribute("clearColor");
+            }
             var parsedData = {
                 aspectRatio: data.aspectRatio || 1,
+                clearColor: data.clearColor || "#FFFFFF",
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
@@ -5753,7 +5759,6 @@ var KG;
             }
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
-            console.log('parsedData: ', parsedData);
         };
         // add view information (model, layer, scales) to an object
         View.prototype.addViewToDef = function (def, layer) {
@@ -5852,36 +5857,49 @@ var KG;
             view.updateDimensions();
         };
         // update dimensions, either when first rendering or when the window is resized
-        View.prototype.updateDimensions = function () {
+        View.prototype.updateDimensions = function (printing) {
             var view = this;
-            // read the client width of the enclosing div and calculate the height using the aspectRatio
-            var clientWidth = view.div.node().clientWidth, width = clientWidth - 10, height = width / view.aspectRatio;
-            var sidebarHeight = 0, explanationHeight = 0;
-            // position the sidebar to the right if the screen is wide enough, or below if it isn't
-            if (view.sidebar) {
-                if (width > view.sidebar.triggerWidth) {
-                    height = height * 77 / 126;
-                    var s_height = void 0;
-                    if (view.explanation) {
-                        s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+            printing = !!printing;
+            //console.log('printing is ', printing);
+            var width = 0, height = 0, displayHeight = 0;
+            if (printing) {
+                width = 600;
+                height = width / view.aspectRatio;
+                displayHeight = height + 20;
+            }
+            else {
+                // read the client width of the enclosing div and calculate the height using the aspectRatio
+                var clientWidth = view.div.node().clientWidth;
+                width = clientWidth - 10;
+                height = width / view.aspectRatio;
+                var sidebarHeight = 0, explanationHeight = 0;
+                // position the sidebar to the right if the screen is wide enough, or below if it isn't
+                if (view.sidebar) {
+                    if (width > view.sidebar.triggerWidth) {
+                        height = height * 77 / 126;
+                        var s_height = void 0;
+                        if (view.explanation) {
+                            s_height = height + view.explanation.rootElement.node().clientHeight + 10;
+                        }
+                        else {
+                            s_height = height;
+                        }
+                        view.sidebar.positionRight(width, s_height);
+                        width = width * 77 / 126; // make width of graph the same width as main Tufte column
                     }
                     else {
-                        s_height = height;
+                        view.sidebar.positionBelow(width, height);
+                        sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
                     }
-                    view.sidebar.positionRight(width, s_height);
-                    width = width * 77 / 126; // make width of graph the same width as main Tufte column
                 }
-                else {
-                    view.sidebar.positionBelow(width, height);
-                    sidebarHeight = view.sidebar.rootElement.node().clientHeight + 30;
+                // position the explanation below
+                if (view.explanation) {
+                    view.explanation.position(width, height + sidebarHeight + 10);
+                    explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
                 }
+                displayHeight = height + sidebarHeight + explanationHeight + 10;
             }
-            // position the explanation below
-            if (view.explanation) {
-                view.explanation.position(width, height + sidebarHeight + 10);
-                explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
-            }
-            view.div.style('height', height + sidebarHeight + explanationHeight + 10 + 'px');
+            view.div.style('height', displayHeight + 'px');
             // set the height of the div
             view.svgContainerDiv.style('width', width);
             view.svgContainerDiv.style('height', height);
@@ -5964,7 +5982,6 @@ var KG;
             if (def.inDef) {
                 def.show = true;
             }
-            ;
             _this = _super.call(this, def) || this;
             var vo = _this;
             def.colorAttributes.forEach(function (attr) {
@@ -6698,13 +6715,13 @@ var KG;
                 align: 'center',
                 valign: 'middle',
                 rotate: 0,
-                color: 'black',
-                bgcolor: 'white'
+                color: 'black'
             });
             // define constant and updatable properties
             KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
             KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
             _this = _super.call(this, def) || this;
+            _this.bgcolor = def.model.clearColor;
             return _this;
         }
         // create div for text
@@ -7011,6 +7028,7 @@ var KG;
         __extends(Radio, _super);
         function Radio(def) {
             var _this = this;
+            KG.setProperties(def, 'constants', ['figure_id']);
             KG.setProperties(def, 'updatables', ['optionValue']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -7021,7 +7039,7 @@ var KG;
             radio.inputElement = radio.rootElement.append('input');
             radio.inputElement
                 .attr('type', 'radio')
-                .attr('name', 'r_' + radio.param)
+                .attr('name', radio.figure_id + '_' + radio.param)
                 .attr('value', radio.optionValue);
             radio.inputElement.on("change", function () {
                 radio.model.updateParam(radio.param, radio.optionValue);
@@ -7063,6 +7081,7 @@ var KG;
         // create div for text
         Controls.prototype.draw = function (layer) {
             var controls = this;
+            var controls_id = KG.randomString(5);
             controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
             controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
             controls.rootElement.append('hr');
@@ -7074,7 +7093,18 @@ var KG;
                     new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
                 });
             }
+            controls.radios.forEach(function (radio) {
+                radio = KG.setDefaults(radio, {
+                    layer: controls.rootElement,
+                    model: controls.model,
+                    figure_id: controls_id
+                });
+                new KG.Radio(radio);
+            });
             if (controls.checkboxes.length > 0) {
+                if (controls.radios.length > 0) {
+                    controls.rootElement.append('div').style('margin-bottom', '10px');
+                }
                 controls.checkboxes.forEach(function (checkbox) {
                     checkbox = KG.setDefaults(checkbox, {
                         layer: controls.rootElement,
@@ -7083,13 +7113,6 @@ var KG;
                     new KG.Checkbox(checkbox);
                 });
             }
-            controls.radios.forEach(function (radio) {
-                radio = KG.setDefaults(radio, {
-                    layer: controls.rootElement,
-                    model: controls.model
-                });
-                new KG.Radio(radio);
-            });
             controls.divs.forEach(function (div) {
                 div = KG.setDefaults(div, {
                     layer: controls.rootElement,
@@ -7332,6 +7355,7 @@ var KG;
                 }
                 mb.objects.push(new KG[td.type](td.def));
             });
+            mb.clearColor = mb.model.clearColor;
             return _this;
             //console.log('created mathbox', mb);
         }
@@ -7345,7 +7369,7 @@ var KG;
             if (mb.mathbox.fallback)
                 throw "WebGL not supported";
             mb.three = mb.mathbox.three;
-            mb.three.renderer.setClearColor(new THREE.Color(0xFFFFFF), 1.0);
+            mb.three.renderer.setClearColor(new THREE.Color(mb.clearColor), 1.0);
             mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
             mb.mathboxView = mb.mathbox.cartesian({ scale: [0.9, 0.9, 0.9] });
             mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
@@ -7412,7 +7436,7 @@ var KG;
         };
         Sidebar.prototype.draw = function (layer) {
             var sidebar = this;
-            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.rootElement = layer.append('div').style('position', 'absolute').attr('class', 'sidebar');
             sidebar.controls.forEach(function (controlsDef) {
                 controlsDef.layer = sidebar.rootElement;
                 controlsDef.model = sidebar.model;
@@ -7733,7 +7757,7 @@ var KG;
         MathboxCurve.prototype.redraw = function () {
             var c = this;
             console.log(c);
-            c.curveData.set("expr", c.fn.mathboxFn());
+            c.curveData.set("expr", c.fn.mathboxFn(c.mathbox));
             c.mo.set("color", c.stroke);
             c.mo.set("width", c.strokeWidth);
             return c;
@@ -7769,13 +7793,30 @@ var KG;
                 width: s.fn.samplePoints,
                 height: s.fn.samplePoints
             });
+            var graphColors = s.mathbox.mathboxView.area({
+                expr: function (emit, x, y, i, j, t) {
+                    if (x < 0)
+                        emit(1.0, 0.0, 0.0, 1.0);
+                    else
+                        emit(0.0, 1.0, 0.0, 1.0);
+                },
+                axes: [1, 3],
+                width: 64, height: 64,
+                channels: 4,
+            });
+            graphColors.set("expr", function (emit, x, y, i, j, t) {
+                var z = x * x + y * y;
+                var zMin = 0, zMax = 200;
+                var percent = (z - zMin) / (zMax - zMin);
+                emit(percent, percent, percent, 1.0);
+            });
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
                 shaded: true,
                 fill: true,
-                lineX: false,
-                lineY: false,
-                width: 0,
+                lineX: true,
+                lineY: true,
+                width: 1,
                 zIndex: 2
             });
             return s;
@@ -7876,6 +7917,50 @@ var KG;
     }(KG.MathboxPoint));
     KG.MathboxLabel = MathboxLabel;
 })(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxLine = /** @class */ (function (_super) {
+        __extends(MathboxLine, _super);
+        function MathboxLine(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                x1: 0,
+                y1: 0,
+                z1: 0,
+                x2: 0,
+                y2: 0,
+                z2: 0,
+                lineStyle: "solid"
+            });
+            KG.setProperties(def, 'updatables', ['x1', 'y1', 'z1', 'x2', 'y2', 'z2']);
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        MathboxLine.prototype.draw = function () {
+            var p = this;
+            p.pointData = p.mathbox.mathboxView.array({
+                width: 2,
+                channels: 3
+            });
+            p.mo = p.mathbox.mathboxView.line({
+                points: p.pointData,
+                zIndex: 4
+            });
+            return p;
+        };
+        MathboxLine.prototype.redraw = function () {
+            var p = this;
+            console.log(p);
+            p.pointData.set("data", [[p.y1, p.z1, p.x1], [p.y2, p.z2, p.x2]]);
+            p.mo.set("color", p.stroke);
+            p.mo.set("stroke", p.lineStyle);
+            p.mo.set("width", p.strokeWidth);
+            return p;
+        };
+        return MathboxLine;
+    }(KG.MathboxObject));
+    KG.MathboxLine = MathboxLine;
+})(KG || (KG = {}));
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
 /// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
@@ -7929,6 +8014,7 @@ var KG;
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
+/// <reference path="view/mathboxObjects/mathboxLine.ts" />
 // this file provides the interface with the overall web page
 var views = [];
 // initialize the diagram from divs with class kg-container
@@ -7996,6 +8082,31 @@ window.onresize = function () {
         c.updateDimensions();
     });
 };
+(function () {
+    var beforePrint = function () {
+        views.forEach(function (c) {
+            c.updateDimensions(true);
+        });
+    };
+    var afterPrint = function () {
+        views.forEach(function (c) {
+            c.updateDimensions(false);
+        });
+    };
+    if (window.matchMedia) {
+        var mediaQueryList = window.matchMedia('print');
+        mediaQueryList.addListener(function (mql) {
+            if (mql.matches) {
+                beforePrint();
+            }
+            else {
+                afterPrint();
+            }
+        });
+    }
+    window.onbeforeprint = beforePrint;
+    window.onafterprint = afterPrint;
+}());
 // if embedded within a slide, send slide transitions to the parent
 document.addEventListener("keyup", function (event) {
     if (event.key == 'PageDown') {

@@ -23,6 +23,7 @@ module KGAuthor {
         public type: string;
         public layer: number;
         public color: any;
+        public clearColor: any;
 
         constructor(def, graph?) {
 

@@ -50,7 +50,7 @@ module KG {
         draw(layer) {
             let sidebar = this;
 
-            sidebar.rootElement = layer.append('div').style('position', 'absolute');
+            sidebar.rootElement = layer.append('div').style('position', 'absolute').attr('class', 'sidebar');
             sidebar.controls.forEach(function (controlsDef) {
                 controlsDef.layer = sidebar.rootElement;
                 controlsDef.model = sidebar.model;

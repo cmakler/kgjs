@@ -7,7 +7,6 @@ js_directories = [
     'build/bundled/',
     'docs/js/',
     'docs/playground/code/',
-    '../electric-book/kg/js/',
     '../bh-textbook/code/',
     '../core-interactives/code/',
     '../econgraphs/static/js/'

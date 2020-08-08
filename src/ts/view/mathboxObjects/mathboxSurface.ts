@@ -29,19 +29,41 @@ module KG {
         draw() {
             let s = this;
             s.surfaceData = s.mathbox.mathboxView.area({
-                axes: [1,3],
+                axes: [1, 3],
                 channels: 3,
                 width: s.fn.samplePoints,
                 height: s.fn.samplePoints
             });
 
+            var graphColors = s.mathbox.mathboxView.area({
+                expr: function (emit, x, y, i, j, t) {
+                    if (x < 0)
+                        emit(1.0, 0.0, 0.0, 1.0);
+                    else
+                        emit(0.0, 1.0, 0.0, 1.0);
+                },
+                axes: [1, 3],
+                width: 64, height: 64,
+                channels: 4, // RGBA
+            });
+
+            graphColors.set("expr",
+				function (emit, x, y, i, j, t)
+				{
+					var z = x*x + y*y;
+					const zMin = 0, zMax=200;
+					var percent = (z - zMin) / (zMax - zMin);
+					emit( percent, percent, percent, 1.0 );
+				}
+			);
+
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
                 shaded: true,
                 fill: true,
-                lineX: false,
-                lineY: false,
-                width: 0,
+                lineX: true,
+                lineY: true,
+                width: 1,
                 zIndex: 2
             });
             return s;

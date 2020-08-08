@@ -3,22 +3,20 @@
 module KGAuthor {
 
     export interface MathboxLineDefinition extends MathboxObjectDefinition {
-        min: any;
-        max: any;
-        ticks?: any;
-        width: any;
-        detail: any;
-
+        x1?: number;
+        y1?: number;
+        z1?: number;
+        x2?: number;
+        y2?: number;
+        z2?: number;
     }
 
     export class MathboxLine extends MathboxObject {
 
-        public dim;
-
-        constructor(def:MathboxLineDefinition) {
+        constructor(def: MathboxLineDefinition) {
             super(def);
             let a = this;
-            a.type = 'MathboxAxis';
+            a.type = 'MathboxLine';
         }
 
     }

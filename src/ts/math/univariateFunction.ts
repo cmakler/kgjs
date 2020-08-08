@@ -95,22 +95,21 @@ module KG {
             return data;
         }
 
-        mathboxFn() {
+        mathboxFn(mathbox: Mathbox) {
             const fn = this;
             if (fn.ind == 'y') {
                 return function (emit, y) {
-                const x = fn.evaluate(y),
-                    z = fn.evaluate(y,true);
-                if(x <= 50 && z <= 50) {
-                    emit(y, z, x);
-                }
-            };
-            }
-            else {
+                    const x = fn.evaluate(y),
+                        z = fn.evaluate(y, true);
+                    if (x >= mathbox.xAxis.min && x <= mathbox.xAxis.max && z >= mathbox.zAxis.min && z <= mathbox.zAxis.max) {
+                        emit(y, z, x);
+                    }
+                };
+            } else {
                 return function (emit, x) {
                     const y = fn.evaluate(x),
                         z = fn.evaluate(x, true);
-                    if (y <= 50 && z <= 50) {
+                    if (y >= mathbox.yAxis.min && y <= mathbox.yAxis.max && z >= mathbox.zAxis.min && z <= mathbox.zAxis.max) {
                         emit(y, z, x);
                     }
 

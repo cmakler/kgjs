@@ -7,8 +7,10 @@ module KG {
         private inputElement;
         private labelElement;
         private optionValue;
+        private figure_id;
 
         constructor(def) {
+            setProperties(def,'constants',['figure_id']);
             setProperties(def,'updatables',['optionValue']);
             super(def);
         }
@@ -19,7 +21,7 @@ module KG {
             radio.inputElement = radio.rootElement.append('input');
             radio.inputElement
                 .attr('type','radio')
-                .attr('name', 'r_'+radio.param)
+                .attr('name', radio.figure_id + '_'+ radio.param)
                 .attr('value', radio.optionValue);
             radio.inputElement.on("change", function () {
                 radio.model.updateParam(radio.param, radio.optionValue);

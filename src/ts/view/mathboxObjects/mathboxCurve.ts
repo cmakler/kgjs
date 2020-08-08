@@ -43,7 +43,7 @@ module KG {
         redraw() {
             let c = this;
             console.log(c);
-            c.curveData.set("expr", c.fn.mathboxFn());
+            c.curveData.set("expr", c.fn.mathboxFn(c.mathbox));
             c.mo.set("color", c.stroke);
             c.mo.set("width", c.strokeWidth);
             return c;
