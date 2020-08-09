@@ -3,37 +3,51 @@
 'use strict';
 
 module KG {
+
     export interface MathboxSurfaceDefinition extends MathboxObjectDefinition {
-        fn: MultivariateFunctionDefinition;
+        meshWidth?: number;
+        axis1?: string;
+        axis2?: string;
+        samplePoints?: number;
     }
 
     export class MathboxSurface extends MathboxObject {
 
         public surfaceData;
-        private fn: MultivariateFunction;
+        private meshWidth;
+        public samplePoints;
+        public axes;
 
         constructor(def: MathboxSurfaceDefinition) {
             setDefaults(def, {
                 fill: "#666666",
                 strokeWidth: 10,
-                opacity: 0.2
+                opacity: 0.2,
+                meshWidth: 1,
+                samplePoints: 100,
+                axis1: "x",
+                axis2: "y"
             });
+            setProperties(def, 'constants', ['meshWidth', 'samplePoints']);
             super(def);
-            def.fn = setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            this.fn = new MultivariateFunction(def.fn).update(true);
+            let s = this;
+            const axis1 = [0, "y", "z", "x"].indexOf(def.axis1);
+            const axis2 = [0, "y", "z", "x"].indexOf(def.axis2);
+            s.axes = [axis1, axis2];
         }
 
         draw() {
             let s = this;
             s.surfaceData = s.mathbox.mathboxView.area({
-                axes: [1, 3],
+                axes: s.axes,
                 channels: 3,
-                width: s.fn.samplePoints,
-                height: s.fn.samplePoints
+                width: s.samplePoints,
+                height: s.samplePoints
             });
+
+            /*
+
+            #TODO Someday we'll improve shading
 
             var graphColors = s.mathbox.mathboxView.area({
                 expr: function (emit, x, y, i, j, t) {
@@ -55,7 +69,7 @@ module KG {
 					var percent = (z - zMin) / (zMax - zMin);
 					emit( percent, percent, percent, 1.0 );
 				}
-			);
+			);*/
 
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
@@ -63,7 +77,7 @@ module KG {
                 fill: true,
                 lineX: true,
                 lineY: true,
-                width: 1,
+                width: s.meshWidth,
                 zIndex: 2
             });
             return s;
@@ -72,11 +86,41 @@ module KG {
         redraw() {
             let c = this;
             console.log(c);
-            c.surfaceData.set("expr", c.fn.mathboxFn());
+            c.surfaceData.set("expr", c.mathboxFn());
             c.mo.set("color", c.fill);
             c.mo.set("opacity", c.opacity);
             return c;
         }
+
+    }
+
+    export interface MathboxFunctionSurfaceDefinition extends MathboxObjectDefinition {
+        fn: MultivariateFunctionDefinition;
+    }
+
+    export class MathboxFunctionSurface extends MathboxSurface {
+
+        private fn: MultivariateFunction;
+
+        constructor(def: MathboxFunctionSurfaceDefinition) {
+            def.fn = setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            setDefaults(def, {
+                samplePoints: def.fn.samplePoints
+            });
+            super(def);
+            this.fn = new MultivariateFunction(def.fn).update(true);
+        }
+
+        mathboxFn() {
+            const s = this;
+            return function (emit, x, y) {
+                emit(y, s.fn.evaluate(x, y), x);
+            };
+        }
+
 
     }
 

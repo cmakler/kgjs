@@ -7879,24 +7879,32 @@ var KG;
             KG.setDefaults(def, {
                 fill: "#666666",
                 strokeWidth: 10,
-                opacity: 0.2
+                opacity: 0.2,
+                meshWidth: 1,
+                samplePoints: 100,
+                axis1: "x",
+                axis2: "y"
             });
+            KG.setProperties(def, 'constants', ['meshWidth', 'samplePoints']);
             _this = _super.call(this, def) || this;
-            def.fn = KG.setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            var s = _this;
+            var axis1 = [0, "y", "z", "x"].indexOf(def.axis1);
+            var axis2 = [0, "y", "z", "x"].indexOf(def.axis2);
+            s.axes = [axis1, axis2];
             return _this;
         }
         MathboxSurface.prototype.draw = function () {
             var s = this;
             s.surfaceData = s.mathbox.mathboxView.area({
-                axes: [1, 3],
+                axes: s.axes,
                 channels: 3,
-                width: s.fn.samplePoints,
-                height: s.fn.samplePoints
+                width: s.samplePoints,
+                height: s.samplePoints
             });
+            /*
+
+            #TODO Someday we'll improve shading
+
             var graphColors = s.mathbox.mathboxView.area({
                 expr: function (emit, x, y, i, j, t) {
                     if (x < 0)
@@ -7906,21 +7914,25 @@ var KG;
                 },
                 axes: [1, 3],
                 width: 64, height: 64,
-                channels: 4,
+                channels: 4, // RGBA
             });
-            graphColors.set("expr", function (emit, x, y, i, j, t) {
-                var z = x * x + y * y;
-                var zMin = 0, zMax = 200;
-                var percent = (z - zMin) / (zMax - zMin);
-                emit(percent, percent, percent, 1.0);
-            });
+
+            graphColors.set("expr",
+                function (emit, x, y, i, j, t)
+                {
+                    var z = x*x + y*y;
+                    const zMin = 0, zMax=200;
+                    var percent = (z - zMin) / (zMax - zMin);
+                    emit( percent, percent, percent, 1.0 );
+                }
+            );*/
             s.mo = s.mathbox.mathboxView.surface({
                 points: s.surfaceData,
                 shaded: true,
                 fill: true,
                 lineX: true,
                 lineY: true,
-                width: 1,
+                width: s.meshWidth,
                 zIndex: 2
             });
             return s;
@@ -7928,7 +7940,7 @@ var KG;
         MathboxSurface.prototype.redraw = function () {
             var c = this;
             console.log(c);
-            c.surfaceData.set("expr", c.fn.mathboxFn());
+            c.surfaceData.set("expr", c.mathboxFn());
             c.mo.set("color", c.fill);
             c.mo.set("opacity", c.opacity);
             return c;
@@ -7936,6 +7948,79 @@ var KG;
         return MathboxSurface;
     }(KG.MathboxObject));
     KG.MathboxSurface = MathboxSurface;
+    var MathboxFunctionSurface = /** @class */ (function (_super) {
+        __extends(MathboxFunctionSurface, _super);
+        function MathboxFunctionSurface(def) {
+            var _this = this;
+            def.fn = KG.setDefaults(def.fn, {
+                model: def.model,
+                samplePoints: 100
+            });
+            KG.setDefaults(def, {
+                samplePoints: def.fn.samplePoints
+            });
+            _this = _super.call(this, def) || this;
+            _this.fn = new KG.MultivariateFunction(def.fn).update(true);
+            return _this;
+        }
+        MathboxFunctionSurface.prototype.mathboxFn = function () {
+            var s = this;
+            return function (emit, x, y) {
+                emit(y, s.fn.evaluate(x, y), x);
+            };
+        };
+        return MathboxFunctionSurface;
+    }(MathboxSurface));
+    KG.MathboxFunctionSurface = MathboxFunctionSurface;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxPlane = /** @class */ (function (_super) {
+        __extends(MathboxPlane, _super);
+        function MathboxPlane(def) {
+            var _this = this;
+            var planeType = 'z';
+            if (def.hasOwnProperty('x')) {
+                def.axis1 = "y";
+                def.axis2 = "z";
+                planeType = "x";
+            }
+            else if (def.hasOwnProperty('y')) {
+                def.axis1 = "x";
+                def.axis2 = "z";
+                planeType = "y";
+            }
+            else {
+                def.axis1 = "x";
+                def.axis2 = "y";
+            }
+            def.samplePoints = 2;
+            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
+            _this = _super.call(this, def) || this;
+            _this.planeType = planeType;
+            return _this;
+        }
+        MathboxPlane.prototype.mathboxFn = function () {
+            var p = this;
+            if (p.planeType == "x") {
+                return function (emit, y, z) {
+                    emit(y, z, p.x);
+                };
+            }
+            else if (p.pplaneType == "y") {
+                return function (emit, x, z) {
+                    emit(p.y, z, x);
+                };
+            }
+            else {
+                return function (emit, x, y) {
+                    emit(y, p.z, x);
+                };
+            }
+        };
+        return MathboxPlane;
+    }(KG.MathboxSurface));
+    KG.MathboxPlane = MathboxPlane;
 })(KG || (KG = {}));
 var KG;
 (function (KG) {
@@ -8116,6 +8201,7 @@ var KG;
 /// <reference path="view/mathboxObjects/mathboxPoint.ts" />
 /// <reference path="view/mathboxObjects/mathboxCurve.ts" />
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
+/// <reference path="view/mathboxObjects/mathboxPlane.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 /// <reference path="view/mathboxObjects/mathboxLine.ts" />
