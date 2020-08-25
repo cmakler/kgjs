@@ -30,6 +30,8 @@ module KGAuthor {
                 longRun: 'orange',
                 profit: 'green',
                 loss: 'red',
+                ppf: 'red',
+                mrt: 'orange',
 
                 // equilibrium
                 price: 'grey',

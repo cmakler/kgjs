@@ -41,7 +41,7 @@ module KG {
             let controls_id = KG.randomString(5);
 
             controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.titleElement = controls.rootElement.append('div').style('font-size', '10pt').style('padding-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             controls.descriptionElement.style('margin-bottom', '10px');
@@ -49,7 +49,7 @@ module KG {
             if (controls.sliders.length > 0) {
                 const sliderTable = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
-                    new Slider({layer: sliderTable, param: slider.param, label: slider.label, model: controls.model})
+                    new Slider({layer: sliderTable, param: slider.param, label: slider.label, showNumber: slider.showNumber, model: controls.model})
                 });
             }
 

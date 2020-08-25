@@ -1314,14 +1314,47 @@ var KGAuthor;
                 "type": "MathboxXAxis",
                 "def": def.xAxis
             });
+            if (def.xAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": KGAuthor.multiplyDefs(def.xAxis.max, 0.95),
+                        "y": KGAuthor.multiplyDefs(def.yAxis.max, -0.02),
+                        "z": KGAuthor.multiplyDefs(def.zAxis.max, 0.02),
+                        "text": def.xAxis.title
+                    }
+                });
+            }
             def.objects.push({
                 "type": "MathboxYAxis",
                 "def": def.yAxis
             });
+            if (def.yAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": KGAuthor.multiplyDefs(def.xAxis.max, -0.02),
+                        "y": KGAuthor.multiplyDefs(def.yAxis.max, 0.95),
+                        "z": KGAuthor.multiplyDefs(def.zAxis.max, 0.02),
+                        "text": def.yAxis.title
+                    }
+                });
+            }
             def.objects.push({
                 "type": "MathboxZAxis",
                 "def": def.zAxis
             });
+            if (def.zAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": KGAuthor.multiplyDefs(def.xAxis.max, -0.02),
+                        "y": KGAuthor.multiplyDefs(def.yAxis.max, -0.02),
+                        "z": KGAuthor.multiplyDefs(def.zAxis.max, 0.98),
+                        "text": def.zAxis.title
+                    }
+                });
+            }
             delete def.zAxis;
             def.xAxis = { min: 0, max: 1 };
             def.yAxis = { min: 0, max: 1 };
@@ -2718,6 +2751,8 @@ var KGAuthor;
                 longRun: 'orange',
                 profit: 'green',
                 loss: 'red',
+                ppf: 'red',
+                mrt: 'orange',
                 // equilibrium
                 price: 'grey',
                 paretoLens: "'#ffff99'",
@@ -6919,10 +6954,11 @@ var KG;
             var _this = this;
             // establish property defaults
             KG.setDefaults(def, {
-                noAxis: false
+                noAxis: false,
+                showNumber: true
             });
             // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['noAxis']);
+            KG.setProperties(def, 'constants', ['noAxis', 'showNumber']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -6943,26 +6979,31 @@ var KG;
                 .style('padding', '0px')
                 .style('margin', '0px')
                 .style('border', 'none');
-            slider.numberInput = numberCell.append('input')
-                .attr('type', 'number')
-                .attr('min', param.min)
-                .attr('max', param.max)
-                .attr('step', param.round)
-                .style('font-size', '14pt')
-                .style('border', 'none')
-                .style('background', 'none')
-                .style('font-family', 'KaTeX_Main')
-                .style('margin', '0px')
-                .style('padding-top', '0px')
-                .style('padding-bottom', '0px')
-                .style('width', '100%');
-            slider.numberInput.on("blur", inputUpdate);
-            slider.numberInput.on("click", inputUpdate);
-            slider.numberInput.on("keyup", function () {
-                if (event['keyCode'] == 13) {
-                    slider.model.updateParam(slider.param, +this.value);
-                }
-            });
+            if (slider.showNumber) {
+                slider.numberInput = numberCell.append('input')
+                    .attr('type', 'number')
+                    .attr('min', param.min)
+                    .attr('max', param.max)
+                    .attr('step', param.round)
+                    .style('font-size', '14pt')
+                    .style('border', 'none')
+                    .style('background', 'none')
+                    .style('font-family', 'KaTeX_Main')
+                    .style('margin', '0px')
+                    .style('padding-top', '0px')
+                    .style('padding-bottom', '0px')
+                    .style('width', '100%');
+                slider.numberInput.on("blur", inputUpdate);
+                slider.numberInput.on("click", inputUpdate);
+                slider.numberInput.on("keyup", function () {
+                    if (event['keyCode'] == 13) {
+                        slider.model.updateParam(slider.param, +this.value);
+                    }
+                });
+            }
+            else {
+                numberCell.style('width', '10px');
+            }
             var rangeCell = slider.rootElement.append('td')
                 .style('padding', '0px')
                 .style('margin', '0px')
@@ -6981,8 +7022,13 @@ var KG;
         // update properties
         Slider.prototype.redraw = function () {
             var slider = this;
-            katex.render(slider.label + " = ", slider.labelElement.node());
-            slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+            if (slider.showNumber) {
+                katex.render(slider.label + " = ", slider.labelElement.node());
+                slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
+            }
+            else {
+                katex.render(slider.label, slider.labelElement.node());
+            }
             slider.rangeInput.property('value', slider.value);
             return slider;
         };
@@ -7083,14 +7129,14 @@ var KG;
             var controls = this;
             var controls_id = KG.randomString(5);
             controls.rootElement = layer.append('div').style('padding-top', '10px').style('padding-bottom', '10px');
-            controls.titleElement = controls.rootElement.append('p').style('width', '100%').style('font-size', '10pt').style('margin-bottom', 10);
+            controls.titleElement = controls.rootElement.append('div').style('font-size', '10pt').style('padding-bottom', 10);
             controls.rootElement.append('hr');
             controls.descriptionElement = controls.rootElement.append('div');
             controls.descriptionElement.style('margin-bottom', '10px');
             if (controls.sliders.length > 0) {
                 var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
-                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, model: controls.model });
+                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, showNumber: slider.showNumber, model: controls.model });
                 });
             }
             controls.radios.forEach(function (radio) {
@@ -7370,8 +7416,8 @@ var KG;
                 throw "WebGL not supported";
             mb.three = mb.mathbox.three;
             mb.three.renderer.setClearColor(new THREE.Color(mb.clearColor), 1.0);
-            mb.mathbox.camera({ proxy: true, position: [-3, 1, 1], eulerOrder: "yzx" });
-            mb.mathboxView = mb.mathbox.cartesian({ scale: [0.9, 0.9, 0.9] });
+            mb.mathbox.camera({ proxy: true, position: [-5, 0.5, 0.8], eulerOrder: "yzx" });
+            mb.mathboxView = mb.mathbox.cartesian({ scale: [1.6, 1.6, 1.6] });
             mb.mathboxView.grid({ axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3 });
             mb.xAxis.redraw();
             mb.yAxis.redraw();
@@ -7629,7 +7675,6 @@ var KG;
         }
         MathboxAxis.prototype.redraw = function () {
             var a = this;
-            console.log(a);
             var view = a.mathbox.mathboxView;
             if (view == undefined) {
                 return a;
@@ -7903,7 +7948,7 @@ var KG;
                     emit(y, z, p.x);
                 };
             }
-            else if (p.pplaneType == "y") {
+            else if (p.planeType == "y") {
                 return function (emit, x, z) {
                     emit(p.y, z, x);
                 };

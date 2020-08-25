@@ -34,7 +34,6 @@ module KG {
 
         redraw() {
             const a = this;
-            console.log(a);
             let view = a.mathbox.mathboxView;
             if(view == undefined) {
                 return a;

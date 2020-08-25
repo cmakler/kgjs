@@ -11,14 +11,47 @@ module KGAuthor {
                 "type": "MathboxXAxis",
                 "def": def.xAxis
             });
+            if (def.xAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": multiplyDefs(def.xAxis.max, 0.95),
+                        "y": multiplyDefs(def.yAxis.max, -0.02),
+                        "z": multiplyDefs(def.zAxis.max, 0.02),
+                        "text": def.xAxis.title
+                    }
+                });
+            }
             def.objects.push({
                 "type": "MathboxYAxis",
                 "def": def.yAxis
             });
+            if (def.yAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": multiplyDefs(def.xAxis.max, -0.02),
+                        "y": multiplyDefs(def.yAxis.max, 0.95),
+                        "z": multiplyDefs(def.zAxis.max, 0.02),
+                        "text": def.yAxis.title
+                    }
+                });
+            }
             def.objects.push({
                 "type": "MathboxZAxis",
                 "def": def.zAxis
             });
+            if (def.zAxis.hasOwnProperty('title')) {
+                def.objects.push({
+                    "type": "MathboxLabel",
+                    "def": {
+                        "x": multiplyDefs(def.xAxis.max, -0.02),
+                        "y": multiplyDefs(def.yAxis.max, -0.02),
+                        "z": multiplyDefs(def.zAxis.max, 0.98),
+                        "text": def.zAxis.title
+                    }
+                });
+            }
             delete def.zAxis;
             def.xAxis = {min: 0, max: 1};
             def.yAxis = {min: 0, max: 1};

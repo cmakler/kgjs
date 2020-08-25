@@ -42,7 +42,7 @@ module KG {
                 return function (emit, y, z) {
                     emit(y, z, p.x);
                 };
-            } else if (p.pplaneType == "y") {
+            } else if (p.planeType == "y") {
                 return function (emit, x, z) {
                     emit(p.y, z, x);
                 };

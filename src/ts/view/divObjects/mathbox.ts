@@ -59,8 +59,8 @@ module KG {
 
             mb.three = mb.mathbox.three;
             mb.three.renderer.setClearColor(new THREE.Color(mb.clearColor), 1.0);
-            mb.mathbox.camera({proxy: true, position: [-3, 1, 1], eulerOrder: "yzx"});
-            mb.mathboxView = mb.mathbox.cartesian({scale: [0.9, 0.9, 0.9]});
+            mb.mathbox.camera({proxy: true, position: [-5,0.5,0.8], eulerOrder: "yzx"});
+            mb.mathboxView = mb.mathbox.cartesian({scale: [1.6,1.6,1.6]});
             mb.mathboxView.grid({axes: [1, 3], width: 2, divideX: 10, divideY: 10, opacity: 0.3});
             mb.xAxis.redraw();
             mb.yAxis.redraw();
