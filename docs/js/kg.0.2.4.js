@@ -1031,6 +1031,43 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var RectanglePlusTwoSquaresPlusSidebar = /** @class */ (function (_super) {
+        __extends(RectanglePlusTwoSquaresPlusSidebar, _super);
+        function RectanglePlusTwoSquaresPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var topGraph = def['topGraph'], bottomLeftGraph = def['bottomLeftGraph'], bottomRightGraph = def['bottomRightGraph'], sidebarDef = def['sidebar'];
+            topGraph.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": 0.8,
+                "height": 0.4
+            };
+            bottomLeftGraph.position = {
+                "x": 0.15,
+                "y": 0.6,
+                "width": 0.35,
+                "height": 0.35
+            };
+            bottomRightGraph.position = {
+                "x": 0.6,
+                "y": 0.6,
+                "width": 0.35,
+                "height": 0.35
+            };
+            l.subObjects.push(new KGAuthor.Graph(topGraph));
+            l.subObjects.push(new KGAuthor.Graph(bottomLeftGraph));
+            l.subObjects.push(new KGAuthor.Graph(bottomRightGraph));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return RectanglePlusTwoSquaresPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.RectanglePlusTwoSquaresPlusSidebar = RectanglePlusTwoSquaresPlusSidebar;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var TwoVerticalGraphs = /** @class */ (function (_super) {
         __extends(TwoVerticalGraphs, _super);
         function TwoVerticalGraphs(def) {
@@ -2961,7 +2998,7 @@ var KGAuthor;
         function EdgeworthBoxPlusUPF(def) {
             var _this = _super.call(this, def) || this;
             var l = _this;
-            var agentA = def['agentA'], agentB = def['agentB'], graph1 = def['graph'], graph2 = def['graph2'], sidebarDef = def['sidebar'];
+            var agentA = def['agentA'], agentB = def['agentB'], graph = def['graph'], sidebarDef = def['sidebar'];
             var width = 0.738, height = 0.9;
             if (def.totalGood1 > def.totalGood2) {
                 height = def.totalGood2 * height / def.totalGood1;
@@ -2981,14 +3018,8 @@ var KGAuthor;
                 "width": -1 * width,
                 "height": -1 * height
             };
-            graph1.position = {
+            graph.position = {
                 "x": 0.1,
-                "y": height + 0.15,
-                "width": 0.35,
-                "height": 0.85 - height
-            };
-            graph2.position = {
-                "x": 0.6,
                 "y": height + 0.15,
                 "width": 0.35,
                 "height": 0.85 - height
@@ -3654,7 +3685,7 @@ var KGAuthor;
                 var subObjects = bl.subObjects;
                 var xInterceptPointDef = {
                     coordinates: ["calcs." + bl.name + ".xIntercept", 0],
-                    fill: def.stroke,
+                    color: def.stroke,
                     r: 4
                 };
                 if (def.draggable && typeof (def.p1) == 'string') {
@@ -3672,7 +3703,7 @@ var KGAuthor;
                 bl.xInterceptPoint = new KGAuthor.Point(xInterceptPointDef, graph);
                 var yInterceptPointDef = {
                     coordinates: [0, "calcs." + bl.name + ".yIntercept"],
-                    fill: def.stroke,
+                    color: def.stroke,
                     r: 4
                 };
                 if (def.draggable && typeof (def.p2) == 'string') {
@@ -4900,6 +4931,7 @@ var KGAuthor;
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
+/// <reference path="layouts/rectanglePlusTwoSquares.ts"/>
 /// <reference path="layouts/twoVerticalGraphs.ts"/>
 /// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
 /// <reference path="layouts/fourGraphs.ts"/>

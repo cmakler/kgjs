@@ -141,7 +141,7 @@ module KGAuthor {
 
                 let xInterceptPointDef = {
                     coordinates: [`calcs.${bl.name}.xIntercept`, 0],
-                    fill: def.stroke,
+                    color: def.stroke,
                     r: 4
                 };
 
@@ -163,7 +163,7 @@ module KGAuthor {
 
                 let yInterceptPointDef = {
                     coordinates: [0, `calcs.${bl.name}.yIntercept`],
-                    fill: def.stroke,
+                    color: def.stroke,
                     r: 4
                 };
 

@@ -10,6 +10,7 @@
 /// <reference path="layouts/oneGraph.ts"/>
 /// <reference path="layouts/twoHorizontalGraphs.ts"/>
 /// <reference path="layouts/threeHorizontalGraphs.ts"/>
+/// <reference path="layouts/rectanglePlusTwoSquares.ts"/>
 /// <reference path="layouts/twoVerticalGraphs.ts"/>
 /// <reference path="layouts/squarePlusTwoVerticalGraphs.ts"/>
 /// <reference path="layouts/fourGraphs.ts"/>

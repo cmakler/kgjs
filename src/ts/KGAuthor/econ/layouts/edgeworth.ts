@@ -122,8 +122,7 @@ module KGAuthor {
             const l = this;
             let agentA = def['agentA'],
                 agentB = def['agentB'],
-                graph1 = def['graph'],
-                graph2 = def['graph2'],
+                graph = def['graph'],
                 sidebarDef = def['sidebar'];
 
             let width = 0.738, height = 0.9;
@@ -150,15 +149,8 @@ module KGAuthor {
                 "height": -1*height
             };
 
-            graph1.position = {
+            graph.position = {
                 "x": 0.1,
-                "y": height+0.15,
-                "width": 0.35,
-                "height": 0.85-height
-            };
-
-            graph2.position = {
-                "x": 0.6,
                 "y": height+0.15,
                 "width": 0.35,
                 "height": 0.85-height
