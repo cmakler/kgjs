@@ -2841,22 +2841,24 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var agentA = def['agentA'], agentB = def['agentB'], sidebarDef = def['sidebar'];
-            var width = 0.738, height = 0.9;
-            if (def.totalGood1 > def.totalGood2) {
-                height = def.totalGood2 * height / def.totalGood1;
+            var width = 0.738, height = 0.8;
+            /* if(def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2*height/def.totalGood1;
             }
-            if (def.totalGood2 > def.totalGood1) {
-                height = def.totalGood1 * width / def.totalGood2;
-            }
+
+            if(def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1*width/def.totalGood2;
+            } */
+            _this.aspectRatio = 2;
             agentA.position = {
                 "x": 0.15,
-                "y": 0.05,
+                "y": 0.1,
                 "width": width,
                 "height": height
             };
             agentB.position = {
                 "x": 0.15 + width,
-                "y": 0.05 + height,
+                "y": 0.1 + height,
                 "width": -1 * width,
                 "height": -1 * height
             };
@@ -2870,7 +2872,7 @@ var KGAuthor;
             return _this;
         }
         return EdgeworthBoxPlusSidebar;
-    }(KGAuthor.SquareLayout));
+    }(KGAuthor.Layout));
     KGAuthor.EdgeworthBoxPlusSidebar = EdgeworthBoxPlusSidebar;
     var EdgeworthBoxPlusTwoGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(EdgeworthBoxPlusTwoGraphsPlusSidebar, _super);
@@ -2923,9 +2925,9 @@ var KGAuthor;
         return EdgeworthBoxPlusTwoGraphsPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.EdgeworthBoxPlusTwoGraphsPlusSidebar = EdgeworthBoxPlusTwoGraphsPlusSidebar;
-    var EdgeworthBoxPlusUPF = /** @class */ (function (_super) {
-        __extends(EdgeworthBoxPlusUPF, _super);
-        function EdgeworthBoxPlusUPF(def) {
+    var EdgeworthBoxAboveOneGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(EdgeworthBoxAboveOneGraphPlusSidebar, _super);
+        function EdgeworthBoxAboveOneGraphPlusSidebar(def) {
             var _this = _super.call(this, def) || this;
             var l = _this;
             var agentA = def['agentA'], agentB = def['agentB'], graph = def['graph'], sidebarDef = def['sidebar'];
@@ -2949,9 +2951,9 @@ var KGAuthor;
                 "height": -1 * height
             };
             graph.position = {
-                "x": 0.1,
+                "x": 0.15,
                 "y": height + 0.15,
-                "width": 0.35,
+                "width": width,
                 "height": 0.85 - height
             };
             agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
@@ -2964,9 +2966,9 @@ var KGAuthor;
             l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
             return _this;
         }
-        return EdgeworthBoxPlusUPF;
-    }(KGAuthor.WideRectangleLayout));
-    KGAuthor.EdgeworthBoxPlusUPF = EdgeworthBoxPlusUPF;
+        return EdgeworthBoxAboveOneGraphPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.EdgeworthBoxAboveOneGraphPlusSidebar = EdgeworthBoxAboveOneGraphPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -3895,7 +3897,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 coordinates: coords,
                 label: { text: 'X^*' },
-                color: bl.color,
+                color: 'demand',
                 droplines: {
                     vertical: "x_1^*",
                     horizontal: "x_2^*"

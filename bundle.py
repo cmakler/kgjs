@@ -67,7 +67,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.4.js",
+        "name": "kg.0.2.5.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg-lib.js",
@@ -75,7 +75,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg3d.0.2.4.js",
+        "name": "kg3d.0.2.5.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg3d-lib.js",
@@ -112,7 +112,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.4.css",
+        "name": "kg.0.2.5.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",
@@ -120,7 +120,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.2.4.css",
+        "name": "kg-tufte.0.2.5.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",

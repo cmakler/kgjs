@@ -2,7 +2,7 @@
 
 module KGAuthor {
 
-    export class EdgeworthBoxPlusSidebar extends SquareLayout {
+    export class EdgeworthBoxPlusSidebar extends Layout {
 
         constructor(def) {
             super(def);
@@ -12,26 +12,28 @@ module KGAuthor {
                 agentB = def['agentB'],
                 sidebarDef = def['sidebar'];
 
-            let width = 0.738, height = 0.9;
+            let width = 0.738, height = 0.8;
 
-            if(def.totalGood1 > def.totalGood2) {
+            /* if(def.totalGood1 > def.totalGood2) {
                 height = def.totalGood2*height/def.totalGood1;
             }
 
             if(def.totalGood2 > def.totalGood1) {
                 height = def.totalGood1*width/def.totalGood2;
-            }
+            } */
+
+            this.aspectRatio = 2;
 
             agentA.position = {
                 "x": 0.15,
-                "y": 0.05,
+                "y": 0.1,
                 "width": width,
                 "height": height
             };
 
             agentB.position = {
                 "x": 0.15 + width,
-                "y": 0.05 + height,
+                "y": 0.1 + height,
                 "width": -1*width,
                 "height": -1*height
             };
@@ -114,7 +116,7 @@ module KGAuthor {
 
     }
 
-    export class EdgeworthBoxPlusUPF extends WideRectangleLayout {
+    export class EdgeworthBoxAboveOneGraphPlusSidebar extends SquareLayout {
 
         constructor(def) {
             super(def);
@@ -150,9 +152,9 @@ module KGAuthor {
             };
 
             graph.position = {
-                "x": 0.1,
-                "y": height+0.15,
-                "width": 0.35,
+                "x": 0.15,
+                "y": height + 0.15,
+                "width": width,
                 "height": 0.85-height
             };
 

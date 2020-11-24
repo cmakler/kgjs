@@ -3029,9 +3029,9 @@ var KGAuthor;
         return EdgeworthBoxPlusTwoGraphsPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.EdgeworthBoxPlusTwoGraphsPlusSidebar = EdgeworthBoxPlusTwoGraphsPlusSidebar;
-    var EdgeworthBoxPlusUPF = /** @class */ (function (_super) {
-        __extends(EdgeworthBoxPlusUPF, _super);
-        function EdgeworthBoxPlusUPF(def) {
+    var EdgeworthBoxAboveOneGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(EdgeworthBoxAboveOneGraphPlusSidebar, _super);
+        function EdgeworthBoxAboveOneGraphPlusSidebar(def) {
             var _this = _super.call(this, def) || this;
             var l = _this;
             var agentA = def['agentA'], agentB = def['agentB'], graph = def['graph'], sidebarDef = def['sidebar'];
@@ -3055,9 +3055,9 @@ var KGAuthor;
                 "height": -1 * height
             };
             graph.position = {
-                "x": 0.1,
+                "x": 0.15,
                 "y": height + 0.15,
-                "width": 0.35,
+                "width": width,
                 "height": 0.85 - height
             };
             agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
@@ -3070,9 +3070,9 @@ var KGAuthor;
             l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
             return _this;
         }
-        return EdgeworthBoxPlusUPF;
-    }(KGAuthor.WideRectangleLayout));
-    KGAuthor.EdgeworthBoxPlusUPF = EdgeworthBoxPlusUPF;
+        return EdgeworthBoxAboveOneGraphPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.EdgeworthBoxAboveOneGraphPlusSidebar = EdgeworthBoxAboveOneGraphPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -4001,7 +4001,7 @@ var KGAuthor;
             KG.setDefaults(def, {
                 coordinates: coords,
                 label: { text: 'X^*' },
-                color: bl.color,
+                color: 'demand',
                 droplines: {
                     vertical: "x_1^*",
                     horizontal: "x_2^*"

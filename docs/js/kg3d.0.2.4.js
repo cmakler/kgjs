@@ -2945,22 +2945,24 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var agentA = def['agentA'], agentB = def['agentB'], sidebarDef = def['sidebar'];
-            var width = 0.738, height = 0.9;
-            if (def.totalGood1 > def.totalGood2) {
-                height = def.totalGood2 * height / def.totalGood1;
+            var width = 0.738, height = 0.8;
+            /* if(def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2*height/def.totalGood1;
             }
-            if (def.totalGood2 > def.totalGood1) {
-                height = def.totalGood1 * width / def.totalGood2;
-            }
+
+            if(def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1*width/def.totalGood2;
+            } */
+            _this.aspectRatio = 2;
             agentA.position = {
                 "x": 0.15,
-                "y": 0.05,
+                "y": 0.1,
                 "width": width,
                 "height": height
             };
             agentB.position = {
                 "x": 0.15 + width,
-                "y": 0.05 + height,
+                "y": 0.1 + height,
                 "width": -1 * width,
                 "height": -1 * height
             };
@@ -2974,7 +2976,7 @@ var KGAuthor;
             return _this;
         }
         return EdgeworthBoxPlusSidebar;
-    }(KGAuthor.SquareLayout));
+    }(KGAuthor.Layout));
     KGAuthor.EdgeworthBoxPlusSidebar = EdgeworthBoxPlusSidebar;
     var EdgeworthBoxPlusTwoGraphsPlusSidebar = /** @class */ (function (_super) {
         __extends(EdgeworthBoxPlusTwoGraphsPlusSidebar, _super);

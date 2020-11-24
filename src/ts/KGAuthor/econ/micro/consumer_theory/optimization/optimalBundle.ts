@@ -22,7 +22,7 @@ module KGAuthor {
             KG.setDefaults(def, {
                 coordinates: coords,
                 label: {text: 'X^*'},
-                color: bl.color,
+                color: 'demand',
                 droplines: {
                     vertical: "x_1^*",
                     horizontal: "x_2^*"
