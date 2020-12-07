@@ -40,10 +40,10 @@ module KG {
             }
             view.set("range", [[a.mathbox.yAxis.min, a.mathbox.yAxis.max], [a.mathbox.zAxis.min, a.mathbox.zAxis.max], [a.mathbox.xAxis.min, a.mathbox.xAxis.max]]);
             let axis = view.axis({axis: a.axisNumber, width: 8, detail: 40, color: "black"});
-            let scale = view.scale({axis: a.axisNumber, divide: a.ticks, nice: true, zero: true});
-            let ticks = view.ticks({width: 5, size: 15, color: "black", zBias: 2});
-            let format = view.format({digits: 2, font: "KaTeX_Main", style: "normal", source: scale});
-            let ticklabel = view.label({color: "black", zIndex: 1, offset: [0, 0], points: scale, text: format});
+            let scale = view.scale({axis: a.axisNumber, divide: a.ticks, nice: false, zero: true});
+            let ticks = view.ticks({width: 5, size: 5, color: "gray", zBias: 2});
+            let format = view.format({digits: 2, classes: ["tick"], style: "normal", source: scale});
+            let ticklabel = view.label({color: "gray", zIndex: 1, offset: [0, 0], points: scale, text: format, size: 10});
             return a;
         }
 

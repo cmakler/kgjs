@@ -23,4 +23,8 @@ module KGAuthor {
 
     }
 
+    export class Area3D extends MathboxArea {
+        // just another name for a 3D area
+    }
+
 }

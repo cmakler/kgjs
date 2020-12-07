@@ -41,7 +41,13 @@ module KG {
                 if(td.type.indexOf('Mathbox') < 0) {
                     td.type = 'Mathbox' + td.type;
                 }
-                mb.objects.push(new KG[td.type](td.def));
+                try {
+                    mb.objects.push(new KG[td.type](td.def));
+                }
+                catch(e) {
+                    console.log("There's no object called ",td.type);
+                }
+
             });
             mb.clearColor = mb.model.clearColor;
             //console.log('created mathbox', mb);

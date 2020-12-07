@@ -61,6 +61,11 @@ input {
     stroke: gray;
 }
 
+.tick {
+    font-size: 5pt;
+    color: red;
+}
+
 table.gameMatrix {
   border-collapse: collapse;
     width: 100%;

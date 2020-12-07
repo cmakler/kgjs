@@ -19,15 +19,6 @@ module KGAuthor {
             super(def);
             let a = this;
             a.type = 'MathboxAxis';
-            a.mb.addObject({
-                "type": "MathboxLabel",
-                "def": {
-                    "x": 50,
-                    "y": 0,
-                    "z": 0,
-                    "text": "Good 1"
-                }
-            })
         }
 
     }

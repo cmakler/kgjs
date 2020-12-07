@@ -18,7 +18,8 @@ module KGAuthor {
                         "x": multiplyDefs(def.xAxis.max, 0.95),
                         "y": multiplyDefs(def.yAxis.max, -0.02),
                         "z": multiplyDefs(def.zAxis.max, 0.02),
-                        "text": def.xAxis.title
+                        "text": def.xAxis.title,
+                        "color": "black"
                     }
                 });
             }
@@ -33,7 +34,8 @@ module KGAuthor {
                         "x": multiplyDefs(def.xAxis.max, -0.02),
                         "y": multiplyDefs(def.yAxis.max, 0.95),
                         "z": multiplyDefs(def.zAxis.max, 0.02),
-                        "text": def.yAxis.title
+                        "text": def.yAxis.title,
+                        "color": "black"
                     }
                 });
             }
@@ -48,7 +50,8 @@ module KGAuthor {
                         "x": multiplyDefs(def.xAxis.max, -0.02),
                         "y": multiplyDefs(def.yAxis.max, -0.02),
                         "z": multiplyDefs(def.zAxis.max, 0.98),
-                        "text": def.zAxis.title
+                        "text": def.zAxis.title,
+                        "color": "black"
                     }
                 });
             }

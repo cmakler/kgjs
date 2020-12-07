@@ -51,5 +51,13 @@ module KG {
 
     }
 
+    export class CurveThreeD extends MathboxCurve {
+
+        constructor(def: MathboxCurveDefinition) {
+            super(def);
+        }
+
+    }
+
 }
 
