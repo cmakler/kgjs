@@ -77,7 +77,7 @@ module KG {
 
         // create mb for mathbox
         draw(layer) {
-            console.log('creating mathbox container');
+            //console.log('creating mathbox container');
             let mb = this;
             mb.rootElement = layer.append('div').style('position', 'absolute');
             return mb;
@@ -85,7 +85,7 @@ module KG {
 
         redraw() {
             let mb = super.redraw();
-            console.log('called redraw');
+            //console.log('called redraw');
             if (mb.mathbox == undefined && mb.rootElement.node().clientWidth > 10 && mb.zAxis != undefined) {
                 mb.initMathbox();
             } else {

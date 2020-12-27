@@ -9,6 +9,7 @@ module KGAuthor {
         x2?: number;
         y2?: number;
         z2?: number;
+        linestyle?: string;
     }
 
     export class MathboxLine extends MathboxObject {

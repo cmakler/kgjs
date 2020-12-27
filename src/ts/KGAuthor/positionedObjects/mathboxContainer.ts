@@ -4,7 +4,7 @@ module KGAuthor {
 
     export class MathboxContainer extends PositionedObject {
 
-        constructor(def) {
+        constructor(def:MathboxDefinition) {
             // the container, as a div, must have an x and y axis of its own.
             // so we must first push down the author's specified x, y, and z axes down to be objects
             def.objects.push({
@@ -62,6 +62,21 @@ module KGAuthor {
             const mb = this;
             def.xScaleName = mb.xScale.name;
             def.yScaleName = mb.yScale.name;
+            def.objects.forEach(function (obj) {
+                if(obj.type.indexOf('Mathbox') < 0) {
+                    obj.type = 'Mathbox' + obj.type;
+                }
+                try {
+                    const newObj = new KGAuthor[obj.type](obj.def)
+                    newObj.subObjects.forEach(function (subOb) {
+                    def.objects.push(subOb);
+                })
+                }
+                catch(e) {
+                    console.log("There's no object called ",obj.type);
+                }
+            })
+            console.log('creating mathbox')
             mb.subObjects.push(new Mathbox(def));
         }
     }

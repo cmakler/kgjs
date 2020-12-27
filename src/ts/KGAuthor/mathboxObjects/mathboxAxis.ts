@@ -6,9 +6,9 @@ module KGAuthor {
         min: any;
         max: any;
         ticks?: any;
-        width: any;
-        detail: any;
-
+        width?: any;
+        detail?: any;
+        title?: string;
     }
 
     export class MathboxAxis extends MathboxObject {

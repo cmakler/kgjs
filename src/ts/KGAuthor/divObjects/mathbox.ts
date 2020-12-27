@@ -7,6 +7,9 @@ module KGAuthor {
         yAxis: MathboxAxisDefinition;
         zAxis: MathboxAxisDefinition;
         objects: KG.TypeAndDef[];
+        xScaleName?: string;
+        yScaleName?: string;
+        zScaleName?: string;
     }
 
     export interface IMathbox {

@@ -56,7 +56,7 @@ module KG {
 
         redraw() {
             let p = this;
-            console.log(p);
+            //console.log(p);
             p.pointData.set("data", [[p.y1, p.z1, p.x1],[p.y2, p.z2, p.x2]]);
             p.mo.set("color", p.stroke);
             p.mo.set("stroke", p.lineStyle);

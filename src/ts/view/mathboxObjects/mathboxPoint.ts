@@ -47,6 +47,7 @@ module KG {
 
         redraw() {
             let p = this;
+            //console.log(p);
             p.pointData.set("data", [[p.y, p.z, p.x]]);
             p.mo.set("color", p.stroke);
             return p;

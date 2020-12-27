@@ -3,7 +3,8 @@
 module KGAuthor {
 
     export interface MathboxObjectDefinition extends AuthoringObjectDefinition {
-        mb: Mathbox;
+        mb?: Mathbox;
+        stroke?: string;
     }
 
     export class MathboxObject extends AuthoringObject {

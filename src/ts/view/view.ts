@@ -130,6 +130,8 @@ module KG {
                 data.objects.push({type: data.schema, def: {}})
             }
 
+            console.log('parsed data: ', parsedData)
+
             return KGAuthor.parse(data.objects, parsedData);
         }
 

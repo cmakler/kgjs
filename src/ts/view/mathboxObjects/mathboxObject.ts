@@ -4,6 +4,7 @@ module KG {
 
     export interface MathboxObjectDefinition extends ViewObjectDefinition {
         mathbox: Mathbox;
+        stroke?: string;
     }
 
     export interface IMathboxObject extends IViewObject {

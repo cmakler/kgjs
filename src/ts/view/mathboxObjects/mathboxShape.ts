@@ -52,7 +52,7 @@ module KG {
 
         redraw() {
             let c = this;
-            console.log(c);
+            //console.log(c);
             c.surfaceData.set("expr", c.fn.mathboxFn());
             c.mo.set("color", c.fill);
             c.mo.set("opacity", c.opacity);

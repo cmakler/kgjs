@@ -49,6 +49,9 @@
 /// <reference path="mathboxObjects/mathboxPoint.ts"/>
 /// <reference path="mathboxObjects/mathboxLine.ts"/>
 /// <reference path="mathboxObjects/mathboxArea.ts"/>
+/// <reference path="mathboxObjects/mathboxPlane.ts"/>
+/// <reference path="mathboxObjects/mathboxFunctionSurface.ts"/>
+/// <reference path="mathboxObjects/mathboxCurve.ts"/>
 
 /// <reference path="divObjects/divObject.ts"/>
 /// <reference path="divObjects/positionedDiv.ts"/>
