@@ -10,7 +10,7 @@ module KGAuthor {
                 utility: 'purple',
                 mrs: 'blue',
                 dispreferred: 'red',
-                preferred: 'purple',
+                preferred: 'green',
                 offer: 'blue',
                 incomeOffer: 'orange',
                 demand: 'blue',

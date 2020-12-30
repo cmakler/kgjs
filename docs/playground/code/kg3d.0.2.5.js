@@ -1723,7 +1723,12 @@ var KGAuthor;
     var Axis = /** @class */ (function (_super) {
         __extends(Axis, _super);
         function Axis(def, graph) {
-            var _this = _super.call(this, def, graph) || this;
+            var _this = this;
+            KG.setDefaults(def, {
+                yPixelOffset: 40,
+                xPixelOffset: 50
+            });
+            _this = _super.call(this, def, graph) || this;
             var a = _this;
             a.type = 'Axis';
             a.layer = 2;
@@ -1733,7 +1738,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: KGAuthor.averageDefs(graph.xScale.min, graph.xScale.max),
                         y: graph.yScale.min,
-                        yPixelOffset: -40
+                        yPixelOffset: -1 * def.yPixelOffset
                     }, graph));
                 }
                 else if (def.orient == 'left') {
@@ -1741,7 +1746,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: -50,
+                        xPixelOffset: -1 * def.xPixelOffset,
                         rotate: 90
                     }, graph));
                 }
@@ -1750,7 +1755,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: KGAuthor.averageDefs(graph.xScale.min, graph.xScale.max),
                         y: graph.yScale.min,
-                        yPixelOffset: 40
+                        yPixelOffset: def.yPixelOffset
                     }, graph));
                 }
                 else {
@@ -1758,7 +1763,7 @@ var KGAuthor;
                         text: "\\text{" + def.title + "}",
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
-                        xPixelOffset: 50,
+                        xPixelOffset: def.xPixelOffset,
                         rotate: 270
                     }, graph));
                 }
@@ -2973,7 +2978,7 @@ var KGAuthor;
                 utility: 'purple',
                 mrs: 'blue',
                 dispreferred: 'red',
-                preferred: 'purple',
+                preferred: 'green',
                 offer: 'blue',
                 incomeOffer: 'orange',
                 demand: 'blue',
@@ -3999,7 +4004,7 @@ var KGAuthor;
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     var preferredDef = KGAuthor.copyJSON(def);
-                    preferredDef.fill = def.color || 'colors.preferred';
+                    preferredDef.fill = def.preferredColor || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }
@@ -8319,6 +8324,7 @@ var KG;
                 lineStyle: "solid"
             });
             KG.setProperties(def, 'updatables', ['x1', 'y1', 'z1', 'x2', 'y2', 'z2']);
+            KG.setProperties(def, 'constants', ['start', 'end']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -8341,6 +8347,8 @@ var KG;
             p.mo.set("color", p.stroke);
             p.mo.set("stroke", p.lineStyle);
             p.mo.set("width", p.strokeWidth);
+            p.mo.set("start", p.start);
+            p.mo.set("end", p.end);
             return p;
         };
         return MathboxLine;

@@ -10,6 +10,8 @@ module KG {
         x2: any;
         y2: any;
         z2: any;
+        start?: any;
+        end?: any;
     }
 
     export class MathboxLine extends MathboxObject {
@@ -21,6 +23,8 @@ module KG {
         public x2: number;
         public y2: number;
         public z2: number;
+        public start: boolean;
+        public end: boolean;
 
         constructor(def: MathboxPointDefinition) {
 
@@ -35,7 +39,7 @@ module KG {
             });
 
             setProperties(def, 'updatables', ['x1', 'y1', 'z1', 'x2', 'y2', 'z2']);
-
+            setProperties(def, 'constants', ['start', 'end']);
             super(def);
 
         }
@@ -61,6 +65,8 @@ module KG {
             p.mo.set("color", p.stroke);
             p.mo.set("stroke", p.lineStyle);
             p.mo.set("width", p.strokeWidth);
+            p.mo.set("start", p.start);
+            p.mo.set("end", p.end);
             return p;
         }
 

@@ -18,7 +18,9 @@ module KGAuthor {
     export interface IndifferenceCurveDefinition extends CurveDefinition {
         utilityFunction?: KG.TypeAndDef,
         showPreferred?: string;
+        preferredColor?: string;
         showDispreferred?: string;
+        dispreferredColor?: string;
         inMap?: boolean;
         showMapLevels?: boolean;
         level: string | number;
@@ -82,7 +84,7 @@ module KGAuthor {
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     let preferredDef = copyJSON(def);
-                    preferredDef.fill = def.color || 'colors.preferred';
+                    preferredDef.fill = def.preferredColor || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }

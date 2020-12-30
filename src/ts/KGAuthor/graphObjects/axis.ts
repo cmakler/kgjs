@@ -5,6 +5,10 @@ module KGAuthor {
     export class Axis extends GraphObject {
 
         constructor(def, graph) {
+            KG.setDefaults(def, {
+                yPixelOffset: 40,
+                xPixelOffset: 50
+            })
             super(def, graph);
             let a = this;
             a.type = 'Axis';
@@ -16,7 +20,7 @@ module KGAuthor {
                         text: `\\text{${def.title}}`,
                         x: averageDefs(graph.xScale.min,graph.xScale.max),
                         y: graph.yScale.min,
-                        yPixelOffset: -40
+                        yPixelOffset: -1*def.yPixelOffset
                     }, graph))
                 }
 
@@ -25,7 +29,7 @@ module KGAuthor {
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
-                        xPixelOffset: -50,
+                        xPixelOffset: -1*def.xPixelOffset,
                         rotate: 90
                     }, graph))
                 }
@@ -34,14 +38,14 @@ module KGAuthor {
                         text: `\\text{${def.title}}`,
                         x: averageDefs(graph.xScale.min,graph.xScale.max),
                         y: graph.yScale.min,
-                        yPixelOffset: 40
+                        yPixelOffset: def.yPixelOffset
                     }, graph))
                 } else {
                     a.subObjects.push(new Label({
                         text: `\\text{${def.title}}`,
                         x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
-                        xPixelOffset: 50,
+                        xPixelOffset: def.xPixelOffset,
                         rotate: 270
                     }, graph));
                 }
