@@ -4,19 +4,16 @@
 
 module KG {
 
-    export interface MathboxSurfaceDefinition extends MathboxObjectDefinition {
+    export interface MathboxDataSurfaceDefinition extends MathboxSurfaceDefinition {
         meshWidth?: number;
         axis1?: string;
         axis2?: string;
         samplePoints?: number;
     }
 
-    export class MathboxSurface extends MathboxObject {
+    export class MathboxDataSurface extends MathboxSurface {
 
-        public surfaceData;
-        public meshWidth;
-        public samplePoints;
-        public axes;
+        public dataPoints
 
         constructor(def: MathboxSurfaceDefinition) {
             setDefaults(def, {
@@ -44,8 +41,6 @@ module KG {
                 width: s.samplePoints,
                 height: s.samplePoints
             });
-
-            console.log('surface data: ', s.surfaceData);
 
             /*
 
@@ -95,36 +90,4 @@ module KG {
         }
 
     }
-
-    export interface MathboxFunctionSurfaceDefinition extends MathboxObjectDefinition {
-        fn: MultivariateFunctionDefinition;
-    }
-
-    export class MathboxFunctionSurface extends MathboxSurface {
-
-        private fn: MultivariateFunction;
-
-        constructor(def: MathboxFunctionSurfaceDefinition) {
-            def.fn = setDefaults(def.fn, {
-                model: def.model,
-                samplePoints: 100
-            });
-            setDefaults(def, {
-                samplePoints: def.fn.samplePoints
-            });
-            super(def);
-            this.fn = new MultivariateFunction(def.fn).update(true);
-        }
-
-        mathboxFn() {
-            const s = this;
-            return function (emit, x, y) {
-                emit(y, s.fn.evaluate(x, y), x);
-            };
-        }
-
-
-    }
-
 }
-

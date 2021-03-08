@@ -43,5 +43,46 @@ module KGAuthor {
 
     }
 
+    export class RectangleBelowTwoSquaresPlusSidebar extends SquareLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let bottomGraph = def['bottomGraph'],
+                topLeftGraph = def['topLeftGraph'],
+                topRightGraph = def['topRightGraph'],
+                sidebarDef = def['sidebar'];
+
+            bottomGraph.position = {
+                "x": 0.15,
+                "y": 0.55,
+                "width": 0.8,
+                "height": 0.4
+            };
+
+            topLeftGraph.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": 0.35,
+                "height": 0.35
+            };
+
+            topRightGraph.position = {
+                "x": 0.6,
+                "y": 0.05,
+                "width": 0.35,
+                "height": 0.35
+            };
+
+            l.subObjects.push(new Graph(bottomGraph));
+            l.subObjects.push(new Graph(topLeftGraph));
+            l.subObjects.push(new Graph(topRightGraph));
+            l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+
+    }
+
 
 }

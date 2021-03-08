@@ -1098,6 +1098,39 @@ var KGAuthor;
         return RectanglePlusTwoSquaresPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.RectanglePlusTwoSquaresPlusSidebar = RectanglePlusTwoSquaresPlusSidebar;
+    var RectangleBelowTwoSquaresPlusSidebar = /** @class */ (function (_super) {
+        __extends(RectangleBelowTwoSquaresPlusSidebar, _super);
+        function RectangleBelowTwoSquaresPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var bottomGraph = def['bottomGraph'], topLeftGraph = def['topLeftGraph'], topRightGraph = def['topRightGraph'], sidebarDef = def['sidebar'];
+            bottomGraph.position = {
+                "x": 0.15,
+                "y": 0.55,
+                "width": 0.8,
+                "height": 0.4
+            };
+            topLeftGraph.position = {
+                "x": 0.15,
+                "y": 0.05,
+                "width": 0.35,
+                "height": 0.35
+            };
+            topRightGraph.position = {
+                "x": 0.6,
+                "y": 0.05,
+                "width": 0.35,
+                "height": 0.35
+            };
+            l.subObjects.push(new KGAuthor.Graph(bottomGraph));
+            l.subObjects.push(new KGAuthor.Graph(topLeftGraph));
+            l.subObjects.push(new KGAuthor.Graph(topRightGraph));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return RectangleBelowTwoSquaresPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.RectangleBelowTwoSquaresPlusSidebar = RectangleBelowTwoSquaresPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2605,6 +2638,39 @@ var KGAuthor;
         return MathboxAxis;
     }(KGAuthor.MathboxObject));
     KGAuthor.MathboxAxis = MathboxAxis;
+    var MathboxXAxis = /** @class */ (function (_super) {
+        __extends(MathboxXAxis, _super);
+        function MathboxXAxis(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxXAxis';
+            return _this;
+        }
+        return MathboxXAxis;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxXAxis = MathboxXAxis;
+    var MathboxYAxis = /** @class */ (function (_super) {
+        __extends(MathboxYAxis, _super);
+        function MathboxYAxis(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxYAxis';
+            return _this;
+        }
+        return MathboxYAxis;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxYAxis = MathboxYAxis;
+    var MathboxZAxis = /** @class */ (function (_super) {
+        __extends(MathboxZAxis, _super);
+        function MathboxZAxis(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxZAxis';
+            return _this;
+        }
+        return MathboxZAxis;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxZAxis = MathboxZAxis;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2673,6 +2739,21 @@ var KGAuthor;
         return MathboxLine;
     }(KGAuthor.MathboxObject));
     KGAuthor.MathboxLine = MathboxLine;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var MathboxLabel = /** @class */ (function (_super) {
+        __extends(MathboxLabel, _super);
+        function MathboxLabel(def) {
+            var _this = _super.call(this, def) || this;
+            var a = _this;
+            a.type = 'MathboxLabel';
+            return _this;
+        }
+        return MathboxLabel;
+    }(KGAuthor.MathboxObject));
+    KGAuthor.MathboxLabel = MathboxLabel;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -3509,7 +3590,6 @@ var KGAuthor;
         }
         MinFunction.prototype.value = function (x) {
             var c = this.coefficients;
-            console.log('foo');
             return "(min((" + x[0] + ")*(" + c[0] + "),(" + x[1] + ")*(" + c[1] + ")))";
         };
         MinFunction.prototype.levelSet = function (def) {
@@ -5105,6 +5185,7 @@ var KGAuthor;
 /// <reference path="mathboxObjects/mathboxAxis.ts"/>
 /// <reference path="mathboxObjects/mathboxPoint.ts"/>
 /// <reference path="mathboxObjects/mathboxLine.ts"/>
+/// <reference path="mathboxObjects/mathboxLabel.ts"/>
 /// <reference path="mathboxObjects/mathboxArea.ts"/>
 /// <reference path="mathboxObjects/mathboxPlane.ts"/>
 /// <reference path="mathboxObjects/mathboxFunctionSurface.ts"/>
@@ -6336,8 +6417,11 @@ var KG;
             if (vo.lineStyle == 'dashed') {
                 el.style('stroke-dashArray', '10,10');
             }
-            if (vo.lineStyle == 'dotted') {
+            else if (vo.lineStyle == 'dotted') {
                 el.style('stroke-dashArray', '1,2');
+            }
+            else {
+                el.style('stroke-dashArray', '10,0');
             }
         };
         ViewObject.prototype.drawFill = function (el) {
@@ -8103,6 +8187,7 @@ var KG;
                 width: s.samplePoints,
                 height: s.samplePoints
             });
+            console.log('surface data: ', s.surfaceData);
             /*
 
             #TODO Someday we'll improve shading
@@ -8174,6 +8259,85 @@ var KG;
         return MathboxFunctionSurface;
     }(MathboxSurface));
     KG.MathboxFunctionSurface = MathboxFunctionSurface;
+})(KG || (KG = {}));
+var KG;
+(function (KG) {
+    var MathboxDataSurface = /** @class */ (function (_super) {
+        __extends(MathboxDataSurface, _super);
+        function MathboxDataSurface(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                fill: "#666666",
+                strokeWidth: 10,
+                opacity: 0.2,
+                meshWidth: 1,
+                samplePoints: 100,
+                axis1: "x",
+                axis2: "y"
+            });
+            KG.setProperties(def, 'constants', ['meshWidth', 'samplePoints']);
+            _this = _super.call(this, def) || this;
+            var s = _this;
+            var axis1 = [0, "y", "z", "x"].indexOf(def.axis1);
+            var axis2 = [0, "y", "z", "x"].indexOf(def.axis2);
+            s.axes = [axis1, axis2];
+            return _this;
+        }
+        MathboxDataSurface.prototype.draw = function () {
+            var s = this;
+            s.surfaceData = s.mathbox.mathboxView.area({
+                axes: s.axes,
+                channels: 3,
+                width: s.samplePoints,
+                height: s.samplePoints
+            });
+            /*
+
+            #TODO Someday we'll improve shading
+
+            var graphColors = s.mathbox.mathboxView.area({
+                expr: function (emit, x, y, i, j, t) {
+                    if (x < 0)
+                        emit(1.0, 0.0, 0.0, 1.0);
+                    else
+                        emit(0.0, 1.0, 0.0, 1.0);
+                },
+                axes: [1, 3],
+                width: 64, height: 64,
+                channels: 4, // RGBA
+            });
+
+            graphColors.set("expr",
+                function (emit, x, y, i, j, t)
+                {
+                    var z = x*x + y*y;
+                    const zMin = 0, zMax=200;
+                    var percent = (z - zMin) / (zMax - zMin);
+                    emit( percent, percent, percent, 1.0 );
+                }
+            );*/
+            s.mo = s.mathbox.mathboxView.surface({
+                points: s.surfaceData,
+                shaded: true,
+                fill: true,
+                lineX: true,
+                lineY: true,
+                width: s.meshWidth,
+                zIndex: 2
+            });
+            return s;
+        };
+        MathboxDataSurface.prototype.redraw = function () {
+            var c = this;
+            //console.log(c);
+            c.surfaceData.set("expr", c.mathboxFn());
+            c.mo.set("color", c.fill);
+            c.mo.set("opacity", c.opacity);
+            return c;
+        };
+        return MathboxDataSurface;
+    }(KG.MathboxSurface));
+    KG.MathboxDataSurface = MathboxDataSurface;
 })(KG || (KG = {}));
 var KG;
 (function (KG) {
@@ -8406,6 +8570,7 @@ var KG;
 /// <reference path="view/mathboxObjects/mathboxPoint.ts" />
 /// <reference path="view/mathboxObjects/mathboxCurve.ts" />
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
+/// <reference path="view/mathboxObjects/mathboxDataSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxPlane.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />

@@ -16,7 +16,6 @@ module KGAuthor {
 
         value(x) {
             const c = this.coefficients;
-            console.log('foo');
             return `(min((${x[0]})*(${c[0]}),(${x[1]})*(${c[1]})))`;
         }
 

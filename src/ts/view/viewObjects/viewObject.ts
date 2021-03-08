@@ -193,8 +193,11 @@ module KG {
             if (vo.lineStyle == 'dashed') {
                 el.style('stroke-dashArray', '10,10');
             }
-            if (vo.lineStyle == 'dotted') {
+            else if (vo.lineStyle == 'dotted') {
                 el.style('stroke-dashArray', '1,2');
+            }
+            else {
+                el.style('stroke-dashArray', '10,0');
             }
         }
 
