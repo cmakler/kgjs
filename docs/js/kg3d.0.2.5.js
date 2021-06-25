@@ -6021,8 +6021,10 @@ var KG;
                 ih.element.style("cursor", (xDrag_1 && yDrag_1) ? "move" : xDrag_1 ? "ew-resize" : "ns-resize");
             }
             if (ih.hasOwnProperty('clickListeners') && (ih.element != undefined)) {
-                ih.element.style("pointer-events", "all");
-                ih.element.style("cursor", "pointer");
+                if (ih.clickListeners.length > 0) {
+                    ih.element.style("pointer-events", "all");
+                    ih.element.style("cursor", "pointer");
+                }
             }
             return ih;
         };
@@ -6031,8 +6033,7 @@ var KG;
             handler.element = element;
             // add click listeners
             if (handler.clickListeners.length > 0) {
-                console.log('adding click event listener');
-                element.on("click", function (d, i) {
+                element.on("click", function () {
                     handler.clickListeners.forEach(function (c) { c.click(); });
                 });
             }
@@ -6162,8 +6163,8 @@ var KG;
             // create the SVG element for the view
             if (!parsedData.nosvg) {
                 view.svg = view.svgContainerDiv.append('svg')
-                    .style('overflow', 'visible');
-                //.style('pointer-events', 'none');
+                    .style('overflow', 'visible')
+                    .style('pointer-events', 'none');
             }
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
@@ -6407,7 +6408,6 @@ var KG;
                 });
                 def.click = def.click || [];
                 var clickListeners = def.click.map(function (clickDef) {
-                    console.log('defining clicks');
                     clickDef.model = vo.model;
                     return new KG.ClickListener(clickDef);
                 });
