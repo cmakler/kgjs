@@ -51,8 +51,10 @@ module KG {
             }
 
             if (ih.hasOwnProperty('clickListeners') && (ih.element != undefined)) {
-                ih.element.style("pointer-events", "all");
-                ih.element.style("cursor", "pointer");
+                if(ih.clickListeners.length > 0) {
+                    ih.element.style("pointer-events", "all");
+                    ih.element.style("cursor", "pointer");
+                }
             }
 
             return ih;
