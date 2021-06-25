@@ -4,7 +4,7 @@ module KG {
 
     export interface ListenerDefinition extends UpdateListenerDefinition {
         param: string;
-        expression: string;
+        expression?: string;
     }
 
     export interface IListener extends IUpdateListener {

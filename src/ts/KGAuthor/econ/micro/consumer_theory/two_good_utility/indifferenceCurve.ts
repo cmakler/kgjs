@@ -84,7 +84,8 @@ module KGAuthor {
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     let preferredDef = copyJSON(def);
-                    preferredDef.fill = def.preferredColor || 'colors.preferred';
+                    //preferredDef.fill = def.preferredColor || 'colors.preferred';
+                    preferredDef.fill = def.color || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }

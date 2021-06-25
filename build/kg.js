@@ -788,6 +788,41 @@ var KGAuthor;
         return GameMatrixPlusGraph;
     }(KGAuthor.Layout));
     KGAuthor.GameMatrixPlusGraph = GameMatrixPlusGraph;
+    var GameMatrixPlusGraphPlusSidebar = /** @class */ (function (_super) {
+        __extends(GameMatrixPlusGraphPlusSidebar, _super);
+        function GameMatrixPlusGraphPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var graphDef = def['graph'];
+            var sidebarDef = def['sidebar'];
+            var gameDivDef = {
+                position: {
+                    x: 0.05,
+                    y: 0.1,
+                    width: 0.35,
+                    height: 0.7
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.game
+                    }
+                ]
+            };
+            graphDef.position = {
+                x: 0.6,
+                y: 0.1,
+                width: 0.35,
+                height: 0.7
+            };
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            l.subObjects.push(new KGAuthor.Graph(graphDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return GameMatrixPlusGraphPlusSidebar;
+    }(KGAuthor.Layout));
+    KGAuthor.GameMatrixPlusGraphPlusSidebar = GameMatrixPlusGraphPlusSidebar;
     var GeoGebraPlusGraph = /** @class */ (function (_super) {
         __extends(GeoGebraPlusGraph, _super);
         function GeoGebraPlusGraph(def) {
@@ -3980,7 +4015,8 @@ var KGAuthor;
             if (!def.inMap) {
                 if (!!def.showPreferred) {
                     var preferredDef = KGAuthor.copyJSON(def);
-                    preferredDef.fill = def.preferredColor || 'colors.preferred';
+                    //preferredDef.fill = def.preferredColor || 'colors.preferred';
+                    preferredDef.fill = def.color || 'colors.preferred';
                     preferredDef.show = def.showPreferred;
                     curve.subObjects = curve.subObjects.concat(utilityFunction.areaAboveLevelCurve(preferredDef, graph));
                 }
@@ -5828,8 +5864,19 @@ var KG;
     var ClickListener = /** @class */ (function (_super) {
         __extends(ClickListener, _super);
         function ClickListener(def) {
-            return _super.call(this, def) || this;
+            var _this = this;
+            KG.setDefaults(def, { transitions: [1, 0] }); // default to toggle on/off
+            _this = _super.call(this, def) || this;
+            _this.transitions = def.transitions;
+            return _this;
         }
+        ClickListener.prototype.click = function () {
+            var c = this;
+            console.log("clicking", c);
+            var current = c.model.currentParamValues[c.param];
+            var newvalue = c.transitions[current];
+            c.model.updateParam(c.param, newvalue);
+        };
         return ClickListener;
     }(KG.Listener));
     KG.ClickListener = ClickListener;
@@ -5869,6 +5916,10 @@ var KG;
                 ih.element.style("pointer-events", (xDrag_1 || yDrag_1) ? "all" : "none");
                 ih.element.style("cursor", (xDrag_1 && yDrag_1) ? "move" : xDrag_1 ? "ew-resize" : "ns-resize");
             }
+            if (ih.hasOwnProperty('clickListeners') && (ih.element != undefined)) {
+                ih.element.style("pointer-events", "all");
+                ih.element.style("cursor", "pointer");
+            }
             return ih;
         };
         InteractionHandler.prototype.addTrigger = function (element) {
@@ -5876,15 +5927,9 @@ var KG;
             handler.element = element;
             // add click listeners
             if (handler.clickListeners.length > 0) {
-                element.on("click", function () {
-                    if (d3.event.defaultPrevented)
-                        return; //dragged)
-                    handler.scope.params = handler.model.currentParamValues;
-                    handler.scope.calcs = handler.model.currentCalcValues;
-                    handler.scope.colors = handler.model.currentColors;
-                    handler.clickListeners.forEach(function (d) {
-                        d.onChange(handler.scope);
-                    });
+                console.log('adding click event listener');
+                element.on("click", function (d, i) {
+                    handler.clickListeners.forEach(function (c) { c.click(); });
                 });
             }
             // add drag listeners
@@ -8237,55 +8282,6 @@ var KG;
 })(KG || (KG = {}));
 var KG;
 (function (KG) {
-    var MathboxPlane = /** @class */ (function (_super) {
-        __extends(MathboxPlane, _super);
-        function MathboxPlane(def) {
-            var _this = this;
-            var planeType = 'z';
-            if (def.hasOwnProperty('x')) {
-                def.axis1 = "y";
-                def.axis2 = "z";
-                planeType = "x";
-            }
-            else if (def.hasOwnProperty('y')) {
-                def.axis1 = "x";
-                def.axis2 = "z";
-                planeType = "y";
-            }
-            else {
-                def.axis1 = "x";
-                def.axis2 = "y";
-            }
-            def.samplePoints = 2;
-            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
-            _this = _super.call(this, def) || this;
-            _this.planeType = planeType;
-            return _this;
-        }
-        MathboxPlane.prototype.mathboxFn = function () {
-            var p = this;
-            if (p.planeType == "x") {
-                return function (emit, y, z) {
-                    emit(y, z, p.x);
-                };
-            }
-            else if (p.planeType == "y") {
-                return function (emit, x, z) {
-                    emit(p.y, z, x);
-                };
-            }
-            else {
-                return function (emit, x, y) {
-                    emit(y, p.z, x);
-                };
-            }
-        };
-        return MathboxPlane;
-    }(KG.MathboxSurface));
-    KG.MathboxPlane = MathboxPlane;
-})(KG || (KG = {}));
-var KG;
-(function (KG) {
     var MathboxShape = /** @class */ (function (_super) {
         __extends(MathboxShape, _super);
         function MathboxShape(def) {
@@ -8467,7 +8463,6 @@ var KG;
 /// <reference path="view/mathboxObjects/mathboxCurve.ts" />
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxDataSurface.ts" />
-/// <reference path="view/mathboxObjects/mathboxPlane.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 /// <reference path="view/mathboxObjects/mathboxLine.ts" />
