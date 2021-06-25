@@ -49,23 +49,25 @@ module KG {
                 ih.element.style("pointer-events", (xDrag || yDrag) ? "all" : "none");
                 ih.element.style("cursor", (xDrag && yDrag) ? "move" : xDrag ? "ew-resize" : "ns-resize");
             }
+
+            if (ih.hasOwnProperty('clickListeners') && (ih.element != undefined)) {
+                ih.element.style("pointer-events", "all");
+                ih.element.style("cursor", "pointer");
+            }
+
             return ih;
         }
 
+
         addTrigger(element) {
+
             let handler = this;
             handler.element = element;
 
             // add click listeners
             if (handler.clickListeners.length > 0) {
-                element.on("click", function () {
-                    if (d3.event.defaultPrevented) return; //dragged)
-                    handler.scope.params = handler.model.currentParamValues;
-                    handler.scope.calcs = handler.model.currentCalcValues;
-                    handler.scope.colors = handler.model.currentColors;
-                    handler.clickListeners.forEach(function (d) {
-                        d.onChange(handler.scope)
-                    });
+                element.on("click", function() {
+                    handler.clickListeners.forEach(function(c) {c.click()})
                 })
             }
 

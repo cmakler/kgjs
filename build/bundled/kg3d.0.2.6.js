@@ -6162,8 +6162,8 @@ var KG;
             // create the SVG element for the view
             if (!parsedData.nosvg) {
                 view.svg = view.svgContainerDiv.append('svg')
-                    .style('overflow', 'visible');
-                //.style('pointer-events', 'none');
+                    .style('overflow', 'visible')
+                    .style('pointer-events', 'none');
             }
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
@@ -6407,7 +6407,6 @@ var KG;
                 });
                 def.click = def.click || [];
                 var clickListeners = def.click.map(function (clickDef) {
-                    console.log('defining clicks');
                     clickDef.model = vo.model;
                     return new KG.ClickListener(clickDef);
                 });
