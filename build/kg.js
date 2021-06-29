@@ -2245,8 +2245,8 @@ var KGAuthor;
                         name: KG.randomString(10)
                     });
                     var edgeDef = {
-                        nodeA: def.name,
-                        nodeB: nodeDef.name,
+                        node1: def.name,
+                        node2: nodeDef.name,
                         color: def.color,
                         label: { text: nodeDef.edgeLabel }
                     };
@@ -2332,8 +2332,8 @@ var KGAuthor;
         __extends(Edge, _super);
         function Edge(def, tree) {
             var _this = this;
-            def.a = tree.nodeCoordinates[def.nodeA];
-            def.b = tree.nodeCoordinates[def.nodeB];
+            def.a = tree.nodeCoordinates[def.node1];
+            def.b = tree.nodeCoordinates[def.node2];
             _this = _super.call(this, def, tree) || this;
             return _this;
         }

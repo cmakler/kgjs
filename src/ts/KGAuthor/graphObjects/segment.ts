@@ -65,14 +65,14 @@ module KGAuthor {
     }
 
     export interface EdgeDefinition extends SegmentDefinition {
-        nodeA: string;
-        nodeB: string;
+        node1: string;
+        node2: string;
     }
 
     export class Edge extends Segment {
         constructor(def: EdgeDefinition, tree: Tree) {
-            def.a = tree.nodeCoordinates[def.nodeA];
-            def.b = tree.nodeCoordinates[def.nodeB];
+            def.a = tree.nodeCoordinates[def.node1];
+            def.b = tree.nodeCoordinates[def.node2];
             super(def, tree);
         }
     }

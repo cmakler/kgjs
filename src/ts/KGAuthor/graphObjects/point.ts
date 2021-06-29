@@ -129,8 +129,8 @@ module KGAuthor {
                         name: KG.randomString(10)
                     })
                     let edgeDef:EdgeDefinition = {
-                        nodeA: def.name,
-                        nodeB: nodeDef.name,
+                        node1: def.name,
+                        node2: nodeDef.name,
                         color: def.color,
                         label: {text: nodeDef.edgeLabel}
                     };
