@@ -21,6 +21,25 @@ module KGAuthor {
         }
     }
 
+    export class OneTree extends SquareLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let treeDef = def['tree'];
+
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new Tree(treeDef));
+        }
+    }
+
     export class OneWideGraph extends WideRectangleLayout {
 
         constructor(def) {
@@ -61,6 +80,27 @@ module KGAuthor {
 
         }
 
+    }
+
+    export class OneTreePlusSidebar extends SquareLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let treeDef = def['tree'],
+                sidebarDef = def['sidebar'];
+
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+
+            l.subObjects.push(new Tree(treeDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+        }
     }
 
     export class OneWideGraphPlusSidebar extends WideRectangleLayout {

@@ -47,12 +47,12 @@ module KG {
 
     // End of underscorejs functions
 
-    export function setDefaults(def: any, defaultValues:any) {
-        def = defaults(def,defaultValues);
+    export function setDefaults(def: any, defaultValues: any) {
+        def = defaults(def, defaultValues);
         return def;
     }
 
-    export function setProperties(def: any, name: 'constants' | 'updatables' | 'colorAttributes', props:string[]) {
+    export function setProperties(def: any, name: 'constants' | 'updatables' | 'colorAttributes', props: string[]) {
         def[name] = (def[name] || []).concat(props);
         return def;
     }

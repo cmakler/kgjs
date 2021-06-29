@@ -8,6 +8,7 @@
 /* LAYOUTS */
 
 /// <reference path="layouts/edgeworth.ts"/>
+/// <reference path="layouts/gameTree.ts"/>
 
 /* FUNCTIONAL FORMS */
 

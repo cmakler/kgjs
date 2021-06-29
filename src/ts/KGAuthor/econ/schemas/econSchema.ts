@@ -42,7 +42,14 @@ module KGAuthor {
                 consumption: 'blue',
                 depreciation: "red",
                 savings: "green",
-                tax: 'red'
+                tax: 'red',
+
+                // game theory
+                player1: 'blue',
+                player2: 'red',
+                player3: 'orange',
+                nature: 'green'
+
             });
 
             super(def);

@@ -32,15 +32,7 @@ module KGAuthor {
             p.layer = 3;
             p.extractCoordinates();
 
-            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-                def.drag = [];
-                if(def.x == `params.${paramName(def.x)}`) {
-                    def.drag.push({horizontal: paramName(def.x)})
-                }
-                if(def.y == `params.${paramName(def.y)}`) {
-                    def.drag.push({vertical: paramName(def.y)})
-                }
-            }
+            def = makeDraggable(def);
 
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);
@@ -103,6 +95,68 @@ module KGAuthor {
                 }
             }
 
+        }
+
+    }
+
+    export interface NodeDefinition extends PointDefinition {
+        name: string;
+        children?: NodeDefinition[];
+        childSelectParam?: string;
+        edgeLabel?: string; // used to label the edge from the parent node
+    }
+
+    export class Node extends Point {
+
+        public name;
+        private selectChildren;
+
+        constructor(def: NodeDefinition, tree: Tree) {
+            KG.setDefaults(def, {
+                name: KG.randomString(10)
+            })
+            super(def, tree);
+            const node = this;
+            tree.nodeCoordinates[def.name] = [node.x, node.y];
+            node.name = def.name;
+
+            if(def.hasOwnProperty('children')) {
+                const n = def.children.length;
+                for(let i = 0; i < n; i++) {
+                    const childNum = i + 1 // number of child, with first being 1 rather than 0;
+                    let nodeDef:NodeDefinition = def.children[i];
+                    KG.setDefaults(nodeDef, {
+                        name: KG.randomString(10)
+                    })
+                    let edgeDef:EdgeDefinition = {
+                        nodeA: def.name,
+                        nodeB: nodeDef.name,
+                        color: def.color,
+                        label: {text: nodeDef.edgeLabel}
+                    };
+
+                    // if selectChildren is true, create a parameter called "select[nodeName]"
+                    // which is used to select which child is active
+                    // when true, clicking on an edge selects that edge
+                    // unless the edge is already selected, in which case no edge is selected
+                    if(def.hasOwnProperty('childSelectParam')) {
+                        let param = def.childSelectParam;
+                        let transitions = new Array(n + 1);
+                        transitions[0] = childNum;
+                        for (let j = 1; j < n + 1; j++) {
+                            transitions[j] = (j == childNum) ? 0 : childNum;
+                        }
+                        edgeDef['click'] = [{
+                            param: param,
+                            transitions: transitions
+                        }]
+                        edgeDef['strokeWidth'] = `((params.${def.childSelectParam} == ${childNum}) ? 4 : 2)`
+                    }
+
+                    tree.subObjects.push(new Node(nodeDef, tree));
+                    tree.subObjects.push(new Edge(edgeDef, tree));
+                }
+            }
         }
 
     }

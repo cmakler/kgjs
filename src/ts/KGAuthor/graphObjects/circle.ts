@@ -48,15 +48,7 @@ module KGAuthor {
                 c.extractCoordinates();
             }
 
-            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-                def.drag = [];
-                if(def.x == `params.${paramName(def.x)}`) {
-                    def.drag.push({horizontal: paramName(def.x)})
-                }
-                if(def.y == `params.${paramName(def.y)}`) {
-                    def.drag.push({vertical: paramName(def.y)})
-                }
-            }
+            def = makeDraggable(def);
 
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);

@@ -3,8 +3,11 @@
 module KGAuthor {
 
     export interface SegmentDefinition extends GraphObjectDefinition {
+        a?: any[];
+        b?: any[];
         startArrow?: boolean;
         endArrow?: boolean;
+        label?: LabelDefinition;
     }
 
 
@@ -58,6 +61,19 @@ module KGAuthor {
         constructor(def, graph) {
             def.xScale2Name = '';
             super(def, graph);
+        }
+    }
+
+    export interface EdgeDefinition extends SegmentDefinition {
+        nodeA: string;
+        nodeB: string;
+    }
+
+    export class Edge extends Segment {
+        constructor(def: EdgeDefinition, tree: Tree) {
+            def.a = tree.nodeCoordinates[def.nodeA];
+            def.b = tree.nodeCoordinates[def.nodeB];
+            super(def, tree);
         }
     }
 

@@ -223,6 +223,19 @@ var KGAuthor;
         }
     }
     KGAuthor.paramName = paramName;
+    function makeDraggable(def) {
+        if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
+            def.drag = [];
+            if (def.x == "params." + paramName(def.x)) {
+                def.drag.push({ horizontal: paramName(def.x) });
+            }
+            if (def.y == "params." + paramName(def.y)) {
+                def.drag.push({ vertical: paramName(def.y) });
+            }
+        }
+        return def;
+    }
+    KGAuthor.makeDraggable = makeDraggable;
     function curvesFromFunctions(fns, def, graph) {
         return fns.map(function (fn) {
             var curveDef = copyJSON(def);
@@ -496,6 +509,24 @@ var KGAuthor;
         return OneGraph;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraph = OneGraph;
+    var OneTree = /** @class */ (function (_super) {
+        __extends(OneTree, _super);
+        function OneTree(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = def['tree'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            return _this;
+        }
+        return OneTree;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.OneTree = OneTree;
     var OneWideGraph = /** @class */ (function (_super) {
         __extends(OneWideGraph, _super);
         function OneWideGraph(def) {
@@ -533,6 +564,25 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var OneTreePlusSidebar = /** @class */ (function (_super) {
+        __extends(OneTreePlusSidebar, _super);
+        function OneTreePlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = def['tree'], sidebarDef = def['sidebar'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return OneTreePlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.OneTreePlusSidebar = OneTreePlusSidebar;
     var OneWideGraphPlusSidebar = /** @class */ (function (_super) {
         __extends(OneWideGraphPlusSidebar, _super);
         function OneWideGraphPlusSidebar(def) {
@@ -1389,6 +1439,36 @@ var KGAuthor;
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var Tree = /** @class */ (function (_super) {
+        __extends(Tree, _super);
+        function Tree(def) {
+            var _this = this;
+            var graphDef = {
+                position: def.position,
+                objects: def.objects,
+                xAxis: { max: 24, show: false },
+                yAxis: { max: 24, show: false }
+            };
+            _this = _super.call(this, graphDef) || this;
+            var t = _this;
+            t.nodeCoordinates = {};
+            def.nodes.forEach(function (nodeDef) {
+                t.subObjects.push(new KGAuthor.Node(nodeDef, t));
+            });
+            if (def.hasOwnProperty('edges')) {
+                def.edges.forEach(function (edgeDef) {
+                    t.subObjects.push(new KGAuthor.Edge(edgeDef, t));
+                });
+            }
+            return _this;
+        }
+        return Tree;
+    }(KGAuthor.Graph));
+    KGAuthor.Tree = Tree;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../kgAuthor.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var GeoGebraContainer = /** @class */ (function (_super) {
         __extends(GeoGebraContainer, _super);
         function GeoGebraContainer(def) {
@@ -2033,15 +2113,7 @@ var KGAuthor;
             else {
                 c.extractCoordinates();
             }
-            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-                def.drag = [];
-                if (def.x == "params." + KGAuthor.paramName(def.x)) {
-                    def.drag.push({ horizontal: KGAuthor.paramName(def.x) });
-                }
-                if (def.y == "params." + KGAuthor.paramName(def.y)) {
-                    def.drag.push({ vertical: KGAuthor.paramName(def.y) });
-                }
-            }
+            def = KGAuthor.makeDraggable(def);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2093,15 +2165,7 @@ var KGAuthor;
             p.type = 'Point';
             p.layer = 3;
             p.extractCoordinates();
-            if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-                def.drag = [];
-                if (def.x == "params." + KGAuthor.paramName(def.x)) {
-                    def.drag.push({ horizontal: KGAuthor.paramName(def.x) });
-                }
-                if (def.y == "params." + KGAuthor.paramName(def.y)) {
-                    def.drag.push({ vertical: KGAuthor.paramName(def.y) });
-                }
-            }
+            def = KGAuthor.makeDraggable(def);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
@@ -2161,6 +2225,57 @@ var KGAuthor;
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
+    var Node = /** @class */ (function (_super) {
+        __extends(Node, _super);
+        function Node(def, tree) {
+            var _this = this;
+            KG.setDefaults(def, {
+                name: KG.randomString(10)
+            });
+            _this = _super.call(this, def, tree) || this;
+            var node = _this;
+            tree.nodeCoordinates[def.name] = [node.x, node.y];
+            node.name = def.name;
+            if (def.hasOwnProperty('children')) {
+                var n = def.children.length;
+                for (var i = 0; i < n; i++) {
+                    var childNum = i + 1; // number of child, with first being 1 rather than 0;
+                    var nodeDef = def.children[i];
+                    KG.setDefaults(nodeDef, {
+                        name: KG.randomString(10)
+                    });
+                    var edgeDef = {
+                        nodeA: def.name,
+                        nodeB: nodeDef.name,
+                        color: def.color,
+                        label: { text: nodeDef.edgeLabel }
+                    };
+                    // if selectChildren is true, create a parameter called "select[nodeName]"
+                    // which is used to select which child is active
+                    // when true, clicking on an edge selects that edge
+                    // unless the edge is already selected, in which case no edge is selected
+                    if (def.hasOwnProperty('childSelectParam')) {
+                        var param = def.childSelectParam;
+                        var transitions = new Array(n + 1);
+                        transitions[0] = childNum;
+                        for (var j = 1; j < n + 1; j++) {
+                            transitions[j] = (j == childNum) ? 0 : childNum;
+                        }
+                        edgeDef['click'] = [{
+                                param: param,
+                                transitions: transitions
+                            }];
+                        edgeDef['strokeWidth'] = "((params." + def.childSelectParam + " == " + childNum + ") ? 4 : 2)";
+                    }
+                    tree.subObjects.push(new Node(nodeDef, tree));
+                    tree.subObjects.push(new KGAuthor.Edge(edgeDef, tree));
+                }
+            }
+            return _this;
+        }
+        return Node;
+    }(Point));
+    KGAuthor.Node = Node;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2213,6 +2328,18 @@ var KGAuthor;
         return CrossGraphSegment;
     }(Segment));
     KGAuthor.CrossGraphSegment = CrossGraphSegment;
+    var Edge = /** @class */ (function (_super) {
+        __extends(Edge, _super);
+        function Edge(def, tree) {
+            var _this = this;
+            def.a = tree.nodeCoordinates[def.nodeA];
+            def.b = tree.nodeCoordinates[def.nodeB];
+            _this = _super.call(this, def, tree) || this;
+            return _this;
+        }
+        return Edge;
+    }(Segment));
+    KGAuthor.Edge = Edge;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -3019,7 +3146,12 @@ var KGAuthor;
                 consumption: 'blue',
                 depreciation: "red",
                 savings: "green",
-                tax: 'red'
+                tax: 'red',
+                // game theory
+                player1: 'blue',
+                player2: 'red',
+                player3: 'orange',
+                nature: 'green'
             });
             _this = _super.call(this, def) || this;
             return _this;
@@ -3190,6 +3322,18 @@ var KGAuthor;
         return EdgeworthBoxAboveOneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.EdgeworthBoxAboveOneGraphPlusSidebar = EdgeworthBoxAboveOneGraphPlusSidebar;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    var EntryDeterrence = /** @class */ (function (_super) {
+        __extends(EntryDeterrence, _super);
+        function EntryDeterrence(def) {
+            return _super.call(this, def) || this;
+        }
+        return EntryDeterrence;
+    }(KGAuthor.Tree));
+    KGAuthor.EntryDeterrence = EntryDeterrence;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -5045,6 +5189,7 @@ var KGAuthor;
 /// <reference path="schemas/bowlesHallidaySchema.ts"/>
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
+/// <reference path="layouts/gameTree.ts"/>
 /* FUNCTIONAL FORMS */
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>
 /// <reference path="functional_forms/multivariate/cobbDouglas.ts"/>
@@ -5091,6 +5236,7 @@ var KGAuthor;
 /// <reference path="layouts/gameMatrix.ts"/>
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
+/// <reference path="positionedObjects/tree.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
 /// <reference path="positionedObjects/mathboxContainer.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>

@@ -19,6 +19,7 @@
 
 /// <reference path="positionedObjects/positionedObject.ts"/>
 /// <reference path="positionedObjects/graph.ts"/>
+/// <reference path="positionedObjects/tree.ts"/>
 /// <reference path="positionedObjects/ggbContainer.ts"/>
 /// <reference path="positionedObjects/mathboxContainer.ts"/>
 /// <reference path="positionedObjects/divContainer.ts"/>
