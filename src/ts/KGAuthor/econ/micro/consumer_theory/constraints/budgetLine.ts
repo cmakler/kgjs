@@ -27,7 +27,7 @@ module KGAuthor {
         //console.log('tried to instantiate a budget line without either a budget line def or object')
     }
 
-    export interface EconBudgetLineDefinition extends SegmentDefinition {
+    export interface EconBudgetLineDefinition  {
         p1?: string | number;
         p2?: string | number;
         m?: string | number;
@@ -39,7 +39,6 @@ module KGAuthor {
         yInterceptLabel?: string;
         buyOnly?: boolean;
         sellOnly?: boolean;
-
     }
 
     export class EconBudgetLine extends Segment {

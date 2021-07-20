@@ -5174,7 +5174,7 @@ var KGAuthor;
                 y1: graph.def.yAxis.min,
                 y2: graph.def.yAxis.max,
                 fill: "colors.paretoLens",
-                opacity: "0.2",
+                opacity: "0.8",
                 show: def.show
             }, graph));
             return _this;
@@ -6526,13 +6526,18 @@ var KG;
         ViewObject.prototype.onGraph = function () {
             var vo = this;
             if (vo.checkOnGraph) {
+                var notBetween = function (x, a, b) {
+                    var min = Math.min(a, b);
+                    var max = Math.max(a, b);
+                    return ((x < min) || (x > max));
+                };
                 if (vo.hasOwnProperty('x')) {
-                    if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
+                    if (notBetween(vo.x, vo.xScale.domainMin, vo.xScale.domainMax)) {
                         return false;
                     }
                 }
                 if (vo.hasOwnProperty('y')) {
-                    if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
+                    if (notBetween(vo.y, vo.yScale.domainMin, vo.yScale.domainMax)) {
                         return false;
                     }
                 }

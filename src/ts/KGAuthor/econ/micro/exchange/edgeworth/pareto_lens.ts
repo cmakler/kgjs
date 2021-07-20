@@ -22,7 +22,7 @@ module KGAuthor {
                     y1: graph.def.yAxis.min,
                     y2: graph.def.yAxis.max,
                     fill: "colors.paretoLens",
-                    opacity: "0.2",
+                    opacity: "0.8",
                     show: def.show
                 }, graph))
 

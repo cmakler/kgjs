@@ -217,15 +217,16 @@ module KG {
         onGraph() {
             const vo = this;
             if (vo.checkOnGraph) {
+                let notBetween = function(x,a,b) {
+                    const min = Math.min(a,b);
+                    const max = Math.max(a,b);
+                    return ((x < min) || (x > max))
+                }
                 if (vo.hasOwnProperty('x')) {
-                    if (vo.x < vo.xScale.domainMin || vo.x > vo.xScale.domainMax) {
-                        return false;
-                    }
+                    if (notBetween(vo.x, vo.xScale.domainMin, vo.xScale.domainMax)) { return false }
                 }
                 if (vo.hasOwnProperty('y')) {
-                    if (vo.y < vo.yScale.domainMin || vo.y > vo.yScale.domainMax) {
-                        return false;
-                    }
+                    if (notBetween(vo.y, vo.yScale.domainMin, vo.yScale.domainMax)) { return false }
                 }
             }
             return true;
