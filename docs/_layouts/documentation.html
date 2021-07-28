@@ -11,43 +11,43 @@
     <script src="../js/kg.0.2.6.js"></script>
 </head>
 <body class="documentation">
-<div style="position: relative">
-    <div style="position: absolute; left:230px">
-        <h1 class="page-title">{{page.title}}</h1>
-        <hr/>
-        {{content}}
-    </div>
+    <div>
+        <div style="position: absolute; left:250px">
+            <h1 class="page-title">{{page.title}}</h1>
+            <hr/>
+            {{content}}
+        </div>
 
-    <div class="contents">
+        <div class="contents">
 
-        <svg width="40px" height="40px">
-            <line x1="0" y1="40" x2="40" y2="0" style="stroke: #ff7f0e; stroke-width: 4px">
+            <svg width="40px" height="40px">
+                <line x1="0" y1="40" x2="40" y2="0" style="stroke: #ff7f0e; stroke-width: 4px">
 
-            </line>
-            <circle id="kgjs-logo-circle" cx="20" cy="20" r="10"
-                    style="fill: rgb(31, 119, 180); opacity: 1; stroke: white; stroke-width: 2px; stroke-opacity: 1;"></circle>
-        </svg>
-        <a href="/">
-            <div class="kgjs-title">KGJS</div>
-            <div class="contents-category" style="margin-top: 0px;">KineticGraphs.org</div>
-        </a>
-        <input type="range" style="width:140px" min="2" max="18" value="10" step="0.01"
-               oninput="d3.select('#kgjs-logo-circle').attr('r',this.value)">
-        <div style="height:25px"></div>
-        <div style="height:600px; overflow-y: scroll;">
-            {% for category in site.data.contents %}
-            <div class="contents-category">{{category.name}}</div>
-            {% for page in category.pages %}
-            {% if category.folder != 'none' %}
-            <p class="contents-page"><a href="/{{category.folder}}/{{page.url}}.html">{{page.title}}</a></p>
-            {% else %}
-            <p class="contents-page"><a href="/{{page.url}}.html">{{page.title}}</a></p>
-            {% endif %}
-            {% endfor %}
-            {% endfor %}
+                </line>
+                <circle id="kgjs-logo-circle" cx="20" cy="20" r="10"
+                        style="fill: rgb(31, 119, 180); opacity: 1; stroke: white; stroke-width: 2px; stroke-opacity: 1;"></circle>
+            </svg>
+            <a href="/">
+                <div class="kgjs-title">KGJS</div>
+                <div class="contents-category" style="margin-top: 0px;">KineticGraphs.org</div>
+            </a>
+            <input type="range" style="width:140px" min="2" max="18" value="10" step="0.01"
+                   oninput="d3.select('#kgjs-logo-circle').attr('r',this.value)">
+            <div style="height:25px"></div>
+            <div>
+                {% for category in site.data.contents %}
+                <div class="contents-category">{{category.name}}</div>
+                {% for page in category.pages %}
+                {% if category.folder != 'none' %}
+                <p class="contents-page"><a href="/{{category.folder}}/{{page.url}}.html">{{page.title}}</a></p>
+                {% else %}
+                <p class="contents-page"><a href="/{{page.url}}.html">{{page.title}}</a></p>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
 
 <script src="../js/preview-pane.js"></script>
 <script>

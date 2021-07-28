@@ -3,13 +3,14 @@
     background: transparent; /* make scrollbar transparent */
 }
 
-body.documentation {
+.documentation {
     width: 100%;
     padding-left: 20px;
     max-width: 1200px;
+    margin-left: 0px;
 }
 
-body.documentation p {
+.documentation p {
     width: 1000px;
 }
 
@@ -104,10 +105,12 @@ table.gameMatrix tr td.strategy {
 }
 
 .contents {
-    position: fixed;
+    position: absolute;
+    margin-left: 0;
     width: 180px;
-    left: 10px;
-    border-right: thin solid gray;
+    top: 40px;
+    left: 0px;
+    border-right: thin lightgrey dotted;
     padding: 20px;
 }
 
