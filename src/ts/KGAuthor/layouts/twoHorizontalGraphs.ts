@@ -94,7 +94,7 @@ module KGAuthor {
 
     }
 
-    export class TwoHorizontalGraphsPlusSidebar extends WideRectangleLayout {
+    export class TwoHorizontalGraphsPlusSidebar extends Layout {
 
         constructor(def) {
             super(def);
@@ -104,13 +104,57 @@ module KGAuthor {
                 rightGraphDef = def['rightGraph'],
                 sidebarDef = def['sidebar'];
 
+            let includeControls = false;
+
             const leftX = 0.1,
                 rightX = 0.6,
                 topY = 0.025,
                 bottomY = 1.2,
                 width = 0.369,
-                graphHeight = 0.9,
-                controlHeight = 0.3;
+                controlHeight = 0.3,
+                controlBottom = 0.65;
+
+            if (def.hasOwnProperty('leftControls')) {
+                const leftControlsContainer = {
+                    position: {
+                        x: leftX,
+                        y: controlBottom,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                };
+                includeControls = true;
+                l.subObjects.push(new DivContainer(leftControlsContainer));
+            }
+
+            if (def.hasOwnProperty('rightControls')) {
+                const rightControlsContainer = {
+                    position: {
+                        x: rightX,
+                        y: controlBottom,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                };
+                includeControls = true;
+                l.subObjects.push(new DivContainer(rightControlsContainer));
+            }
+
+            let graphHeight = includeControls ? 0.5 : 0.9;
+
+            this.aspectRatio = includeControls ? 1.2 : 2.4;
 
             leftGraphDef.position = {
                 "x": leftX,
@@ -134,41 +178,7 @@ module KGAuthor {
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
 
-            if (def.hasOwnProperty('leftControls')) {
-                const leftControlsContainer = {
-                    position: {
-                        x: leftX,
-                        y: bottomY,
-                        width: width,
-                        height: controlHeight
-                    },
-                    children: [
-                        {
-                            type: "Controls",
-                            def: def['leftControls']
-                        }
-                    ]
-                };
-                l.subObjects.push(new DivContainer(leftControlsContainer));
-            }
 
-            if (def.hasOwnProperty('rightControls')) {
-                const rightControlsContainer = {
-                    position: {
-                        x: rightX,
-                        y: bottomY,
-                        width: width,
-                        height: controlHeight
-                    },
-                    children: [
-                        {
-                            type: "Controls",
-                            def: def['rightControls']
-                        }
-                    ]
-                };
-                l.subObjects.push(new DivContainer(rightControlsContainer));
-            }
 
         }
 

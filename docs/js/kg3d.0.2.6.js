@@ -828,7 +828,46 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var leftGraphDef = def['leftGraph'], rightGraphDef = def['rightGraph'], sidebarDef = def['sidebar'];
-            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 1.2, width = 0.369, graphHeight = 0.9, controlHeight = 0.3;
+            var includeControls = false;
+            var leftX = 0.1, rightX = 0.6, topY = 0.025, bottomY = 1.2, width = 0.369, controlHeight = 0.3, controlBottom = 0.65;
+            if (def.hasOwnProperty('leftControls')) {
+                var leftControlsContainer = {
+                    position: {
+                        x: leftX,
+                        y: controlBottom,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['leftControls']
+                        }
+                    ]
+                };
+                includeControls = true;
+                l.subObjects.push(new KGAuthor.DivContainer(leftControlsContainer));
+            }
+            if (def.hasOwnProperty('rightControls')) {
+                var rightControlsContainer = {
+                    position: {
+                        x: rightX,
+                        y: controlBottom,
+                        width: width,
+                        height: controlHeight
+                    },
+                    children: [
+                        {
+                            type: "Controls",
+                            def: def['rightControls']
+                        }
+                    ]
+                };
+                includeControls = true;
+                l.subObjects.push(new KGAuthor.DivContainer(rightControlsContainer));
+            }
+            var graphHeight = includeControls ? 0.5 : 0.9;
+            _this.aspectRatio = includeControls ? 1.2 : 2.4;
             leftGraphDef.position = {
                 "x": leftX,
                 "y": topY,
@@ -845,44 +884,10 @@ var KGAuthor;
             l.subObjects.push(leftGraph);
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
-            if (def.hasOwnProperty('leftControls')) {
-                var leftControlsContainer = {
-                    position: {
-                        x: leftX,
-                        y: bottomY,
-                        width: width,
-                        height: controlHeight
-                    },
-                    children: [
-                        {
-                            type: "Controls",
-                            def: def['leftControls']
-                        }
-                    ]
-                };
-                l.subObjects.push(new KGAuthor.DivContainer(leftControlsContainer));
-            }
-            if (def.hasOwnProperty('rightControls')) {
-                var rightControlsContainer = {
-                    position: {
-                        x: rightX,
-                        y: bottomY,
-                        width: width,
-                        height: controlHeight
-                    },
-                    children: [
-                        {
-                            type: "Controls",
-                            def: def['rightControls']
-                        }
-                    ]
-                };
-                l.subObjects.push(new KGAuthor.DivContainer(rightControlsContainer));
-            }
             return _this;
         }
         return TwoHorizontalGraphsPlusSidebar;
-    }(KGAuthor.WideRectangleLayout));
+    }(KGAuthor.Layout));
     KGAuthor.TwoHorizontalGraphsPlusSidebar = TwoHorizontalGraphsPlusSidebar;
     var MathboxPlusGraph = /** @class */ (function (_super) {
         __extends(MathboxPlusGraph, _super);
@@ -8834,5 +8839,54 @@ document.addEventListener("keyup", function (event) {
         }
     }
 });
+var KG;
+(function (KG) {
+    var MathboxPlane = /** @class */ (function (_super) {
+        __extends(MathboxPlane, _super);
+        function MathboxPlane(def) {
+            var _this = this;
+            var planeType = 'z';
+            if (def.hasOwnProperty('x')) {
+                def.axis1 = "y";
+                def.axis2 = "z";
+                planeType = "x";
+            }
+            else if (def.hasOwnProperty('y')) {
+                def.axis1 = "x";
+                def.axis2 = "z";
+                planeType = "y";
+            }
+            else {
+                def.axis1 = "x";
+                def.axis2 = "y";
+            }
+            def.samplePoints = 2;
+            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
+            _this = _super.call(this, def) || this;
+            _this.planeType = planeType;
+            return _this;
+        }
+        MathboxPlane.prototype.mathboxFn = function () {
+            var p = this;
+            if (p.planeType == "x") {
+                return function (emit, y, z) {
+                    emit(y, z, p.x);
+                };
+            }
+            else if (p.planeType == "y") {
+                return function (emit, x, z) {
+                    emit(p.y, z, x);
+                };
+            }
+            else {
+                return function (emit, x, y) {
+                    emit(y, p.z, x);
+                };
+            }
+        };
+        return MathboxPlane;
+    }(KG.MathboxSurface));
+    KG.MathboxPlane = MathboxPlane;
+})(KG || (KG = {}));
 
 
