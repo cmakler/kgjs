@@ -65,11 +65,29 @@ module KG {
         parse(data: ViewDefinition, div?) {
 
             data.schema = data.schema || "Schema";
+
+            // allow user to specify param overrides in methods
+            const urlParams = new URLSearchParams(window.location.search);
+
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name)
                 }
+
+                // allow user to override parameter values by specifying them in the URL
+                const urlParamValue = urlParams.get(paramData.name);
+                console.log("Searching for ", paramData.name)
+                if (urlParamValue) {
+                    console.log(urlParamValue)
+                } else {
+                    console.log('not found')
+                }
+                if (urlParamValue) {
+                    paramData.value = urlParamValue
+                }
+
+
                 // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
                 return paramData;
