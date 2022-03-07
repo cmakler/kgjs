@@ -6128,10 +6128,24 @@ var KG;
         }
         View.prototype.parse = function (data, div) {
             data.schema = data.schema || "Schema";
+            // allow user to specify param overrides in methods
+            var urlParams = new URLSearchParams(window.location.search);
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
                     paramData.value = div.getAttribute(paramData.name);
+                }
+                // allow user to override parameter values by specifying them in the URL
+                var urlParamValue = urlParams.get(paramData.name);
+                console.log("Searching for ", paramData.name);
+                if (urlParamValue) {
+                    console.log(urlParamValue);
+                }
+                else {
+                    console.log('not found');
+                }
+                if (urlParamValue) {
+                    paramData.value = urlParamValue;
                 }
                 // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
@@ -8735,54 +8749,5 @@ document.addEventListener("keyup", function (event) {
         }
     }
 });
-var KG;
-(function (KG) {
-    var MathboxPlane = /** @class */ (function (_super) {
-        __extends(MathboxPlane, _super);
-        function MathboxPlane(def) {
-            var _this = this;
-            var planeType = 'z';
-            if (def.hasOwnProperty('x')) {
-                def.axis1 = "y";
-                def.axis2 = "z";
-                planeType = "x";
-            }
-            else if (def.hasOwnProperty('y')) {
-                def.axis1 = "x";
-                def.axis2 = "z";
-                planeType = "y";
-            }
-            else {
-                def.axis1 = "x";
-                def.axis2 = "y";
-            }
-            def.samplePoints = 2;
-            KG.setProperties(def, 'updatables', ['x', 'y', 'z']);
-            _this = _super.call(this, def) || this;
-            _this.planeType = planeType;
-            return _this;
-        }
-        MathboxPlane.prototype.mathboxFn = function () {
-            var p = this;
-            if (p.planeType == "x") {
-                return function (emit, y, z) {
-                    emit(y, z, p.x);
-                };
-            }
-            else if (p.planeType == "y") {
-                return function (emit, x, z) {
-                    emit(p.y, z, x);
-                };
-            }
-            else {
-                return function (emit, x, y) {
-                    emit(y, p.z, x);
-                };
-            }
-        };
-        return MathboxPlane;
-    }(KG.MathboxSurface));
-    KG.MathboxPlane = MathboxPlane;
-})(KG || (KG = {}));
 
 

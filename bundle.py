@@ -8,7 +8,7 @@ js_directories = [
     'docs/js/',
     'docs/playground/code/',
     '../bh-textbook/code/',
-    '../core-interactives/code/',
+    #'../core-interactives/code/',
     '../econgraphs/static/js/'
 ]
 
@@ -23,7 +23,7 @@ css_directories = [
     'docs/css/',
     'docs/playground/code/',
     '../bh-textbook/code/',
-    '../core-interactives/code/',
+    #'../core-interactives/code/',
     '../econgraphs/static/css/'
 ]
 
