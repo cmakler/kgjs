@@ -19,8 +19,9 @@ module KG {
         clearColor?: string;
         schema?: string;
         params?: ParamDefinition[];
-        calcs: {};
-        colors: {};
+        greenscreen?: string;
+        calcs?: {};
+        colors?: {};
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
         layout?: TypeAndDef;
