@@ -60,7 +60,7 @@
 /// <reference path="view/mathboxObjects/mathboxCurve.ts" />
 /// <reference path="view/mathboxObjects/mathboxSurface.ts" />
 /// <reference path="view/mathboxObjects/mathboxDataSurface.ts" />
-/// <reference path="view/mathboxObjects/mathboxPlane.ts"
+/// <reference path="view/mathboxObjects/mathboxPlane.ts" />
 /// <reference path="view/mathboxObjects/mathboxShape.ts" />
 /// <reference path="view/mathboxObjects/mathboxLabel.ts" />
 /// <reference path="view/mathboxObjects/mathboxLine.ts" />
