@@ -2,7 +2,7 @@
 
 module KGAuthor {
 
-    export class FourGraphs extends Layout {
+    export class FourGraphs extends SquareLayout {
 
         constructor(def) {
             super(def);

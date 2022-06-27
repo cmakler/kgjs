@@ -1287,7 +1287,7 @@ var KGAuthor;
             return _this;
         }
         return FourGraphs;
-    }(KGAuthor.Layout));
+    }(KGAuthor.SquareLayout));
     KGAuthor.FourGraphs = FourGraphs;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
