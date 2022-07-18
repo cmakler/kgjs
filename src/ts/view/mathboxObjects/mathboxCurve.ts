@@ -46,6 +46,7 @@ module KG {
             c.curveData.set("expr", c.fn.mathboxFn(c.mathbox));
             c.mo.set("color", c.stroke);
             c.mo.set("width", c.strokeWidth);
+            c.mo.set("stroke", c.lineStyle);
             return c;
         }
 
