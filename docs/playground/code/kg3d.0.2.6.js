@@ -3262,6 +3262,44 @@ var KGAuthor;
 /// <reference path="../eg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var EdgeworthBox = /** @class */ (function (_super) {
+        __extends(EdgeworthBox, _super);
+        function EdgeworthBox(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var agentA = def['agentA'], agentB = def['agentB'];
+            var width = 0.738, height = 0.8;
+            /* if(def.totalGood1 > def.totalGood2) {
+                height = def.totalGood2*height/def.totalGood1;
+            }
+
+            if(def.totalGood2 > def.totalGood1) {
+                height = def.totalGood1*width/def.totalGood2;
+            } */
+            _this.aspectRatio = 2;
+            agentA.position = {
+                "x": 0.15,
+                "y": 0.1,
+                "width": width,
+                "height": height
+            };
+            agentB.position = {
+                "x": 0.15 + width,
+                "y": 0.1 + height,
+                "width": -1 * width,
+                "height": -1 * height
+            };
+            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
+            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
+            agentB.xAxis.orient = 'top';
+            agentB.yAxis.orient = 'right';
+            l.subObjects.push(new KGAuthor.Graph(agentA));
+            l.subObjects.push(new KGAuthor.Graph(agentB));
+            return _this;
+        }
+        return EdgeworthBox;
+    }(KGAuthor.Layout));
+    KGAuthor.EdgeworthBox = EdgeworthBox;
     var EdgeworthBoxPlusSidebar = /** @class */ (function (_super) {
         __extends(EdgeworthBoxPlusSidebar, _super);
         function EdgeworthBoxPlusSidebar(def) {
