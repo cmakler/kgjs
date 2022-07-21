@@ -49,6 +49,45 @@ module KGAuthor {
 
     }
 
+    export class EdgeworthBoxSquare extends SquareLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let agentA = def['agentA'],
+                agentB = def['agentB'];
+
+            let width = 0.74, height = 0.9;
+
+            this.aspectRatio = 1.22;
+
+            agentA.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": width,
+                "height": height
+            };
+
+            agentB.position = {
+                "x": 0.15 + width,
+                "y": 0.025 + height,
+                "width": -1*width,
+                "height": -1*height
+            };
+
+            agentA.xAxis.max = agentB.xAxis.max = def.totalGood1;
+            agentA.yAxis.max = agentB.yAxis.max = def.totalGood2;
+            agentB.xAxis.orient = 'top';
+            agentB.yAxis.orient = 'right';
+
+            l.subObjects.push(new Graph(agentA));
+            l.subObjects.push(new Graph(agentB));
+
+        }
+
+    }
+
     export class EdgeworthBoxPlusSidebar extends Layout {
 
         constructor(def) {
