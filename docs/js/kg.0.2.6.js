@@ -1346,6 +1346,18 @@ var KGAuthor;
         return FourGraphs;
     }(KGAuthor.SquareLayout));
     KGAuthor.FourGraphs = FourGraphs;
+    var FourGraphsPlusSidebar = /** @class */ (function (_super) {
+        __extends(FourGraphsPlusSidebar, _super);
+        function FourGraphsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var sidebarDef = def['sidebar'];
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return FourGraphsPlusSidebar;
+    }(FourGraphs));
+    KGAuthor.FourGraphsPlusSidebar = FourGraphsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;

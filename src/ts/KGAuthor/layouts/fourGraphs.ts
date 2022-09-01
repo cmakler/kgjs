@@ -53,5 +53,20 @@ module KGAuthor {
 
     }
 
+    export class FourGraphsPlusSidebar extends FourGraphs {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let sidebarDef = def['sidebar'];
+
+            l.subObjects.push(new Sidebar(sidebarDef))
+
+
+        }
+
+    }
+
 
 }
