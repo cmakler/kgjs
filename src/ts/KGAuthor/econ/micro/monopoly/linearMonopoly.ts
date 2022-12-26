@@ -45,15 +45,10 @@ module KGAuthor {
             
             lm.Q = intersectMRMC[0];
             lm.P = lm.demand.yOfX(lm.Q);
-            lm.MRMC =
+            lm.MRMC = lm.cost.yOfX(lm.Q);
 
             lm.subObjects.push(this.demand);
             lm.subObjects.push(this.cost);
-
-            if (graph) {
-
-            }
-
 
         }
 
