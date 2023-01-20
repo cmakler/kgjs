@@ -5123,11 +5123,9 @@ var KGAuthor;
             var intersectMRMC = KGAuthor.lineIntersection(lm.demand.marginalRevenue, lm.cost);
             lm.Q = intersectMRMC[0];
             lm.P = lm.demand.yOfX(lm.Q);
-            lm.MRMC =
-                lm.subObjects.push(_this.demand);
+            lm.MRMC = lm.cost.yOfX(lm.Q);
+            lm.subObjects.push(_this.demand);
             lm.subObjects.push(_this.cost);
-            if (graph) {
-            }
             return _this;
         }
         EconLinearMonopoly.prototype.parseSelf = function (parsedData) {
