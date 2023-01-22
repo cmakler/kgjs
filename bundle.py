@@ -7,9 +7,10 @@ js_directories = [
     'build/bundled/',
     'docs/js/',
     'docs/playground/code/',
-    '../bh-textbook/code/',
+    #'../bh-textbook/code/',
     #'../core-interactives/code/',
-    '../econgraphs/static/js/'
+    '../econgraphs/static/js/',
+    '../econgraphs-beta/static/js/'
 ]
 
 js_local_directories = [
@@ -22,9 +23,10 @@ css_directories = [
     'build/bundled/',
     'docs/css/',
     'docs/playground/code/',
-    '../bh-textbook/code/',
+    #'../bh-textbook/code/',
     #'../core-interactives/code/',
-    '../econgraphs/static/css/'
+    '../econgraphs/static/css/',
+    '../econgraphs-beta/static/css/'
 ]
 
 bundles = [
@@ -67,7 +69,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.6.js",
+        "name": "kg.0.2.7.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg-lib.js",
@@ -75,7 +77,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg3d.0.2.6.js",
+        "name": "kg3d.0.2.7.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg3d-lib.js",
@@ -112,7 +114,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.2.6.css",
+        "name": "kg.0.2.7.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",
@@ -120,7 +122,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.2.6.css",
+        "name": "kg-tufte.0.2.7.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",
@@ -134,10 +136,10 @@ for bundle in bundles:
     for dest_directory in bundle['dest_directories']:
         result = ''
         bundle_name = bundle['name']
-        print 'Processing bundle ' + bundle_name + '\n'
+        print('Processing bundle ' + bundle_name + '\n')
         for file_name in bundle['order']:
             with codecs.open(file_name, 'r', encoding='utf8') as infile:
-                print '  Appending ' + file_name + '\n'
+                print ('  Appending ' + file_name + '\n')
                 result += infile.read() + "\n\n"
                 infile.close()
         with codecs.open(dest_directory + bundle_name, 'w', encoding='utf8') as outfile:
