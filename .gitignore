@@ -4,3 +4,5 @@ export_to_econgraphs.py
 docs/_site/
 src/lib/js-yaml/
 vendor/
+src/.DS_Store
+*/.DS_Store

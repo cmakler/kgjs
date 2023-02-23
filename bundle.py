@@ -37,7 +37,7 @@ bundles = [
             "node_modules/katex/dist/katex.min.js",
             "node_modules/katex/dist/contrib/auto-render.min.js",
             "node_modules/d3/dist/d3.min.js",
-            "node_modules/mathjs/dist/math.min.js",
+            "node_modules/mathjs/dist/math.js",
             "node_modules/js-yaml/dist/js-yaml.min.js"
         ]
     },
@@ -48,7 +48,7 @@ bundles = [
             "node_modules/katex/dist/katex.min.js",
             "node_modules/katex/dist/contrib/auto-render.min.js",
             "node_modules/d3/dist/d3.min.js",
-            "node_modules/mathjs/dist/math.min.js",
+            "node_modules/mathjs/dist/math.js",
             "node_modules/js-yaml/dist/js-yaml.min.js",
             "build/lib/mathbox-bundle.min.js"
         ]

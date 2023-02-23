@@ -1,3 +1,2 @@
 source 'https://rubygems.org'
-gem 'commonmarker'
-gem 'github-pages', group: :jekyll_plugins
+gem 'github-pages', "~> 226",  group: :jekyll_plugins

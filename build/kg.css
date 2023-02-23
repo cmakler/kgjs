@@ -156,3 +156,17 @@ table.gameMatrix tr td.strategy {
     background: none;
     color: rgb(31, 119, 180);
 }
+
+.spacer {
+    margin-top: 20px;
+}
+
+.subtitle {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #959595;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}

@@ -51,14 +51,12 @@ module KG {
                 }
             }
         }
-
         mathboxFn() {
             const fn = this;
             return function (emit, x, y) {
                 emit(y, fn.evaluate(x, y), x);
             };
         }
-
         contour(level, xScale, yScale, bounds?) {
             const fn = this;
 
@@ -70,30 +68,30 @@ module KG {
             });
 
             let n = 100, m = 100, values = new Array(n * m);
-                for (let j = 0.5, k = 0; j < m; ++j) {
-                    for (let i = 0.5; i < n; ++i, ++k) {
-                        let x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n,
-                            y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
-                        values[k] = fn.evaluate(x, y);
-                    }
+            for (let j = 0.5, k = 0; j < m; ++j) {
+                for (let i = 0.5; i < n; ++i, ++k) {
+                    let x = bounds.xMin + i * (bounds.xMax - bounds.xMin) / n,
+                        y = bounds.yMin + j * (bounds.yMax - bounds.yMin) / m;
+                    values[k] = fn.evaluate(x, y);
                 }
+            }
 
-                let transform = ({type, value, coordinates}) => {
-                    return {
-                        type, value, coordinates: coordinates.map(rings => {
-                            return rings.map(points => {
-                                return points.map(([x, y]) => ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]));
-                            });
-                        })
-                    };
+            let transform = ({type, value, coordinates}) => {
+                return {
+                    type, value, coordinates: coordinates.map(rings => {
+                        return rings.map(points => {
+                            return points.map(([x, y]) => ([xScale.scale(bounds.xMin + x * (bounds.xMax - bounds.xMin) / 100), yScale.scale(bounds.yMin + y * (bounds.yMax - bounds.yMin) / 100)]));
+                        });
+                    })
                 };
+            };
 
-                const p = d3.geoPath();
+            const p = d3.geoPath();
 
-                // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
-                const contourLine = d3.contours().size([n, m]).contour(values, level);
+            // Compute the contour polygons at log-spaced intervals; returns an array of MultiPolygon.
+            const contourLine = d3.contours().size([n, m]).contour(values, level);
 
-                return p(transform(contourLine));
+            return p(transform(contourLine));
         }
 
         update(force) {
