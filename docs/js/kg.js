@@ -6525,7 +6525,9 @@ var KG;
                 lineStyle: 'solid',
                 checkOnGraph: true
             });
-            KG.setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
+            console.log('creating viewObject');
+            console.log('definition: '), def;
+            KG.setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax', 'fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
             KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
             if (def.inDef) {
@@ -6533,6 +6535,12 @@ var KG;
             }
             _this = _super.call(this, def) || this;
             var vo = _this;
+            if (vo.hasOwnProperty('xScale') && vo.xScale) {
+                def.xScaleMin = vo.xScale.def.domainMin;
+                def.xScaleMax = vo.xScale.def.domainMax;
+                def.yScaleMin = vo.yScale.def.domainMin;
+                def.yScaleMax = vo.yScale.def.domainMax;
+            }
             def.colorAttributes.forEach(function (attr) {
                 var c = def[attr];
                 if (vo.model.colors.hasOwnProperty(c)) {

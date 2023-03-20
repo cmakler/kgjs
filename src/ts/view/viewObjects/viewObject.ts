@@ -38,6 +38,12 @@ module KG {
         clipPathName?: string;
         clipPathName2?: string;
 
+        // this is used to create variables to trigger updates if the axes change dimensions
+        xScaleMin?: string;
+        yScaleMin?: string;
+        xScaleMax?: string;
+        yScaleMax?: string;
+
     }
 
     export interface IViewObject extends IUpdateListener {
@@ -104,7 +110,8 @@ module KG {
                 lineStyle: 'solid',
                 checkOnGraph: true
             });
-            setProperties(def, 'updatables', ['fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
+            
+            setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax','fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
             setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
 
@@ -115,6 +122,14 @@ module KG {
             super(def);
 
             let vo = this;
+
+            if(vo.hasOwnProperty('xScale') && vo.xScale){
+                def.xScaleMin = vo.xScale.def.domainMin;
+                def.xScaleMax = vo.xScale.def.domainMax;
+                def.yScaleMin = vo.yScale.def.domainMin;
+                def.yScaleMax = vo.yScale.def.domainMax;
+            }
+
 
             def.colorAttributes.forEach(function (attr) {
                 let c = def[attr];
