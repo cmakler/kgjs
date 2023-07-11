@@ -66844,7 +66844,8 @@ var KGAuthor;
                 var yInterceptPointDef = {
                     coordinates: [0, ls.yIntercept],
                     color: def.color,
-                    r: 4
+                    r: 4,
+                    show: def.show
                 };
                 if (def.draggable && typeof (ls.yIntercept) == 'string') {
                     yInterceptPointDef['drag'] = [{
@@ -68483,8 +68484,6 @@ var KG;
                 lineStyle: 'solid',
                 checkOnGraph: true
             });
-            console.log('creating viewObject');
-            console.log('definition: '), def;
             KG.setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax', 'fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
             KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);

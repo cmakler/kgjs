@@ -110,7 +110,7 @@ module KG {
                 lineStyle: 'solid',
                 checkOnGraph: true
             });
-            
+
             setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax','fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
             setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
             setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);

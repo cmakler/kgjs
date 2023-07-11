@@ -68,7 +68,8 @@ module KGAuthor {
                 let yInterceptPointDef = {
                     coordinates: [0, ls.yIntercept],
                     color: def.color,
-                    r: 4
+                    r: 4,
+                    show: def.show
                 };
 
                 if (def.draggable && typeof(ls.yIntercept) == 'string') {
