@@ -67404,6 +67404,7 @@ var KG;
             model.params = parsedData.params.map(function (def) {
                 return new KG.Param(def);
             });
+            model.initialParams = parsedData.params;
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
             model.idioms = parsedData.idioms;
@@ -67420,6 +67421,16 @@ var KG;
         Model.prototype.addUpdateListener = function (updateListener) {
             this.updateListeners.push(updateListener);
             return this;
+        };
+        Model.prototype.resetParams = function () {
+            console.log("resetting model parameters");
+            var model = this;
+            console.log('initial parameters are: ', model.initialParams);
+            model.initialParams.forEach(function (p) {
+                console.log('setting ', p.name, ' to ', p.value);
+                model.updateParam(p.name, p.value);
+            });
+            model.update(true);
         };
         Model.prototype.evalParams = function () {
             var p = {};
@@ -70928,5 +70939,15 @@ document.addEventListener("keyup", function (event) {
         }
     }
 });
+var KG;
+(function (KG) {
+    function resetAllParams() {
+        console.log("Resetting parameters on all views");
+        views.forEach(function (v) {
+            v.model.resetParams();
+        });
+    }
+    KG.resetAllParams = resetAllParams;
+})(KG || (KG = {}));
 
 

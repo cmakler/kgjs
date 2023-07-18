@@ -195,7 +195,11 @@ document.addEventListener("keyup", event => {
     }
 });
 
-
-
-
-
+module KG {
+    export function resetAllParams() {
+        console.log("Resetting parameters on all views")
+        views.forEach(function (v) {
+            v.model.resetParams();
+        })
+    }
+}

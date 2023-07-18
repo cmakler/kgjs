@@ -19,6 +19,7 @@ module KG {
 
         // objects that store definitions of params, calcs, and colors
         private params: Param[];
+        private initialParams: ParamDefinition[];
         private calcs: {};
         public colors: {};
         public idioms: {};
@@ -35,6 +36,7 @@ module KG {
             model.params = parsedData.params.map(function (def) {
                 return new Param(def)
             });
+            model.initialParams = parsedData.params;
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
             model.idioms = parsedData.idioms;
@@ -53,6 +55,17 @@ module KG {
         addUpdateListener(updateListener: UpdateListener) {
             this.updateListeners.push(updateListener);
             return this;
+        }
+
+        resetParams() {
+            console.log("resetting model parameters")
+            const model = this;
+            console.log('initial parameters are: ', model.initialParams);
+            model.initialParams.forEach(function (p) {
+                console.log('setting ',p.name,' to ',p.value)
+                model.updateParam(p.name, p.value);
+            })
+            model.update(true);
         }
 
         evalParams() {
