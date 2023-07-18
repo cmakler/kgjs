@@ -63211,22 +63211,22 @@ var KGAuthor;
             l.aspectRatio = 1.6;
             var bigGraphDef = def['bigGraph'], topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'];
             topGraphDef.position = {
-                "x": 0.125,
-                "y": 0.06,
-                "width": 0.225,
-                "height": 0.36
+                "x": 0.1,
+                "y": 0.1,
+                "width": 0.25,
+                "height": 0.40
             };
             bottomGraphDef.position = {
-                "x": 0.125,
-                "y": 0.5,
-                "width": 0.225,
-                "height": 0.36
+                "x": 0.1,
+                "y": 0.538,
+                "width": 0.25,
+                "height": 0.40
             };
             bigGraphDef.position = {
-                "x": 0.5,
-                "y": 0.06,
-                "width": 0.5,
-                "height": 0.8
+                "x": 0.43,
+                "y": 0.05,
+                "width": 0.555,
+                "height": 0.888
             };
             l.subObjects.push(new KGAuthor.Graph(bigGraphDef));
             l.subObjects.push(new KGAuthor.Graph(topGraphDef));
