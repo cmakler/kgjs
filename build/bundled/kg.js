@@ -399,11 +399,13 @@ var KGAuthor;
             def.colors = KG.setDefaults(def.colors || {}, palette);
             _this = _super.call(this, def) || this;
             _this.colors = def.colors;
+            _this.idioms = def.idioms;
             return _this;
         }
         Schema.prototype.parseSelf = function (parsedData) {
             var colors = this.colors;
             parsedData.colors = KG.setDefaults(parsedData.colors || {}, colors);
+            parsedData.idioms = this.idioms;
             return parsedData;
         };
         return Schema;
@@ -1243,6 +1245,39 @@ var KGAuthor;
         return SquarePlusTwoVerticalGraphs;
     }(KGAuthor.Layout));
     KGAuthor.SquarePlusTwoVerticalGraphs = SquarePlusTwoVerticalGraphs;
+    var TwoVerticalSquaresOneBigSquare = /** @class */ (function (_super) {
+        __extends(TwoVerticalSquaresOneBigSquare, _super);
+        function TwoVerticalSquaresOneBigSquare(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.aspectRatio = 1.6;
+            var bigGraphDef = def['bigGraph'], topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'];
+            topGraphDef.position = {
+                "x": 0.125,
+                "y": 0.06,
+                "width": 0.225,
+                "height": 0.36
+            };
+            bottomGraphDef.position = {
+                "x": 0.125,
+                "y": 0.5,
+                "width": 0.225,
+                "height": 0.36
+            };
+            bigGraphDef.position = {
+                "x": 0.5,
+                "y": 0.06,
+                "width": 0.5,
+                "height": 0.8
+            };
+            l.subObjects.push(new KGAuthor.Graph(bigGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(topGraphDef));
+            l.subObjects.push(new KGAuthor.Graph(bottomGraphDef));
+            return _this;
+        }
+        return TwoVerticalSquaresOneBigSquare;
+    }(KGAuthor.Layout));
+    KGAuthor.TwoVerticalSquaresOneBigSquare = TwoVerticalSquaresOneBigSquare;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -1796,7 +1831,8 @@ var KGAuthor;
             if (def.hasOwnProperty('title') && ("" != def.title)) {
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new KGAuthor.Label({
-                        text: "\\text{" + def.title + "}",
+                        text: def.title,
+                        plainText: true,
                         x: KGAuthor.averageDefs(graph.xScale.min, graph.xScale.max),
                         y: graph.yScale.min,
                         yPixelOffset: -1 * def.yPixelOffset
@@ -1804,7 +1840,8 @@ var KGAuthor;
                 }
                 else if (def.orient == 'left') {
                     a.subObjects.push(new KGAuthor.Label({
-                        text: "\\text{" + def.title + "}",
+                        text: def.title,
+                        plainText: true,
                         x: graph.xScale.min,
                         y: KGAuthor.averageDefs(graph.yScale.min, graph.yScale.max),
                         xPixelOffset: -1 * def.xPixelOffset,
@@ -2317,7 +2354,7 @@ var KGAuthor;
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
-                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(def.label, labelDef);
                 labelDef = KG.setDefaults(labelDef, {
                     fontSize: 12,
                     color: def.color,
@@ -3129,6 +3166,41 @@ var KGAuthor;
         __extends(EconSchema, _super);
         function EconSchema(def) {
             var _this = this;
+            def.idioms = {};
+            def.custom = def.custom || "0";
+            var idiomMenu = [
+                {
+                    PPFlabel: ["PPF", "PPC"],
+                    PPFword: ["frontier", "curve"],
+                    PPFWord: ["Frontier", "Curve"]
+                },
+                {
+                    good1label: ["x_1", "x", "X"],
+                    labor1label: ["L_1", "L_x", "L_X"],
+                    good1word: ["good 1", "good X", "good X"],
+                    good1Word: ["Good 1", "Good X", "Good X"],
+                    good2label: ["x_2", "y", "Y"],
+                    labor2label: ["L_2", "L_y", "L_Y"],
+                    good2word: ["good 2", "good Y", "good Y"],
+                    good2Word: ["Good 2", "Good Y", "Good Y"]
+                }
+            ];
+            console.log("custom: ", def.custom);
+            idiomMenu.forEach(function (idiomGroup, index) {
+                // if the user has specified a choice, use it.
+                if (index < def.custom.length) {
+                    for (var idiomName in idiomGroup) {
+                        def.idioms[idiomName] = idiomGroup[idiomName][def.custom[index]];
+                    }
+                }
+                // otherwise default to first
+                else {
+                    for (var idiomName in idiomGroup) {
+                        def.idioms[idiomName] = idiomGroup[idiomName][0];
+                    }
+                }
+            });
+            console.log("idioms: ", def.idioms);
             def.colors = KG.setDefaults(def.colors || {}, {
                 // consumer theory
                 utility: 'purple',
@@ -3171,6 +3243,7 @@ var KGAuthor;
                 nature: 'green'
             });
             _this = _super.call(this, def) || this;
+            _this.idiomMenu = idiomMenu;
             return _this;
         }
         return EconSchema;
@@ -5375,6 +5448,7 @@ var KG;
             });
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
+            model.idioms = parsedData.idioms;
             model.clearColor = parsedData.clearColor;
             model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new KG.Restriction(def);
@@ -5383,6 +5457,7 @@ var KG;
             model.currentParamValues = model.evalParams();
             model.evalCalcs();
             model.currentColors = model.evalObject(model.colors);
+            model.currentIdioms = model.evalObject(model.idioms);
         }
         Model.prototype.addUpdateListener = function (updateListener) {
             this.updateListeners.push(updateListener);
@@ -5398,7 +5473,7 @@ var KG;
         // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
         Model.prototype.evalCalcs = function () {
             var model = this;
-            // clear calculatios so old values aren't used;
+            // clear calculations so old values aren't used;
             model.currentCalcValues = {};
             // generate as many calculations from params as possible
             model.currentCalcValues = model.evalObject(model.calcs, true);
@@ -5439,16 +5514,17 @@ var KG;
                 return parseFloat(name);
             }
             // collect current values in a scope object
-            var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors;
+            var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors, idioms = model.currentIdioms;
             // try to evaluate using mathjs
             try {
                 var compiledMath = math.compile(name);
                 var result = compiledMath.evaluate({
                     params: params,
                     calcs: calcs,
+                    idioms: idioms,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
+                //console.log('parsed', name, 'as ', result);
                 return result;
             }
             catch (err) {
@@ -6208,8 +6284,9 @@ var KG;
         }
         View.prototype.parse = function (data, div) {
             data.schema = data.schema || "Schema";
-            // allow user to specify param overrides in methods
+            // allow user to specify param overrides or select idioms in methods
             var urlParams = new URLSearchParams(window.location.search);
+            // override params
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -6217,13 +6294,12 @@ var KG;
                 }
                 // allow user to override parameter values by specifying them in the URL
                 var urlParamValue = urlParams.get(paramData.name);
-                console.log("Searching for ", paramData.name);
+                /* console.log("Searching for ", paramData.name)
                 if (urlParamValue) {
-                    console.log(urlParamValue);
-                }
-                else {
-                    console.log('not found');
-                }
+                    console.log(urlParamValue)
+                } else {
+                    console.log('not found')
+                }*/
                 if (urlParamValue) {
                     paramData.value = urlParamValue;
                 }
@@ -6241,6 +6317,7 @@ var KG;
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
+                idioms: {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 markers: data.markers || [],
@@ -6277,7 +6354,7 @@ var KG;
                 data.objects.push({ type: "Explanation", def: data.explanation });
             }
             if (data.hasOwnProperty('schema')) {
-                data.objects.push({ type: data.schema, def: {} });
+                data.objects.push({ type: data.schema, def: { custom: urlParams.get('custom') } });
             }
             console.log('parsed data: ', parsedData);
             return KGAuthor.parse(data.objects, parsedData);
@@ -7282,7 +7359,7 @@ var KG;
                 color: 'black'
             });
             // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            KG.setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize', 'plainText']);
             KG.setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
             _this = _super.call(this, def) || this;
             _this.bgcolor = def.model.clearColor;
@@ -7306,7 +7383,13 @@ var KG;
             label.rootElement.style('color', label.color).style('background-color', label.bgcolor);
             var x = label.xScale.scale(label.x) + (+label.xPixelOffset), y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
-                //console.log('drawing label with text ',label.text);
+                if (label.plainText) {
+                    //console.log('rendering label as plain text: ', label.text)
+                    label.text = "\\text{" + label.text + "}";
+                }
+                else {
+                    //console.log('rendering label as LaTeX: ', label.text)
+                }
                 try {
                     katex.render(label.text.toString(), label.rootElement.node());
                 }

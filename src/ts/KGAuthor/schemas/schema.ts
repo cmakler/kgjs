@@ -2,11 +2,19 @@
 
 module KGAuthor {
 
+    export interface SchemaDefinition extends AuthoringObjectDefinition {
+        custom: string;
+        idioms: any;
+        colors: any;
+    }
+
     export class Schema extends AuthoringObject {
 
         public colors: {};
+        public idioms: {};
+        public idiomMenu: any[];
 
-        constructor(def) {
+        constructor(def:SchemaDefinition) {
 
             const palette = {
                 blue: 'd3.schemeCategory10[0]',     //#3182bd
@@ -33,12 +41,14 @@ module KGAuthor {
             super(def);
 
             this.colors = def.colors;
+            this.idioms = def.idioms;
 
         }
 
         parseSelf(parsedData: KG.ViewDefinition) {
             const colors = this.colors;
             parsedData.colors = KG.setDefaults(parsedData.colors || {}, colors);
+            parsedData.idioms = this.idioms;
             return parsedData;
         }
     }

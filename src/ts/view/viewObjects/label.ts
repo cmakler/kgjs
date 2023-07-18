@@ -6,6 +6,8 @@ module KG {
         x: any;
         y: any;
         text: string;
+
+        plainText?: boolean;
         fontSize?: number;
         xPixelOffset?: number;
         yPixelOffset?: number;
@@ -19,6 +21,7 @@ module KG {
         private x: number;
         private y: number;
         private text: string;
+        private plainText: boolean;
         private fontSize: number;
         private xPixelOffset: number;
         private yPixelOffset: number;
@@ -70,7 +73,7 @@ module KG {
             });
 
             // define constant and updatable properties
-            setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize']);
+            setProperties(def, 'constants', ['xPixelOffset', 'yPixelOffset', 'fontSize', 'plainText']);
             setProperties(def, 'updatables', ['x', 'y', 'text', 'align', 'valign', 'rotate', 'color', 'bgcolor']);
 
             super(def);
@@ -104,7 +107,12 @@ module KG {
             const x = label.xScale.scale(label.x) + (+label.xPixelOffset),
                 y = label.yScale.scale(label.y) - (+label.yPixelOffset);
             if (undefined != label.text) {
-                //console.log('drawing label with text ',label.text);
+                if (label.plainText) {
+                    //console.log('rendering label as plain text: ', label.text)
+                    label.text = "\\text{" + label.text + "}";
+                } else {
+                    //console.log('rendering label as LaTeX: ', label.text)
+                }
                 try {
                     katex.render(label.text.toString(), label.rootElement.node());
                 }

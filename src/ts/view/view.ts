@@ -22,6 +22,7 @@ module KG {
         greenscreen?: string;
         calcs?: {};
         colors?: {};
+        idioms?: {};
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
         layout?: TypeAndDef;
@@ -67,9 +68,10 @@ module KG {
 
             data.schema = data.schema || "Schema";
 
-            // allow user to specify param overrides in methods
+            // allow user to specify param overrides or select idioms in methods
             const urlParams = new URLSearchParams(window.location.search);
 
+            // override params
             data.params = (data.params || []).map(function (paramData) {
                 // allow author to override initial parameter values by specifying them as div attributes
                 if (div.hasAttribute(paramData.name)) {
@@ -78,16 +80,17 @@ module KG {
 
                 // allow user to override parameter values by specifying them in the URL
                 const urlParamValue = urlParams.get(paramData.name);
-                console.log("Searching for ", paramData.name)
+
+                /* console.log("Searching for ", paramData.name)
                 if (urlParamValue) {
                     console.log(urlParamValue)
                 } else {
                     console.log('not found')
-                }
+                }*/
+
                 if (urlParamValue) {
                     paramData.value = urlParamValue
                 }
-
 
                 // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
@@ -106,6 +109,7 @@ module KG {
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
+                idioms: {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
                 markers: data.markers || [],
@@ -146,7 +150,7 @@ module KG {
             }
 
             if (data.hasOwnProperty('schema')) {
-                data.objects.push({type: data.schema, def: {}})
+                data.objects.push({type: data.schema, def: { custom: urlParams.get('custom') }})
             }
 
             console.log('parsed data: ', parsedData)

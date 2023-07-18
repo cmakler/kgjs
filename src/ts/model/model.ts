@@ -21,12 +21,14 @@ module KG {
         private params: Param[];
         private calcs: {};
         public colors: {};
+        public idioms: {};
         public clearColor: string;
 
         // objects that store current realized values of params, calcs, and colors
         public currentParamValues: {};
         public currentCalcValues: {};
         public currentColors: {};
+        public currentIdioms: {};
 
         constructor(parsedData) {
             let model = this;
@@ -35,6 +37,7 @@ module KG {
             });
             model.calcs = parsedData.calcs;
             model.colors = parsedData.colors;
+            model.idioms = parsedData.idioms;
             model.clearColor = parsedData.clearColor;
             model.restrictions = (parsedData.restrictions || []).map(function (def) {
                 return new Restriction(def)
@@ -44,6 +47,7 @@ module KG {
             model.currentParamValues = model.evalParams();
             model.evalCalcs();
             model.currentColors = model.evalObject(model.colors);
+            model.currentIdioms = model.evalObject(model.idioms);
         }
 
         addUpdateListener(updateListener: UpdateListener) {
@@ -62,7 +66,7 @@ module KG {
         // evaluates the calcs object; then re-evaluates to capture calcs that depend on other calcs
         evalCalcs() {
             const model = this;
-            // clear calculatios so old values aren't used;
+            // clear calculations so old values aren't used;
             model.currentCalcValues = {};
 
             // generate as many calculations from params as possible
@@ -110,8 +114,8 @@ module KG {
             // collect current values in a scope object
             const params = model.currentParamValues,
                 calcs = model.currentCalcValues,
-                colors = model.currentColors;
-
+                colors = model.currentColors,
+                idioms = model.currentIdioms;
 
             // try to evaluate using mathjs
             try {
@@ -119,9 +123,10 @@ module KG {
                 let result = compiledMath.evaluate({
                     params: params,
                     calcs: calcs,
+                    idioms: idioms,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as a pure math expression with value', result);
+                //console.log('parsed', name, 'as ', result);
                 return result;
             } catch
                 (err) {

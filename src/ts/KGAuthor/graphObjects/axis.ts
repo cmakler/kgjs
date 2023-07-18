@@ -17,7 +17,8 @@ module KGAuthor {
             if (def.hasOwnProperty('title') && ("" != def.title)) {
                 if (def.orient == 'bottom') {
                     a.subObjects.push(new Label({
-                        text: `\\text{${def.title}}`,
+                        text: def.title,
+                        plainText: true,
                         x: averageDefs(graph.xScale.min,graph.xScale.max),
                         y: graph.yScale.min,
                         yPixelOffset: -1*def.yPixelOffset
@@ -26,7 +27,8 @@ module KGAuthor {
 
                 else if (def.orient == 'left') {
                     a.subObjects.push(new Label({
-                        text: `\\text{${def.title}}`,
+                        text: def.title,
+                        plainText: true,
                         x: graph.xScale.min,
                         y: averageDefs(graph.yScale.min,graph.yScale.max),
                         xPixelOffset: -1*def.xPixelOffset,

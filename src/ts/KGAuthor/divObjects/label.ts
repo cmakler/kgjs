@@ -4,6 +4,8 @@ module KGAuthor {
 
     export interface LabelDefinition extends DivObjectDefinition {
         text: string;
+
+        plainText?: boolean;
         x?: any;
         y?: any;
         t?: any;
@@ -20,6 +22,7 @@ module KGAuthor {
     export class Label extends DivObject {
 
         constructor(def:LabelDefinition, graph) {
+
             if(def.hasOwnProperty('position')) {
                 if(def.position.toLowerCase() == 'bl') {
                     def.xPixelOffset = 5;
