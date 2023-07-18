@@ -56,7 +56,7 @@ module KGAuthor {
 
             topGraphDef.position = {
                 "x": 0.1,
-                "y": 0.1,
+                "y": 0.05,
                 "width": 0.25,
                 "height": 0.40
             };

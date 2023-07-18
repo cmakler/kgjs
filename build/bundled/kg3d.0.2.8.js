@@ -63212,7 +63212,7 @@ var KGAuthor;
             var bigGraphDef = def['bigGraph'], topGraphDef = def['topGraph'], bottomGraphDef = def['bottomGraph'];
             topGraphDef.position = {
                 "x": 0.1,
-                "y": 0.1,
+                "y": 0.05,
                 "width": 0.25,
                 "height": 0.40
             };
