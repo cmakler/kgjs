@@ -23,6 +23,12 @@ module KG {
 
         redraw() {
             const checkbox = this;
+            if (checkbox.plainText) {
+                //console.log('rendering label as plain text: ', label.text)
+                checkbox.label = "\\text{" + checkbox.label + "}";
+            } else {
+                //console.log('rendering label as LaTeX: ', label.text)
+            }
             checkbox.inputElement.property('checked',Boolean(checkbox.value));
             katex.render(checkbox.label, checkbox.labelElement.node());
             return checkbox;

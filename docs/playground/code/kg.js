@@ -4880,7 +4880,7 @@ var KGAuthor;
                     var surplusDef = KG.setDefaults(def.surplus || {}, {
                         "fill": "colors.demand"
                     });
-                    var price = def.price || "calcs." + ld.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ld.name + ".PQ.x";
+                    var price = surplusDef.price || "calcs." + ld.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ld.name + ".PQ.x";
                     surplusDef.univariateFunction1 = {
                         fn: ld.def.univariateFunction.fn,
                         min: 0,
@@ -4982,7 +4982,7 @@ var KGAuthor;
                     var surplusDef = KG.setDefaults(def.surplus || {}, {
                         "fill": "colors.supply"
                     });
-                    var price = def.price || "calcs." + ls.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ls.name + ".PQ.x";
+                    var price = surplusDef.price || "calcs." + ls.name + ".PQ.y", quantity = surplusDef.quantity || "calcs." + ls.name + ".PQ.x";
                     surplusDef.univariateFunction1 = {
                         fn: ls.def.univariateFunction.fn,
                         min: 0,
@@ -5221,21 +5221,41 @@ var KGAuthor;
                 name: 'monopoly',
                 showCS: false,
                 showPS: false,
-                showProfit: false
+                showProfit: false,
+                showDWL: false
             });
             _this = _super.call(this, def, graph) || this;
             var lm = _this;
-            def.demand.price = "calcs." + lm.name + ".P";
-            def.cost.price = "calcs." + lm.name + ".P";
-            if (def.cost.hasOwnProperty('surplus')) {
-                def.cost.surplus.quantity = "calcs." + lm.name + ".Q";
-            }
+            def.demand.surplus = { show: def.showCS, price: "calcs." + lm.name + ".P", quantity: "calcs." + lm.name + ".Q" };
+            def.cost.surplus = { show: def.showPS, price: "calcs." + lm.name + ".P", quantity: "calcs." + lm.name + ".Q" };
             lm.demand = new KGAuthor.EconLinearDemand(def.demand, graph);
             lm.cost = new KGAuthor.EconLinearMC(def.cost, graph);
             var intersectMRMC = KGAuthor.lineIntersection(lm.demand.marginalRevenue, lm.cost);
             lm.Q = intersectMRMC[0];
             lm.P = lm.demand.yOfX(lm.Q);
             lm.MRMC = lm.cost.yOfX(lm.Q);
+            var intersectDMC = KGAuthor.lineIntersection(lm.demand, lm.cost);
+            lm.competitiveQ = intersectDMC[0];
+            lm.competitiveP = lm.demand.yOfX(lm.competitiveQ);
+            if (def.hasOwnProperty('showDWL')) {
+                var DWLDef = {
+                    show: def.showDWL,
+                    fill: "colors.dwl"
+                };
+                DWLDef.univariateFunction1 = {
+                    fn: lm.demand.def.univariateFunction.fn,
+                    min: lm.Q,
+                    max: lm.competitiveQ,
+                    samplePoints: 2
+                };
+                DWLDef.univariateFunction2 = {
+                    fn: lm.cost.def.univariateFunction.fn,
+                    min: lm.Q,
+                    max: lm.competitiveQ,
+                    samplePoints: 2
+                };
+                lm.subObjects.push(new KGAuthor.Area(DWLDef, graph));
+            }
             lm.subObjects.push(_this.demand);
             lm.subObjects.push(_this.cost);
             return _this;
@@ -5245,7 +5265,9 @@ var KGAuthor;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[lm.name] = {
                 Q: lm.Q.toString(),
-                P: lm.P.toString()
+                P: lm.P.toString(),
+                competitiveQ: lm.competitiveQ.toString(),
+                competitiveP: lm.competitiveP.toString()
             };
             return parsedData;
         };
@@ -7556,10 +7578,11 @@ var KG;
             // establish property defaults
             KG.setDefaults(def, {
                 value: 'params.' + def.param,
-                alwaysUpdate: true
+                alwaysUpdate: true,
+                plainText: false
             });
             // define constant and updatable properties
-            KG.setProperties(def, 'constants', ['param']);
+            KG.setProperties(def, 'constants', ['param', 'plainText']);
             KG.setProperties(def, 'updatables', ['label', 'value']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -7682,6 +7705,13 @@ var KG;
         };
         Checkbox.prototype.redraw = function () {
             var checkbox = this;
+            if (checkbox.plainText) {
+                //console.log('rendering label as plain text: ', label.text)
+                checkbox.label = "\\text{" + checkbox.label + "}";
+            }
+            else {
+                //console.log('rendering label as LaTeX: ', label.text)
+            }
             checkbox.inputElement.property('checked', Boolean(checkbox.value));
             katex.render(checkbox.label, checkbox.labelElement.node());
             return checkbox;

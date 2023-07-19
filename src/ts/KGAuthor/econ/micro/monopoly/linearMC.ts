@@ -12,10 +12,7 @@ module KGAuthor {
         public profit;
 
         constructor(def: EconLinearSupplyDefinition, graph) {
-
-
             super(def, graph);
-
         }
 
 

@@ -3,6 +3,7 @@
 module KGAuthor {
 
     export interface SurplusDefinition extends AreaDefinition {
+        price?: any;
         quantity?: any;
     }
 
@@ -144,7 +145,7 @@ module KGAuthor {
                     let surplusDef = KG.setDefaults(def.surplus || {}, {
                         "fill": "colors.demand"
                     });
-                    let price = def.price || `calcs.${ld.name}.PQ.y`,
+                    let price = surplusDef.price || `calcs.${ld.name}.PQ.y`,
                         quantity = surplusDef.quantity || `calcs.${ld.name}.PQ.x`;
                     surplusDef.univariateFunction1 = {
                         fn: ld.def.univariateFunction.fn,

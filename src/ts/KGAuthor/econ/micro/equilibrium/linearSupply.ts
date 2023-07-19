@@ -96,7 +96,7 @@ module KGAuthor {
                     let surplusDef = KG.setDefaults(def.surplus || {}, {
                         "fill": "colors.supply"
                     });
-                    let price = def.price || `calcs.${ls.name}.PQ.y`,
+                    let price = surplusDef.price || `calcs.${ls.name}.PQ.y`,
                         quantity = surplusDef.quantity || `calcs.${ls.name}.PQ.x`;
                     surplusDef.univariateFunction1 = {
                         fn: ls.def.univariateFunction.fn,
