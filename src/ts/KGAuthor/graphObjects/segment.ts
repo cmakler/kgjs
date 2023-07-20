@@ -40,7 +40,10 @@ module KGAuthor {
             if (def.hasOwnProperty('label')) {
                 let labelDef = copyJSON(def);
                 delete labelDef.label;
-                labelDef = KG.setDefaults(labelDef, def.label);
+                if (typeof def.label === "string") {
+                    def.label = {text: def.label}
+                }
+                labelDef = KG.setDefaults(def.label || {}, labelDef);
                 labelDef = KG.setDefaults(labelDef, {
                     fontSize: 12,
                     color: def.color,
