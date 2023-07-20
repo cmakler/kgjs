@@ -64278,7 +64278,7 @@ var KGAuthor;
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
                 delete labelDef.label;
-                labelDef = KG.setDefaults(def.label, labelDef);
+                labelDef = KG.setDefaults(labelDef, def.label);
                 labelDef = KG.setDefaults(labelDef, {
                     fontSize: 12,
                     color: def.color,
