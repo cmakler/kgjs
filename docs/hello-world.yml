@@ -1,0 +1,15 @@
+defaults:
+  x: 6
+  y: 4
+  xAxisTitle: Fish
+  yAxisTitle: Coconuts
+layout:
+  OneGraph:
+    graph:
+      xAxis:
+        title: macro.xAxisTitle
+      yAxis:
+        title: macro.yAxisTitle
+      objects:
+        - Point:
+            coordinates: [macro.x, macro.y]

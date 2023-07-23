@@ -8907,7 +8907,7 @@ var views = [];
 window.addEventListener("load", function () {
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
-        var d = viewDivs[i], src = d.getAttribute('src'), fmt = d.getAttribute('format');
+        var d = viewDivs[i], src = d.getAttribute('src'), tmp = d.getAttribute('template'), fmt = d.getAttribute('format');
         //greenscreen = d.getAttribute('greenscreen') || false;
         if (d.innerHTML.indexOf('svg') > -1) {
             //console.log('already loaded');
@@ -8920,7 +8920,30 @@ window.addEventListener("load", function () {
                         var y = jsyaml.safeLoad(t);
                         var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                         //j.greenscreen = greenscreen;
-                        views.push(new KG.View(d, j));
+                        // If there is a template file, then load that and use the yml in the description to replace terms defined by "macro"
+                        if (tmp) {
+                            d3.text(tmp).then(function (template_file) {
+                                var yt = jsyaml.safeLoad(template_file);
+                                var yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
+                                for (var key in j) {
+                                    var searchTerm = new RegExp("macro.\\b" + key + "\\b", "g");
+                                    var replaceTerm = j[key];
+                                    yts = yts.replace(searchTerm, replaceTerm);
+                                }
+                                // Any terms not defined in the user's overrides should revert to the template defaults
+                                var defaults = JSON.parse(yts).defaults;
+                                for (var key in defaults) {
+                                    var searchTerm = new RegExp("macro.\\b" + key + "\\b", "g");
+                                    var replaceTerm = defaults[key];
+                                    yts = yts.replace(searchTerm, replaceTerm);
+                                }
+                                var jt = JSON.parse(yts);
+                                views.push(new KG.View(d, jt));
+                            });
+                        }
+                        else {
+                            views.push(new KG.View(d, j));
+                        }
                     }
                     if (src) {
                         // load YAML from source file

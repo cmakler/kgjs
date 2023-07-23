@@ -7,7 +7,6 @@ function createCodeMirror(def) {
 
     parent.node().innerHTML = '';
 
-
     parent.style("width", previewWidth + 500 + "px")
         .attr("class", "enclosing");
 

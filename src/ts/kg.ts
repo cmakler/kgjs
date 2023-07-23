@@ -80,6 +80,7 @@ window.addEventListener("load", function () {
     for (let i = 0; i < viewDivs.length; i++) {
         const d = viewDivs[i],
             src = d.getAttribute('src'),
+            tmp = d.getAttribute('template'),
             fmt = d.getAttribute('format')
             //greenscreen = d.getAttribute('greenscreen') || false;
 
@@ -90,12 +91,34 @@ window.addEventListener("load", function () {
             // if there is no src attribute
             if (!src || src.indexOf('.yml') > -1) {
                 try {
-
                     function generateViewFromYamlText(t) {
                         const y = jsyaml.safeLoad(t);
                         const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                         //j.greenscreen = greenscreen;
-                        views.push(new KG.View(d, j));
+                        // If there is a template file, then load that and use the yml in the description to replace terms defined by "macro"
+                        if(tmp) {
+                            d3.text(tmp).then(function (template_file) {
+                                const yt = jsyaml.safeLoad(template_file);
+                                let yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
+                                for(const key in j) {
+                                    let searchTerm = new RegExp("macro.\\b"+key+"\\b", "g");
+                                    let replaceTerm = j[key];
+                                    yts = yts.replace(searchTerm, replaceTerm);
+                                }
+                                // Any terms not defined in the user's overrides should revert to the template defaults
+                                const defaults = JSON.parse(yts).defaults;
+                                for(const key in defaults) {
+                                    let searchTerm = new RegExp("macro.\\b"+key+"\\b", "g");
+                                    let replaceTerm = defaults[key];
+                                    yts = yts.replace(searchTerm, replaceTerm);
+                                }
+                                const jt = JSON.parse(yts);
+                                views.push(new KG.View(d, jt));
+                            })
+                        } else {
+                            views.push(new KG.View(d, j));
+                        }
+
                     }
 
                     if (src) {
