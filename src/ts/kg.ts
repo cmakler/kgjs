@@ -101,15 +101,8 @@ window.addEventListener("load", function () {
                                 const yt = jsyaml.safeLoad(template_file);
                                 let yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
                                 for(const key in j) {
-                                    let searchTerm = new RegExp("macro.\\b"+key+"\\b", "g");
+                                    let searchTerm = new RegExp("template.\\b"+key+"\\b", "g");
                                     let replaceTerm = j[key];
-                                    yts = yts.replace(searchTerm, replaceTerm);
-                                }
-                                // Any terms not defined in the user's overrides should revert to the template defaults
-                                const defaults = JSON.parse(yts).defaults;
-                                for(const key in defaults) {
-                                    let searchTerm = new RegExp("macro.\\b"+key+"\\b", "g");
-                                    let replaceTerm = defaults[key];
                                     yts = yts.replace(searchTerm, replaceTerm);
                                 }
                                 const jt = JSON.parse(yts);
@@ -130,7 +123,6 @@ window.addEventListener("load", function () {
                     } else {
                         // read inner HTML of div as YAML
                         generateViewFromYamlText(d.innerHTML);
-
                     }
 
                 } catch (e) {

@@ -12,6 +12,13 @@ module KG {
         paths: TypeAndDef[];
     }
 
+    export interface TemplateDefaultDefinition {
+        name: string;
+        value: string;
+        type: string;
+        description: string;
+    }
+
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
@@ -21,6 +28,7 @@ module KG {
         params?: ParamDefinition[];
         greenscreen?: string;
         calcs?: {};
+        templateDefaults?: {};
         colors?: {};
         idioms?: {};
         restrictions?: RestrictionDefinition[];
@@ -66,6 +74,19 @@ module KG {
 
         parse(data: ViewDefinition, div?) {
 
+            if(data.hasOwnProperty('templateDefaults')) {
+                // Any terms not defined in the user's overrides should revert to the template defaults
+                const defaults = data.templateDefaults;
+                let dataString = JSON.stringify(data);
+                for(const key in defaults) {
+                    const defaultDef: TemplateDefaultDefinition = defaults[key];
+                    let searchTerm = new RegExp("template.\\b"+key+"\\b", "g");
+                    let replaceTerm = defaultDef.value;
+                    dataString = dataString.replace(searchTerm, replaceTerm);
+                }
+                data = JSON.parse(dataString);
+            }
+
             data.schema = data.schema || "Schema";
 
             // allow user to specify param overrides or select idioms in methods
@@ -92,8 +113,17 @@ module KG {
                     paramData.value = urlParamValue
                 }
 
+                // convert boolean params from strings to numbers
+                if(paramData.value == 'true') {
+                    paramData.value = 1;
+                }
+                if(paramData.value == 'false') {
+                    paramData.value = 0;
+                }
+
                 // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
+
                 return paramData;
             });
 

@@ -1,15 +1,29 @@
-defaults:
-  x: 6
-  y: 4
-  xAxisTitle: Fish
-  yAxisTitle: Coconuts
+custom:
+  x:
+    name: x
+    type: param
+    description: Amount of good 1
+    default: 6
+  y:
+    name: y
+    description: Amount of good 2
+    default: 24
+  xAxisTitle:
+    name: X axis title
+    description: Good on X axis
+    default: Fish
+  yAxisTitle:
+    name: Y axis title
+    description: Good on Y axis
+    default: Coconuts
+  idioms: [1]
 layout:
   OneGraph:
     graph:
       xAxis:
-        title: macro.xAxisTitle
+        title: custom.xAxisTitle
       yAxis:
-        title: macro.yAxisTitle
+        title: custom.yAxisTitle
       objects:
         - Point:
-            coordinates: [macro.x, macro.y]
+            coordinates: [custom.x, custom.y]

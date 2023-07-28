@@ -55,6 +55,30 @@ module KGAuthor {
                 ];
                 s.subObjects.push(new Label(labelDef, graph));
             }
+
+            if (def.hasOwnProperty('handles')) {
+
+                let aPointDef = {
+                    x: s.x1,
+                    y: s.y1,
+                    color: def.color,
+                    r: 4,
+                    draggable: def.draggable,
+                    show: def.show
+                };
+
+                let bPointDef = {
+                    x: s.x2,
+                    y: s.y2,
+                    color: def.color,
+                    r: 4,
+                    draggable: def.draggable,
+                    show: def.show
+                };
+
+                s.subObjects.push(new Point(aPointDef, graph));
+                s.subObjects.push(new Point(bPointDef, graph));
+            }
         }
 
     }

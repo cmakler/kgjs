@@ -224,13 +224,15 @@ var KGAuthor;
     }
     KGAuthor.paramName = paramName;
     function makeDraggable(def) {
-        if (def.hasOwnProperty('draggable') && def.draggable == true && !def.hasOwnProperty('drag')) {
-            def.drag = [];
-            if (def.x == "params." + paramName(def.x)) {
-                def.drag.push({ horizontal: paramName(def.x) });
-            }
-            if (def.y == "params." + paramName(def.y)) {
-                def.drag.push({ vertical: paramName(def.y) });
+        if (def.hasOwnProperty('draggable') && !def.hasOwnProperty('drag')) {
+            if ((def.draggable == true) || (def.draggable == 'true')) {
+                def.drag = [];
+                if (def.x == "params." + paramName(def.x)) {
+                    def.drag.push({ horizontal: paramName(def.x) });
+                }
+                if (def.y == "params." + paramName(def.y)) {
+                    def.drag.push({ vertical: paramName(def.y) });
+                }
             }
         }
         return def;
@@ -2368,6 +2370,26 @@ var KGAuthor;
                     KGAuthor.averageDefs(s.y1, s.y2, labelDef.location)
                 ];
                 s.subObjects.push(new KGAuthor.Label(labelDef, graph));
+            }
+            if (def.hasOwnProperty('handles')) {
+                var aPointDef = {
+                    x: s.x1,
+                    y: s.y1,
+                    color: def.color,
+                    r: 4,
+                    draggable: def.draggable,
+                    show: def.show
+                };
+                var bPointDef = {
+                    x: s.x2,
+                    y: s.y2,
+                    color: def.color,
+                    r: 4,
+                    draggable: def.draggable,
+                    show: def.show
+                };
+                s.subObjects.push(new KGAuthor.Point(aPointDef, graph));
+                s.subObjects.push(new KGAuthor.Point(bPointDef, graph));
             }
             return _this;
         }
@@ -6319,6 +6341,18 @@ var KG;
             this.render(data, div);
         }
         View.prototype.parse = function (data, div) {
+            if (data.hasOwnProperty('templateDefaults')) {
+                // Any terms not defined in the user's overrides should revert to the template defaults
+                var defaults = data.templateDefaults;
+                var dataString = JSON.stringify(data);
+                for (var key in defaults) {
+                    var defaultDef = defaults[key];
+                    var searchTerm = new RegExp("template.\\b" + key + "\\b", "g");
+                    var replaceTerm = defaultDef.value;
+                    dataString = dataString.replace(searchTerm, replaceTerm);
+                }
+                data = JSON.parse(dataString);
+            }
             data.schema = data.schema || "Schema";
             // allow user to specify param overrides or select idioms in methods
             var urlParams = new URLSearchParams(window.location.search);
@@ -6338,6 +6372,13 @@ var KG;
                 }*/
                 if (urlParamValue) {
                     paramData.value = urlParamValue;
+                }
+                // convert boolean params from strings to numbers
+                if (paramData.value == 'true') {
+                    paramData.value = 1;
+                }
+                if (paramData.value == 'false') {
+                    paramData.value = 0;
                 }
                 // convert numerical params from strings to numbers
                 paramData.value = isNaN(+paramData.value) ? paramData.value : +paramData.value;
@@ -8926,15 +8967,8 @@ window.addEventListener("load", function () {
                                 var yt = jsyaml.safeLoad(template_file);
                                 var yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
                                 for (var key in j) {
-                                    var searchTerm = new RegExp("macro.\\b" + key + "\\b", "g");
+                                    var searchTerm = new RegExp("template.\\b" + key + "\\b", "g");
                                     var replaceTerm = j[key];
-                                    yts = yts.replace(searchTerm, replaceTerm);
-                                }
-                                // Any terms not defined in the user's overrides should revert to the template defaults
-                                var defaults = JSON.parse(yts).defaults;
-                                for (var key in defaults) {
-                                    var searchTerm = new RegExp("macro.\\b" + key + "\\b", "g");
-                                    var replaceTerm = defaults[key];
                                     yts = yts.replace(searchTerm, replaceTerm);
                                 }
                                 var jt = JSON.parse(yts);
