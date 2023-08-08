@@ -109,7 +109,7 @@ module KGAuthor {
                     yInterceptPointDef['drag'] = [{
                         directions: 'y',
                         param: paramName(ld.invSlope),
-                        expression: negativeDef(divideDefs(ld.xIntercept, 'drag.y'))
+                        expression: negativeDef(divideDefs(ld.xIntercept, 'max(drag.y,0.01)'))
                     }]
                 }
 

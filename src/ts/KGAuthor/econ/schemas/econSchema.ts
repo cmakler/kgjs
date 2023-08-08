@@ -3,6 +3,8 @@
 module KGAuthor {
     export class EconSchema extends Schema {
 
+        public const
+
         constructor(def) {
 
             def.idioms = {};
@@ -25,7 +27,7 @@ module KGAuthor {
                 }
             ];
 
-            console.log("custom: ", def.custom)
+            //console.log("custom: ", def.custom)
 
             idiomMenu.forEach(function(idiomGroup, index) {
                 // if the user has specified a choice, use it.

@@ -73,7 +73,8 @@ let views = [];
 
 // initialize the diagram from divs with class kg-container
 
-window.addEventListener("load", function () {
+function loadGraphs() {
+    views = [];
     let viewDivs = document.getElementsByClassName('kg-container');
 
     // for each div, fetch the JSON definition and create a View object with that div and data
@@ -82,7 +83,7 @@ window.addEventListener("load", function () {
             src = d.getAttribute('src'),
             tmp = d.getAttribute('template'),
             fmt = d.getAttribute('format')
-            //greenscreen = d.getAttribute('greenscreen') || false;
+        //greenscreen = d.getAttribute('greenscreen') || false;
 
         if (d.innerHTML.indexOf('svg') > -1) {
             //console.log('already loaded');
@@ -96,16 +97,21 @@ window.addEventListener("load", function () {
                         const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                         //j.greenscreen = greenscreen;
                         // If there is a template file, then load that and use the yml in the description to replace terms defined by "macro"
-                        if(tmp) {
+                        let custom = "";
+                        if (tmp) {
                             d3.text(tmp).then(function (template_file) {
                                 const yt = jsyaml.safeLoad(template_file);
                                 let yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
-                                for(const key in j) {
-                                    let searchTerm = new RegExp("template.\\b"+key+"\\b", "g");
+                                for (const key in j) {
+                                    if(key == "custom") {
+                                        custom = j[key];
+                                    }
+                                    let searchTerm = new RegExp("template.\\b" + key + "\\b", "g");
                                     let replaceTerm = j[key];
                                     yts = yts.replace(searchTerm, replaceTerm);
                                 }
                                 const jt = JSON.parse(yts);
+                                jt.custom = custom;
                                 views.push(new KG.View(d, jt));
                             })
                         } else {
@@ -122,7 +128,9 @@ window.addEventListener("load", function () {
 
                     } else {
                         // read inner HTML of div as YAML
-                        generateViewFromYamlText(d.innerHTML);
+                        const inlineDef = d.innerHTML;
+                        d.innerHTML = "";
+                        generateViewFromYamlText(inlineDef);
                     }
 
                 } catch (e) {
@@ -149,9 +157,11 @@ window.addEventListener("load", function () {
             d.classList.add('kg-loaded');
         }
     }
+};
 
-});
+// When the page loads, load the graphs
 
+window.addEventListener("load", loadGraphs);
 
 // if the window changes size, update the dimensions of the containers
 

@@ -3210,7 +3210,7 @@ var KGAuthor;
                     good2Word: ["Good 2", "Good Y", "Good Y"]
                 }
             ];
-            console.log("custom: ", def.custom);
+            //console.log("custom: ", def.custom)
             idiomMenu.forEach(function (idiomGroup, index) {
                 // if the user has specified a choice, use it.
                 if (index < def.custom.length) {
@@ -4875,7 +4875,7 @@ var KGAuthor;
                     yInterceptPointDef['drag'] = [{
                             directions: 'y',
                             param: KGAuthor.paramName(ld.invSlope),
-                            expression: KGAuthor.negativeDef(KGAuthor.divideDefs(ld.xIntercept, 'drag.y'))
+                            expression: KGAuthor.negativeDef(KGAuthor.divideDefs(ld.xIntercept, 'max(drag.y,0.01)'))
                         }];
                 }
                 if (def.hasOwnProperty('yInterceptLabel')) {
@@ -6346,9 +6346,8 @@ var KG;
                 var defaults = data.templateDefaults;
                 var dataString = JSON.stringify(data);
                 for (var key in defaults) {
-                    var defaultDef = defaults[key];
                     var searchTerm = new RegExp("template.\\b" + key + "\\b", "g");
-                    var replaceTerm = defaultDef.value;
+                    var replaceTerm = defaults[key];
                     dataString = dataString.replace(searchTerm, replaceTerm);
                 }
                 data = JSON.parse(dataString);
@@ -6389,11 +6388,13 @@ var KG;
                 data.clearColor = div.getAttribute("clearColor");
             }
             var parsedData = {
+                templateDefaults: data.templateDefaults || {},
                 aspectRatio: data.aspectRatio || 1,
                 clearColor: data.clearColor || "#FFFFFF",
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
+                custom: data.custom || "",
                 idioms: {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
@@ -6431,7 +6432,10 @@ var KG;
                 data.objects.push({ type: "Explanation", def: data.explanation });
             }
             if (data.hasOwnProperty('schema')) {
-                data.objects.push({ type: data.schema, def: { custom: urlParams.get('custom') } });
+                if (urlParams.get('custom')) {
+                    parsedData.custom = urlParams.get('custom');
+                }
+                data.objects.push({ type: data.schema, def: { custom: parsedData.custom } });
             }
             console.log('parsed data: ', parsedData);
             return KGAuthor.parse(data.objects, parsedData);
@@ -8945,7 +8949,8 @@ var KG;
 // this file provides the interface with the overall web page
 var views = [];
 // initialize the diagram from divs with class kg-container
-window.addEventListener("load", function () {
+function loadGraphs() {
+    views = [];
     var viewDivs = document.getElementsByClassName('kg-container');
     var _loop_1 = function (i) {
         var d = viewDivs[i], src = d.getAttribute('src'), tmp = d.getAttribute('template'), fmt = d.getAttribute('format');
@@ -8962,16 +8967,21 @@ window.addEventListener("load", function () {
                         var j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                         //j.greenscreen = greenscreen;
                         // If there is a template file, then load that and use the yml in the description to replace terms defined by "macro"
+                        var custom = "";
                         if (tmp) {
                             d3.text(tmp).then(function (template_file) {
                                 var yt = jsyaml.safeLoad(template_file);
                                 var yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
                                 for (var key in j) {
+                                    if (key == "custom") {
+                                        custom = j[key];
+                                    }
                                     var searchTerm = new RegExp("template.\\b" + key + "\\b", "g");
                                     var replaceTerm = j[key];
                                     yts = yts.replace(searchTerm, replaceTerm);
                                 }
                                 var jt = JSON.parse(yts);
+                                jt.custom = custom;
                                 views.push(new KG.View(d, jt));
                             });
                         }
@@ -8987,7 +8997,9 @@ window.addEventListener("load", function () {
                     }
                     else {
                         // read inner HTML of div as YAML
-                        generateViewFromYamlText(d.innerHTML);
+                        var inlineDef = d.innerHTML;
+                        d.innerHTML = "";
+                        generateViewFromYamlText(inlineDef);
                     }
                 }
                 catch (e) {
@@ -9019,7 +9031,10 @@ window.addEventListener("load", function () {
     for (var i = 0; i < viewDivs.length; i++) {
         _loop_1(i);
     }
-});
+}
+;
+// When the page loads, load the graphs
+window.addEventListener("load", loadGraphs);
 // if the window changes size, update the dimensions of the containers
 window.onresize = function () {
     views.forEach(function (c) {

@@ -12,13 +12,6 @@ module KG {
         paths: TypeAndDef[];
     }
 
-    export interface TemplateDefaultDefinition {
-        name: string;
-        value: string;
-        type: string;
-        description: string;
-    }
-
     export interface ViewDefinition {
         // These are usually specified by the user
         aspectRatio?: number;
@@ -31,6 +24,7 @@ module KG {
         templateDefaults?: {};
         colors?: {};
         idioms?: {};
+        custom?: string;
         restrictions?: RestrictionDefinition[];
         objects?: TypeAndDef[];
         layout?: TypeAndDef;
@@ -79,9 +73,8 @@ module KG {
                 const defaults = data.templateDefaults;
                 let dataString = JSON.stringify(data);
                 for(const key in defaults) {
-                    const defaultDef: TemplateDefaultDefinition = defaults[key];
                     let searchTerm = new RegExp("template.\\b"+key+"\\b", "g");
-                    let replaceTerm = defaultDef.value;
+                    let replaceTerm = defaults[key];
                     dataString = dataString.replace(searchTerm, replaceTerm);
                 }
                 data = JSON.parse(dataString);
@@ -134,11 +127,13 @@ module KG {
 
 
             let parsedData: ViewDefinition = {
+                templateDefaults: data.templateDefaults || {},
                 aspectRatio: data.aspectRatio || 1,
                 clearColor: data.clearColor || "#FFFFFF",
                 params: data.params || [],
                 calcs: data.calcs || {},
                 colors: data.colors || {},
+                custom: data.custom || "",
                 idioms: {},
                 restrictions: data.restrictions,
                 clipPaths: data.clipPaths || [],
@@ -180,7 +175,10 @@ module KG {
             }
 
             if (data.hasOwnProperty('schema')) {
-                data.objects.push({type: data.schema, def: { custom: urlParams.get('custom') }})
+                if (urlParams.get('custom')) {
+                    parsedData.custom = urlParams.get('custom');
+                }
+                data.objects.push({type: data.schema, def: { custom: parsedData.custom }})
             }
 
             console.log('parsed data: ', parsedData)
