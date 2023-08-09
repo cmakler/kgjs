@@ -65166,6 +65166,10 @@ var KGAuthor;
                     labor2label: ["L_2", "L_y", "L_Y"],
                     good2word: ["good 2", "good Y", "good Y"],
                     good2Word: ["Good 2", "Good Y", "Good Y"]
+                },
+                {
+                    oldCurve: ["\\ ", "^\\prime", "_0", "_1", "0", "1"],
+                    newCurve: ["^\\prime", "^\\prime\\prime", "_1", "_2", "1", "2"]
                 }
             ];
             //console.log("custom: ", def.custom)
@@ -66787,7 +66791,7 @@ var KGAuthor;
                         'expression': KGAuthor.addDefs(def.yIntercept, 'drag.dy')
                     }];
             }
-            def.max = def.xIntercept;
+            //def.max = def.xIntercept;
             if (def.hasOwnProperty("price")) {
                 def.pts.push({
                     name: "PQ",

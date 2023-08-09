@@ -51,7 +51,7 @@ module KGAuthor {
                     'expression': addDefs(def.yIntercept, 'drag.dy')
                 }]
             }
-            def.max = def.xIntercept;
+            //def.max = def.xIntercept;
 
             if (def.hasOwnProperty("price")) {
                 def.pts.push({

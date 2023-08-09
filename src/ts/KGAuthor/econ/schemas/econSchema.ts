@@ -24,6 +24,10 @@ module KGAuthor {
                     labor2label: ["L_2", "L_y", "L_Y"],
                     good2word: ["good 2", "good Y", "good Y"],
                     good2Word: ["Good 2", "Good Y", "Good Y"]
+                },
+                {
+                    oldCurve: ["\\ ","^\\prime","_0","_1","0","1"],
+                    newCurve: ["^\\prime","^\\prime\\prime","_1","_2","1","2"]
                 }
             ];
 
