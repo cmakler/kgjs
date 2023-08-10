@@ -7841,7 +7841,7 @@ var KG;
             if (controls.sliders.length > 0) {
                 var sliderTable_1 = controls.rootElement.append('table').style('padding', '10px').style('width', '100%').style('margin', '0px 0px 10px 0px');
                 controls.sliders.forEach(function (slider) {
-                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, showNumber: slider.showNumber, model: controls.model });
+                    new KG.Slider({ layer: sliderTable_1, param: slider.param, label: slider.label, showNumber: slider.showNumber, model: controls.model, show: slider.show });
                 });
             }
             controls.radios.forEach(function (radio) {
