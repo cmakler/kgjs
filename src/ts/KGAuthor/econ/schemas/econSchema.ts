@@ -26,8 +26,8 @@ module KGAuthor {
                     good2Word: ["Good 2", "Good Y", "Good Y"]
                 },
                 {
-                    oldCurve: ["\\ ","^\\prime","_0","_1","0","1"],
-                    newCurve: ["^\\prime","^\\prime\\prime","_1","_2","1","2"]
+                    oldValueLabel: ["\\ ","_1","0"],
+                    newValueLabel: ["^\\prime","_2","1"]
                 }
             ];
 
