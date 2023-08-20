@@ -10,6 +10,7 @@ module KG {
         rangeMin: any;
         rangeMax: any;
         log?: boolean;
+        intercept?: any;
     }
 
     export interface IScale {
@@ -26,13 +27,14 @@ module KG {
         public rangeMin;
         public rangeMax;
         public extent;
+        public intercept;
 
         constructor(def: ScaleDefinition) {
             setDefaults(def, {
                 log: false
             });
             def.constants = ['rangeMin','rangeMax','axis','name'];
-            def.updatables = ['domainMin', 'domainMax'];
+            def.updatables = ['domainMin', 'domainMax','intercept'];
             super(def);
             this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
             this.update(true);

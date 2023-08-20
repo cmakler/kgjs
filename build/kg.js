@@ -1381,10 +1381,10 @@ var KGAuthor;
         function PositionedObject(def) {
             var _this = this;
             KG.setDefaults(def, { xAxis: {}, yAxis: {} });
-            KG.setDefaults(def.xAxis, { min: 0, max: 10, title: '', orient: 'bottom' });
-            KG.setDefaults(def.yAxis, { min: 0, max: 10, title: '', orient: 'left' });
+            KG.setDefaults(def.xAxis, { min: 0, max: 10, intercept: 0, title: '', orient: 'bottom' });
+            KG.setDefaults(def.yAxis, { min: 0, max: 10, intercept: 0, title: '', orient: 'left' });
             _this = _super.call(this, def) || this;
-            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, xLog = def.xAxis.log, yMin = def.yAxis.min, yMax = def.yAxis.max, yLog = def.yAxis.log, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
+            var po = _this, xMin = def.xAxis.min, xMax = def.xAxis.max, xIntercept = def.xAxis.intercept, xLog = def.xAxis.log, yMin = def.yAxis.min, yMax = def.yAxis.max, yIntercept = def.yAxis.intercept, yLog = def.yAxis.log, leftEdge = def.position.x, rightEdge = KGAuthor.addDefs(def.position.x, def.position.width), bottomEdge = KGAuthor.addDefs(def.position.y, def.position.height), topEdge = def.position.y;
             po.xScale = new Scale({
                 "name": KG.randomString(10),
                 "axis": "x",
@@ -1392,7 +1392,8 @@ var KGAuthor;
                 "domainMax": xMax,
                 "rangeMin": leftEdge,
                 "rangeMax": rightEdge,
-                "log": xLog
+                "log": xLog,
+                "intercept": xIntercept
             });
             po.yScale = new Scale({
                 "name": KG.randomString(10),
@@ -1401,7 +1402,8 @@ var KGAuthor;
                 "domainMax": yMax,
                 "rangeMin": bottomEdge,
                 "rangeMax": topEdge,
-                "log": yLog
+                "log": yLog,
+                "intercept": yIntercept
             });
             po.subObjects = [po.xScale, po.yScale];
             if (po.def.hasOwnProperty('objects')) {
@@ -1824,7 +1826,7 @@ var KGAuthor;
             var _this = this;
             KG.setDefaults(def, {
                 yPixelOffset: 40,
-                xPixelOffset: 50
+                xPixelOffset: 40
             });
             _this = _super.call(this, def, graph) || this;
             var a = _this;
@@ -3026,6 +3028,25 @@ var KGAuthor;
         __extends(Label, _super);
         function Label(def, graph) {
             var _this = this;
+            var xAxisIntercept = 0, yAxisIntercept = 0;
+            if (graph.def.hasOwnProperty('xAxis')) {
+                if (graph.def.xAxis.hasOwnProperty('intercept')) {
+                    xAxisIntercept = graph.def.xAxis.intercept;
+                }
+            }
+            if (graph.def.hasOwnProperty('yAxis')) {
+                if (graph.def.yAxis.hasOwnProperty('intercept')) {
+                    yAxisIntercept = graph.def.yAxis.intercept;
+                }
+            }
+            if (def.x == 'AXIS') {
+                def.x = yAxisIntercept;
+                def.position = "r";
+            }
+            if (def.y == 'AXIS') {
+                def.y = xAxisIntercept;
+                def.position = "t";
+            }
             if (def.hasOwnProperty('position')) {
                 if (def.position.toLowerCase() == 'bl') {
                     def.xPixelOffset = 5;
@@ -3058,11 +3079,11 @@ var KGAuthor;
                 if (def.position.toLowerCase() == 'b') {
                     def.yPixelOffset = 12;
                 }
-                if (def.position.toLowerCase() == 'l') {
+                if (def.position.toLowerCase() == 'r') {
                     def.xPixelOffset = -8;
                     def.align = 'right';
                 }
-                if (def.position.toLowerCase() == 'r') {
+                if (def.position.toLowerCase() == 'l') {
                     def.xPixelOffset = 8;
                     def.align = 'left';
                 }
@@ -6644,7 +6665,7 @@ var KG;
                 log: false
             });
             def.constants = ['rangeMin', 'rangeMax', 'axis', 'name'];
-            def.updatables = ['domainMin', 'domainMax'];
+            def.updatables = ['domainMin', 'domainMax', 'intercept'];
             _this = _super.call(this, def) || this;
             _this.scale = def.log ? d3.scaleLog() : d3.scaleLinear();
             _this.update(true);
@@ -7414,9 +7435,9 @@ var KG;
         function Label(def) {
             var _this = this;
             var xAxisReversed = (def.xScale.rangeMin > def.xScale.rangeMax), yAxisReversed = (def.yScale.rangeMin < def.yScale.rangeMax);
-            var xOffset = xAxisReversed ? 3 : -3, yOffset = yAxisReversed ? 14 : -14;
+            var xOffset = xAxisReversed ? 1 : -1, yOffset = yAxisReversed ? 12 : -12;
             if (def.x == 'AXIS') {
-                def.x = 0;
+                def.x = def.yScale.intercept;
                 def.align = xAxisReversed ? 'left' : 'right';
                 def.xPixelOffset = xOffset;
             }
@@ -7426,7 +7447,7 @@ var KG;
                 def.xPixelOffset = -xOffset;
             }
             if (def.y == 'AXIS') {
-                def.y = 0;
+                def.y = def.yScale.intercept;
                 def.yPixelOffset = yOffset;
             }
             if (def.y == 'OPPAXIS') {

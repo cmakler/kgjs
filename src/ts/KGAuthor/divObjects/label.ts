@@ -23,6 +23,28 @@ module KGAuthor {
 
         constructor(def:LabelDefinition, graph) {
 
+            let xAxisIntercept = 0, yAxisIntercept = 0;
+            if(graph.def.hasOwnProperty('xAxis')) {
+                if(graph.def.xAxis.hasOwnProperty('intercept')) {
+                    xAxisIntercept = graph.def.xAxis.intercept;
+                }
+            }
+            if(graph.def.hasOwnProperty('yAxis')) {
+                if(graph.def.yAxis.hasOwnProperty('intercept')) {
+                    yAxisIntercept = graph.def.yAxis.intercept;
+                }
+            }
+
+            if(def.x == 'AXIS') {
+                def.x = yAxisIntercept;
+                def.position = "r";
+            }
+
+            if(def.y == 'AXIS') {
+                def.y = xAxisIntercept;
+                def.position = "t";
+            }
+
             if(def.hasOwnProperty('position')) {
                 if(def.position.toLowerCase() == 'bl') {
                     def.xPixelOffset = 5;
@@ -55,11 +77,11 @@ module KGAuthor {
                 if(def.position.toLowerCase() == 'b') {
                     def.yPixelOffset = 12;
                 }
-                if(def.position.toLowerCase() == 'l') {
+                if(def.position.toLowerCase() == 'r') {
                     def.xPixelOffset = -8;
                     def.align = 'right';
                 }
-                if(def.position.toLowerCase() == 'r') {
+                if(def.position.toLowerCase() == 'l') {
                     def.xPixelOffset = 8;
                     def.align = 'left';
                 }

@@ -51,17 +51,19 @@ module KGAuthor {
         constructor(def) {
 
             KG.setDefaults(def, {xAxis: {}, yAxis: {}});
-            KG.setDefaults(def.xAxis, {min: 0, max: 10, title: '', orient: 'bottom'});
-            KG.setDefaults(def.yAxis, {min: 0, max: 10, title: '', orient: 'left'});
+            KG.setDefaults(def.xAxis, {min: 0, max: 10, intercept: 0, title: '', orient: 'bottom'});
+            KG.setDefaults(def.yAxis, {min: 0, max: 10, intercept: 0, title: '', orient: 'left'});
 
             super(def);
 
             const po = this,
                 xMin = def.xAxis.min,
                 xMax = def.xAxis.max,
+                xIntercept = def.xAxis.intercept,
                 xLog = def.xAxis.log,
                 yMin = def.yAxis.min,
                 yMax = def.yAxis.max,
+                yIntercept = def.yAxis.intercept,
                 yLog = def.yAxis.log,
                 leftEdge = def.position.x,
                 rightEdge = addDefs(def.position.x, def.position.width),
@@ -75,7 +77,8 @@ module KGAuthor {
                 "domainMax": xMax,
                 "rangeMin": leftEdge,
                 "rangeMax": rightEdge,
-                "log": xLog
+                "log": xLog,
+                "intercept": xIntercept
             });
 
             po.yScale = new Scale({
@@ -85,7 +88,8 @@ module KGAuthor {
                 "domainMax": yMax,
                 "rangeMin": bottomEdge,
                 "rangeMax": topEdge,
-                "log": yLog
+                "log": yLog,
+                "intercept": yIntercept
             });
 
             po.subObjects = [po.xScale, po.yScale];

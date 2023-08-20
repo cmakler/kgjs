@@ -7,7 +7,7 @@ module KGAuthor {
         constructor(def, graph) {
             KG.setDefaults(def, {
                 yPixelOffset: 40,
-                xPixelOffset: 50
+                xPixelOffset: 40
             })
             super(def, graph);
             let a = this;
