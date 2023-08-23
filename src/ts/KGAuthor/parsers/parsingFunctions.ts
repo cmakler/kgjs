@@ -107,6 +107,10 @@ module KGAuthor {
         return binaryFunction(def1, def2, '/');
     }
 
+    export function absDef(def) {
+        return "";
+    }
+
     export function invertDef(def) {
         return binaryFunction(1, def, '/');
     }

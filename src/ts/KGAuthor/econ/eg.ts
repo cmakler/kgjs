@@ -39,6 +39,7 @@
 
 /* Equilibrium */
 
+/// <reference path="micro/equilibrium/constantElasticityCurve.ts"/>
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
 /// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
