@@ -2,17 +2,13 @@
 
 module KGAuthor {
 
-    export interface EconAggregateLinearEquilibriumDefinition {
-        demand: EconLinearDemandDefinition;
-        supply: EconLinearSupplyDefinition;
-        equilibrium?: PointDefinition;
-        potentialGDP?: LineDefinition;
-    }
-
     export interface EconLinearEquilibriumDefinition {
+        equilibrium: PointDefinition;
+
         demand: EconLinearDemandDefinition;
+
         supply: EconLinearSupplyDefinition;
-        equilibrium?: PointDefinition;
+
         showCS?: any;
         showPS?: any;
     }

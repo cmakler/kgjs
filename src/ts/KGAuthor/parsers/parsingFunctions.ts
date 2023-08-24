@@ -57,6 +57,11 @@ module KGAuthor {
         }
     }
 
+    export function namedCalc(str) {
+        console.log('name is ', this.name);
+        return "calcs." + this.name + "." + str;
+    }
+
     export function negativeDef(def) {
         return (typeof def == 'number') ? (-1) * def : "(-" + getDefinitionProperty(def) + ")"
     }

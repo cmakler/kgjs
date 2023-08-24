@@ -129,6 +129,11 @@ var KGAuthor;
         }
     }
     KGAuthor.getParameterName = getParameterName;
+    function namedCalc(str) {
+        console.log('name is ', this.name);
+        return "calcs." + this.name + "." + str;
+    }
+    KGAuthor.namedCalc = namedCalc;
     function negativeDef(def) {
         return (typeof def == 'number') ? (-1) * def : "(-" + getDefinitionProperty(def) + ")";
     }
@@ -4830,97 +4835,200 @@ var KGAuthor;
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
-    var ConstantElasticityCurve = /** @class */ (function (_super) {
-        __extends(ConstantElasticityCurve, _super);
-        function ConstantElasticityCurve(def, graph) {
+    var EconConstantElasticityCurve = /** @class */ (function (_super) {
+        __extends(EconConstantElasticityCurve, _super);
+        function EconConstantElasticityCurve(def, graph) {
             var _this = this;
             def = KGAuthor.setStrokeColor(def);
             KG.setDefaults(def, {
+                name: 'constElasticityCurve' + KG.randomString(5),
                 color: 'colors.demand',
                 strokeWidth: 2,
                 lineStyle: 'solid',
-                show: true,
-                ind: 'y'
+                show: true
             });
-            var pointDef = def.point || {};
+            // TODO shouldn't need to convert these to strings; it should work with numbers...
+            if (def.hasOwnProperty('elasticity')) {
+                def.elasticity = def.elasticity.toString();
+            }
+            if (def.hasOwnProperty('normalizedElasticity')) {
+                def.normalizedElasticity = def.normalizedElasticity.toString();
+            }
+            // A constant elasticity curve is defined by one point and either an elasticity, a normalized elasticity, or a second point.
+            var curveDef = KGAuthor.copyJSON(def);
+            curveDef.fn = KGAuthor.multiplyDefs("calcs." + def.name + ".coefficient", KGAuthor.raiseDefToDef("(y)", "calcs." + curveDef.name + ".elasticity"));
+            curveDef.ind = 'y';
+            curveDef.samplePoints = 500;
+            curveDef.show = "((" + def.show + ") && !(calcs. " + def.name + ".elastic))";
+            var invCurveDef = KGAuthor.copyJSON(def);
+            invCurveDef.name = def.name + "inverse";
+            invCurveDef.fn = KGAuthor.multiplyDefs("calcs." + invCurveDef.name + ".coefficient", KGAuthor.raiseDefToDef("(x)", "calcs." + invCurveDef.name + ".elasticity"));
+            invCurveDef.samplePoints = 500;
+            invCurveDef.ind = 'x';
+            invCurveDef.show = "((" + def.show + ") && (calcs. " + def.name + ".elastic))";
+            // define the control point
+            var pointDef = KGAuthor.copyJSON(def.point || {});
             pointDef.color = pointDef.color || def.color;
+            pointDef.show = pointDef.show || def.show;
+            // define the second control point, if applicable
+            if (def.hasOwnProperty('point2')) {
+                var point2Def = KGAuthor.copyJSON(def.point2);
+                point2Def.color = point2Def.color || def.color;
+                point2Def.show = point2Def.show || def.show;
+            }
+            _this = _super.call(this, curveDef, graph) || this;
+            var c = _this;
+            c.subObjects.push(new KGAuthor.Curve(invCurveDef, graph));
             var p = new KGAuthor.Point(pointDef, graph);
-            var p2;
-            var elasticity, perfectlyElastic, perfectlyInelastic;
+            c.subObjects.push(p);
+            // If defined by a second point, calculate the elasticity implied by those two points
             if (def.hasOwnProperty('point2')) {
                 var pointDef2 = def.point2;
                 pointDef2.color = pointDef2.color || def.color;
-                p2 = new KGAuthor.Point(pointDef2, graph);
+                var p2 = new KGAuthor.Point(pointDef2, graph);
                 // calculate elasticity between the two points
                 // we have x0 = a*y0^b, x1 = a*y1^b
                 // therefore a = x0y0^(-b) = x1y1^(-b)
                 // therefore (x0/x1) = (y0/y1)^b => b = log(x0/x1)/log(y0/y1)
                 var x0overx1 = KGAuthor.divideDefs(p.x, p2.x);
                 var y0overy1 = KGAuthor.divideDefs(p.y, p2.y);
-                elasticity = KGAuthor.divideDefs("log" + x0overx1 + "", "log" + y0overy1 + "");
-                perfectlyElastic = "(" + p.y + " == " + p2.y + ")";
-                perfectlyInelastic = "(" + p.x + " == " + p2.x + ")";
+                c.elasticity = KGAuthor.divideDefs("log" + x0overx1 + "", "log" + y0overy1 + "");
+                c.invElasticity = KGAuthor.divideDefs("log" + y0overy1 + "", "log" + x0overx1 + "");
+                c.perfectlyElastic = "(" + p.y + " == " + p2.y + ")";
+                c.perfectlyInelastic = "(" + p.x + " == " + p2.x + ")";
+                c.subObjects.push(p2);
             }
             // If the elasticity is normalized, 0 is perfectly inelastic, and 1 or -1 is perfectly elastic.
             else if (def.hasOwnProperty('normalizedElasticity')) {
                 var absNormalizedElasticity = "(abs(" + def.normalizedElasticity + "))";
-                elasticity = KGAuthor.divideDefs(def.normalizedElasticity, "(1 - " + absNormalizedElasticity + ")");
-                perfectlyElastic = "(" + absNormalizedElasticity + " == 1)";
-                perfectlyInelastic = "(" + def.normalizedElasticity + "== 0)";
+                c.elasticity = KGAuthor.divideDefs(def.normalizedElasticity, "(1 - " + absNormalizedElasticity + ")");
+                c.invElasticity = KGAuthor.divideDefs("(1 - " + absNormalizedElasticity + ")", def.normalizedElasticity);
+                c.perfectlyElastic = "(" + absNormalizedElasticity + " == 1)";
+                c.perfectlyInelastic = "(" + def.normalizedElasticity + " == 0)";
             }
             // If the elasticity is defined directly, it can't be infinite
             else {
-                elasticity = def.elasticity;
-                perfectlyInelastic = "(" + def.elasticity + "== 0)";
-                perfectlyElastic = "false";
+                c.elasticity = def.elasticity;
+                c.invElasticity = KGAuthor.invertDef(def.elasticity);
+                c.perfectlyInelastic = "(" + def.elasticity + " == 0)";
+                c.perfectlyElastic = "false";
             }
-            // we have a function of the form x = ay^b => a = x0y0^(-b)
-            var a = KGAuthor.divideDefs(p.x, KGAuthor.raiseDefToDef(p.y, elasticity));
-            def.fn = KGAuthor.multiplyDefs(a, KGAuthor.raiseDefToDef("(y)", elasticity));
-            var showPerfectlyElastic = "((" + def.show + ") && (calcs. " + def.name + ".perfectlyElastic))";
-            def.show = "((" + def.show + ") && !(calcs. " + def.name + ".perfectlyElastic))";
-            _this = _super.call(this, def, graph) || this;
-            var c = _this;
-            c.elasticity = elasticity;
-            c.perfectlyElastic = perfectlyElastic;
-            c.perfectlyInelastic = perfectlyInelastic;
+            // we have a function of the form x = ay^b => a = x0/y0^(b)
+            c.coefficient = KGAuthor.divideDefs(p.x, KGAuthor.raiseDefToDef(p.y, c.elasticity));
+            // the inverse of this function is of the form y = a'x^(b') => a' = y0/x0^(b')
+            c.invCoefficient = KGAuthor.divideDefs(p.y, KGAuthor.raiseDefToDef(p.x, c.invElasticity));
             // Define regions of elasticity
             c.absElasticity = "(abs(" + c.elasticity + "))";
             c.elastic = "(" + c.absElasticity + " > 1)";
             c.unitElastic = "(" + c.absElasticity + " == 1)";
             c.inelastic = "(" + c.absElasticity + " < 1)";
-            // Add subobjects
-            c.subObjects.push(p);
-            if (def.hasOwnProperty('p2')) {
-                c.subObjects.push(p2);
-            }
-            // Need to create a horizontal line if perfectly elastic
-            var perfectlyElasticLineDef = KGAuthor.copyJSON(def);
-            delete perfectlyElasticLineDef.fn;
-            delete perfectlyElasticLineDef.point2;
-            perfectlyElasticLineDef.name = def.name + "-peline";
-            perfectlyElasticLineDef.point = [p.x, p.y];
-            perfectlyElasticLineDef.slope = 0;
-            perfectlyElasticLineDef.show = showPerfectlyElastic;
-            c.subObjects.push(new KGAuthor.Line(perfectlyElasticLineDef, graph));
             return _this;
         }
-        ConstantElasticityCurve.prototype.parseSelf = function (parsedData) {
+        EconConstantElasticityCurve.prototype.parseSelf = function (parsedData) {
             var c = this;
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
             parsedData.calcs[c.name] = {
                 elasticity: c.elasticity,
+                coefficient: c.coefficient,
                 elastic: c.elastic,
                 unitElastic: c.unitElastic,
                 inelastic: c.inelastic,
                 perfectlyElastic: c.perfectlyElastic,
                 perfectlyInelastic: c.perfectlyInelastic
             };
+            parsedData.calcs[c.name + 'inverse'] = {
+                elasticity: c.invElasticity,
+                coefficient: c.invCoefficient
+            };
             return parsedData;
         };
-        return ConstantElasticityCurve;
+        return EconConstantElasticityCurve;
     }(KGAuthor.Curve));
-    KGAuthor.ConstantElasticityCurve = ConstantElasticityCurve;
+    KGAuthor.EconConstantElasticityCurve = EconConstantElasticityCurve;
+    var EconConstantElasticityIntersection = /** @class */ (function (_super) {
+        __extends(EconConstantElasticityIntersection, _super);
+        function EconConstantElasticityIntersection(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            var intersection = _this;
+            intersection.name = def.name;
+            var c1 = "(calcs." + def.curve1 + ".coefficient)", e1 = "(calcs." + def.curve1 + ".elasticity)", c2 = "(calcs." + def.curve2 + ".coefficient)", e2 = "(calcs." + def.curve2 + ".elasticity)", invc1 = "(calcs." + def.curve1 + "inverse.coefficient)", inve1 = "(calcs." + def.curve1 + "inverse.elasticity)", invc2 = "(calcs." + def.curve2 + "inverse.coefficient)", inve2 = "(calcs." + def.curve2 + "inverse.elasticity)";
+            // intersection occurs at the point where c1*x^(e1) = c2*x^(e2) => x = (c1/c2)^(1/(e2 - e1))
+            var P = KGAuthor.raiseDefToDef(KGAuthor.divideDefs(c1, c2), KGAuthor.invertDef(KGAuthor.subtractDefs(e2, e1)));
+            var QofP = KGAuthor.multiplyDefs(c1, KGAuthor.raiseDefToDef(P, e1));
+            intersection.Pdirect = P;
+            intersection.Qcalc = QofP;
+            // can also use the inverse curves to calculate the Q, and the P from that.
+            var Q = KGAuthor.raiseDefToDef(KGAuthor.divideDefs(invc1, invc2), KGAuthor.invertDef(KGAuthor.subtractDefs(inve2, inve1)));
+            var PofQ = KGAuthor.multiplyDefs(invc1, KGAuthor.raiseDefToDef(Q, inve1));
+            intersection.Qdirect = Q;
+            intersection.Pcalc = PofQ;
+            // want to use (P, QofP) when either supply or demand is perfectly inelastic; otherwise want to use (Q, PofQ)
+            var eitherPerfectlyInelastic = "(" + KGAuthor.multiplyDefs(e1, e2) + " == 0)";
+            intersection.Q = "(" + eitherPerfectlyInelastic + " ? " + QofP + " : " + Q + ")";
+            intersection.P = "(" + eitherPerfectlyInelastic + " ? " + P + " : " + PofQ + ")";
+            return _this;
+        }
+        EconConstantElasticityIntersection.prototype.parseSelf = function (parsedData) {
+            var c = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[c.name] = {
+                Pdirect: c.Pdirect,
+                Pcalc: c.Pcalc,
+                Qdirect: c.Qdirect,
+                Qcalc: c.Qcalc,
+                Q: c.Q,
+                P: c.P
+            };
+            return parsedData;
+        };
+        return EconConstantElasticityIntersection;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconConstantElasticityIntersection = EconConstantElasticityIntersection;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../../eg.ts"/>
+var KGAuthor;
+(function (KGAuthor) {
+    var EconConstantElasticityEquilibrium = /** @class */ (function (_super) {
+        __extends(EconConstantElasticityEquilibrium, _super);
+        function EconConstantElasticityEquilibrium(def, graph) {
+            var _this = this;
+            KG.setDefaults(def, {
+                name: 'equilibrium',
+                showCS: false,
+                showPS: false
+            });
+            _this = _super.call(this, def, graph) || this;
+            var cee = _this;
+            def.equilibrium.color = def.equilibrium.color || "colors.green";
+            var equilibrium = new KGAuthor.Point(def.equilibrium, graph);
+            cee.Q = equilibrium.x;
+            cee.P = equilibrium.y;
+            def.demand.point = def.equilibrium;
+            def.demand.name = def.name + "dem";
+            def.demand.color = "colors.demand";
+            var demand = new KGAuthor.EconConstantElasticityCurve(def.demand, graph);
+            console.log("demand: ", demand);
+            cee.subObjects.push(demand);
+            def.supply.point = def.equilibrium;
+            def.supply.name = def.name + "sup";
+            def.supply.color = "colors.supply";
+            var supply = new KGAuthor.EconConstantElasticityCurve(def.supply, graph);
+            console.log('supply: ', supply);
+            cee.subObjects.push(supply);
+            return _this;
+        }
+        EconConstantElasticityEquilibrium.prototype.parseSelf = function (parsedData) {
+            var cee = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[cee.name] = {
+                Q: cee.Q.toString(),
+                P: cee.P.toString()
+            };
+            return parsedData;
+        };
+        return EconConstantElasticityEquilibrium;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.EconConstantElasticityEquilibrium = EconConstantElasticityEquilibrium;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -5539,6 +5647,7 @@ var KGAuthor;
 /// <reference path="micro/producer_theory/oneInputProductionFunction.ts"/>
 /* Equilibrium */
 /// <reference path="micro/equilibrium/constantElasticityCurve.ts"/>
+/// <reference path="micro/equilibrium/constantElasticityEquilibrium.ts"/>
 /// <reference path="micro/equilibrium/linearDemand.ts"/>
 /// <reference path="micro/equilibrium/linearSupply.ts"/>
 /// <reference path="micro/equilibrium/linearEquilibrium.ts"/>
