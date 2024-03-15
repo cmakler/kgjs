@@ -10,7 +10,8 @@ js_directories = [
     #'../bh-textbook/code/',
     #'../core-interactives/code/',
     '../econgraphs/static/js/',
-    '../econgraphs-beta/static/js/'
+    '../econgraphs-beta/static/js/',
+    '../alfredo/static/js/'
 ]
 
 js_local_directories = [
@@ -26,7 +27,8 @@ css_directories = [
     #'../bh-textbook/code/',
     #'../core-interactives/code/',
     '../econgraphs/static/css/',
-    '../econgraphs-beta/static/css/'
+    '../econgraphs-beta/static/css/',
+    '../alfredo/static/css/'
 ]
 
 bundles = [

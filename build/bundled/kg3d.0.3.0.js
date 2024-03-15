@@ -68636,7 +68636,7 @@ var KG;
             var view = this;
             var parsedData = view.parse(data, div);
             div.innerHTML = "";
-            view.aspectRatio = parsedData.aspectRatio || 1;
+            view.aspectRatio = data.aspectRatio || parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
             // create scales
             view.scales = parsedData.scales.map(function (def) {
