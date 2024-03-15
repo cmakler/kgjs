@@ -11,7 +11,8 @@ js_directories = [
     #'../core-interactives/code/',
     '../econgraphs/static/js/',
     '../econgraphs-beta/static/js/',
-    '../alfredo/static/js/'
+    '../alfredo/static/js/',
+    '../bocconi-demo/static/js/'
 ]
 
 js_local_directories = [
@@ -28,7 +29,8 @@ css_directories = [
     #'../core-interactives/code/',
     '../econgraphs/static/css/',
     '../econgraphs-beta/static/css/',
-    '../alfredo/static/css/'
+    '../alfredo/static/css/',
+    '../bocconi-demo/static/css/'
 ]
 
 bundles = [
@@ -64,7 +66,7 @@ bundles = [
     },
     {
         "name": "kg-tufte.css",
-        "dest_directories": ["build/lib/"],
+        "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",
             "node_modules/tufte-css/tufte.min.css"
