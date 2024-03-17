@@ -94,7 +94,8 @@ module KGAuthor {
                 player1: 'blue',
                 player2: 'red',
                 player3: 'orange',
-                nature: 'green'
+                nature: 'green',
+                terminal: 'gray'
 
             });
 

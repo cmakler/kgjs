@@ -99,11 +99,17 @@ module KGAuthor {
 
     }
 
+    export interface PayoffDefinition extends LabelDefinition {
+        player1: string;
+        player2: string;
+    }
+
     export interface NodeDefinition extends PointDefinition {
         name: string;
         children?: NodeDefinition[];
         childSelectParam?: string;
         edgeLabel?: string; // used to label the edge from the parent node
+        payoffs?: PayoffDefinition;
     }
 
     export class Node extends Point {
@@ -115,10 +121,22 @@ module KGAuthor {
             KG.setDefaults(def, {
                 name: KG.randomString(10)
             })
+            if(def.hasOwnProperty('payoffs')) {
+                const payoff1: string = "\\\\color{${colors.player1}}{" + def.payoffs.player1 + "}"
+                const comma: string = "\\\\color{black}{,\\\\ }"
+                const payoff2: string = "\\\\color{${colors.player2}}{" + def.payoffs.player2 + "}"
+                def.label = {
+                    text: "`" + payoff1 + comma + payoff2 + "`",
+                    position: def.payoffs.position || 'l',
+                    fontSize: 14
+                }
+            }
             super(def, tree);
             const node = this;
             tree.nodeCoordinates[def.name] = [node.x, node.y];
             node.name = def.name;
+
+
 
             if(def.hasOwnProperty('children')) {
                 const n = def.children.length;
@@ -150,7 +168,7 @@ module KGAuthor {
                             param: param,
                             transitions: transitions
                         }]
-                        edgeDef['strokeWidth'] = `((params.${def.childSelectParam} == ${childNum}) ? 4 : 2)`
+                        edgeDef['strokeWidth'] = `((params.${def.childSelectParam} == ${childNum}) ? 6 : 2)`
                     }
 
                     tree.subObjects.push(new Node(nodeDef, tree));

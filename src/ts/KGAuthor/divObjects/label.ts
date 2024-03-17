@@ -48,34 +48,34 @@ module KGAuthor {
             if(def.hasOwnProperty('position')) {
                 if(def.position.toLowerCase() == 'bl') {
                     def.xPixelOffset = 5;
-                    def.yPixelOffset = 10;
+                    def.yPixelOffset = def.fontSize;
                     def.align = 'left';
                 }
                 if(def.position.toLowerCase() == 'tl') {
                     def.xPixelOffset = 5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'left';
                 }
                 if(def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'right';
                 }
                 if(def.position.toLowerCase() == 'br') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = 10;
+                    def.yPixelOffset = def.fontSize;
                     def.align = 'right';
                 }
                 if(def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'right';
                 }
                 if(def.position.toLowerCase() == 't') {
-                    def.yPixelOffset = -15;
+                    def.yPixelOffset = -(def.fontSize + 5);
                 }
                 if(def.position.toLowerCase() == 'b') {
-                    def.yPixelOffset = 12;
+                    def.yPixelOffset = def.fontSize + 2;
                 }
                 if(def.position.toLowerCase() == 'r') {
                     def.xPixelOffset = -8;

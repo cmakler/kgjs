@@ -1508,15 +1508,21 @@ var KGAuthor;
         __extends(Tree, _super);
         function Tree(def) {
             var _this = this;
+            var showGrid = def.showGrid || false;
             var graphDef = {
                 position: def.position,
                 objects: def.objects,
-                xAxis: { max: 24, show: false },
-                yAxis: { max: 24, show: false }
+                xAxis: { max: 24, ticks: 24, show: showGrid },
+                yAxis: { max: 24, ticks: 24, show: showGrid }
             };
             _this = _super.call(this, graphDef) || this;
             var t = _this;
             t.nodeCoordinates = {};
+            t.subObjects.push(new KGAuthor.Grid({
+                xStep: 3,
+                yStep: 3,
+                show: showGrid
+            }, t));
             def.nodes.forEach(function (nodeDef) {
                 t.subObjects.push(new KGAuthor.Node(nodeDef, t));
             });
@@ -2299,6 +2305,16 @@ var KGAuthor;
             KG.setDefaults(def, {
                 name: KG.randomString(10)
             });
+            if (def.hasOwnProperty('payoffs')) {
+                var payoff1 = "\\\\color{${colors.player1}}{" + def.payoffs.player1 + "}";
+                var comma = "\\\\color{black}{,\\\\ }";
+                var payoff2 = "\\\\color{${colors.player2}}{" + def.payoffs.player2 + "}";
+                def.label = {
+                    text: "`" + payoff1 + comma + payoff2 + "`",
+                    position: def.payoffs.position || 'l',
+                    fontSize: 14
+                };
+            }
             _this = _super.call(this, def, tree) || this;
             var node = _this;
             tree.nodeCoordinates[def.name] = [node.x, node.y];
@@ -2332,7 +2348,7 @@ var KGAuthor;
                                 param: param,
                                 transitions: transitions
                             }];
-                        edgeDef['strokeWidth'] = "((params." + def.childSelectParam + " == " + childNum + ") ? 4 : 2)";
+                        edgeDef['strokeWidth'] = "((params." + def.childSelectParam + " == " + childNum + ") ? 6 : 2)";
                     }
                     tree.subObjects.push(new Node(nodeDef, tree));
                     tree.subObjects.push(new KGAuthor.Edge(edgeDef, tree));
@@ -3059,34 +3075,34 @@ var KGAuthor;
             if (def.hasOwnProperty('position')) {
                 if (def.position.toLowerCase() == 'bl') {
                     def.xPixelOffset = 5;
-                    def.yPixelOffset = 10;
+                    def.yPixelOffset = def.fontSize;
                     def.align = 'left';
                 }
                 if (def.position.toLowerCase() == 'tl') {
                     def.xPixelOffset = 5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'left';
                 }
                 if (def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'right';
                 }
                 if (def.position.toLowerCase() == 'br') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = 10;
+                    def.yPixelOffset = def.fontSize;
                     def.align = 'right';
                 }
                 if (def.position.toLowerCase() == 'tr') {
                     def.xPixelOffset = -5;
-                    def.yPixelOffset = -12;
+                    def.yPixelOffset = -(def.fontSize + 2);
                     def.align = 'right';
                 }
                 if (def.position.toLowerCase() == 't') {
-                    def.yPixelOffset = -15;
+                    def.yPixelOffset = -(def.fontSize + 5);
                 }
                 if (def.position.toLowerCase() == 'b') {
-                    def.yPixelOffset = 12;
+                    def.yPixelOffset = def.fontSize + 2;
                 }
                 if (def.position.toLowerCase() == 'r') {
                     def.xPixelOffset = -8;
@@ -3299,7 +3315,8 @@ var KGAuthor;
                 player1: 'blue',
                 player2: 'red',
                 player3: 'orange',
-                nature: 'green'
+                nature: 'green',
+                terminal: 'gray'
             });
             _this = _super.call(this, def) || this;
             _this.idiomMenu = idiomMenu;
