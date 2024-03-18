@@ -8,12 +8,17 @@
 - name: Graphs & Layouts
   folder: graph-layouts
   pages:
-    - title: Graphs
-      url: graphs
     - title: Layouts
       url: layouts
     - title: Sidebars
       url: sidebars
+    - title: Graphs
+      url: graphs
+    - title: Trees
+      url: trees
+    - title: Three-Dimensional Graphs
+      url: graphs3D
+    
 
 - name: Graph Objects
   folder: graph-objects

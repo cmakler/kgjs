@@ -63,33 +63,12 @@ layout:
         title: Distance $(m)$
 
 </div>
-
-## Opposite Axes
-            
-You can add an axis as a graph object (just like any other graph object), but as of now it must have the same scale as the current axis:
-
-<div width="500" height="460" class="codePreview">
-
-layout:
-  OneGraph:
-    graph:
-      xAxis:
-        title: Time $(s)$
-      yAxis:
-        title: Distance $(m)$
-      objects:
-        - Axis:
-            orient: right
-            intercept: 10
-            title: Another distance axis!
-
-</div>
             
 We're working on developing multiple scales for opposite axes, but as of now there isn't support for that functionality.
 
 ## Three-Dimensional Graphs
 
-Three-dimensional graphs have a third axis element for the `zAxis`. More on that soon...
+Three-dimensional graphs are handled by a completely different set of code, called Mathbox; you can see its development [here](https://github.com/unconed/mathbox). Mathboxes have their own [layouts]:
 
 
 
