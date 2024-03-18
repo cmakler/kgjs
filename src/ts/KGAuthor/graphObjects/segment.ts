@@ -39,15 +39,17 @@ module KGAuthor {
             s.extractCoordinates('a', 'x1', 'y1');
             s.extractCoordinates('b', 'x2', 'y2');
 
+            // new way of trimming
             if (def.hasOwnProperty('trim')) {
+                console.log('implementing trimming');
                 const x1 = s.x1;
                 const y1 = s.y1;
                 const x2 = s.y2;
                 const y2 = s.y2;
-                s.x1 = averageDefs(x1, x2, def.trim);
-                s.x2 = averageDefs(x2, x1, def.trim);
-                s.y1 = averageDefs(y1, y2, def.trim);
-                s.y2 = averageDefs(y2, y1, def.trim);
+                s.def.x1 = s.x1 = averageDefs(x2, x1, def.trim);
+                s.def.x2 = s.x2 = averageDefs(x1, x2, def.trim);
+                s.def.y1 = s.y1 = averageDefs(y2, y1, def.trim);
+                s.def.y2 = s.y2 = averageDefs(y1, y2, def.trim);
             }
 
             if (def.hasOwnProperty('label')) {
