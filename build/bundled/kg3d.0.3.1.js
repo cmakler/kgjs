@@ -64343,12 +64343,12 @@ var KGAuthor;
                 console.log('implementing trimming');
                 var x1 = s.x1;
                 var y1 = s.y1;
-                var x2 = s.y2;
+                var x2 = s.x2;
                 var y2 = s.y2;
-                s.def.x1 = s.x1 = KGAuthor.averageDefs(x2, x1, def.trim);
-                s.def.x2 = s.x2 = KGAuthor.averageDefs(x1, x2, def.trim);
-                s.def.y1 = s.y1 = KGAuthor.averageDefs(y2, y1, def.trim);
-                s.def.y2 = s.y2 = KGAuthor.averageDefs(y1, y2, def.trim);
+                s.def.x1 = KGAuthor.averageDefs(x2, x1, def.trim);
+                s.def.x2 = KGAuthor.averageDefs(x1, x2, def.trim);
+                s.def.y1 = KGAuthor.averageDefs(y2, y1, def.trim);
+                s.def.y2 = KGAuthor.averageDefs(y1, y2, def.trim);
             }
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);

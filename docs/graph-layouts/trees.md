@@ -45,6 +45,7 @@ layout:
         color: colors.blue
         label:
           text: A
+          position: br
       - coordinates: [18,12]
         color: colors.red
         label:
@@ -67,6 +68,7 @@ layout:
         color: colors.blue
         label:
           text: A
+          position: br
       - name: B
         coordinates: [18,12]
         color: colors.red
@@ -95,6 +97,7 @@ layout:
         color: colors.blue
         label:
           text: A
+          position: br
       - name: B
         coordinates: [18,12]
         color: colors.red
@@ -106,6 +109,7 @@ layout:
         node2: B
         color: colors.purple
         endArrow: true
-        trim: 0.9
+        trim: 0.1
 
 </div>
+
