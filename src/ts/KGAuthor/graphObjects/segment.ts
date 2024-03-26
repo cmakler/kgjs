@@ -5,7 +5,7 @@ module KGAuthor {
     export interface SegmentDefinition extends GraphObjectDefinition {
         a?: any[];
         b?: any[];
-        trim: any;
+        trim?: any;
         startArrow?: boolean;
         endArrow?: boolean;
         label?: LabelDefinition;

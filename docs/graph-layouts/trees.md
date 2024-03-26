@@ -90,7 +90,7 @@ layout:
   OneTree:
     tree:
       showGrid: false
-      
+
       nodes: # list of nodes
       - name: A
         coordinates: [6,12]
@@ -110,6 +110,42 @@ layout:
         color: colors.purple
         endArrow: true
         trim: 0.1
+
+</div>
+
+## Directed graphs
+
+A directed graph is a kind of tree which begins with an initial node, which has various children. Game trees in economics are directed graphs.
+
+Because they are so useful, there is built-in support for directed graphs: for any node, you may specify its `chidren`, which is a list of nodes. The code will then connect each node with its children by auto-generating edges. You can label the edges using the attribute `edgeLabel`:
+
+<div width="500" height="410" class="codePreview">
+
+layout:
+  OneTree:
+    tree:
+      showGrid: false
+
+      nodes:
+      - name: A
+        coordinates: [6,12]
+        color: colors.blue
+        label:
+          text: A
+          position: br
+        children:
+        - name: B
+          edgeLabel: X
+          coordinates: [18,18]
+          color: colors.red
+          label:
+            text: B
+        - name: C
+          edgeLabel: Y
+          coordinates: [18,6]
+          color: colors.red
+          label:
+            text: C
 
 </div>
 

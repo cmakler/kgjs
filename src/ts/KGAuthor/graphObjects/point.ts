@@ -99,6 +99,24 @@ module KGAuthor {
 
     }
 
+    export class Points extends GraphObjectGenerator {
+
+        constructor(def: PointDefinition, graph: Graph) {
+            super(def, graph);
+
+            const ps = this;
+            const coordinateArray = def.coordinates;
+
+            coordinateArray.forEach(function(c: any[]) {
+                const pointDef =  JSON.parse(JSON.stringify(def));
+                pointDef.coordinates = c;
+                ps.subObjects.push(new Point(pointDef, graph));
+            })
+        }
+
+
+    }
+
     export interface PayoffDefinition extends LabelDefinition {
         player1: string;
         player2: string;

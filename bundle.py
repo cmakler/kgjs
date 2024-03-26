@@ -11,8 +11,7 @@ js_directories = [
     #'../core-interactives/code/',
     '../econgraphs/static/js/',
     '../econgraphs-beta/static/js/',
-    '../ditillio/demo/static/js/',
-    '../ditillio/grafici/static/js/'
+    '../ditillio/ebook/static/js/'
 ]
 
 js_local_directories = [
@@ -29,8 +28,7 @@ css_directories = [
     #'../core-interactives/code/',
     '../econgraphs/static/css/',
     '../econgraphs-beta/static/css/',
-    '../ditillio/demo/static/css/',
-    '../ditillio/grafici/static/css/'
+    '../ditillio/ebook/static/css/'
 ]
 
 bundles = [

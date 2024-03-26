@@ -2298,6 +2298,22 @@ var KGAuthor;
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
+    var Points = /** @class */ (function (_super) {
+        __extends(Points, _super);
+        function Points(def, graph) {
+            var _this = _super.call(this, def, graph) || this;
+            var ps = _this;
+            var coordinateArray = def.coordinates;
+            coordinateArray.forEach(function (c) {
+                var pointDef = JSON.parse(JSON.stringify(def));
+                pointDef.coordinates = c;
+                ps.subObjects.push(new Point(pointDef, graph));
+            });
+            return _this;
+        }
+        return Points;
+    }(KGAuthor.GraphObjectGenerator));
+    KGAuthor.Points = Points;
     var Node = /** @class */ (function (_super) {
         __extends(Node, _super);
         function Node(def, tree) {
