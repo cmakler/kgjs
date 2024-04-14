@@ -4,7 +4,7 @@ module KG {
 
     export interface ParamControlDefinition extends DivObjectDefinition {
         param: string;
-        label: string;
+        label?: string;
         plainText?: boolean;
     }
 
