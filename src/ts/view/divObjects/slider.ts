@@ -17,20 +17,28 @@ module KG {
         private labelElement;
         private showNumber;
         private inputWidth;
+        public digits;
 
         constructor(def: SliderDefinition) {
 
             // establish property defaults
             setDefaults(def, {
                 noAxis: false,
-                showNumber: true,
-                digits: 2
+                showNumber: true
             });
 
             // define constant and updatable properties
             setProperties(def, 'constants', ['noAxis', 'label', 'digits']);
             setProperties(def, 'updatables', ['showNumber']);
             super(def);
+
+            // calculate maximum number of digits
+            let slider = this;
+            const paramObject = slider.model.getParam(slider.param);
+            const precision = paramObject.precision;
+            slider.digits = precision + Math.trunc(Math.log10(paramObject.max)+1);
+            console.log("Number of digits: ", slider.digits);
+
         }
 
         draw(layer) {
