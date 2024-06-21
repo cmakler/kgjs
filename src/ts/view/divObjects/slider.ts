@@ -35,8 +35,21 @@ module KG {
             // calculate maximum number of digits
             let slider = this;
             const paramObject = slider.model.getParam(slider.param);
-            const precision = paramObject.precision;
-            slider.digits = precision + Math.trunc(Math.log10(paramObject.max)+1);
+
+            // number of digits for decimals
+            const decimalPlaces = paramObject.precision;
+
+            function maxMinDigits(x) {
+                if (x > 0) {
+                    return  Math.trunc(Math.log10(x)+1);
+                }
+                else {
+                    return Math.trunc(Math.log10(-1*x)+2);
+                }
+            }
+
+            // number of digits for minimum
+            slider.digits = Math.max(maxMinDigits(paramObject.min),maxMinDigits(paramObject.max)) + decimalPlaces;
             console.log("Number of digits: ", slider.digits);
 
         }

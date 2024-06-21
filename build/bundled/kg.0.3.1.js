@@ -69855,8 +69855,18 @@ var KG;
             // calculate maximum number of digits
             var slider = _this;
             var paramObject = slider.model.getParam(slider.param);
-            var precision = paramObject.precision;
-            slider.digits = precision + Math.trunc(Math.log10(paramObject.max) + 1);
+            // number of digits for decimals
+            var decimalPlaces = paramObject.precision;
+            function maxMinDigits(x) {
+                if (x > 0) {
+                    return Math.trunc(Math.log10(x) + 1);
+                }
+                else {
+                    return Math.trunc(Math.log10(-1 * x) + 2);
+                }
+            }
+            // number of digits for minimum
+            slider.digits = Math.max(maxMinDigits(paramObject.min), maxMinDigits(paramObject.max)) + decimalPlaces;
             console.log("Number of digits: ", slider.digits);
             return _this;
         }
