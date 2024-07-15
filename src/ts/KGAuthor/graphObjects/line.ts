@@ -127,10 +127,25 @@ module KGAuthor {
 
             super(def, graph);
 
-            this.xIntercept = xIntercept;
-            this.yIntercept = yIntercept;
-            this.slope = slope;
-            this.invSlope = invSlope;
+            const l = this;
+            l.xIntercept = xIntercept;
+            l.yIntercept = yIntercept;
+            l.slope = slope;
+            l.invSlope = invSlope;
+
+            if (def.hasOwnProperty('label') && def.label.hasOwnProperty('r')) {
+                let labelDef = copyJSON(def);
+                delete labelDef.label;
+                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(labelDef, {
+                    fontSize: 12,
+                    color: def.color,
+                    coordinates: lineRadius(l, labelDef.r),
+                    text: lineRadius(l, labelDef.r)
+                });
+                console.log(labelDef);
+                l.subObjects.push(new Label(labelDef, graph));
+            }
 
         }
 
@@ -155,6 +170,15 @@ module KGAuthor {
             } else {
                 d.fixedPoint = `(${d.invSlope} == 0 ? (${d.xIntercept})/(1 - ${l.invSlope.toString()}) : (${d.yIntercept})/(1 - ${l.slope.toString()}))`
             }
+            l.pts.forEach(function (p) {
+                if (p.hasOwnProperty('r')) {
+                    const coordinates = lineRadius(l, p['r']);
+                    parsedData.calcs[l.name][p['name']] = {
+                        x: coordinates[0],
+                        y: coordinates[1]
+                    }
+                }
+            });
             parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {} ,d);
             return parsedData;
         }
@@ -163,9 +187,17 @@ module KGAuthor {
     export function lineIntersection(l1: Line, l2: Line) {
         const x = divideDefs(addDefs(l1.xIntercept, multiplyDefs(l1.invSlope, l2.yIntercept)),
                 subtractDefs("1", multiplyDefs(l1.invSlope, l2.slope)));
-
         const y = l2.yOfX(x);
+        return [x,y];
+    }
 
+    // Find the intersection of a line with a circle of radius r
+    export function lineRadius(line: Line, r: number | string) {
+        const a = addDefs(1, squareDef(line.slope));
+        const b = multiplyDefs(2, multiplyDefs(line.slope, line.yIntercept));
+        const c = subtractDefs(squareDef(line.yIntercept),squareDef(r));
+        const x = quadraticRootDef(a,b,c,true);
+        const y = line.yOfX(x);
         return [x,y];
     }
 

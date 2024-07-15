@@ -63,7 +63,7 @@ module KGAuthor {
     }
 
     export function negativeDef(def) {
-        return (typeof def == 'number') ? (-1) * def : "(-" + getDefinitionProperty(def) + ")"
+        return multiplyDefs(-1, def);
     }
 
     export function binaryFunction(def1, def2, fn) {
@@ -143,11 +143,19 @@ module KGAuthor {
     }
 
     export function sqrtDef(def) {
-        return 'Math.sqrt(' + def + ')';
+        return raiseDefToDef(def, 0.5);
     }
 
     export function raiseDefToDef(def1, def2) {
         return binaryFunction(def1, def2, '^');
+    }
+
+    export function quadraticRootDef(def1: string, def2: string, def3: string, positive: boolean) {
+        const negagtiveB = negativeDef(def2);
+        const bSquaredMinus4ac = subtractDefs(squareDef(def2),multiplyDefs(4,multiplyDefs(def1,def3)));
+        const numerator = positive ? addDefs(negagtiveB, sqrtDef(bSquaredMinus4ac)) : subtractDefs(negagtiveB, sqrtDef(bSquaredMinus4ac));
+        const denominator = multiplyDefs(2, def1);
+        return divideDefs(numerator, denominator);
     }
 
     export function paramName(def) {

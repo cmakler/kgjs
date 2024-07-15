@@ -50,7 +50,6 @@ module KG {
 
             // number of digits for minimum
             slider.digits = Math.max(maxMinDigits(paramObject.min),maxMinDigits(paramObject.max)) + decimalPlaces;
-            console.log("Number of digits: ", slider.digits);
 
         }
 

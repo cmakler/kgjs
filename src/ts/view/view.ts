@@ -189,6 +189,7 @@ module KG {
         render(data, div) {
             let view = this;
             const parsedData = view.parse(data, div);
+            console.log('parsedData: ', parsedData);
             div.innerHTML = "";
 
             view.aspectRatio = data.aspectRatio || parsedData.aspectRatio || 1;

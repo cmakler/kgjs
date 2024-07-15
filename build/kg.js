@@ -135,7 +135,7 @@ var KGAuthor;
     }
     KGAuthor.namedCalc = namedCalc;
     function negativeDef(def) {
-        return (typeof def == 'number') ? (-1) * def : "(-" + getDefinitionProperty(def) + ")";
+        return multiplyDefs(-1, def);
     }
     KGAuthor.negativeDef = negativeDef;
     function binaryFunction(def1, def2, fn) {
@@ -216,13 +216,21 @@ var KGAuthor;
     }
     KGAuthor.squareDef = squareDef;
     function sqrtDef(def) {
-        return 'Math.sqrt(' + def + ')';
+        return raiseDefToDef(def, 0.5);
     }
     KGAuthor.sqrtDef = sqrtDef;
     function raiseDefToDef(def1, def2) {
         return binaryFunction(def1, def2, '^');
     }
     KGAuthor.raiseDefToDef = raiseDefToDef;
+    function quadraticRootDef(def1, def2, def3, positive) {
+        var negagtiveB = negativeDef(def2);
+        var bSquaredMinus4ac = subtractDefs(squareDef(def2), multiplyDefs(4, multiplyDefs(def1, def3)));
+        var numerator = positive ? addDefs(negagtiveB, sqrtDef(bSquaredMinus4ac)) : subtractDefs(negagtiveB, sqrtDef(bSquaredMinus4ac));
+        var denominator = multiplyDefs(2, def1);
+        return divideDefs(numerator, denominator);
+    }
+    KGAuthor.quadraticRootDef = quadraticRootDef;
     function paramName(def) {
         if (typeof (def) == 'string') {
             return def.replace('params.', '');
@@ -2116,10 +2124,24 @@ var KGAuthor;
                 delete def.max;
             }
             _this = _super.call(this, def, graph) || this;
-            _this.xIntercept = xIntercept;
-            _this.yIntercept = yIntercept;
-            _this.slope = slope;
-            _this.invSlope = invSlope;
+            var l = _this;
+            l.xIntercept = xIntercept;
+            l.yIntercept = yIntercept;
+            l.slope = slope;
+            l.invSlope = invSlope;
+            if (def.hasOwnProperty('label') && def.label.hasOwnProperty('r')) {
+                var labelDef = KGAuthor.copyJSON(def);
+                delete labelDef.label;
+                labelDef = KG.setDefaults(labelDef, def.label);
+                labelDef = KG.setDefaults(labelDef, {
+                    fontSize: 12,
+                    color: def.color,
+                    coordinates: lineRadius(l, labelDef.r),
+                    text: lineRadius(l, labelDef.r)
+                });
+                console.log(labelDef);
+                l.subObjects.push(new KGAuthor.Label(labelDef, graph));
+            }
             return _this;
         }
         Line.prototype.parseSelf = function (parsedData) {
@@ -2144,6 +2166,15 @@ var KGAuthor;
             else {
                 d.fixedPoint = "(" + d.invSlope + " == 0 ? (" + d.xIntercept + ")/(1 - " + l.invSlope.toString() + ") : (" + d.yIntercept + ")/(1 - " + l.slope.toString() + "))";
             }
+            l.pts.forEach(function (p) {
+                if (p.hasOwnProperty('r')) {
+                    var coordinates = lineRadius(l, p['r']);
+                    parsedData.calcs[l.name][p['name']] = {
+                        x: coordinates[0],
+                        y: coordinates[1]
+                    };
+                }
+            });
             parsedData.calcs[l.name] = KG.setDefaults(parsedData.calcs[l.name] || {}, d);
             return parsedData;
         };
@@ -2156,6 +2187,16 @@ var KGAuthor;
         return [x, y];
     }
     KGAuthor.lineIntersection = lineIntersection;
+    // Find the intersection of a line with a circle of radius r
+    function lineRadius(line, r) {
+        var a = KGAuthor.addDefs(1, KGAuthor.squareDef(line.slope));
+        var b = KGAuthor.multiplyDefs(2, KGAuthor.multiplyDefs(line.slope, line.yIntercept));
+        var c = KGAuthor.subtractDefs(KGAuthor.squareDef(line.yIntercept), KGAuthor.squareDef(r));
+        var x = KGAuthor.quadraticRootDef(a, b, c, true);
+        var y = line.yOfX(x);
+        return [x, y];
+    }
+    KGAuthor.lineRadius = lineRadius;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../kgAuthor.ts" />
 var KGAuthor;
@@ -2295,9 +2336,36 @@ var KGAuthor;
             }
             return _this;
         }
+        Point.prototype.parseSelf = function (parsedData) {
+            var p = this;
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            parsedData.calcs[p.name] = {
+                x: p.x.toString(),
+                y: p.y.toString()
+            };
+            return parsedData;
+        };
         return Point;
     }(KGAuthor.GraphObject));
     KGAuthor.Point = Point;
+    var LineCircleIntersection = /** @class */ (function (_super) {
+        __extends(LineCircleIntersection, _super);
+        function LineCircleIntersection(def, graph) {
+            var _this = this;
+            var l = new KGAuthor.Line(def.lineDef, graph);
+            var coordinates = KGAuthor.lineRadius(l, def.radius);
+            KG.setDefaults(def, {
+                coordinates: coordinates,
+                positive: true
+            });
+            _this = _super.call(this, def, graph) || this;
+            var lci = _this;
+            lci.subObjects.push(l);
+            return _this;
+        }
+        return LineCircleIntersection;
+    }(Point));
+    KGAuthor.LineCircleIntersection = LineCircleIntersection;
     var Points = /** @class */ (function (_super) {
         __extends(Points, _super);
         function Points(def, graph) {
@@ -5826,7 +5894,10 @@ var KG;
             var newObj = {};
             for (var stringOrObj in obj) {
                 var def = obj[stringOrObj];
-                if (typeof def === 'string') {
+                if (typeof def === 'number') {
+                    newObj[stringOrObj] = def;
+                }
+                else if (typeof def === 'string') {
                     newObj[stringOrObj] = model.evaluate(def, onlyJSMath);
                 }
                 else {
@@ -5846,6 +5917,7 @@ var KG;
             }
             // collect current values in a scope object
             var params = model.currentParamValues, calcs = model.currentCalcValues, colors = model.currentColors, idioms = model.currentIdioms;
+            //console.log('trying to parse ', name);
             // try to evaluate using mathjs
             try {
                 var compiledMath = math.compile(name);
@@ -5855,12 +5927,13 @@ var KG;
                     idioms: idioms,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as ', result);
+                //onsole.log('parsed', name, 'as ', result);
                 return result;
             }
             catch (err) {
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
+                //console.log('parsing did not work');
                 if (onlyJSMath) {
                     return name;
                 }
@@ -6716,6 +6789,7 @@ var KG;
         View.prototype.render = function (data, div) {
             var view = this;
             var parsedData = view.parse(data, div);
+            console.log('parsedData: ', parsedData);
             div.innerHTML = "";
             view.aspectRatio = data.aspectRatio || parsedData.aspectRatio || 1;
             view.model = new KG.Model(parsedData);
@@ -7954,7 +8028,6 @@ var KG;
             }
             // number of digits for minimum
             slider.digits = Math.max(maxMinDigits(paramObject.min), maxMinDigits(paramObject.max)) + decimalPlaces;
-            console.log("Number of digits: ", slider.digits);
             return _this;
         }
         Slider.prototype.draw = function (layer) {

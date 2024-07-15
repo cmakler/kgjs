@@ -97,6 +97,45 @@ module KGAuthor {
 
         }
 
+        parseSelf(parsedData) {
+            let p = this;
+            parsedData = super.parseSelf(parsedData);
+            parsedData.calcs[p.name] = {
+                x: p.x.toString(),
+                y: p.y.toString()
+            };
+
+            return parsedData;
+        }
+
+    }
+
+    export interface LineCircleIntersectionDefinition extends PointDefinition {
+        name: string;
+        lineDef: LineDefinition;
+        radius: number;
+        positive?: boolean;
+    }
+
+    export class LineCircleIntersection extends Point {
+
+        constructor(def: LineCircleIntersectionDefinition, graph) {
+
+            const l = new KGAuthor.Line(def.lineDef, graph);
+            const coordinates = lineRadius(l, def.radius);
+
+            KG.setDefaults(def,{
+                coordinates: coordinates,
+                positive: true
+            });
+
+            super(def, graph);
+            const lci = this;
+
+            lci.subObjects.push(l);
+
+        }
+
     }
 
     export class Points extends GraphObjectGenerator {

@@ -78,8 +78,6 @@ module KGAuthor {
                         c.subObjects.push(new Label(labelDef, graph));
                     }
                 }
-
-
             }
         }
 

@@ -103,7 +103,10 @@ module KG {
             let newObj = {};
             for (const stringOrObj in obj) {
                 const def = obj[stringOrObj];
-                if (typeof def === 'string') {
+                if (typeof def === 'number') {
+                    newObj[stringOrObj] = def;
+                }
+                else if (typeof def === 'string') {
                     newObj[stringOrObj] = model.evaluate(def, onlyJSMath)
                 } else {
                     newObj[stringOrObj] = model.evalObject(def, onlyJSMath)
@@ -130,6 +133,8 @@ module KG {
                 colors = model.currentColors,
                 idioms = model.currentIdioms;
 
+            //console.log('trying to parse ', name);
+
             // try to evaluate using mathjs
             try {
                 const compiledMath = math.compile(name);
@@ -139,13 +144,15 @@ module KG {
                     idioms: idioms,
                     colors: colors
                 });
-                //console.log('parsed', name, 'as ', result);
+                //onsole.log('parsed', name, 'as ', result);
                 return result;
             } catch
                 (err) {
 
                 // if that doesn't work, try to evaluate using native js eval
                 //console.log('unable to parse', name, 'as a pure math function, trying general eval');
+
+                //console.log('parsing did not work');
 
                 if (onlyJSMath) {
                     return name;
