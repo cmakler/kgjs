@@ -140,8 +140,7 @@ module KGAuthor {
                 labelDef = KG.setDefaults(labelDef, {
                     fontSize: 12,
                     color: def.color,
-                    coordinates: lineRadius(l, labelDef.r),
-                    text: lineRadius(l, labelDef.r)
+                    coordinates: lineRadius(l, labelDef.r, labelDef.center)
                 });
                 console.log(labelDef);
                 l.subObjects.push(new Label(labelDef, graph));
@@ -172,7 +171,7 @@ module KGAuthor {
             }
             l.pts.forEach(function (p) {
                 if (p.hasOwnProperty('r')) {
-                    const coordinates = lineRadius(l, p['r']);
+                    const coordinates = lineRadius(l, p['r'], p['center']);
                     parsedData.calcs[l.name][p['name']] = {
                         x: coordinates[0],
                         y: coordinates[1]
@@ -192,10 +191,16 @@ module KGAuthor {
     }
 
     // Find the intersection of a line with a circle of radius r
-    export function lineRadius(line: Line, r: number | string) {
+    export function lineRadius(line: Line, r: number | string, center?: (number | string)[]) {
         const a = addDefs(1, squareDef(line.slope));
-        const b = multiplyDefs(2, multiplyDefs(line.slope, line.yIntercept));
-        const c = subtractDefs(squareDef(line.yIntercept),squareDef(r));
+        let b = multiplyDefs(2, multiplyDefs(line.slope, line.yIntercept));
+        let c = subtractDefs(squareDef(line.yIntercept),squareDef(r));
+        if(center) {
+            const cx = center[0];
+            const cy = center[1] || 0;
+            b = subtractDefs(b, multiplyDefs(2,addDefs(center[0],multiplyDefs(line.slope,cy))));
+            c = addDefs(c, subtractDefs(addDefs(squareDef(cx),squareDef(cy)),multiplyDefs(2,multiplyDefs(line.yIntercept, cy))));
+        }
         const x = quadraticRootDef(a,b,c,true);
         const y = line.yOfX(x);
         return [x,y];
