@@ -1,6 +1,6 @@
 {
   "name": "kgjs",
-  "version": "1.0.0",
+  "version": "0.3.3",
   "description": "js renderer for kineticgraphs",
   "main": "kg.js",
   "devDependencies": {

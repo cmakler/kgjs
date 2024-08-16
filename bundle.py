@@ -10,7 +10,7 @@ js_directories = [
     #'../bh-textbook/code/',
     #'../core-interactives/code/',
     '../econgraphs/static/js/',
-    '../econgraphs-beta/static/js/',
+    #'../econgraphs-beta/static/js/',
     '../ditillio/ebook/static/js/'
 ]
 
@@ -27,7 +27,7 @@ css_directories = [
     #'../bh-textbook/code/',
     #'../core-interactives/code/',
     '../econgraphs/static/css/',
-    '../econgraphs-beta/static/css/',
+    #'../econgraphs-beta/static/css/',
     '../ditillio/ebook/static/css/'
 ]
 
@@ -71,7 +71,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.3.2.js",
+        "name": "kg.0.3.3.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg-lib.js",
@@ -79,7 +79,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg3d.0.3.2.js",
+        "name": "kg3d.0.3.3.js",
         "dest_directories": js_directories,
         "order": [
             "build/lib/kg3d-lib.js",
@@ -116,7 +116,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg.0.3.2.css",
+        "name": "kg.0.3.3.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",
@@ -124,7 +124,7 @@ bundles = [
         ]
     },
     {
-        "name": "kg-tufte.0.3.2.css",
+        "name": "kg-tufte.0.3.3.css",
         "dest_directories": css_directories,
         "order": [
             "node_modules/katex/dist/katex.min.css",

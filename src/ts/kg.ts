@@ -1,6 +1,5 @@
 /// <reference path="../../node_modules/@types/katex/index.d.ts"/>
 /// <reference path="../../node_modules/@types/d3/index.d.ts"/>
-/// <reference path="../../node_modules/@types/mathjs/index.d.ts"/>
 /// <reference path="../../node_modules/@types/js-yaml/index.d.ts"/>
 
 
@@ -93,14 +92,14 @@ function loadGraphs() {
             if (!src || src.indexOf('.yml') > -1) {
                 try {
                     function generateViewFromYamlText(t) {
-                        const y = jsyaml.safeLoad(t);
+                        const y = jsyaml.load(t); // note changing from loadSafe to load...seems like jsyaml made this change
                         const j = JSON.parse(JSON.stringify(y).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&'));
                         //j.greenscreen = greenscreen;
                         // If there is a template file, then load that and use the yml in the description to replace terms defined by "macro"
                         let custom = "";
                         if (tmp) {
                             d3.text(tmp).then(function (template_file) {
-                                const yt = jsyaml.safeLoad(template_file);
+                                const yt = jsyaml.load(template_file);
                                 let yts = JSON.stringify(yt).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&');
                                 for (const key in j) {
                                     if(key == "custom") {
