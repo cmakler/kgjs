@@ -66,9 +66,5 @@ layout:
             
 We're working on developing multiple scales for opposite axes, but as of now there isn't support for that functionality.
 
-## Three-Dimensional Graphs
-
-Three-dimensional graphs are handled by a completely different set of code, called Mathbox; you can see its development [here](https://github.com/unconed/mathbox). Mathboxes have their own [layouts]:
-
 
 
