@@ -170,3 +170,22 @@ table.gameMatrix tr td.strategy {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
+.slider-numberInput {
+    font-family: Katex_Main;
+    font-size: 14pt;
+    border: none;
+    background: none;
+    margin: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.slider-label {
+    font-family: Katex_Main;
+    font-size: 14pt;
+    border: none;
+    text-align: right;
+    margin: 0px;
+    padding: 0px;
+}

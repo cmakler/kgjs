@@ -109,16 +109,17 @@ module KG {
             if (undefined != label.text) {
                 if (label.plainText) {
                     //console.log('rendering label as plain text: ', label.text)
-                    label.text = "\\text{" + label.text + "}";
+                    label.rootElement.text(label.text);
                 } else {
                     //console.log('rendering label as LaTeX: ', label.text)
+                    try {
+                        katex.render(label.text.toString(), label.rootElement.node());
+                    }
+                    catch(e) {
+                        console.log("Error rendering KaTeX: ",label.text);
+                    }
                 }
-                try {
-                    katex.render(label.text.toString(), label.rootElement.node());
-                }
-                catch(e) {
-                    console.log("Error rendering KaTeX: ",label.text);
-                }
+
             }
             label.rootElement.style('left', x + 'px');
             label.rootElement.style('top', y + 'px');

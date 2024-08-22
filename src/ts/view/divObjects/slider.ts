@@ -58,11 +58,7 @@ module KG {
             slider.rootElement = layer.append('tr');
             const param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
-                .style('font-size', '14pt')
-                .style('text-align', 'right')
-                .style('padding', '0px')
-                .style('margin', '0px')
-                .style('border', 'none');
+                .attr('class','slider-label');
 
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value)
@@ -78,13 +74,8 @@ module KG {
                 .attr('min', param.min)
                 .attr('max', param.max)
                 .attr('step', param.round)
-                .style('font-size', '14pt')
-                .style('border', 'none')
-                .style('background', 'none')
-                .style('font-family', 'KaTeX_Main')
-                .style('margin', '0px')
-                .style('padding-top', '0px')
-                .style('padding-bottom', '0px');
+                .attr('class', 'slider-numberInput')
+
             slider.numberInput.on("blur", inputUpdate);
             slider.numberInput.on("click", inputUpdate);
             slider.numberInput.on("keyup", function () {
@@ -114,7 +105,11 @@ module KG {
         redraw() {
             let slider = this;
             if (slider.showNumber) {
-                katex.render(`${slider.label} = `, slider.labelElement.node());
+                if (slider.plainText) {
+                    slider.labelElement.text(slider.label + ' = ');
+                } else {
+                    katex.render(`${slider.label} = `, slider.labelElement.node());
+                }
                 slider.numberInput.property('value', slider.value.toFixed(slider.model.getParam(slider.param).precision));
                 slider.numberInput.style('width',  `${20 + slider.digits*10}px`);
                 slider.numberInput.style('display','inline-block');
