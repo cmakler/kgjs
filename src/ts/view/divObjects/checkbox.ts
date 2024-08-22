@@ -17,20 +17,20 @@ module KG {
                 checkbox.model.toggleParam(checkbox.param)
             });
             checkbox.labelElement = checkbox.rootElement.append('span');
-            checkbox.labelElement.style('padding-left','10px');
+            checkbox.labelElement.style('padding-left','10px').attr('class','checkbox-label');
             return checkbox;
         }
 
         redraw() {
             const checkbox = this;
             if (checkbox.plainText) {
-                //console.log('rendering label as plain text: ', label.text)
-                checkbox.label = "\\text{" + checkbox.label + "}";
+                console.log('checkbox is plain text');
+                checkbox.labelElement.text(checkbox.label);
             } else {
-                //console.log('rendering label as LaTeX: ', label.text)
+                katex.render(checkbox.label, checkbox.labelElement.node());
             }
             checkbox.inputElement.property('checked',Boolean(checkbox.value));
-            katex.render(checkbox.label, checkbox.labelElement.node());
+
             return checkbox;
         }
     }

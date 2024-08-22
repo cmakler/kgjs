@@ -41,7 +41,7 @@ module KG {
             let sidebar = this;
             sidebar.rootElement
                 .style('left', '10px')
-                .style('top', height + 20 + 'px')
+                .style('top', height + 40 + 'px')
                 .style('width', width - 20 + 'px')
                 .style('height', null)
         }

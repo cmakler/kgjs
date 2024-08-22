@@ -4,6 +4,7 @@
 
 /// <reference path="schemas/econSchema.ts"/>
 /// <reference path="schemas/bowlesHallidaySchema.ts"/>
+/// <reference path="schemas/lowdownSchema.ts"/>
 
 /* LAYOUTS */
 

@@ -3449,6 +3449,29 @@ var KGAuthor;
 /// <reference path="../eg.ts" />
 var KGAuthor;
 (function (KGAuthor) {
+    var LowdownSchema = /** @class */ (function (_super) {
+        __extends(LowdownSchema, _super);
+        function LowdownSchema(def) {
+            var _this = this;
+            // create color scheme here; I took these from the spreadsheet
+            var blue = "'#060665'", red = "'#9E1F14'";
+            // define any overrides to the defined Econ schema here
+            def.colors = {
+                // consumer theory
+                demand: blue,
+                supply: blue,
+                equilibriumPrice: red
+            };
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return LowdownSchema;
+    }(KGAuthor.EconSchema));
+    KGAuthor.LowdownSchema = LowdownSchema;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
     var EdgeworthBox = /** @class */ (function (_super) {
         __extends(EdgeworthBox, _super);
         function EdgeworthBox(def) {
@@ -5736,6 +5759,7 @@ var KGAuthor;
 /* SCHEMAS */
 /// <reference path="schemas/econSchema.ts"/>
 /// <reference path="schemas/bowlesHallidaySchema.ts"/>
+/// <reference path="schemas/lowdownSchema.ts"/>
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /// <reference path="layouts/gameTree.ts"/>
@@ -8061,6 +8085,7 @@ var KG;
             var param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .attr('class', 'slider-label');
+            slider.labelElementSpan = slider.labelElement.append('span').style('white-space', 'nowrap');
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value);
             }
@@ -8101,7 +8126,7 @@ var KG;
             var slider = this;
             if (slider.showNumber) {
                 if (slider.plainText) {
-                    slider.labelElement.text(slider.label + ' = ');
+                    slider.labelElementSpan.text(slider.label + ' = ');
                 }
                 else {
                     katex.render(slider.label + " = ", slider.labelElement.node());
@@ -8111,7 +8136,12 @@ var KG;
                 slider.numberInput.style('display', 'inline-block');
             }
             else {
-                katex.render(slider.label, slider.labelElement.node());
+                if (slider.plainText) {
+                    slider.labelElementSpan.text(slider.label);
+                }
+                else {
+                    katex.render(slider.label, slider.labelElement.node());
+                }
                 slider.numberCell.style('width', '10px');
                 slider.numberInput.style('display', 'none');
             }
@@ -8140,20 +8170,19 @@ var KG;
                 checkbox.model.toggleParam(checkbox.param);
             });
             checkbox.labelElement = checkbox.rootElement.append('span');
-            checkbox.labelElement.style('padding-left', '10px');
+            checkbox.labelElement.style('padding-left', '10px').attr('class', 'checkbox-label');
             return checkbox;
         };
         Checkbox.prototype.redraw = function () {
             var checkbox = this;
             if (checkbox.plainText) {
-                //console.log('rendering label as plain text: ', label.text)
-                checkbox.label = "\\text{" + checkbox.label + "}";
+                console.log('checkbox is plain text');
+                checkbox.labelElement.text(checkbox.label);
             }
             else {
-                //console.log('rendering label as LaTeX: ', label.text)
+                katex.render(checkbox.label, checkbox.labelElement.node());
             }
             checkbox.inputElement.property('checked', Boolean(checkbox.value));
-            katex.render(checkbox.label, checkbox.labelElement.node());
             return checkbox;
         };
         return Checkbox;
@@ -8275,10 +8304,12 @@ var KG;
         // update properties
         Controls.prototype.redraw = function () {
             var controls = this;
-            if (controls.title.length > 0) {
+            if (controls.title) {
                 controls.titleElement.text(controls.title.toUpperCase());
             }
-            controls.descriptionElement.html(controls.description);
+            if (controls.description) {
+                controls.descriptionElement.html(controls.description);
+            }
             return controls;
         };
         return Controls;
@@ -8574,7 +8605,7 @@ var KG;
             var sidebar = this;
             sidebar.rootElement
                 .style('left', '10px')
-                .style('top', height + 20 + 'px')
+                .style('top', height + 40 + 'px')
                 .style('width', width - 20 + 'px')
                 .style('height', null);
         };

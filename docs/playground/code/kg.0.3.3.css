@@ -193,3 +193,7 @@ table.gameMatrix tr td.strategy {
     padding: 0px;
 }
 
+.checkbox-label {
+    font-family: KaTeX_Main;
+}
+

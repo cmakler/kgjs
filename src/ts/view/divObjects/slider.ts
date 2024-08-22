@@ -15,6 +15,7 @@ module KG {
         private numberCell;
         private numberInput;
         private labelElement;
+        private labelElementSpan;
         private showNumber;
         private inputWidth;
         public digits;
@@ -59,6 +60,7 @@ module KG {
             const param = slider.model.getParam(slider.param);
             slider.labelElement = slider.rootElement.append('td')
                 .attr('class','slider-label');
+            slider.labelElementSpan = slider.labelElement.append('span').style('white-space','nowrap');
 
             function inputUpdate() {
                 slider.model.updateParam(slider.param, +this.value)
@@ -106,7 +108,7 @@ module KG {
             let slider = this;
             if (slider.showNumber) {
                 if (slider.plainText) {
-                    slider.labelElement.text(slider.label + ' = ');
+                    slider.labelElementSpan.text(slider.label + ' = ');
                 } else {
                     katex.render(`${slider.label} = `, slider.labelElement.node());
                 }
@@ -114,7 +116,11 @@ module KG {
                 slider.numberInput.style('width',  `${20 + slider.digits*10}px`);
                 slider.numberInput.style('display','inline-block');
             } else {
-                katex.render(slider.label, slider.labelElement.node());
+                if (slider.plainText) {
+                    slider.labelElementSpan.text(slider.label);
+                } else {
+                    katex.render(slider.label, slider.labelElement.node());
+                }
                 slider.numberCell.style('width', '10px');
                 slider.numberInput.style('display','none');
             }

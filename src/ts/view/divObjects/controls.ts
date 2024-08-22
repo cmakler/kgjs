@@ -102,10 +102,12 @@ module KG {
         // update properties
         redraw() {
             let controls = this;
-            if (controls.title.length > 0) {
+            if(controls.title) {
                 controls.titleElement.text(controls.title.toUpperCase());
             }
-            controls.descriptionElement.html(controls.description);
+            if(controls.description) {
+                controls.descriptionElement.html(controls.description);
+            }
             return controls;
         }
     }
