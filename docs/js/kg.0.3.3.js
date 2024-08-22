@@ -65378,7 +65378,7 @@ var KGAuthor;
         function LowdownSchema(def) {
             var _this = this;
             // create color scheme here; I took these from the spreadsheet
-            var blue = "'#060665'", red = "'#9E1F14'";
+            var blue = "'#0000AA'", red = "'#AA0000'";
             // define any overrides to the defined Econ schema here
             def.colors = {
                 // consumer theory

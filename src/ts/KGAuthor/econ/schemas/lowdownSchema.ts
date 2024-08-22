@@ -6,15 +6,15 @@ module KGAuthor {
         constructor(def) {
 
             // create color scheme here; I took these from the spreadsheet
-            let blue = "'#060665'",
-                red = "'#9E1F14'";
+            let blue = "'#0000AA'",
+                red = "'#AA0000'";
 
             // define any overrides to the defined Econ schema here
             def.colors = {
 
                 // consumer theory
                 demand: blue,
-                supply:blue,
+                supply: blue,
                 equilibriumPrice: red
 
             };
