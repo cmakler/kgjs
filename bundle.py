@@ -12,7 +12,7 @@ js_directories = [
     '../econgraphs/static/js/',
     #'../econgraphs-beta/static/js/',
     '../ditillio/ebook/static/js/',
-    '../graph-template/static/js/',
+    #'../graph-template/static/js/',
     '../lowdown/static/js/'
 ]
 
@@ -31,7 +31,7 @@ css_directories = [
     '../econgraphs/static/css/',
     #'../econgraphs-beta/static/css/',
     '../ditillio/ebook/static/css/',
-    '../graph-template/static/css/',
+    #'../graph-template/static/css/',
     '../lowdown/static/css/'
 ]
 
