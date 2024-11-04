@@ -226,4 +226,13 @@ module KG {
             v.model.resetParams();
         })
     }
+
+    export function getViewData() {
+        console.log("Getting data from all active views")
+        let d = [];
+        views.forEach(function(v) {
+            d.push(v.parsedData);
+        })
+        return d;
+    }
 }

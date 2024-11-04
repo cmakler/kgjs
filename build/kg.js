@@ -9517,4 +9517,13 @@ var KG;
         });
     }
     KG.resetAllParams = resetAllParams;
+    function getViewData() {
+        console.log("Getting data from all active views");
+        var d = [];
+        views.forEach(function (v) {
+            d.push(v.parsedData);
+        });
+        return d;
+    }
+    KG.getViewData = getViewData;
 })(KG || (KG = {}));
