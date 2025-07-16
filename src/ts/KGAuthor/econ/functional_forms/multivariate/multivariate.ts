@@ -168,8 +168,8 @@ module KGAuthor {
             const u = this;
             let blDef;
             if (budgetLine.hasOwnProperty('point') && budgetLine.point != undefined) {
-                min = 0.01;
-                max = 0.99;
+                min = 0.0001;
+                max = 0.9999;
                 blDef = {
                     p1: '(t)',
                     p2: '1 - (t)',
@@ -189,7 +189,7 @@ module KGAuthor {
                     yFunction: optimalBundle[1],
                     min: min,
                     max: max,
-                    samplePoints: 100,
+                    samplePoints: 200,
                     parametric: true
                 }
             ]

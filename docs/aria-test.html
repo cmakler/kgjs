@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Testing ARIA labels on SVG</title>
+</head>
+<body>
+<p>This is an SVG graph:</p>
+<svg width="400" height="400" tabindex="0">
+  <title>Big Graph</title>
+  <desc>This is a graph showing a blue dot and a red dot.</desc>
+  <g transform="translate(200,200)">
+    <circle r="4" cx="0" cy="0" tabindex="0">
+        <title>This is a point at location (200,200).</title>
+
+    </circle>
+  </g>
+</svg>
+</body>
+</html>
