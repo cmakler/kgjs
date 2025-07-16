@@ -40,12 +40,13 @@ module KG {
             p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.rootElement.append('circle');
             //p.addClipPathAndArrows()
+            p.addScreenReaderDescriptions(p.circle);
             return p.addInteraction();
         }
 
         // update properties
         redraw() {
-            let p = this;
+            let p = this.updateScreenReaderDescriptions();
             p.rootElement.attr('transform', `translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
             p.circle.attr('r', p.r);
             p.circle.style('fill', p.fill);

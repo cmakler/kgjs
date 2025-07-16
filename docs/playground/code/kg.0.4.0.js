@@ -69043,6 +69043,28 @@ var KG;
         ViewObject.prototype.init = function () {
             return this; //defined at subclass level
         };
+        ViewObject.prototype.addScreenReaderDescriptions = function (el) {
+            var vo = this;
+            if (vo.def.hasOwnProperty('srTitle') && vo.def['srTitle'] != undefined) {
+                vo.screenReaderTitle = el.append('title');
+                vo.rootElement.attr('tabindex', '0');
+            }
+            if (vo.def.hasOwnProperty('srDesc') && vo.def['srDesc'] != undefined) {
+                vo.screenReaderDescription = el.append('desc');
+                vo.rootElement.attr('tabindex', '0');
+            }
+            return vo;
+        };
+        ViewObject.prototype.updateScreenReaderDescriptions = function () {
+            var vo = this;
+            if (vo.hasOwnProperty('srTitle') && vo.srTitle != undefined) {
+                vo.screenReaderTitle.text(vo.srTitle);
+            }
+            if (vo.hasOwnProperty('srDesc') && vo.srDesc != undefined) {
+                vo.screenReaderDescription.text(vo.srDesc);
+            }
+            return vo;
+        };
         ViewObject.prototype.addClipPathAndArrows = function () {
             var vo = this;
             if (vo.hasOwnProperty('clipPath') && vo.clipPath != undefined) {
@@ -69402,11 +69424,12 @@ var KG;
             p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.rootElement.append('circle');
             //p.addClipPathAndArrows()
+            p.addScreenReaderDescriptions(p.circle);
             return p.addInteraction();
         };
         // update properties
         Point.prototype.redraw = function () {
-            var p = this;
+            var p = this.updateScreenReaderDescriptions();
             p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
             p.circle.attr('r', p.r);
             p.circle.style('fill', p.fill);

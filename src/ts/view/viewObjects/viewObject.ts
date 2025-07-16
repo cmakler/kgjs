@@ -86,6 +86,8 @@ module KG {
 
         public rootElement;
         public rootElement2;
+        public screenReaderTitle;
+        public screenReaderDescription;
         public markedElement;
         public alwaysUpdate: boolean;
         public checkOnGraph: boolean;
@@ -171,6 +173,32 @@ module KG {
         init() {
             return this; //defined at subclass level
         }
+
+        addScreenReaderDescriptions(el) {
+            const vo = this;
+            if (vo.def.hasOwnProperty('srTitle') && vo.def['srTitle'] != undefined) {
+                vo.screenReaderTitle = el.append('title');
+                vo.rootElement.attr('tabindex','0');
+            }
+            if (vo.def.hasOwnProperty('srDesc') && vo.def['srDesc'] != undefined) {
+                vo.screenReaderDescription = el.append('desc');
+                vo.rootElement.attr('tabindex','0');
+            }
+            return vo;
+        }
+
+        updateScreenReaderDescriptions() {
+            const vo = this;
+            if (vo.hasOwnProperty('srTitle') && vo.srTitle != undefined) {
+                vo.screenReaderTitle.text(vo.srTitle);
+            }
+            if (vo.hasOwnProperty('srDesc') && vo.srDesc != undefined) {
+                vo.screenReaderDescription.text(vo.srDesc);
+            }
+            return vo;
+        }
+
+
 
         addClipPathAndArrows() {
             const vo = this;
