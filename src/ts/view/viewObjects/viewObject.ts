@@ -5,6 +5,9 @@ module KG {
     export interface ViewObjectDefinition extends UpdateListenerDefinition {
         layer?: any;
         name?: string;
+        tabbable?: boolean;
+        srTitle?: string;
+        srDesc?: string;
         show?: any;
         xScale?: Scale;
         yScale?: Scale;
@@ -112,7 +115,7 @@ module KG {
             });
 
             setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax','fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph']);
+            setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph', 'tabbable', 'srTitle', 'srDesc']);
             setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
 
             if (def.inDef) {
