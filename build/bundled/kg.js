@@ -7070,8 +7070,8 @@ var KG;
                 lineStyle: 'solid',
                 checkOnGraph: true
             });
-            KG.setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax', 'fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle']);
-            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph', 'tabbable', 'srTitle', 'srDesc']);
+            KG.setProperties(def, 'updatables', ['xScaleMin', 'xScaleMax', 'yScaleMin', 'yScaleMax', 'fill', 'stroke', 'strokeWidth', 'opacity', 'strokeOpacity', 'show', 'lineStyle', 'srTitle', 'srDesc']);
+            KG.setProperties(def, 'constants', ['xScale', 'yScale', 'clipPath', 'clipPath2', 'interactive', 'alwaysUpdate', 'inDef', 'checkOnGraph', 'tabbable']);
             KG.setProperties(def, 'colorAttributes', ['stroke', 'fill', 'color']);
             if (def.inDef) {
                 def.show = true;
