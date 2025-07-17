@@ -6,6 +6,7 @@ module KG {
         x: any;
         y: any;
         r?: any;
+        labelText?: string;
     }
 
     export class Point extends ViewObject {
@@ -21,6 +22,9 @@ module KG {
 
         constructor(def: PointDefinition) {
 
+            if(def.hasOwnProperty('label') && !def.hasOwnProperty('srTitle')) {
+                def.srTitle = `Point ${def['label']['text']}`
+            }
             setDefaults(def, {
                 fill: 'colors.blue',
                 opacity: 1,
@@ -48,7 +52,8 @@ module KG {
 
         // update properties
         redraw() {
-            let p = this.updateScreenReaderDescriptions();
+            let p = this;
+            p.updateScreenReaderDescriptions();
             p.rootElement.attr('transform', `translate(${p.xScale.scale(p.x)} ${p.yScale.scale(p.y)})`);
             p.circle.attr('r', p.r);
             p.circle.style('fill', p.fill);

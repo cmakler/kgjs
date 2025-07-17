@@ -84,6 +84,10 @@ module KG {
         public inDef;
         public interactionHandler;
 
+        public tabbable;
+        public srTitle;
+        public srDesc;
+
         public rootElement;
         public rootElement2;
         public screenReaderTitle;

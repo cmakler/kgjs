@@ -278,11 +278,6 @@ var KGAuthor;
         });
     }
     KGAuthor.curvesFromFunctions = curvesFromFunctions;
-    // capture label for screen readers
-    function getScreenReaderLabel(def) {
-        return (def.hasOwnProperty('label')) ? def.label['text'] : null;
-    }
-    KGAuthor.getScreenReaderLabel = getScreenReaderLabel;
     // allow author to set fill color either by "color" attribute or "fill" attribute
     function setFillColor(def) {
         if (def.open) {
@@ -2299,11 +2294,6 @@ var KGAuthor;
             p.type = 'Point';
             p.layer = 3;
             p.extractCoordinates();
-            var defaultScreenReaderTitle = "point at coordinates (" + def.x + ", " + def.y + ") ";
-            if (KGAuthor.getScreenReaderLabel(def)) {
-                defaultScreenReaderTitle += "labeled " + KGAuthor.getScreenReaderLabel(def);
-            }
-            def.srTitle = def.srTitle || defaultScreenReaderTitle;
             def = KGAuthor.makeDraggable(def);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
@@ -7495,6 +7485,9 @@ var KG;
         __extends(Point, _super);
         function Point(def) {
             var _this = this;
+            if (def.hasOwnProperty('label') && !def.hasOwnProperty('srTitle')) {
+                def.srTitle = "Point " + def['label']['text'];
+            }
             KG.setDefaults(def, {
                 fill: 'colors.blue',
                 opacity: 1,
@@ -7521,7 +7514,8 @@ var KG;
         };
         // update properties
         Point.prototype.redraw = function () {
-            var p = this.updateScreenReaderDescriptions();
+            var p = this;
+            p.updateScreenReaderDescriptions();
             p.rootElement.attr('transform', "translate(" + p.xScale.scale(p.x) + " " + p.yScale.scale(p.y) + ")");
             p.circle.attr('r', p.r);
             p.circle.style('fill', p.fill);
