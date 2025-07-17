@@ -37,10 +37,12 @@ module KG {
         draw(layer) {
             let p = this;
             p.rootElement = layer.append('g'); // SVG group
-            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.dragCircle = p.rootElement.append('circle').style('fill','yellow').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.rootElement.append('circle');
             //p.addClipPathAndArrows()
             p.addScreenReaderDescriptions(p.circle);
+            //p.rootElement.on("focus", function() {p.dragCircle.style('fill-opacity','30%')});
+            //p.rootElement.on("blur", function() {p.dragCircle.style('fill-opacity',0)});
             return p.addInteraction();
         }
 

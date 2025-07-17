@@ -176,13 +176,14 @@ module KG {
 
         addScreenReaderDescriptions(el) {
             const vo = this;
+            if (vo.rootElement) {
+                vo.rootElement.attr('tabindex','0');
+            }
             if (vo.def.hasOwnProperty('srTitle') && vo.def['srTitle'] != undefined) {
                 vo.screenReaderTitle = el.append('title');
-                vo.rootElement.attr('tabindex','0');
             }
             if (vo.def.hasOwnProperty('srDesc') && vo.def['srDesc'] != undefined) {
                 vo.screenReaderDescription = el.append('desc');
-                vo.rootElement.attr('tabindex','0');
             }
             return vo;
         }

@@ -62202,6 +62202,11 @@ var KGAuthor;
         });
     }
     KGAuthor.curvesFromFunctions = curvesFromFunctions;
+    // capture label for screen readers
+    function getScreenReaderLabel(def) {
+        return (def.hasOwnProperty('label')) ? def.label['text'] : null;
+    }
+    KGAuthor.getScreenReaderLabel = getScreenReaderLabel;
     // allow author to set fill color either by "color" attribute or "fill" attribute
     function setFillColor(def) {
         if (def.open) {
@@ -62288,6 +62293,14 @@ var KGAuthor;
             this.def = def;
             this.name = def.name;
             this.subObjects = [];
+            if (def.hasOwnProperty('srTitle')) {
+                this.srTitle = def.srTitle;
+                this.tabbable = true;
+            }
+            if (def.hasOwnProperty('srDesc')) {
+                this.srDesc = def.srDesc;
+                this.tabbable = true;
+            }
         }
         AuthoringObject.prototype.parseSelf = function (parsedData) {
             return parsedData;
@@ -63607,14 +63620,6 @@ var KGAuthor;
                     _this.def.clipPathName = def.clipPathName || graph.clipPath.name;
                 }
             }
-            if (def.hasOwnProperty('srTitle')) {
-                _this.srTitle = def.srTitle;
-                _this.tabbable = true;
-            }
-            if (def.hasOwnProperty('srDesc')) {
-                _this.srDesc = def.srDesc;
-                _this.tabbable = true;
-            }
             _this.subObjects = [];
             return _this;
         }
@@ -64218,6 +64223,11 @@ var KGAuthor;
             p.type = 'Point';
             p.layer = 3;
             p.extractCoordinates();
+            var defaultScreenReaderTitle = "point at coordinates (" + def.x + ", " + def.y + ") ";
+            if (KGAuthor.getScreenReaderLabel(def)) {
+                defaultScreenReaderTitle += "labeled " + KGAuthor.getScreenReaderLabel(def);
+            }
+            def.srTitle = def.srTitle || defaultScreenReaderTitle;
             def = KGAuthor.makeDraggable(def);
             if (def.hasOwnProperty('label')) {
                 var labelDef = KGAuthor.copyJSON(def);
@@ -69045,13 +69055,14 @@ var KG;
         };
         ViewObject.prototype.addScreenReaderDescriptions = function (el) {
             var vo = this;
+            if (vo.rootElement) {
+                vo.rootElement.attr('tabindex', '0');
+            }
             if (vo.def.hasOwnProperty('srTitle') && vo.def['srTitle'] != undefined) {
                 vo.screenReaderTitle = el.append('title');
-                vo.rootElement.attr('tabindex', '0');
             }
             if (vo.def.hasOwnProperty('srDesc') && vo.def['srDesc'] != undefined) {
                 vo.screenReaderDescription = el.append('desc');
-                vo.rootElement.attr('tabindex', '0');
             }
             return vo;
         };
@@ -69280,6 +69291,9 @@ var KG;
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
+            curve.addScreenReaderDescriptions(curve.path);
+            curve.path.on("focus", function () { curve.dragPath.style('fill', 'yellow'); });
+            curve.path.on("blur", function () { curve.dragPath.style('fill', 'none'); });
             return curve.addClipPathAndArrows().addInteraction();
         };
         // update properties
@@ -69421,10 +69435,12 @@ var KG;
         Point.prototype.draw = function (layer) {
             var p = this;
             p.rootElement = layer.append('g'); // SVG group
-            p.dragCircle = p.rootElement.append('circle').style('fill-opacity', 0).attr('r', 20);
+            p.dragCircle = p.rootElement.append('circle').style('fill', 'yellow').style('fill-opacity', 0).attr('r', 20);
             p.circle = p.rootElement.append('circle');
             //p.addClipPathAndArrows()
             p.addScreenReaderDescriptions(p.circle);
+            //p.rootElement.on("focus", function() {p.dragCircle.style('fill-opacity','30%')});
+            //p.rootElement.on("blur", function() {p.dragCircle.style('fill-opacity',0)});
             return p.addInteraction();
         };
         // update properties

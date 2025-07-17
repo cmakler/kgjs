@@ -4,6 +4,9 @@ module KGAuthor {
 
     export interface AuthoringObjectDefinition {
         name?: string;
+        tabbable?: boolean;
+        srTitle?: string;
+        srDesc?: string;
     }
 
     export interface IAuthoringObject {
@@ -15,11 +18,25 @@ module KGAuthor {
         public name: any;
         public def: any;
         public subObjects: AuthoringObject[];
+        public tabbable: boolean;
+        public srTitle: string;
+        public srDesc: string;
 
         constructor(def: AuthoringObjectDefinition) {
             this.def = def;
             this.name = def.name;
             this.subObjects = [];
+
+
+            if(def.hasOwnProperty('srTitle')) {
+                this.srTitle = def.srTitle;
+                this.tabbable = true;
+            }
+
+            if(def.hasOwnProperty('srDesc')) {
+                this.srDesc = def.srDesc;
+                this.tabbable = true;
+            }
         }
 
         parseSelf(parsedData: KG.ViewDefinition) {

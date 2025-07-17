@@ -203,6 +203,11 @@ module KGAuthor {
         })
     }
 
+    // capture label for screen readers
+    export function getScreenReaderLabel(def) {
+        return (def.hasOwnProperty('label')) ? def.label['text'] : null;
+    }
+
     // allow author to set fill color either by "color" attribute or "fill" attribute
     export function setFillColor(def) {
         if (def.open) {

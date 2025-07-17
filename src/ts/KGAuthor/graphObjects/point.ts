@@ -19,6 +19,7 @@ module KGAuthor {
 
         constructor(def: PointDefinition, graph) {
 
+
             KG.setDefaults(def,{
                 color: 'colors.blue'
             });
@@ -31,6 +32,12 @@ module KGAuthor {
             p.type = 'Point';
             p.layer = 3;
             p.extractCoordinates();
+
+            let defaultScreenReaderTitle = `point at coordinates (${def.x}, ${def.y}) `
+            if(getScreenReaderLabel(def)) {
+                defaultScreenReaderTitle += `labeled ${getScreenReaderLabel(def)}`
+            }
+            def.srTitle = def.srTitle || defaultScreenReaderTitle;
 
             def = makeDraggable(def);
 

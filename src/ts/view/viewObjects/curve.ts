@@ -60,6 +60,9 @@ module KG {
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
+            curve.addScreenReaderDescriptions(curve.path);
+            curve.path.on("focus", function() {curve.dragPath.style('fill','yellow')});
+            curve.path.on("blur", function() {curve.dragPath.style('fill','none')});
             return curve.addClipPathAndArrows().addInteraction();
         }
 

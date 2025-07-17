@@ -4,18 +4,12 @@ module KGAuthor {
 
     export interface GraphObjectGeneratorDefinition extends AuthoringObjectDefinition {
         include3d?: boolean;
-        tabbable?: boolean;
-        srTitle?: string;
-        srDesc?: string;
     }
 
     export class GraphObjectGenerator extends AuthoringObject {
 
         public def: any;
         public subObjects: AuthoringObject[];
-        public tabbable: boolean;
-        public srTitle: string;
-        public srDesc: string;
 
         constructor(def, graph?: Graph) {
             super(def);
@@ -26,15 +20,6 @@ module KGAuthor {
                     this.def.clipPathName = def.clipPathName || graph.clipPath.name;
                 }
 
-            }
-            if(def.hasOwnProperty('srTitle')) {
-                this.srTitle = def.srTitle;
-                this.tabbable = true;
-            }
-
-            if(def.hasOwnProperty('srDesc')) {
-                this.srDesc = def.srDesc;
-                this.tabbable = true;
             }
 
             this.subObjects = [];
