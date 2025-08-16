@@ -1924,18 +1924,26 @@ var KGAuthor;
                 lineStyle: 'dotted',
                 layer: 0,
                 xStep: 1,
-                yStep: 1
+                yStep: 1,
+                xGridlines: 10,
+                yGridlines: 10
             });
             var g = _this;
             g.subObjects = [];
-            for (var i = 0; i < 10; i++) {
-                var x = KGAuthor.multiplyDefs(i, def.xStep), y = KGAuthor.multiplyDefs(i, def.yStep);
+            // Create vertical gridlines
+            for (var i = 0; i < def.xGridlines; i++) {
+                var x = KGAuthor.multiplyDefs(i, def.xStep);
                 var gxDef = KGAuthor.copyJSON(def), gyDef = KGAuthor.copyJSON(def);
                 gxDef.a = [x, graph.yScale.min];
                 gxDef.b = [x, graph.yScale.max];
+                g.subObjects.push(new KGAuthor.Segment(gxDef, graph));
+            }
+            // Create horizontal gridlines
+            for (var i = 0; i < def.yGridlines; i++) {
+                var y = KGAuthor.multiplyDefs(i, def.yStep);
+                var gxDef = KGAuthor.copyJSON(def), gyDef = KGAuthor.copyJSON(def);
                 gyDef.a = [graph.xScale.min, y];
                 gyDef.b = [graph.xScale.max, y];
-                g.subObjects.push(new KGAuthor.Segment(gxDef, graph));
                 g.subObjects.push(new KGAuthor.Segment(gyDef, graph));
             }
             return _this;
@@ -3158,6 +3166,10 @@ var KGAuthor;
         __extends(Label, _super);
         function Label(def, graph) {
             var _this = this;
+            def = KG.setDefaults(def, {
+                fontSize: 10,
+                bgcolor: null
+            });
             var xAxisIntercept = 0, yAxisIntercept = 0;
             if (graph.def.hasOwnProperty('xAxis')) {
                 if (graph.def.xAxis.hasOwnProperty('intercept')) {
@@ -3205,9 +3217,13 @@ var KGAuthor;
                 }
                 if (def.position.toLowerCase() == 't') {
                     def.yPixelOffset = -(def.fontSize + 5);
+                    def.xPixelOffset = 0;
+                    def.align = 'center';
                 }
                 if (def.position.toLowerCase() == 'b') {
                     def.yPixelOffset = def.fontSize + 2;
+                    def.xPixelOffset = 0;
+                    def.align = 'center';
                 }
                 if (def.position.toLowerCase() == 'r') {
                     def.xPixelOffset = -8;
