@@ -178,8 +178,6 @@ module KGAuthor {
             l.subObjects.push(rightGraph);
             l.subObjects.push(sidebar);
 
-
-
         }
 
     }
