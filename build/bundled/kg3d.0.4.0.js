@@ -69096,7 +69096,8 @@ var KG;
         ViewObject.prototype.addScreenReaderDescriptions = function (el) {
             var vo = this;
             if (vo.rootElement) {
-                vo.rootElement.attr('tabindex', '0');
+                //Let's not add tabIndex until we know how to style it...
+                //vo.rootElement.attr('tabindex','0');
             }
             if (vo.def.hasOwnProperty('srTitle') && vo.def['srTitle'] != undefined) {
                 vo.screenReaderTitle = el.append('title');
