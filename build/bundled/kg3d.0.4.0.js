@@ -65125,8 +65125,7 @@ var KGAuthor;
         function Label(def, graph) {
             var _this = this;
             def = KG.setDefaults(def, {
-                fontSize: 10,
-                bgcolor: null
+                fontSize: 10
             });
             var xAxisIntercept = 0, yAxisIntercept = 0;
             if (graph.def.hasOwnProperty('xAxis')) {

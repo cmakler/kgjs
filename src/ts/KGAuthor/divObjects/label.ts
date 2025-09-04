@@ -24,8 +24,7 @@ module KGAuthor {
         constructor(def:LabelDefinition, graph) {
 
             def = KG.setDefaults(def, {
-                    fontSize: 10,
-                    bgcolor: null
+                    fontSize: 10
                 });
 
             let xAxisIntercept = 0, yAxisIntercept = 0;
