@@ -1,9 +1,39 @@
+# ======= IDEs e Sistema =======
 .idea/
+.vscode/
+.DS_Store
+*/.DS_Store
+Thumbs.db
+
+# ======= Dependências =======
 node_modules/
-export_to_econgraphs.py
+vendor/
+
+# ======= Jekyll =======
 docs/_site/
 docs/.jekyll-cache/
-src/lib/js-yaml/
-vendor/
-src/.DS_Store
-*/.DS_Store
+docs/.sass-cache/
+_site/
+.jekyll-cache/
+.sass-cache/
+
+# ======= Builds / Bundles =======
+build/
+dist/
+docs/js/kg.0.*.js
+docs/css/kg.0.*.css
+*.map
+*.zip
+
+# ======= Scripts / utilitários locais =======
+export_to_econgraphs.py
+playground.zip
+
+# ======= Arquivos temporários =======
+*.log
+*.tmp
+*.swp
+*.bak
+
+# ======= Ambiente =======
+.env
