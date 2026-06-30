@@ -164,7 +164,7 @@ module KGAuthor {
     }
 
     export interface NodeDefinition extends PointDefinition {
-        name: string;
+        name?: string;
         children?: NodeDefinition[];
         childSelectParam?: string;
         edgeLabel?: string; // used to label the edge from the parent node

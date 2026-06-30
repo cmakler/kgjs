@@ -3,7 +3,7 @@
 module KG {
 
     export interface DivObjectDefinition extends UpdateListenerDefinition {
-        layer: any;
+        layer?: any;
         name?: string;
         show?: any;
     }

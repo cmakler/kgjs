@@ -5,9 +5,9 @@ module KGAuthor {
     export interface AxisDefinition {
         min: any;
         max: any;
-        title: string;
-        orient: string;
-        log: boolean;
+        title?: string;
+        orient?: string;
+        log?: boolean;
     }
 
     export class Scale extends AuthoringObject {
@@ -34,7 +34,7 @@ module KGAuthor {
     }
 
     export interface PositionedObjectDefinition {
-        position: {
+        position?: {
             x: any;
             y: any;
             width: any;

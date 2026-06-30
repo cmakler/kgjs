@@ -5,7 +5,7 @@ module KGAuthor {
     export interface TreeDefinition extends GraphDefinition {
         nodes: NodeDefinition[]
         edges?: EdgeDefinition[]
-        showGrid: any
+        showGrid?: any
     }
 
     export class Tree extends Graph {

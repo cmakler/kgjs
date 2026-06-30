@@ -3,7 +3,7 @@
 module KGAuthor {
 
     export interface GraphDefinition extends PositionedObjectDefinition {
-        objects: KG.TypeAndDef[]
+        objects?: KG.TypeAndDef[]
     }
 
     export class Graph extends PositionedObject {

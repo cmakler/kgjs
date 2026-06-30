@@ -66297,7 +66297,10 @@ var KGAuthor;
                         'expression': KGAuthor.addDefs(KGAuthor.multiplyDefs('drag.x', def.p1), KGAuthor.multiplyDefs('drag.y', def.p2))
                     }];
             }
-            if (!def.inMap) {
+            if (def.label == 'none') {
+                delete def.label;
+            }
+            else if (!def.inMap) {
                 def.label = KG.setDefaults(def.label || {}, {
                     text: "BL",
                     location: def.sellOnly ? 0.1 : 0.9
@@ -70351,22 +70354,34 @@ var KG;
         // create div for text
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
-            var numStrategies1 = gameMatrix.strategies[0].length, numStrategies2 = gameMatrix.strategies[1].length;
+            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1], numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            console.log("Player 1 strategies: ", strategies1);
+            console.log("Player 2 strategies: ", strategies2);
             gameMatrix.rootElement = layer.append('div');
             var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
+            // The top row is player 2's name
             var topRow = table.append('tr');
-            topRow.append('td').attr('colspan', '2').attr('class', 'empty');
-            topRow.append('td')
-                .attr('colspan', numStrategies2 * 2)
+            topRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty cell above player 1's name and strategies
+            topRow.append('td') // Create a cell spanning the rest of the matrix.
+                .attr('colspan', numStrategies2 * 2) // Each cell of the matrix is actually 2 cells for the payoffs
                 .attr('class', 'player2 strategy empty')
                 .text(gameMatrix.players[1]);
+            // The second row is player 2's strategies
             var secondRow = table.append('tr');
-            secondRow.append('td').attr('colspan', '2').attr('class', 'empty');
-            gameMatrix.strategies[1].forEach(function (s) {
-                secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy').text(s);
+            secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
+            strategies2.forEach(function (s2) {
+                console.log('Player 2 strategy: ', s2);
+                var player2Strategy = secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy');
+                try {
+                    katex.render(s2.toString(), player2Strategy.node());
+                }
+                catch (e) {
+                    console.log("Error rendering KaTeX: ", s2.toString());
+                }
             });
             gameMatrix.payoffNodes = [];
-            for (var i = 0; i < numStrategies1; i++) {
+            strategies1.forEach(function (s1, i) {
+                console.log("Player 1 strategy: ", s1);
                 var row = table.append('tr');
                 var payoffRow = [];
                 if (i == 0) {
@@ -70375,20 +70390,27 @@ var KG;
                         .attr('class', 'player1 strategy empty')
                         .text(gameMatrix.players[0]);
                 }
-                row.append('td').text(gameMatrix.strategies[0][i]).attr('class', 'player1 strategy');
+                var player1Strategy = row.append('td').attr('class', 'player1 strategy');
+                try {
+                    katex.render(s1.toString(), player1Strategy.node());
+                }
+                catch (e) {
+                    console.log("Error rendering KaTeX: ", s1.toString());
+                }
                 for (var j = 0; j < numStrategies2; j++) {
                     var payoff1 = row.append('td').attr('class', 'player1 payoff');
                     var payoff2 = row.append('td').attr('class', 'player2 payoff');
                     payoffRow.push([payoff1, payoff2]);
                 }
                 gameMatrix.payoffNodes.push(payoffRow);
+            });
+            for (var i = 0; i < numStrategies1; i++) {
             }
             return gameMatrix;
         };
         GameMatrix.prototype.redraw = function () {
             var gameMatrix = this;
-            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1];
-            var numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1], numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
                     var cell = gameMatrix.payoffNodes[i][j];

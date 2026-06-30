@@ -62831,6 +62831,100 @@ var KGAuthor;
         return GameMatrixPlusGraphPlusSidebar;
     }(KGAuthor.Layout));
     KGAuthor.GameMatrixPlusGraphPlusSidebar = GameMatrixPlusGraphPlusSidebar;
+    var TwoGameMatrices = /** @class */ (function (_super) {
+        __extends(TwoGameMatrices, _super);
+        function TwoGameMatrices(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var gameAdef = def['tree'];
+            var vertical = def.vertical;
+            var width = vertical ? 0.9 : 0.4;
+            var height = vertical ? 0.4 : 0.9;
+            var gamex = vertical ? 0.05 : 0.55;
+            var gamey = vertical ? 0.5 : 0;
+            var gameAdivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.gameA
+                    }
+                ]
+            };
+            var gameBdivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.gameB
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.DivContainer(gameAdivDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameBdivDef));
+            if (def.hasOwnProperty('sidebar')) {
+                l.subObjects.push(new KGAuthor.Sidebar(def.sidebar));
+            }
+            return _this;
+        }
+        return TwoGameMatrices;
+    }(KGAuthor.Layout));
+    KGAuthor.TwoGameMatrices = TwoGameMatrices;
+    var GameTreePlusMatrix = /** @class */ (function (_super) {
+        __extends(GameTreePlusMatrix, _super);
+        function GameTreePlusMatrix(def) {
+            var _this = this;
+            KG.setDefaults(def, {
+                vertical: false
+            });
+            _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = def['tree'];
+            var vertical = def.vertical;
+            var width = vertical ? 0.9 : 0.4;
+            var height = vertical ? 0.4 : 0.9;
+            var gamex = vertical ? 0.05 : 0.55;
+            var gamey = vertical ? 0.5 : 0;
+            treeDef.position = {
+                x: 0.05,
+                y: 0.05,
+                width: width,
+                height: height
+            };
+            var gameDivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.game
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            if (def.hasOwnProperty('sidebar')) {
+                l.subObjects.push(new KGAuthor.Sidebar(def.sidebar));
+            }
+            return _this;
+        }
+        return GameTreePlusMatrix;
+    }(KGAuthor.Layout));
+    KGAuthor.GameTreePlusMatrix = GameTreePlusMatrix;
     var GeoGebraPlusGraph = /** @class */ (function (_super) {
         __extends(GeoGebraPlusGraph, _super);
         function GeoGebraPlusGraph(def) {
@@ -65636,6 +65730,90 @@ var KGAuthor;
         return EntryDeterrence;
     }(KGAuthor.Tree));
     KGAuthor.EntryDeterrence = EntryDeterrence;
+    var BayesNashNormalForm = /** @class */ (function (_super) {
+        __extends(BayesNashNormalForm, _super);
+        function BayesNashNormalForm(def) {
+            var _this = this;
+            var player1 = {
+                name: def.gameA.player1.name,
+                strategies: [
+                    def.gameA.player1.strategies[0] + "^A" + def.gameB.player1.strategies[0] + "^B",
+                    def.gameA.player1.strategies[1] + "^A" + def.gameB.player1.strategies[0] + "^B",
+                    def.gameA.player1.strategies[0] + "^A" + def.gameB.player1.strategies[1] + "^B",
+                    def.gameA.player1.strategies[1] + "^A" + def.gameB.player1.strategies[1] + "^B"
+                ]
+            };
+            var player2 = {
+                name: def.gameA.player2.name,
+                strategies: def.gameA.player2.strategies
+            };
+            // Maxes it easier to find the weighted average of strategies
+            var topLeftA = def.gameA.payoffs[0][0];
+            var topLeftB = def.gameB.payoffs[0][0];
+            var topRightA = def.gameA.payoffs[0][1];
+            var topRightB = def.gameB.payoffs[0][1];
+            var bottomLeftA = def.gameA.payoffs[1][0];
+            var bottomLeftB = def.gameB.payoffs[1][0];
+            var bottomRightA = def.gameA.payoffs[1][1];
+            var bottomRightB = def.gameB.payoffs[1][1];
+            // For simplicity, assume player 1 is the informed player and their strategies are [U,D]
+            // If player 1 plays U in both games
+            var UUpayoffs = [
+                [KGAuthor.averageDefs(topLeftA[0], topLeftB[0], def.probA), KGAuthor.averageDefs(topLeftA[1], topLeftB[1], def.probA)],
+                [KGAuthor.averageDefs(topRightA[0], topRightB[0], def.probA), KGAuthor.averageDefs(topRightA[1], topRightB[1], def.probA)]
+            ];
+            // If player 1 plays U in game A and D in game B
+            var UDpayoffs = [
+                [KGAuthor.averageDefs(topLeftA[0], bottomLeftB[0], def.probA), KGAuthor.averageDefs(topLeftA[1], bottomLeftB[1], def.probA)],
+                [KGAuthor.averageDefs(topRightA[0], bottomRightB[0], def.probA), KGAuthor.averageDefs(topRightA[0], bottomRightB[1], def.probA)]
+            ];
+            // If player 1 plays D in game A and U in game B
+            var DUpayoffs = [
+                [KGAuthor.averageDefs(bottomLeftA[0], topLeftB[0], def.probA), KGAuthor.averageDefs(bottomLeftA[1], topLeftB[1], def.probA)],
+                [KGAuthor.averageDefs(bottomRightA[0], topRightB[0], def.probA), KGAuthor.averageDefs(bottomRightA[1], topRightB[1], def.probA)]
+            ];
+            // If player 1 plays D in both games
+            var DDpayoffs = [
+                [KGAuthor.averageDefs(bottomLeftA[0], bottomLeftB[0], def.probA), KGAuthor.averageDefs(bottomLeftA[1], bottomLeftB[1], def.probA)],
+                [KGAuthor.averageDefs(bottomRightA[0], bottomRightB[0], def.probA), KGAuthor.averageDefs(bottomRightA[0], bottomRightB[1], def.probA)]
+            ];
+            def.game = {
+                player1: player1,
+                player2: player2,
+                payoffs: [UUpayoffs, UDpayoffs, DUpayoffs, DDpayoffs]
+            };
+            def.tree = {
+                edges: [
+                    {
+                        node1: "AU",
+                        node2: "BD",
+                        color: "red",
+                        lineStyle: "dotted"
+                    }
+                ],
+                nodes: [
+                    {
+                        coordinates: [0, 12],
+                        stroke: "green",
+                        fill: "white",
+                        childSelectParam: "chance",
+                        children: [
+                            {
+                                coordinates: [6, 18],
+                                edgeLabel: "A\\text{ (prob. }" + def.probAlabel + ")",
+                                childSelectParam: "strategy1A",
+                                children: []
+                            }
+                        ]
+                    }
+                ]
+            };
+            _this = _super.call(this, def) || this;
+            return _this;
+        }
+        return BayesNashNormalForm;
+    }(KGAuthor.GameTreePlusMatrix));
+    KGAuthor.BayesNashNormalForm = BayesNashNormalForm;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -69300,9 +69478,9 @@ var KG;
             curve.rootElement = layer.append('g');
             curve.dragPath = curve.rootElement.append('path').attr('stroke-width', '20px').style('stroke-opacity', 0).style('fill', 'none');
             curve.path = curve.rootElement.append('path').style('fill', 'none');
-            curve.addScreenReaderDescriptions(curve.path);
-            curve.path.on("focus", function () { curve.dragPath.style('fill', 'yellow'); });
-            curve.path.on("blur", function () { curve.dragPath.style('fill', 'none'); });
+            //curve.addScreenReaderDescriptions(curve.path);
+            //curve.path.on("focus", function() {curve.dragPath.style('fill','yellow')});
+            //curve.path.on("blur", function() {curve.dragPath.style('fill','none')});
             return curve.addClipPathAndArrows().addInteraction();
         };
         // update properties
@@ -70305,14 +70483,19 @@ var KG;
 /// <reference path="../../kg.ts" />
 var KG;
 (function (KG) {
+    var Player = /** @class */ (function () {
+        function Player(def) {
+            this.name = def.name;
+            this.strategies = def.strategies;
+        }
+        return Player;
+    }());
+    KG.Player = Player;
     var GameMatrix = /** @class */ (function (_super) {
         __extends(GameMatrix, _super);
         function GameMatrix(def) {
             var _this = this;
-            KG.setDefaults(def, {
-                players: ["Player 1", "Player 2"]
-            });
-            KG.setProperties(def, 'constants', ['players', 'strategies']);
+            KG.setProperties(def, 'constants', ['player1', 'player2']);
             KG.setProperties(def, 'updatables', ['payoffs']);
             _this = _super.call(this, def) || this;
             return _this;
@@ -70320,9 +70503,9 @@ var KG;
         // create div for text
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
-            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1], numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
-            console.log("Player 1 strategies: ", strategies1);
-            console.log("Player 2 strategies: ", strategies2);
+            var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            console.log("Player 1 strategies: ", player1.strategies);
+            console.log("Player 2 strategies: ", player2.strategies);
             gameMatrix.rootElement = layer.append('div');
             var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             // The top row is player 2's name
@@ -70331,11 +70514,11 @@ var KG;
             topRow.append('td') // Create a cell spanning the rest of the matrix.
                 .attr('colspan', numStrategies2 * 2) // Each cell of the matrix is actually 2 cells for the payoffs
                 .attr('class', 'player2 strategy empty')
-                .text(gameMatrix.players[1]);
+                .text(player2.name);
             // The second row is player 2's strategies
             var secondRow = table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
-            strategies2.forEach(function (s2) {
+            player2.strategies.forEach(function (s2) {
                 console.log('Player 2 strategy: ', s2);
                 var player2Strategy = secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy');
                 try {
@@ -70346,7 +70529,7 @@ var KG;
                 }
             });
             gameMatrix.payoffNodes = [];
-            strategies1.forEach(function (s1, i) {
+            player1.strategies.forEach(function (s1, i) {
                 console.log("Player 1 strategy: ", s1);
                 var row = table.append('tr');
                 var payoffRow = [];
@@ -70354,7 +70537,7 @@ var KG;
                     row.append('td')
                         .attr('rowSpan', numStrategies1)
                         .attr('class', 'player1 strategy empty')
-                        .text(gameMatrix.players[0]);
+                        .text(gameMatrix.player1.name);
                 }
                 var player1Strategy = row.append('td').attr('class', 'player1 strategy');
                 try {
@@ -70376,7 +70559,7 @@ var KG;
         };
         GameMatrix.prototype.redraw = function () {
             var gameMatrix = this;
-            var strategies1 = gameMatrix.strategies[0], strategies2 = gameMatrix.strategies[1], numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            var strategies1 = gameMatrix.player1.strategies, strategies2 = gameMatrix.player2.strategies, numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
                     var cell = gameMatrix.payoffNodes[i][j];

@@ -69,7 +69,6 @@ module KGAuthor {
 
             this.aspectRatio = includeControls ? 2 : 4;
 
-
             leftGraphDef.position = {
                 x: leftX,
                 y: topY,
@@ -283,6 +282,107 @@ module KGAuthor {
             l.subObjects.push(new DivContainer(gameDivDef));
             l.subObjects.push(new Graph(graphDef));
             l.subObjects.push(new Sidebar(sidebarDef));
+
+        }
+
+    }
+
+    export class TwoGameMatrices extends Layout {
+        constructor(def) {
+            super (def);
+            const l = this;
+            let gameAdef = def['tree'];
+            let vertical = def.vertical;
+
+            const width = vertical ? 0.9 : 0.4;
+            const height = vertical ? 0.4 : 0.9;
+            const gamex = vertical ? 0.05 : 0.55;
+            const gamey = vertical ? 0.5 : 0;
+
+            let gameAdivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.gameA
+                    }
+                ]
+            };
+
+            let gameBdivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.gameB
+                    }
+                ]
+            };
+
+            l.subObjects.push(new DivContainer(gameAdivDef));
+            l.subObjects.push(new DivContainer(gameBdivDef));
+
+            if (def.hasOwnProperty('sidebar')) {
+                l.subObjects.push(new Sidebar(def.sidebar));
+            }
+        }
+    }
+
+    export class GameTreePlusMatrix extends Layout {
+
+        constructor(def) {
+            KG.setDefaults(def,{
+                vertical: false
+            })
+            super(def);
+
+            const l = this;
+            let treeDef = def['tree'];
+            let vertical = def.vertical;
+
+            const width = vertical ? 0.9 : 0.4;
+            const height = vertical ? 0.4 : 0.9;
+            const gamex = vertical ? 0.05 : 0.55;
+            const gamey = vertical ? 0.5 : 0;
+
+            treeDef.position = {
+                    x: 0.05,
+                    y: 0.05,
+                    width: width,
+                    height: height
+            };
+
+            let gameDivDef = {
+                position: {
+                    x: gamex,
+                    y: gamey,
+                    width: width,
+                    height: height
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: def.game
+                    }
+                ]
+            };
+
+            l.subObjects.push(new DivContainer(gameDivDef));
+            l.subObjects.push(new Tree(treeDef));
+
+            if (def.hasOwnProperty('sidebar')) {
+                l.subObjects.push(new Sidebar(def.sidebar));
+            }
 
         }
 
