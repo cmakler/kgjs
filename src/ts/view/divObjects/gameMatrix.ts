@@ -31,6 +31,7 @@ module KG {
         private player2;
         private payoffs;
         private payoffNodes: any[][][];
+        private table;
 
         constructor(def: GameMatrixDefinition) {
             setProperties(def,'constants',['player1','player2']);
@@ -50,13 +51,16 @@ module KG {
             console.log("Player 1 strategies: ", player1.strategies);
             console.log("Player 2 strategies: ", player2.strategies);
 
-            gameMatrix.rootElement = layer.append('div');
+            gameMatrix.rootElement = layer.select('div')
+                .append('div')
+                .style('margin','0 auto');
 
-            let table = gameMatrix.rootElement.append('table').attr('class','gameMatrix');
+
+            gameMatrix.table = gameMatrix.rootElement.append('table').attr('class','gameMatrix');
 
             // The top row is player 2's name
 
-            let topRow = table.append('tr');
+            let topRow = gameMatrix.table.append('tr');
             topRow.append('td').attr('colspan','2').attr('class', 'empty'); // empty cell above player 1's name and strategies
             topRow.append('td') // Create a cell spanning the rest of the matrix.
                 .attr('colspan',numStrategies2*2) // Each cell of the matrix is actually 2 cells for the payoffs
@@ -64,7 +68,7 @@ module KG {
                 .text(player2.name);
 
             // The second row is player 2's strategies
-            let secondRow = table.append('tr');
+            let secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan','2').attr('class', 'empty'); // empty row above player 1's name and strategies
             player2.strategies.forEach(function (s2) {
                 console.log('Player 2 strategy: ', s2);
@@ -81,7 +85,7 @@ module KG {
 
             player1.strategies.forEach(function (s1, i) {
                 console.log("Player 1 strategy: ", s1);
-                let row = table.append('tr');
+                let row = gameMatrix.table.append('tr');
                 let payoffRow = [];
                 if(i == 0) {
                     row.append('td')
@@ -127,6 +131,13 @@ module KG {
                     katex.render(gameMatrix.payoffs[i][j][1].toString(),cell[1].node());
                 }
             }
+
+            // Calculate relative width of game matrix
+             const gameMatrixWidth = gameMatrix.table.node().clientWidth,
+                 divWidth = gameMatrix.rootElement.node().clientWidth,
+                 widthPercent = Math.min(100,Math.round(10*gameMatrixWidth/divWidth)*10);
+
+            gameMatrix.rootElement.style('width',widthPercent+'%');
             return gameMatrix;
         }
     }

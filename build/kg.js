@@ -593,6 +593,26 @@ var KGAuthor;
         return OneGraphPlusSidebar;
     }(KGAuthor.SquareLayout));
     KGAuthor.OneGraphPlusSidebar = OneGraphPlusSidebar;
+    var OneGameMatrixPlusSidebar = /** @class */ (function (_super) {
+        __extends(OneGameMatrixPlusSidebar, _super);
+        function OneGameMatrixPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var gameDef = def['game'], sidebarDef = def['sidebar'];
+            gameDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.nosvg = true;
+            l.subObjects.push(new KGAuthor.GameMatrix(gameDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        return OneGameMatrixPlusSidebar;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.OneGameMatrixPlusSidebar = OneGameMatrixPlusSidebar;
     var OneTreePlusSidebar = /** @class */ (function (_super) {
         __extends(OneTreePlusSidebar, _super);
         function OneTreePlusSidebar(def) {
@@ -7191,8 +7211,9 @@ var KG;
             }
             view.div.style('height', displayHeight + 'px');
             // set the height of the div
-            view.svgContainerDiv.style('width', width);
-            view.svgContainerDiv.style('height', height);
+            view.svgContainerDiv.style('width', width + "px");
+            view.svgContainerDiv.style('height', height + "px");
+            view.svgContainerDiv.attr('class', 'main-content');
             if (view.svg) {
                 // set the dimensions of the svg
                 view.svg.style('width', width);
@@ -8582,17 +8603,19 @@ var KG;
             var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
             console.log("Player 1 strategies: ", player1.strategies);
             console.log("Player 2 strategies: ", player2.strategies);
-            gameMatrix.rootElement = layer.append('div');
-            var table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
+            gameMatrix.rootElement = layer.select('div')
+                .append('div')
+                .style('margin', '0 auto');
+            gameMatrix.table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             // The top row is player 2's name
-            var topRow = table.append('tr');
+            var topRow = gameMatrix.table.append('tr');
             topRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty cell above player 1's name and strategies
             topRow.append('td') // Create a cell spanning the rest of the matrix.
                 .attr('colspan', numStrategies2 * 2) // Each cell of the matrix is actually 2 cells for the payoffs
                 .attr('class', 'player2 strategy empty')
                 .text(player2.name);
             // The second row is player 2's strategies
-            var secondRow = table.append('tr');
+            var secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
             player2.strategies.forEach(function (s2) {
                 console.log('Player 2 strategy: ', s2);
@@ -8607,7 +8630,7 @@ var KG;
             gameMatrix.payoffNodes = [];
             player1.strategies.forEach(function (s1, i) {
                 console.log("Player 1 strategy: ", s1);
-                var row = table.append('tr');
+                var row = gameMatrix.table.append('tr');
                 var payoffRow = [];
                 if (i == 0) {
                     row.append('td')
@@ -8643,6 +8666,9 @@ var KG;
                     katex.render(gameMatrix.payoffs[i][j][1].toString(), cell[1].node());
                 }
             }
+            // Calculate relative width of game matrix
+            var gameMatrixWidth = gameMatrix.table.node().clientWidth, divWidth = gameMatrix.rootElement.node().clientWidth, widthPercent = Math.min(100, Math.round(10 * gameMatrixWidth / divWidth) * 10);
+            gameMatrix.rootElement.style('width', widthPercent + '%');
             return gameMatrix;
         };
         return GameMatrix;

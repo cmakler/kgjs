@@ -393,8 +393,9 @@ module KG {
 
             // set the height of the div
 
-            view.svgContainerDiv.style('width', width);
-            view.svgContainerDiv.style('height', height);
+            view.svgContainerDiv.style('width', width+"px");
+            view.svgContainerDiv.style('height', height+"px");
+            view.svgContainerDiv.attr('class','main-content');
 
             if (view.svg) {
                 // set the dimensions of the svg

@@ -70,8 +70,8 @@ input {
 }
 
 table.gameMatrix {
-  border-collapse: collapse;
-    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
 }
 
 table.gameMatrix tr td {

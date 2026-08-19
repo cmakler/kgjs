@@ -82,6 +82,28 @@ module KGAuthor {
 
     }
 
+    export class OneGameMatrixPlusSidebar extends WideRectangleLayout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+            let gameDef = def['game'],
+                sidebarDef = def['sidebar'];
+
+            gameDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+
+            l.nosvg = true;
+            l.subObjects.push(new GameMatrix(gameDef));
+            l.subObjects.push(new Sidebar(sidebarDef));
+        }
+    }
+
     export class OneTreePlusSidebar extends SquareLayout {
 
         constructor(def) {
