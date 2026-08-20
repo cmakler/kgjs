@@ -3547,8 +3547,8 @@ var KGAuthor;
                 tax: 'red',
                 // game theory
                 player1: 'blue',
-                player2: 'red',
-                player3: 'orange',
+                player2: 'orange',
+                player3: 'red',
                 nature: 'green',
                 terminal: 'gray'
             });

@@ -89,7 +89,7 @@ table.gameMatrix tr td.player1 {
 }
 
 table.gameMatrix tr td.player2 {
-    color: #d62728;
+    color: #e6550d;
 }
 
 table.gameMatrix tr td.empty {

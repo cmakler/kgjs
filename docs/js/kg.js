@@ -3547,8 +3547,8 @@ var KGAuthor;
                 tax: 'red',
                 // game theory
                 player1: 'blue',
-                player2: 'red',
-                player3: 'orange',
+                player2: 'orange',
+                player3: 'red',
                 nature: 'green',
                 terminal: 'gray'
             });
@@ -7213,7 +7213,7 @@ var KG;
             // set the height of the div
             view.svgContainerDiv.style('width', width + "px");
             view.svgContainerDiv.style('height', height + "px");
-            view.svgContainerDiv.attr('class', 'mainContent');
+            view.svgContainerDiv.attr('class', 'main-content');
             if (view.svg) {
                 // set the dimensions of the svg
                 view.svg.style('width', width);
@@ -8667,7 +8667,7 @@ var KG;
                 }
             }
             // Calculate relative width of game matrix
-            var gameMatrixWidth = gameMatrix.table.node().clientWidth, divWidth = gameMatrix.rootElement.node().clientWidth, widthPercent = Math.round(10 * gameMatrixWidth / divWidth) * 10;
+            var gameMatrixWidth = gameMatrix.table.node().clientWidth, divWidth = gameMatrix.rootElement.node().clientWidth, widthPercent = Math.min(100, Math.round(10 * gameMatrixWidth / divWidth) * 10);
             gameMatrix.rootElement.style('width', widthPercent + '%');
             return gameMatrix;
         };
