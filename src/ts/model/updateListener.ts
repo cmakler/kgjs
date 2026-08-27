@@ -11,6 +11,49 @@ module KG {
         return text;
     }
 
+    // function to determine if the value of an updatable
+    // should actually be evaluated or just left alone
+    export function updatable_is_evaluatable(name: any): boolean {
+            if(name) {
+                const nameString = name.toString();
+
+                // evaluate if it doesn't include any letters
+                if(!/[a-zA-Z]/.test(nameString)) {
+                    return true;
+                }
+
+                if(nameString.includes('params.')){
+                    return true;
+                }
+                if(nameString.includes('calcs.')){
+                    return true;
+                }
+                if(nameString.includes('idioms.')){
+                    return true;
+                }
+                if(nameString.includes('colors.')){
+                    return true;
+                }
+                if(nameString.includes('d3.')){
+                    return true;
+                }
+                if(nameString.includes('math.')){
+                    return true;
+                }
+                if(nameString.includes('Math.')){
+                    return true;
+                }
+                if(nameString.includes('?') && nameString.includes(':')){
+                    return true;
+                }
+                if(nameString.includes('.')){
+                    console.log("Not catching when looking for paramaterizable updatables: ",nameString);
+                }
+            }
+
+            return false;
+        }
+
     export interface UpdateListenerDefinition {
         model?: Model;
         updatables?: string[];
@@ -36,7 +79,6 @@ module KG {
 
         constructor(def: UpdateListenerDefinition) {
 
-
             def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
             let ul = this;
             ul.def = def;
@@ -47,18 +89,26 @@ module KG {
             ul.model.addUpdateListener(this);
         }
 
+
+
         private updateArray(a: any[]) {
             let u = this;
             return a.map(function(d) {
                 if(Array.isArray(d)) {
                     return u.updateArray(d)
                 } else {
-                    const initialValue = d;
-                    let newValue = u.model.evaluate(d);
-                    if(initialValue != newValue) {
-                        u.hasChanged = true;
+                    if(updatable_is_evaluatable(d)) {
+                        const initialValue = d;
+                        let newValue = u.model.evaluate(d);
+                        if(initialValue != newValue) {
+                            u.hasChanged = true;
+                        }
+                        return newValue;
                     }
-                    return newValue;
+                    else{
+                        return d;
+                    }
+
                 }
             })
         }
@@ -70,12 +120,14 @@ module KG {
                     initialValue = u[name];
                 if (Array.isArray(d)) {
                     u[name] = u.updateArray(d);
-                } else {
+                } else if(updatable_is_evaluatable(d)) {
                     let newValue = u.model.evaluate(d);
                     if (initialValue != newValue) {
                         u.hasChanged = true;
                         u[name] = newValue;
                     }
+                } else {
+                    u[name] = u.def[name];
                 }
                 //console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
 

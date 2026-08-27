@@ -32,7 +32,7 @@ module KG {
             let ih = super.update(force);
 
             // first update dragListeners
-            if (ih.hasChanged && ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
+            if (ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
                 let xDrag = false,
                     yDrag = false;
                 ih.dragListeners.forEach(function (dul) {

@@ -48,9 +48,6 @@ module KG {
                   numStrategies1 = player1.strategies.length,
                   numStrategies2 = player2.strategies.length;
 
-            console.log("Player 1 strategies: ", player1.strategies);
-            console.log("Player 2 strategies: ", player2.strategies);
-
             gameMatrix.rootElement = layer.select('div')
                 .append('div')
                 .style('margin','0 auto');
@@ -71,7 +68,6 @@ module KG {
             let secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan','2').attr('class', 'empty'); // empty row above player 1's name and strategies
             player2.strategies.forEach(function (s2) {
-                console.log('Player 2 strategy: ', s2);
                 let player2Strategy = secondRow.append('td').attr('colspan','2').attr('class', 'player2 strategy');
                 try {
                         katex.render(s2.toString(), player2Strategy.node());
@@ -84,7 +80,6 @@ module KG {
             gameMatrix.payoffNodes = [];
 
             player1.strategies.forEach(function (s1, i) {
-                console.log("Player 1 strategy: ", s1);
                 let row = gameMatrix.table.append('tr');
                 let payoffRow = [];
                 if(i == 0) {
@@ -123,6 +118,8 @@ module KG {
                   strategies2 = gameMatrix.player2.strategies,
                   numStrategies1 = strategies1.length,
                   numStrategies2 = strategies2.length;
+
+            console.log("Payoffs: ", gameMatrix.payoffs)
 
             for(let i = 0; i < numStrategies1; i++) {
                 for(let j = 0; j < numStrategies2; j++) {

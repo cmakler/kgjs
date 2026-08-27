@@ -54,6 +54,7 @@ module KG {
         public parsedData;
         private div: any;
         private svg: any;
+        private nosvg: boolean;
         private model: Model;
         private scales: Scale[];
         private aspectRatio: number;
@@ -63,6 +64,7 @@ module KG {
         private clearColor: string;
 
         constructor(div: Element, data: ViewDefinition) {
+            this.nosvg = data.nosvg;
             this.render(data, div);
         }
 
@@ -382,6 +384,17 @@ module KG {
                 if (view.explanation) {
                     view.explanation.position(width, height + sidebarHeight + 10);
                     explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+                }
+
+                if(view.parsedData) {
+                    if(view.parsedData.nosvg) {
+                        if(view.div.select("div")){
+                            if(view.div.select("div").select("div")){
+                                const div_height = view.div.select("div").select("div").node().clientHeight;
+                                height = div_height;
+                            }
+                        }
+                    }
                 }
 
                 displayHeight = height + sidebarHeight + explanationHeight + 10

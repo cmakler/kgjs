@@ -68317,6 +68317,46 @@ var KG;
         return text;
     }
     KG.randomString = randomString;
+    // function to determine if the value of an updatable
+    // should actually be evaluated or just left alone
+    function updatable_is_evaluatable(name) {
+        if (name) {
+            var nameString = name.toString();
+            // evaluate if it doesn't include any letters
+            if (!/[a-zA-Z]/.test(nameString)) {
+                return true;
+            }
+            if (nameString.includes('params.')) {
+                return true;
+            }
+            if (nameString.includes('calcs.')) {
+                return true;
+            }
+            if (nameString.includes('idioms.')) {
+                return true;
+            }
+            if (nameString.includes('colors.')) {
+                return true;
+            }
+            if (nameString.includes('d3.')) {
+                return true;
+            }
+            if (nameString.includes('math.')) {
+                return true;
+            }
+            if (nameString.includes('Math.')) {
+                return true;
+            }
+            if (nameString.includes('?') && nameString.includes(':')) {
+                return true;
+            }
+            if (nameString.includes('.')) {
+                console.log("Not catching when looking for paramaterizable updatables: ", nameString);
+            }
+        }
+        return false;
+    }
+    KG.updatable_is_evaluatable = updatable_is_evaluatable;
     var UpdateListener = /** @class */ (function () {
         function UpdateListener(def) {
             def.constants = (def.constants || []).concat(['model', 'updatables', 'name']);
@@ -68335,12 +68375,17 @@ var KG;
                     return u.updateArray(d);
                 }
                 else {
-                    var initialValue = d;
-                    var newValue = u.model.evaluate(d);
-                    if (initialValue != newValue) {
-                        u.hasChanged = true;
+                    if (updatable_is_evaluatable(d)) {
+                        var initialValue = d;
+                        var newValue = u.model.evaluate(d);
+                        if (initialValue != newValue) {
+                            u.hasChanged = true;
+                        }
+                        return newValue;
                     }
-                    return newValue;
+                    else {
+                        return d;
+                    }
                 }
             });
         };
@@ -68351,12 +68396,15 @@ var KG;
                 if (Array.isArray(d)) {
                     u[name] = u.updateArray(d);
                 }
-                else {
+                else if (updatable_is_evaluatable(d)) {
                     var newValue = u.model.evaluate(d);
                     if (initialValue != newValue) {
                         u.hasChanged = true;
                         u[name] = newValue;
                     }
+                }
+                else {
+                    u[name] = u.def[name];
                 }
                 //console.log(u.constructor['name'],name,'changed from',initialValue,'to',u[name]);
             }
@@ -68897,6 +68945,7 @@ var KG;
     KG.addView = addView;
     var View = /** @class */ (function () {
         function View(div, data) {
+            this.nosvg = data.nosvg;
             this.render(data, div);
         }
         View.prototype.parse = function (data, div) {
@@ -69164,6 +69213,16 @@ var KG;
                 if (view.explanation) {
                     view.explanation.position(width, height + sidebarHeight + 10);
                     explanationHeight = view.explanation.rootElement.node().clientHeight + 20;
+                }
+                if (view.parsedData) {
+                    if (view.parsedData.nosvg) {
+                        if (view.div.select("div")) {
+                            if (view.div.select("div").select("div")) {
+                                var div_height = view.div.select("div").select("div").node().clientHeight;
+                                height = div_height;
+                            }
+                        }
+                    }
                 }
                 displayHeight = height + sidebarHeight + explanationHeight + 10;
             }
@@ -70559,8 +70618,6 @@ var KG;
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
             var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
-            console.log("Player 1 strategies: ", player1.strategies);
-            console.log("Player 2 strategies: ", player2.strategies);
             gameMatrix.rootElement = layer.select('div')
                 .append('div')
                 .style('margin', '0 auto');
@@ -70576,7 +70633,6 @@ var KG;
             var secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
             player2.strategies.forEach(function (s2) {
-                console.log('Player 2 strategy: ', s2);
                 var player2Strategy = secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy');
                 try {
                     katex.render(s2.toString(), player2Strategy.node());
@@ -70587,7 +70643,6 @@ var KG;
             });
             gameMatrix.payoffNodes = [];
             player1.strategies.forEach(function (s1, i) {
-                console.log("Player 1 strategy: ", s1);
                 var row = gameMatrix.table.append('tr');
                 var payoffRow = [];
                 if (i == 0) {
@@ -70617,6 +70672,7 @@ var KG;
         GameMatrix.prototype.redraw = function () {
             var gameMatrix = this;
             var strategies1 = gameMatrix.player1.strategies, strategies2 = gameMatrix.player2.strategies, numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            console.log("Payoffs: ", gameMatrix.payoffs);
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
                     var cell = gameMatrix.payoffNodes[i][j];
