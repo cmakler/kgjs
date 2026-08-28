@@ -48,10 +48,7 @@ module KG {
                   numStrategies1 = player1.strategies.length,
                   numStrategies2 = player2.strategies.length;
 
-            gameMatrix.rootElement = layer.select('div')
-                .append('div')
-                .style('margin','0 auto');
-
+            gameMatrix.rootElement = layer.append('div')
 
             gameMatrix.table = gameMatrix.rootElement.append('table').attr('class','gameMatrix');
 

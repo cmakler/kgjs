@@ -599,14 +599,22 @@ var KGAuthor;
             var _this = _super.call(this, def) || this;
             var l = _this;
             var gameDef = def['game'], sidebarDef = def['sidebar'];
-            gameDef.position = {
-                "x": 0.15,
-                "y": 0.025,
-                "width": 0.738,
-                "height": 0.9
+            var gameDivDef = {
+                position: {
+                    x: 0.05,
+                    y: 0.1,
+                    width: 0.9,
+                    height: 0.7
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: gameDef
+                    }
+                ]
             };
             l.nosvg = true;
-            l.subObjects.push(new KGAuthor.GameMatrix(gameDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
             l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
             return _this;
         }
@@ -6912,7 +6920,7 @@ var KG;
         InteractionHandler.prototype.update = function (force) {
             var ih = _super.prototype.update.call(this, force);
             // first update dragListeners
-            if (ih.hasChanged && ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
+            if (ih.hasOwnProperty('dragListeners') && (ih.element != undefined)) {
                 var xDrag_1 = false, yDrag_1 = false;
                 ih.dragListeners.forEach(function (dul) {
                     dul.update(force);
@@ -8660,9 +8668,7 @@ var KG;
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
             var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
-            gameMatrix.rootElement = layer.select('div')
-                .append('div')
-                .style('margin', '0 auto');
+            gameMatrix.rootElement = layer.append('div');
             gameMatrix.table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             // The top row is player 2's name
             var topRow = gameMatrix.table.append('tr');

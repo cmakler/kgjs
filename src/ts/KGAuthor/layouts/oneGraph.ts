@@ -91,15 +91,23 @@ module KGAuthor {
             let gameDef = def['game'],
                 sidebarDef = def['sidebar'];
 
-            gameDef.position = {
-                "x": 0.15,
-                "y": 0.025,
-                "width": 0.738,
-                "height": 0.9
+            let gameDivDef = {
+                position: {
+                    x: 0.05,
+                    y: 0.1,
+                    width: 0.9,
+                    height: 0.7
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: gameDef
+                    }
+                ]
             };
 
             l.nosvg = true;
-            l.subObjects.push(new GameMatrix(gameDef));
+            l.subObjects.push(new DivContainer(gameDivDef));
             l.subObjects.push(new Sidebar(sidebarDef));
         }
     }
