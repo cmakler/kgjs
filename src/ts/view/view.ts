@@ -223,6 +223,7 @@ module KG {
 
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
+            view.updateDimensions();
         }
 
         // add view information (model, layer, scales) to an object
@@ -390,7 +391,7 @@ module KG {
                     if(view.parsedData.nosvg) {
                         if(view.div.select("div")){
                             if(view.div.select("div").select("div")){
-                                const div_height = view.div.select("div").select("div").node().clientHeight;
+                                const div_height = view.div.select("div").node().clientHeight;
                                 height = div_height;
                             }
                         }

@@ -69050,6 +69050,7 @@ var KG;
             }
             view.addViewObjects(parsedData);
             view.parsedData = parsedData;
+            view.updateDimensions();
         };
         // add view information (model, layer, scales) to an object
         View.prototype.addViewToDef = function (def, layer) {
@@ -69192,7 +69193,7 @@ var KG;
                     if (view.parsedData.nosvg) {
                         if (view.div.select("div")) {
                             if (view.div.select("div").select("div")) {
-                                var div_height = view.div.select("div").select("div").node().clientHeight;
+                                var div_height = view.div.select("div").node().clientHeight;
                                 height = div_height;
                             }
                         }
@@ -70575,6 +70576,9 @@ var KG;
         function Player(def) {
             this.name = def.name;
             this.strategies = def.strategies;
+            if (def.hasOwnProperty("showBestResponses")) {
+                this.showBestResponses = def.showBestResponses;
+            }
         }
         return Player;
     }());
@@ -70583,8 +70587,18 @@ var KG;
         __extends(GameMatrix, _super);
         function GameMatrix(def) {
             var _this = this;
+            if (def.hasOwnProperty("showAllBestResponses")) {
+                def.showBestResponses1 = Array(def.player1.strategies.length).fill(true);
+                def.showBestResponses2 = Array(def.player2.strategies.length).fill(true);
+            }
+            if (def.player1.hasOwnProperty("showBestResponses")) {
+                def.showBestResponses1 = def.player1.showBestResponses;
+            }
+            if (def.player2.hasOwnProperty("showBestResponses")) {
+                def.showBestResponses2 = def.player2.showBestResponses;
+            }
             KG.setProperties(def, 'constants', ['player1', 'player2']);
-            KG.setProperties(def, 'updatables', ['payoffs']);
+            KG.setProperties(def, 'updatables', ['payoffs', 'showBestResponses1', 'showBestResponses2']);
             _this = _super.call(this, def) || this;
             return _this;
         }
@@ -70643,13 +70657,47 @@ var KG;
         };
         GameMatrix.prototype.redraw = function () {
             var gameMatrix = this;
+            console.log(gameMatrix);
             var strategies1 = gameMatrix.player1.strategies, strategies2 = gameMatrix.player2.strategies, numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
-            console.log("Payoffs: ", gameMatrix.payoffs);
+            function isBestResponse(s1, s2, player) {
+                var BR = true;
+                if (player == 1) {
+                    // see if player 1 has any other strategies which yield a higher payoff
+                    for (var s1other = 0; s1other < numStrategies1; s1other++) {
+                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                            BR = false;
+                        }
+                    }
+                }
+                if (player == 2) {
+                    // see if player 2 has any other strategies which yield a higher payoff
+                    for (var s2other = 0; s2other < numStrategies2; s2other++) {
+                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                            BR = false;
+                        }
+                    }
+                }
+                return BR;
+            }
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
-                    var cell = gameMatrix.payoffNodes[i][j];
-                    katex.render(gameMatrix.payoffs[i][j][0].toString(), cell[0].node());
-                    katex.render(gameMatrix.payoffs[i][j][1].toString(), cell[1].node());
+                    var cell = gameMatrix.payoffNodes[i][j], payoff1 = gameMatrix.payoffs[i][j][0].toString(), payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                    if (gameMatrix.hasOwnProperty("showBestResponses1")) {
+                        if (gameMatrix.showBestResponses1[j]) {
+                            if (isBestResponse(i, j, 1)) {
+                                payoff1 = "\\boxed{" + payoff1 + "}";
+                            }
+                        }
+                    }
+                    if (gameMatrix.hasOwnProperty("showBestResponses2")) {
+                        if (gameMatrix.showBestResponses2[i]) {
+                            if (isBestResponse(i, j, 2)) {
+                                payoff2 = "\\boxed{" + payoff2 + "}";
+                            }
+                        }
+                    }
+                    katex.render(payoff1, cell[0].node());
+                    katex.render(payoff2, cell[1].node());
                 }
             }
             // Calculate relative width of game matrix

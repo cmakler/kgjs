@@ -6,22 +6,31 @@ module KG {
     export interface PlayerDefinition {
         name: string;
         strategies: any[];
+        showBestResponses?: any[]; // Note, this is player 1's responses to player 2's strategies; so the length should be the number of player 2's strategies.
     }
 
     export interface GameMatrixDefinition extends DivObjectDefinition {
         player1: Player;
         player2: Player;
         payoffs: any[][][];
+        showBestResponses1?: any[];
+        showBestResponses2?: any[];
+        showAllBestResponses?: any;
     }
 
     export class Player {
 
         public name: string;
         public strategies: any[];
+        public showBestResponses: any[];
 
         constructor(def: PlayerDefinition) {
             this.name = def.name;
             this.strategies = def.strategies;
+            if(def.hasOwnProperty("showBestResponses")) {
+                this.showBestResponses = def.showBestResponses;
+            }
+
         }
     }
 
@@ -29,13 +38,25 @@ module KG {
 
         private player1;
         private player2;
+        private bestResponses1: any[];
+        private bestResponses2: any[];
         private payoffs;
         private payoffNodes: any[][][];
         private table;
 
         constructor(def: GameMatrixDefinition) {
+            if(def.hasOwnProperty("showAllBestResponses")) {
+                def.showBestResponses1 = Array(def.player1.strategies.length).fill(true);
+                def.showBestResponses2 = Array(def.player2.strategies.length).fill(true);
+            }
+            if(def.player1.hasOwnProperty("showBestResponses")) {
+                def.showBestResponses1 = def.player1.showBestResponses;
+            }
+            if(def.player2.hasOwnProperty("showBestResponses")) {
+                def.showBestResponses2 = def.player2.showBestResponses;
+            }
             setProperties(def,'constants',['player1','player2']);
-            setProperties(def,'updatables',['payoffs']);
+            setProperties(def,'updatables',['payoffs','showBestResponses1','showBestResponses2']);
             super(def);
         }
 
@@ -111,18 +132,55 @@ module KG {
          redraw() {
             let gameMatrix = this;
 
+            console.log(gameMatrix);
+
             const strategies1 = gameMatrix.player1.strategies,
                   strategies2 = gameMatrix.player2.strategies,
                   numStrategies1 = strategies1.length,
                   numStrategies2 = strategies2.length;
 
-            console.log("Payoffs: ", gameMatrix.payoffs)
+            function isBestResponse(s1:number,s2:number,player:number) {
+                let BR = true;
+                if(player == 1) {
+                    // see if player 1 has any other strategies which yield a higher payoff
+                    for(let s1other = 0; s1other<numStrategies1; s1other++) {
+                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                            BR = false;
+                        }
+                    }
+                }
+                if(player == 2) {
+                    // see if player 2 has any other strategies which yield a higher payoff
+                    for(let s2other = 0; s2other<numStrategies2; s2other++) {
+                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                            BR = false;
+                        }
+                    }
+                }
+                return BR;
+            }
 
             for(let i = 0; i < numStrategies1; i++) {
                 for(let j = 0; j < numStrategies2; j++) {
-                    let cell = gameMatrix.payoffNodes[i][j]
-                    katex.render(gameMatrix.payoffs[i][j][0].toString(),cell[0].node());
-                    katex.render(gameMatrix.payoffs[i][j][1].toString(),cell[1].node());
+                    let cell = gameMatrix.payoffNodes[i][j],
+                        payoff1 = gameMatrix.payoffs[i][j][0].toString(),
+                        payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                    if(gameMatrix.hasOwnProperty("showBestResponses1")) {
+                        if(gameMatrix.showBestResponses1[j]) {
+                            if(isBestResponse(i,j,1)){
+                                payoff1 = "\\boxed{" + payoff1 + "}";
+                            }
+                        }
+                    }
+                    if(gameMatrix.hasOwnProperty("showBestResponses2")) {
+                        if (gameMatrix.showBestResponses2[i]) {
+                            if (isBestResponse(i, j, 2)) {
+                                payoff2 = "\\boxed{" + payoff2 + "}";
+                            }
+                        }
+                    }
+                    katex.render(payoff1,cell[0].node());
+                    katex.render(payoff2,cell[1].node());
                 }
             }
 

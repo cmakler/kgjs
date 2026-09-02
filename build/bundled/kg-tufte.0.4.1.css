@@ -100,10 +100,12 @@ table.gameMatrix tr td.empty {
 
 table.gameMatrix tr td.player1.payoff {
     border-right: 0;
+    width: 30px;
 }
 
 table.gameMatrix tr td.player2.payoff {
     border-left: 0;
+    width: 30px;
 }
 
 table.gameMatrix tr td.strategy {
