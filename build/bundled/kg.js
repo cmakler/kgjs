@@ -8664,8 +8664,8 @@ var KG;
         function GameMatrix(def) {
             var _this = this;
             if (def.hasOwnProperty("showAllBestResponses")) {
-                def.showBestResponses1 = Array(def.player1.strategies.length).fill(true);
-                def.showBestResponses2 = Array(def.player2.strategies.length).fill(true);
+                def.showBestResponses1 = Array(def.player1.strategies.length).fill(def.showAllBestResponses);
+                def.showBestResponses2 = Array(def.player2.strategies.length).fill(def.showAllBestResponses);
             }
             if (def.player1.hasOwnProperty("showBestResponses")) {
                 def.showBestResponses1 = def.player1.showBestResponses;
