@@ -1,0 +1,2284 @@
+{
+ "commit": "413f99731fe15bd9d436faab108cff220323fdd4",
+ "generatedFrom": "src/ts/kg.ts",
+ "sourceFiles": 141,
+ "classes": {
+  "Angle": {
+   "file": "src/ts/KGAuthor/graphObjects/angle.ts:105",
+   "parent": "AngleMarker",
+   "category": "graphObject",
+   "definitionInterface": "AngleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "AngleMarkerDefinition",
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 70
+  },
+  "AngleMarker": {
+   "file": "src/ts/KGAuthor/graphObjects/angle.ts:19",
+   "parent": "Curve",
+   "category": "graphObject",
+   "definitionInterface": "AngleMarkerDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 66
+  },
+  "Area": {
+   "file": "src/ts/KGAuthor/graphObjects/area.ts:16",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "AreaDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.AreaDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Area",
+   "propertyCount": 62
+  },
+  "Area3D": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxArea.ts:26",
+   "parent": "MathboxArea",
+   "category": "mathboxObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "MathboxAreaDefinition",
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxAxis",
+   "propertyCount": 47
+  },
+  "Arrow": {
+   "file": "src/ts/KGAuthor/graphObjects/arrow.ts:12",
+   "parent": "Segment",
+   "category": "graphObject",
+   "definitionInterface": "ArrowDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 61
+  },
+  "ArrowDef": {
+   "file": "src/ts/KGAuthor/defObjects/arrowDef.ts:5",
+   "parent": "Marker",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 14
+  },
+  "AuthoringObject": {
+   "file": "src/ts/KGAuthor/parsers/authoringObject.ts:16",
+   "parent": null,
+   "category": "abstract",
+   "notAuthorableBecause": "base class",
+   "definitionInterface": "AuthoringObjectDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [],
+   "renderedBy": null
+  },
+  "Axis": {
+   "file": "src/ts/KGAuthor/graphObjects/axis.ts:5",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "AxisDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.AxisDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Axis",
+   "propertyCount": 62
+  },
+  "BayesNashNormalForm": {
+   "file": "src/ts/KGAuthor/econ/layouts/gameTree.ts:30",
+   "parent": "GameTreePlusMatrix",
+   "category": "layout",
+   "definitionInterface": "BayesNashNormalFormDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 15
+  },
+  "BowlesHallidaySchema": {
+   "file": "src/ts/KGAuthor/econ/schemas/bowlesHallidaySchema.ts:4",
+   "parent": "EconSchema",
+   "category": "schema",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SchemaDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "CESFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/ces.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "Circle": {
+   "file": "src/ts/KGAuthor/graphObjects/circle.ts:74",
+   "parent": "Ellipse",
+   "category": "graphObject",
+   "definitionInterface": "CircleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "EllipseDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CircleDefinition",
+    "KG.EllipseDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Circle",
+   "propertyCount": 57
+  },
+  "ClipPath": {
+   "file": "src/ts/KGAuthor/defObjects/clipPath.ts:5",
+   "parent": "DefObject",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "CobbDouglasFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/cobbDouglas.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "ConcaveFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/concave.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Contour": {
+   "file": "src/ts/KGAuthor/graphObjects/contour.ts:20",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "ContourDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.ContourDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Contour",
+   "propertyCount": 54
+  },
+  "ContourMap": {
+   "file": "src/ts/KGAuthor/graphObjects/contour.ts:54",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "ContourMapDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "ContourDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.ContourMap",
+   "propertyCount": 55
+  },
+  "Controls": {
+   "file": "src/ts/KGAuthor/divObjects/controls.ts:27",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "ControlsDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.ControlsDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.Controls",
+   "propertyCount": 53
+  },
+  "CrossGraphHorizontalDropline": {
+   "file": "src/ts/KGAuthor/graphObjects/dropline.ts:41",
+   "parent": "HorizontalDropline",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "CrossGraphSegment": {
+   "file": "src/ts/KGAuthor/graphObjects/segment.ts:101",
+   "parent": "Segment",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "CrossGraphVerticalDropline": {
+   "file": "src/ts/KGAuthor/graphObjects/dropline.ts:24",
+   "parent": "VerticalDropline",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "Curve": {
+   "file": "src/ts/KGAuthor/graphObjects/curve.ts:17",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "CurveDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 61
+  },
+  "DefObject": {
+   "file": "src/ts/KGAuthor/defObjects/defObject.ts:5",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "Div": {
+   "file": "src/ts/KGAuthor/divObjects/divObject.ts:17",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.DivDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.Div",
+   "propertyCount": 50
+  },
+  "DivContainer": {
+   "file": "src/ts/KGAuthor/positionedObjects/divContainer.ts:9",
+   "parent": "PositionedObject",
+   "category": "positioned",
+   "definitionInterface": "DivContainerDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "PositionedObjectDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 51
+  },
+  "DivObject": {
+   "file": "src/ts/KGAuthor/divObjects/divObject.ts:9",
+   "parent": "GraphObject",
+   "category": "abstract",
+   "notAuthorableBecause": "inherits DivObject.parseSelf but never sets `type`",
+   "definitionInterface": "DivObjectDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null
+  },
+  "Dropline": {
+   "file": "src/ts/KGAuthor/graphObjects/dropline.ts:5",
+   "parent": "Segment",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "EconBudgetLine": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/constraints/budgetLine.ts:44",
+   "parent": "Segment",
+   "category": "graphObject",
+   "definitionInterface": "EconBudgetLineDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 69
+  },
+  "EconBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/two_good_utility/bundle.ts:27",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "BundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 67
+  },
+  "EconCompetitiveDemand": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/linearDemand.ts:171",
+   "parent": "EconLinearDemand",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "EconLinearDemandDefinition",
+    "LineDefinition",
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 76
+  },
+  "EconConstantElasticityCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/constantElasticityCurve.ts:16",
+   "parent": "Curve",
+   "category": "graphObject",
+   "definitionInterface": "EconConstantElasticityCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 68
+  },
+  "EconConstantElasticityEquilibrium": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/constantElasticityEquilibrium.ts:13",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "EconConstantElasticityEquilibriumDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 16
+  },
+  "EconConstantElasticityIntersection": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/constantElasticityCurve.ts:158",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 13
+  },
+  "EconContractCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/exchange/edgeworth/contract_curve.ts:13",
+   "parent": "Curve",
+   "category": "graphObject",
+   "definitionInterface": "EconContractCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 65
+  },
+  "EconDemandCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:13",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "DemandCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 74
+  },
+  "EconDemandPoint": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:27",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "DemandCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 66
+  },
+  "EconHicksBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:141",
+   "parent": "EconOptimalBundle",
+   "category": "graphObject",
+   "definitionInterface": "DecompositionBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 69
+  },
+  "EconIndifferenceCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/two_good_utility/indifferenceCurve.ts:36",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "IndifferenceCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 81
+  },
+  "EconIndifferenceMap": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/two_good_utility/indifferenceCurve.ts:102",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 82
+  },
+  "EconLagrangeBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:53",
+   "parent": "EconOptimalBundle",
+   "category": "graphObject",
+   "definitionInterface": "OptimalBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 67
+  },
+  "EconLinearDemand": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/linearDemand.ts:20",
+   "parent": "Line",
+   "category": "graphObject",
+   "definitionInterface": "EconLinearDemandDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "LineDefinition",
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 76
+  },
+  "EconLinearEquilibrium": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/linearEquilibrium.ts:16",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "EconLinearEquilibriumDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 16
+  },
+  "EconLinearMC": {
+   "file": "src/ts/KGAuthor/econ/micro/monopoly/linearMC.ts:9",
+   "parent": "EconLinearSupply",
+   "category": "graphObject",
+   "definitionInterface": "EconLinearSupplyDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "LineDefinition",
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 74
+  },
+  "EconLinearMonopoly": {
+   "file": "src/ts/KGAuthor/econ/micro/monopoly/linearMonopoly.ts:16",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "EconLinearMonopolyDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 18
+  },
+  "EconLinearSupply": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/linearSupply.ts:13",
+   "parent": "Line",
+   "category": "graphObject",
+   "definitionInterface": "EconLinearSupplyDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "LineDefinition",
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 74
+  },
+  "EconMultivariateFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/multivariate.ts:30",
+   "parent": "AuthoringObject",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "EconNetDemandCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:49",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "DemandCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 74
+  },
+  "EconNetDemandPoint": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:63",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "DemandCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 66
+  },
+  "EconNetSupplyCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:85",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "SupplyCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 74
+  },
+  "EconNetSupplyPoint": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:99",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "SupplyCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 66
+  },
+  "EconOneInputProductionFunction": {
+   "file": "src/ts/KGAuthor/econ/micro/producer_theory/oneInputProductionFunction.ts:12",
+   "parent": "AuthoringObject",
+   "category": "other",
+   "definitionInterface": "EconOneInputProductionFunctionDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 32
+  },
+  "EconOptimalBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:10",
+   "parent": "EconBundle",
+   "category": "graphObject",
+   "definitionInterface": "OptimalBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 67
+  },
+  "EconPPF": {
+   "file": "src/ts/KGAuthor/econ/micro/equilibrium/ppf.ts:20",
+   "parent": "Curve",
+   "category": "graphObject",
+   "definitionInterface": "EconPPFDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 73
+  },
+  "EconParetoLens": {
+   "file": "src/ts/KGAuthor/econ/micro/exchange/edgeworth/pareto_lens.ts:11",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "EconParetoLensDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 26
+  },
+  "EconPriceOfferCurve": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/demandCurve.ts:126",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "OfferCurveDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DemandCurveDefinition",
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 74
+  },
+  "EconSchema": {
+   "file": "src/ts/KGAuthor/econ/schemas/econSchema.ts:4",
+   "parent": "Schema",
+   "category": "schema",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SchemaDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "EconShortRunProductionBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:174",
+   "parent": "EconBundle",
+   "category": "graphObject",
+   "definitionInterface": "ShortRunProductionBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "LowestCostBundleDefinition",
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 70
+  },
+  "EconSlutskyBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:107",
+   "parent": "EconOptimalBundle",
+   "category": "graphObject",
+   "definitionInterface": "DecompositionBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 69
+  },
+  "Edge": {
+   "file": "src/ts/KGAuthor/graphObjects/segment.ts:114",
+   "parent": "Segment",
+   "category": "graphObject",
+   "definitionInterface": "EdgeDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 60
+  },
+  "EdgeworthBox": {
+   "file": "src/ts/KGAuthor/econ/layouts/edgeworth.ts:5",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "EdgeworthBoxAboveOneGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/econ/layouts/edgeworth.ts:205",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 12
+  },
+  "EdgeworthBoxPlusSidebar": {
+   "file": "src/ts/KGAuthor/econ/layouts/edgeworth.ts:91",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "EdgeworthBoxPlusTwoGraphsPlusSidebar": {
+   "file": "src/ts/KGAuthor/econ/layouts/edgeworth.ts:140",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 13
+  },
+  "EdgeworthBoxSquare": {
+   "file": "src/ts/KGAuthor/econ/layouts/edgeworth.ts:52",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "Ellipse": {
+   "file": "src/ts/KGAuthor/graphObjects/circle.ts:17",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "EllipseDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CircleDefinition",
+    "KG.EllipseDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Circle",
+   "propertyCount": 57
+  },
+  "EndArrow": {
+   "file": "src/ts/KGAuthor/defObjects/arrowDef.ts:28",
+   "parent": "ArrowDef",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 14
+  },
+  "EntryDeterrence": {
+   "file": "src/ts/KGAuthor/econ/layouts/gameTree.ts:9",
+   "parent": "Tree",
+   "category": "positioned",
+   "definitionInterface": "EntryDeterrenceDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "TreeDefinition",
+    "GraphDefinition",
+    "PositionedObjectDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 12
+  },
+  "ExchangeEquilibriumBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/exchange/edgeworth/exchange_equilibrium.ts:11",
+   "parent": "EconOptimalBundle",
+   "category": "graphObject",
+   "definitionInterface": "ExchangeEquilibriumBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 69
+  },
+  "Explanation": {
+   "file": "src/ts/KGAuthor/divObjects/explanation.ts:9",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "ExplanationDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.ExplanationDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Explanation",
+   "propertyCount": 49
+  },
+  "FourGraphs": {
+   "file": "src/ts/KGAuthor/layouts/fourGraphs.ts:5",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "FourGraphsPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/fourGraphs.ts:56",
+   "parent": "FourGraphs",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "GameMatrix": {
+   "file": "src/ts/KGAuthor/divObjects/gameMatrix.ts:9",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "GameMatrixDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.GameMatrixDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.GameMatrix",
+   "propertyCount": 50
+  },
+  "GameMatrixLayout": {
+   "file": "src/ts/KGAuthor/layouts/gameMatrix.ts:5",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 7
+  },
+  "GameMatrixPlusGraph": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:214",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "GameMatrixPlusGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:251",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "GameTreePlusMatrix": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:341",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "GeoGebraApplet": {
+   "file": "src/ts/KGAuthor/divObjects/ggbApplet.ts:9",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "GeoGebraAppletDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.GeoGebraAppletDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.GeoGebraApplet",
+   "propertyCount": 51
+  },
+  "GeoGebraContainer": {
+   "file": "src/ts/KGAuthor/positionedObjects/ggbContainer.ts:5",
+   "parent": "PositionedObject",
+   "category": "positioned",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "PositionedObjectDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 54
+  },
+  "GeoGebraPlusGraph": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:391",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "GeoGebraPlusGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:421",
+   "parent": "WideRectangleLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "GeoGebraPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:169",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Graph": {
+   "file": "src/ts/KGAuthor/positionedObjects/graph.ts:9",
+   "parent": "PositionedObject",
+   "category": "positioned",
+   "definitionInterface": "GraphDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "PositionedObjectDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "GraphObject": {
+   "file": "src/ts/KGAuthor/graphObjects/graphObject.ts:21",
+   "parent": "GraphObjectGenerator",
+   "category": "abstract",
+   "notAuthorableBecause": "inherits GraphObject.parseSelf but never sets `type`",
+   "definitionInterface": "GraphObjectDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null
+  },
+  "GraphObjectGenerator": {
+   "file": "src/ts/KGAuthor/defObjects/graphObjectGenerator.ts:9",
+   "parent": "AuthoringObject",
+   "category": "graphObject",
+   "definitionInterface": "GraphObjectGeneratorDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "Grid": {
+   "file": "src/ts/KGAuthor/graphObjects/grid.ts:5",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 62
+  },
+  "HTMLLayout": {
+   "file": "src/ts/KGAuthor/layouts/html.ts:5",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 7
+  },
+  "HTMLPlusSidebarLayout": {
+   "file": "src/ts/KGAuthor/layouts/html.ts:18",
+   "parent": "HTMLLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "HorizontalDropline": {
+   "file": "src/ts/KGAuthor/graphObjects/dropline.ts:32",
+   "parent": "Dropline",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "Label": {
+   "file": "src/ts/KGAuthor/divObjects/label.ts:22",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "LabelDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.LabelDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Label",
+   "propertyCount": 61
+  },
+  "Layout": {
+   "file": "src/ts/KGAuthor/layouts/layout.ts:5",
+   "parent": "AuthoringObject",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 6
+  },
+  "Line": {
+   "file": "src/ts/KGAuthor/graphObjects/line.ts:18",
+   "parent": "Curve",
+   "category": "graphObject",
+   "definitionInterface": "LineDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "CurveDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.CurveDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Curve",
+   "propertyCount": 69
+  },
+  "LineCircleIntersection": {
+   "file": "src/ts/KGAuthor/graphObjects/point.ts:122",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "LineCircleIntersectionDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 59
+  },
+  "LinearFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/substitutes.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "LowdownSchema": {
+   "file": "src/ts/KGAuthor/econ/schemas/lowdownSchema.ts:4",
+   "parent": "EconSchema",
+   "category": "schema",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SchemaDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "LowestCostBundle": {
+   "file": "src/ts/KGAuthor/econ/micro/consumer_theory/optimization/optimalBundle.ts:81",
+   "parent": "EconOptimalBundle",
+   "category": "graphObject",
+   "definitionInterface": "LowestCostBundleDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "OptimalBundleDefinition",
+    "BundleDefinition",
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 69
+  },
+  "Marker": {
+   "file": "src/ts/KGAuthor/defObjects/marker.ts:5",
+   "parent": "DefObject",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 12
+  },
+  "Mathbox": {
+   "file": "src/ts/KGAuthor/divObjects/mathbox.ts:19",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "MathboxDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.Mathbox",
+   "propertyCount": 52
+  },
+  "MathboxArea": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxArea.ts:14",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxAreaDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxAxis",
+   "propertyCount": 47
+  },
+  "MathboxAxis": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxAxis.ts:14",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxAxisDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxAxis",
+   "propertyCount": 48
+  },
+  "MathboxContainer": {
+   "file": "src/ts/KGAuthor/positionedObjects/mathboxContainer.ts:5",
+   "parent": "PositionedObject",
+   "category": "positioned",
+   "definitionInterface": "MathboxDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "PositionedObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 53
+  },
+  "MathboxCurve": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxCurve.ts:5",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxCurveDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxCurve",
+   "propertyCount": 42
+  },
+  "MathboxFunctionSurface": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxFunctionSurface.ts:5",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxFunctionSurfaceDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.MathboxSurfaceDefinition"
+   ],
+   "renderedBy": "KG.MathboxFunctionSurface",
+   "propertyCount": 45
+  },
+  "MathboxLabel": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxLabel.ts:9",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxLabelDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxPointDefinition",
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxLabelDefinition",
+    "KG.MathboxPointDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxLabel",
+   "propertyCount": 45
+  },
+  "MathboxLine": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxLine.ts:15",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxLineDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxPointDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxLine",
+   "propertyCount": 52
+  },
+  "MathboxObject": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxObject.ts:10",
+   "parent": "AuthoringObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxObjectDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 6
+  },
+  "MathboxPlane": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxPlane.ts:5",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxPlaneDefinition",
+    "KG.MathboxSurfaceDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxPlane",
+   "propertyCount": 56
+  },
+  "MathboxPlusGraph": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:184",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "MathboxPlusGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:454",
+   "parent": "WideRectangleLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "MathboxPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:192",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "MathboxPoint": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxPoint.ts:12",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxPointDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxPointDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxPoint",
+   "propertyCount": 44
+  },
+  "MathboxXAxis": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxAxis.ts:24",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxAxisDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxXAxis",
+   "propertyCount": 51
+  },
+  "MathboxYAxis": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxAxis.ts:34",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxAxisDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxYAxis",
+   "propertyCount": 51
+  },
+  "MathboxZAxis": {
+   "file": "src/ts/KGAuthor/mathboxObjects/mathboxAxis.ts:44",
+   "parent": "MathboxObject",
+   "category": "mathboxObject",
+   "definitionInterface": "MathboxAxisDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "MathboxObjectDefinition",
+    "AuthoringObjectDefinition",
+    "KG.MathboxAxisDefinition",
+    "KG.MathboxObjectDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.MathboxZAxis",
+   "propertyCount": 48
+  },
+  "MinFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/complements.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Node": {
+   "file": "src/ts/KGAuthor/graphObjects/point.ts:174",
+   "parent": "Point",
+   "category": "graphObject",
+   "definitionInterface": "NodeDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "PointDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 60
+  },
+  "OneGameMatrixPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:85",
+   "parent": "WideRectangleLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "OneGraph": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:5",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 7
+  },
+  "OneGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:62",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "OneGraphPlusSidebarRoom200": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:160",
+   "parent": "OneGraphPlusSidebar",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "OneTree": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:24",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 7
+  },
+  "OneTreePlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:115",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "OneWideGraph": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:43",
+   "parent": "WideRectangleLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 7
+  },
+  "OneWideGraphPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/oneGraph.ts:136",
+   "parent": "WideRectangleLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Overlap": {
+   "file": "src/ts/KGAuthor/graphObjects/rectangle.ts:39",
+   "parent": "Rectangle",
+   "category": "graphObject",
+   "definitionInterface": "OverlapDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.RectangleDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Rectangle",
+   "propertyCount": 57
+  },
+  "Point": {
+   "file": "src/ts/KGAuthor/graphObjects/point.ts:15",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "PointDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.PointDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Point",
+   "propertyCount": 56
+  },
+  "Points": {
+   "file": "src/ts/KGAuthor/graphObjects/point.ts:143",
+   "parent": "GraphObjectGenerator",
+   "category": "graphObject",
+   "definitionInterface": "PointDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 56
+  },
+  "PositionedDiv": {
+   "file": "src/ts/KGAuthor/divObjects/positionedDiv.ts:5",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.PositionedDiv",
+   "propertyCount": 47
+  },
+  "PositionedObject": {
+   "file": "src/ts/KGAuthor/positionedObjects/positionedObject.ts:47",
+   "parent": "AuthoringObject",
+   "category": "positioned",
+   "definitionInterface": "PositionedObjectDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "QuasilinearFunction": {
+   "file": "src/ts/KGAuthor/econ/functional_forms/multivariate/quasilinear.ts:6",
+   "parent": "EconMultivariateFunction",
+   "category": "functionObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Rectangle": {
+   "file": "src/ts/KGAuthor/graphObjects/rectangle.ts:5",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.RectangleDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Rectangle",
+   "propertyCount": 56
+  },
+  "RectangleBelowTwoSquaresPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/rectanglePlusTwoSquares.ts:46",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "RectanglePlusTwoSquaresPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/rectanglePlusTwoSquares.ts:5",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "Scale": {
+   "file": "src/ts/KGAuthor/positionedObjects/positionedObject.ts:13",
+   "parent": "AuthoringObject",
+   "category": "other",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Schema": {
+   "file": "src/ts/KGAuthor/schemas/schema.ts:11",
+   "parent": "AuthoringObject",
+   "category": "schema",
+   "definitionInterface": "SchemaDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "Segment": {
+   "file": "src/ts/KGAuthor/graphObjects/segment.ts:15",
+   "parent": "GraphObject",
+   "category": "graphObject",
+   "definitionInterface": "SegmentDefinition",
+   "resolvedBy": "name-convention",
+   "inheritedInterfaces": [
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "Sidebar": {
+   "file": "src/ts/KGAuthor/divObjects/sidebar.ts:9",
+   "parent": "DivObject",
+   "category": "graphObject",
+   "definitionInterface": "SidebarDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SidebarDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Sidebar",
+   "propertyCount": 48
+  },
+  "SquareLayout": {
+   "file": "src/ts/KGAuthor/layouts/layout.ts:30",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 6
+  },
+  "SquarePlusTwoVerticalGraphs": {
+   "file": "src/ts/KGAuthor/layouts/squarePlusTwoVerticalGraphs.ts:5",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "StartArrow": {
+   "file": "src/ts/KGAuthor/defObjects/arrowDef.ts:17",
+   "parent": "ArrowDef",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 14
+  },
+  "Table": {
+   "file": "src/ts/KGAuthor/divObjects/table.ts:11",
+   "parent": "Div",
+   "category": "graphObject",
+   "definitionInterface": "TableDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "DivObjectDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.TableDefinition",
+    "KG.DivObjectDefinition",
+    "KG.UpdateListenerDefinition",
+    "KG.ViewObjectDefinition"
+   ],
+   "renderedBy": "KG.Table",
+   "propertyCount": 50
+  },
+  "ThreeHorizontalGraphs": {
+   "file": "src/ts/KGAuthor/layouts/threeHorizontalGraphs.ts:5",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 12
+  },
+  "Tree": {
+   "file": "src/ts/KGAuthor/positionedObjects/tree.ts:11",
+   "parent": "Graph",
+   "category": "positioned",
+   "definitionInterface": "TreeDefinition",
+   "resolvedBy": "constructor-parameter",
+   "inheritedInterfaces": [
+    "GraphDefinition",
+    "PositionedObjectDefinition",
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 12
+  },
+  "TwoGameMatrices": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:290",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "TwoHorizontalGraphs": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:6",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 10
+  },
+  "TwoHorizontalGraphsPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/twoHorizontalGraphs.ts:96",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 11
+  },
+  "TwoVerticalGraphs": {
+   "file": "src/ts/KGAuthor/layouts/twoVerticalGraphs.ts:5",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "TwoVerticalGraphsPlusSidebar": {
+   "file": "src/ts/KGAuthor/layouts/twoVerticalGraphs.ts:42",
+   "parent": "SquareLayout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "TwoVerticalGraphsRoom200": {
+   "file": "src/ts/KGAuthor/layouts/twoVerticalGraphs.ts:81",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 8
+  },
+  "TwoVerticalSquaresOneBigSquare": {
+   "file": "src/ts/KGAuthor/layouts/squarePlusTwoVerticalGraphs.ts:45",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 9
+  },
+  "VerticalDropline": {
+   "file": "src/ts/KGAuthor/graphObjects/dropline.ts:15",
+   "parent": "Dropline",
+   "category": "graphObject",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "SegmentDefinition",
+    "GraphObjectDefinition",
+    "GraphObjectGeneratorDefinition",
+    "AuthoringObjectDefinition",
+    "KG.SegmentDefinition",
+    "KG.ViewObjectDefinition",
+    "KG.UpdateListenerDefinition"
+   ],
+   "renderedBy": "KG.Segment",
+   "propertyCount": 58
+  },
+  "WideRectangleLayout": {
+   "file": "src/ts/KGAuthor/layouts/layout.ts:42",
+   "parent": "Layout",
+   "category": "layout",
+   "definitionInterface": null,
+   "resolvedBy": "none",
+   "inheritedInterfaces": [
+    "AuthoringObjectDefinition"
+   ],
+   "renderedBy": null,
+   "propertyCount": 6
+  }
+ }
+}

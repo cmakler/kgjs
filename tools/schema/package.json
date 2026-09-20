@@ -1,0 +1,23 @@
+{
+  "name": "kgjs-schema-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generates a JSON Schema for the kgjs (KineticGraphs) YAML/JSON authoring format from the TypeScript sources, and validates the documentation examples against it.",
+  "license": "MIT",
+  "scripts": {
+    "generate": "node generate.js",
+    "crosscheck": "node crosscheck.js",
+    "validate-docs": "node validate-docs.js",
+    "negative-tests": "node negative-tests.js",
+    "mutation-test": "node mutation-test.js",
+    "engine-check": "node engine-check.js --docs",
+    "render-check": "node render-check.js --docs",
+    "editor-check": "node editor-check.js",
+    "all": "node generate.js && node crosscheck.js && node validate-docs.js && node negative-tests.js && node mutation-test.js && node engine-check.js --docs"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "js-yaml": "3.14.1",
+    "typescript": "5.9.3"
+  }
+}
