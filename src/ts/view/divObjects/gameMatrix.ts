@@ -10,8 +10,8 @@ module KG {
     }
 
     export interface GameMatrixDefinition extends DivObjectDefinition {
-        player1: Player;
-        player2: Player;
+        player1: PlayerDefinition;
+        player2: PlayerDefinition;
         payoffs: any[][][];
         showBestResponses1?: any[];
         showBestResponses2?: any[];

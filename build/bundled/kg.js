@@ -7238,7 +7238,8 @@ var KG;
             else {
                 // read the client width of the enclosing div and calculate the height using the aspectRatio
                 var clientWidth = view.div.node().clientWidth;
-                width = clientWidth - 10;
+                // clamp at zero so a container with no width yet (e.g. hidden) doesn't produce negative SVG dimensions
+                width = Math.max(0, clientWidth - 10);
                 height = width / view.aspectRatio;
                 var sidebarHeight = 0, explanationHeight = 0;
                 // position the sidebar to the right if the screen is wide enough, or below if it isn't
