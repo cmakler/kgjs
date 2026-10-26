@@ -8396,16 +8396,14 @@ var KG;
             var paramObject = slider.model.getParam(slider.param);
             // number of digits for decimals
             var decimalPlaces = paramObject.precision;
+            // number of characters before the decimal point: at least one digit
+            // (so 0 and values below 1 count their leading zero), plus one for a minus sign
             function maxMinDigits(x) {
-                if (x > 0) {
-                    return Math.trunc(Math.log10(x) + 1);
-                }
-                else {
-                    return Math.trunc(Math.log10(-1 * x) + 2);
-                }
+                var integerDigits = Math.max(1, Math.trunc(Math.log10(Math.abs(x)) + 1));
+                return (x < 0) ? integerDigits + 1 : integerDigits;
             }
-            // number of digits for minimum
-            slider.digits = Math.max(maxMinDigits(paramObject.min), maxMinDigits(paramObject.max)) + decimalPlaces;
+            // number of characters for the widest number, including the decimal point if there is one
+            slider.digits = Math.max(maxMinDigits(paramObject.min), maxMinDigits(paramObject.max)) + decimalPlaces + (decimalPlaces > 0 ? 1 : 0);
             return _this;
         }
         Slider.prototype.draw = function (layer) {
