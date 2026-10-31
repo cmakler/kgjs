@@ -4119,6 +4119,38 @@ var KGAuthor;
         function playerColor(player) {
             return (player == 'chance') ? 'nature' : "player" + player;
         }
+        // Shorten labels to their first letters, unless that would make two of them the same
+        function abbreviate(labels) {
+            var initials = labels.map(function (label) {
+                return String(label).charAt(0);
+            });
+            var distinct = initials.every(function (initial, i) {
+                return initials.indexOf(initial) == i;
+            });
+            return distinct ? initials : labels;
+        }
+        // label players by number (1, 2), initial, or full name (as plain text rather than LaTeX)
+        var playerLabelStyle = String(def.playerLabel || 'number').toLowerCase(), playerNames = [def.player1.name, def.player2.name], playerLabels = (playerLabelStyle == 'name') ? playerNames
+            : (playerLabelStyle == 'initial') ? abbreviate(playerNames)
+                : ['1', '2'];
+        function playerLabel(player, position) {
+            var label = { text: playerLabels[player - 1], position: position };
+            if (playerLabelStyle == 'name') {
+                label.plainText = true;
+            }
+            return label;
+        }
+        // nodes in an information set with more than one node are labeled on the info set, not individually
+        var sharedInfoSetNodes = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                if (infoSet.nodes.length > 1) {
+                    infoSet.nodes.forEach(function (name) {
+                        sharedInfoSetNodes[name] = true;
+                    });
+                }
+            });
+        });
         function nodeDef(node, level, isRoot) {
             var nd = {};
             Object.keys(node).forEach(function (key) {
@@ -4140,10 +4172,13 @@ var KGAuthor;
                 };
             }
             else {
-                nd.children = node.children.map(function (child) {
+                var actionLabels_1 = abbreviate(node.children.map(function (child) {
+                    return child.action;
+                }));
+                nd.children = node.children.map(function (child, i) {
                     var cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        cd.edgeLabel = (node.player == 'chance') ? "`" + actionLabels_1[i] + "\\\\ (" + labelValue(child.prob) + ")`" : actionLabels_1[i];
                     }
                     return cd;
                 });
@@ -4153,27 +4188,31 @@ var KGAuthor;
                 KG.setDefaults(nd, {
                     color: playerColor(node.player)
                 });
-                if (node.player != 'chance') {
+                if (node.player != 'chance' && !sharedInfoSetNodes[node.name]) {
                     KG.setDefaults(nd, {
                         // player name to the left of the root, above other nodes
-                        label: { text: def["player" + node.player].name, position: isRoot ? 'r' : 'b' }
+                        label: playerLabel(node.player, isRoot ? 'r' : 'b')
                     });
                 }
             }
             nd.coordinates = node.coordinates || [xMin + xStep * level, y];
             return nd;
         }
-        // connect the nodes of each information set with dashed lines
+        // connect the nodes of each information set with dashed lines, labeling the first with the player
         var edges = [];
         [1, 2].forEach(function (player) {
             infoSets[player].forEach(function (infoSet) {
                 for (var i = 1; i < infoSet.nodes.length; i++) {
-                    edges.push({
+                    var edgeDef = {
                         node1: infoSet.nodes[i - 1],
                         node2: infoSet.nodes[i],
                         color: playerColor(player),
                         lineStyle: 'dashed'
-                    });
+                    };
+                    if (i == 1) {
+                        edgeDef.label = playerLabel(player, 'r'); // label to the left of the line
+                    }
+                    edges.push(edgeDef);
                 }
             });
         });

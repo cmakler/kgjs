@@ -23,6 +23,7 @@ module KGAuthor {
         showBestResponses1?: any[];     // passed through to the generated GameMatrix
         showBestResponses2?: any[];
         showAllBestResponses?: any;
+        playerLabel?: 'number' | 'initial' | 'name';    // how the tree labels players; default 'number'
         showGrid?: boolean;             // passed through to the generated Tree
         objects?: any[];                // additional graph objects drawn on the tree
     }
@@ -283,6 +284,44 @@ module KGAuthor {
             return (player == 'chance') ? 'nature' : `player${player}`;
         }
 
+        // Shorten labels to their first letters, unless that would make two of them the same
+        function abbreviate(labels: string[]): string[] {
+            const initials = labels.map(function (label) {
+                return String(label).charAt(0);
+            });
+            const distinct = initials.every(function (initial, i) {
+                return initials.indexOf(initial) == i;
+            });
+            return distinct ? initials : labels;
+        }
+
+        // label players by number (1, 2), initial, or full name (as plain text rather than LaTeX)
+        const playerLabelStyle = String(def.playerLabel || 'number').toLowerCase(),
+            playerNames = [def.player1.name, def.player2.name],
+            playerLabels = (playerLabelStyle == 'name') ? playerNames
+                : (playerLabelStyle == 'initial') ? abbreviate(playerNames)
+                    : ['1', '2'];
+
+        function playerLabel(player, position: string) {
+            let label: any = {text: playerLabels[player - 1], position: position};
+            if (playerLabelStyle == 'name') {
+                label.plainText = true;
+            }
+            return label;
+        }
+
+        // nodes in an information set with more than one node are labeled on the info set, not individually
+        let sharedInfoSetNodes = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet: InfoSet) {
+                if (infoSet.nodes.length > 1) {
+                    infoSet.nodes.forEach(function (name) {
+                        sharedInfoSetNodes[name] = true;
+                    });
+                }
+            });
+        });
+
         function nodeDef(node: GameTreeNodeDefinition, level: number, isRoot: boolean): NodeDefinition {
 
             let nd: any = {};
@@ -306,10 +345,13 @@ module KGAuthor {
                     position: 'l'   // label to the right of the node
                 };
             } else {
-                nd.children = node.children.map(function (child) {
+                const actionLabels = abbreviate(node.children.map(function (child) {
+                    return child.action;
+                }));
+                nd.children = node.children.map(function (child, i) {
                     let cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        cd.edgeLabel = (node.player == 'chance') ? "`" + actionLabels[i] + "\\\\ (" + labelValue(child.prob) + ")`" : actionLabels[i];
                     }
                     return cd;
                 });
@@ -319,10 +361,10 @@ module KGAuthor {
                 KG.setDefaults(nd, {
                     color: playerColor(node.player)
                 });
-                if (node.player != 'chance') {
+                if (node.player != 'chance' && !sharedInfoSetNodes[node.name]) {
                     KG.setDefaults(nd, {
                         // player name to the left of the root, above other nodes
-                        label: {text: def[`player${node.player}`].name, position: isRoot ? 'r' : 'b'}
+                        label: playerLabel(node.player, isRoot ? 'r' : 'b')
                     });
                 }
             }
@@ -332,17 +374,21 @@ module KGAuthor {
             return nd;
         }
 
-        // connect the nodes of each information set with dashed lines
+        // connect the nodes of each information set with dashed lines, labeling the first with the player
         let edges: EdgeDefinition[] = [];
         [1, 2].forEach(function (player) {
             infoSets[player].forEach(function (infoSet: InfoSet) {
                 for (let i = 1; i < infoSet.nodes.length; i++) {
-                    edges.push({
+                    let edgeDef: EdgeDefinition = {
                         node1: infoSet.nodes[i - 1],
                         node2: infoSet.nodes[i],
                         color: playerColor(player),
                         lineStyle: 'dashed'
-                    });
+                    };
+                    if (i == 1) {
+                        edgeDef.label = playerLabel(player, 'r');   // label to the left of the line
+                    }
+                    edges.push(edgeDef);
                 }
             });
         });
