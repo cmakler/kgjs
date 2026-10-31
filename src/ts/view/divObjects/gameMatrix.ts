@@ -139,12 +139,21 @@ module KG {
                   numStrategies1 = strategies1.length,
                   numStrategies2 = strategies2.length;
 
+            // round computed payoffs so floating-point noise (e.g. 2.9999999999999996) neither displays nor breaks ties
+            const payoffs = gameMatrix.payoffs.map(function(row) {
+                return row.map(function(cell) {
+                    return cell.map(function(payoff) {
+                        return (typeof payoff == 'number') ? parseFloat(payoff.toPrecision(10)) : payoff;
+                    });
+                });
+            });
+
             function isBestResponse(s1:number,s2:number,player:number) {
                 let BR = true;
                 if(player == 1) {
                     // see if player 1 has any other strategies which yield a higher payoff
                     for(let s1other = 0; s1other<numStrategies1; s1other++) {
-                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                        if (payoffs[s1other][s2][0] > payoffs[s1][s2][0]) {
                             BR = false;
                         }
                     }
@@ -152,7 +161,7 @@ module KG {
                 if(player == 2) {
                     // see if player 2 has any other strategies which yield a higher payoff
                     for(let s2other = 0; s2other<numStrategies2; s2other++) {
-                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                        if (payoffs[s1][s2other][1] > payoffs[s1][s2][1]) {
                             BR = false;
                         }
                     }
@@ -163,8 +172,8 @@ module KG {
             for(let i = 0; i < numStrategies1; i++) {
                 for(let j = 0; j < numStrategies2; j++) {
                     let cell = gameMatrix.payoffNodes[i][j],
-                        payoff1 = gameMatrix.payoffs[i][j][0].toString(),
-                        payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                        payoff1 = payoffs[i][j][0].toString(),
+                        payoff2 = payoffs[i][j][1].toString();
                     if(gameMatrix.hasOwnProperty("showBestResponses1")) {
                         if(gameMatrix.showBestResponses1[j]) {
                             if(isBestResponse(i,j,1)){

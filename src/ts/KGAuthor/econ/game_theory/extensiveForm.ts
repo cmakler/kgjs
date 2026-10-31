@@ -16,10 +16,13 @@ module KGAuthor {
     }
 
     export interface ExtensiveFormDefinition {
-        player1: { name: string };
-        player2: { name: string };
+        player1: { name: string, showBestResponses?: any[] };
+        player2: { name: string, showBestResponses?: any[] };
         root: GameTreeNodeDefinition;
         strategySeparator?: string;
+        showBestResponses1?: any[];     // passed through to the generated GameMatrix
+        showBestResponses2?: any[];
+        showAllBestResponses?: any;
     }
 
     export interface InfoSet {
@@ -156,6 +159,83 @@ module KGAuthor {
         }
 
         return {1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2])};
+    }
+
+    // Payoffs [u1, u2] when player 1 plays s1 and player 2 plays s2.
+    // Chance nodes give expected payoffs; values stay numbers where possible, otherwise expressions.
+    export function strategyProfilePayoffs(root: GameTreeNodeDefinition, s1: PureStrategy, s2: PureStrategy): any[] {
+
+        function evaluate(node: GameTreeNodeDefinition): any[] {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return node.payoffs;
+            }
+            if (node.player == 'chance') {
+                let expected: any[] = [0, 0];
+                node.children.forEach(function (child) {
+                    const childPayoffs = evaluate(child);
+                    expected = expected.map(function (u, i) {
+                        return addDefs(u, multiplyDefs(child.prob, childPayoffs[i]));
+                    });
+                });
+                return expected;
+            }
+            const strategy = (node.player == 1) ? s1 : s2;
+            const action = strategy.actions[node.childSelectParam];
+            return evaluate(node.children.filter(function (child) {
+                return child.action == action;
+            })[0]);
+        }
+
+        return evaluate(root);
+    }
+
+    // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
+    export function normalFormFromTree(def: ExtensiveFormDefinition): KG.GameMatrixDefinition {
+
+        const strategies = enumerateStrategies(def);
+
+        const payoffs = strategies[1].map(function (s1) {
+            return strategies[2].map(function (s2) {
+                return strategyProfilePayoffs(def.root, s1, s2);
+            });
+        });
+
+        function playerDef(player, playerStrategies: PureStrategy[]) {
+            let pd = JSON.parse(JSON.stringify(player));
+            pd.strategies = playerStrategies.map(function (s) {
+                return s.name;
+            });
+            return pd;
+        }
+
+        let game: KG.GameMatrixDefinition = {
+            player1: playerDef(def.player1, strategies[1]),
+            player2: playerDef(def.player2, strategies[2]),
+            payoffs: payoffs
+        };
+        ['showBestResponses1', 'showBestResponses2', 'showAllBestResponses'].forEach(function (key) {
+            if (def.hasOwnProperty(key)) {
+                game[key] = def[key];
+            }
+        });
+
+        return game;
+    }
+
+    // Renders the normal form of def.gameTree as a game matrix.
+    export class GameMatrixFromTree extends Layout {
+
+        constructor(def) {
+            super(def);
+
+            const l = this;
+
+            l.nosvg = true;
+
+            l.subObjects.push(new GameMatrix(normalFormFromTree(def.gameTree)));
+
+        }
+
     }
 
 }

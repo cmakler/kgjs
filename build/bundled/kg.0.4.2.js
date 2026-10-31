@@ -65946,6 +65946,73 @@ var KGAuthor;
         return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
     }
     KGAuthor.enumerateStrategies = enumerateStrategies;
+    // Payoffs [u1, u2] when player 1 plays s1 and player 2 plays s2.
+    // Chance nodes give expected payoffs; values stay numbers where possible, otherwise expressions.
+    function strategyProfilePayoffs(root, s1, s2) {
+        function evaluate(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return node.payoffs;
+            }
+            if (node.player == 'chance') {
+                var expected_1 = [0, 0];
+                node.children.forEach(function (child) {
+                    var childPayoffs = evaluate(child);
+                    expected_1 = expected_1.map(function (u, i) {
+                        return KGAuthor.addDefs(u, KGAuthor.multiplyDefs(child.prob, childPayoffs[i]));
+                    });
+                });
+                return expected_1;
+            }
+            var strategy = (node.player == 1) ? s1 : s2;
+            var action = strategy.actions[node.childSelectParam];
+            return evaluate(node.children.filter(function (child) {
+                return child.action == action;
+            })[0]);
+        }
+        return evaluate(root);
+    }
+    KGAuthor.strategyProfilePayoffs = strategyProfilePayoffs;
+    // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
+    function normalFormFromTree(def) {
+        var strategies = enumerateStrategies(def);
+        var payoffs = strategies[1].map(function (s1) {
+            return strategies[2].map(function (s2) {
+                return strategyProfilePayoffs(def.root, s1, s2);
+            });
+        });
+        function playerDef(player, playerStrategies) {
+            var pd = JSON.parse(JSON.stringify(player));
+            pd.strategies = playerStrategies.map(function (s) {
+                return s.name;
+            });
+            return pd;
+        }
+        var game = {
+            player1: playerDef(def.player1, strategies[1]),
+            player2: playerDef(def.player2, strategies[2]),
+            payoffs: payoffs
+        };
+        ['showBestResponses1', 'showBestResponses2', 'showAllBestResponses'].forEach(function (key) {
+            if (def.hasOwnProperty(key)) {
+                game[key] = def[key];
+            }
+        });
+        return game;
+    }
+    KGAuthor.normalFormFromTree = normalFormFromTree;
+    // Renders the normal form of def.gameTree as a game matrix.
+    var GameMatrixFromTree = /** @class */ (function (_super) {
+        __extends(GameMatrixFromTree, _super);
+        function GameMatrixFromTree(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            l.subObjects.push(new KGAuthor.GameMatrix(normalFormFromTree(def.gameTree)));
+            return _this;
+        }
+        return GameMatrixFromTree;
+    }(KGAuthor.Layout));
+    KGAuthor.GameMatrixFromTree = GameMatrixFromTree;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -70764,12 +70831,20 @@ var KG;
             var gameMatrix = this;
             console.log(gameMatrix);
             var strategies1 = gameMatrix.player1.strategies, strategies2 = gameMatrix.player2.strategies, numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            // round computed payoffs so floating-point noise (e.g. 2.9999999999999996) neither displays nor breaks ties
+            var payoffs = gameMatrix.payoffs.map(function (row) {
+                return row.map(function (cell) {
+                    return cell.map(function (payoff) {
+                        return (typeof payoff == 'number') ? parseFloat(payoff.toPrecision(10)) : payoff;
+                    });
+                });
+            });
             function isBestResponse(s1, s2, player) {
                 var BR = true;
                 if (player == 1) {
                     // see if player 1 has any other strategies which yield a higher payoff
                     for (var s1other = 0; s1other < numStrategies1; s1other++) {
-                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                        if (payoffs[s1other][s2][0] > payoffs[s1][s2][0]) {
                             BR = false;
                         }
                     }
@@ -70777,7 +70852,7 @@ var KG;
                 if (player == 2) {
                     // see if player 2 has any other strategies which yield a higher payoff
                     for (var s2other = 0; s2other < numStrategies2; s2other++) {
-                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                        if (payoffs[s1][s2other][1] > payoffs[s1][s2][1]) {
                             BR = false;
                         }
                     }
@@ -70786,7 +70861,7 @@ var KG;
             }
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
-                    var cell = gameMatrix.payoffNodes[i][j], payoff1 = gameMatrix.payoffs[i][j][0].toString(), payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                    var cell = gameMatrix.payoffNodes[i][j], payoff1 = payoffs[i][j][0].toString(), payoff2 = payoffs[i][j][1].toString();
                     if (gameMatrix.hasOwnProperty("showBestResponses1")) {
                         if (gameMatrix.showBestResponses1[j]) {
                             if (isBestResponse(i, j, 1)) {
