@@ -3919,6 +3919,110 @@ var KGAuthor;
     }(KGAuthor.GameTreePlusMatrix));
     KGAuthor.BayesNashNormalForm = BayesNashNormalForm;
 })(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    // Traverse the tree depth-first (preorder, children in listed order) and
+    // return each player's information sets in the order they are first reached.
+    // Assigns a name to any unnamed node, and throws if the tree is malformed.
+    function collectInfoSets(def) {
+        var infoSets = { 1: [], 2: [] };
+        var infoSetsByParam = {};
+        function visit(node) {
+            KG.setDefaults(node, {
+                name: KG.randomString(10)
+            });
+            // terminal node
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                if (!Array.isArray(node.payoffs) || node.payoffs.length != 2) {
+                    throw new Error("Game tree: terminal node " + node.name + " must have payoffs [u1, u2]");
+                }
+                return;
+            }
+            if (!node.hasOwnProperty('player')) {
+                throw new Error("Game tree: node " + node.name + " has children but no player");
+            }
+            // chance node
+            if (node.player == 'chance') {
+                node.children.forEach(function (child) {
+                    if (!child.hasOwnProperty('prob')) {
+                        throw new Error("Game tree: child " + (child.action || child.name) + " of chance node " + node.name + " has no prob");
+                    }
+                });
+                node.children.forEach(visit);
+                return;
+            }
+            // decision node
+            var player = node.player;
+            if (player != 1 && player != 2) {
+                throw new Error("Game tree: node " + node.name + " has invalid player " + player + "; use 1, 2, or chance");
+            }
+            if (!node.hasOwnProperty('childSelectParam')) {
+                throw new Error("Game tree: decision node " + node.name + " has no childSelectParam");
+            }
+            var actions = node.children.map(function (child) {
+                if (!child.hasOwnProperty('action')) {
+                    throw new Error("Game tree: child " + child.name + " of node " + node.name + " has no action");
+                }
+                return child.action;
+            });
+            actions.forEach(function (action, i) {
+                if (actions.indexOf(action) != i) {
+                    throw new Error("Game tree: node " + node.name + " has duplicate action " + action);
+                }
+            });
+            var param = node.childSelectParam;
+            if (!infoSetsByParam.hasOwnProperty(param)) {
+                var infoSet = { param: param, player: player, actions: actions, nodes: [node.name] };
+                infoSetsByParam[param] = infoSet;
+                infoSets[player].push(infoSet);
+            }
+            else {
+                var infoSet = infoSetsByParam[param];
+                if (infoSet.player != player) {
+                    throw new Error("Game tree: info set " + param + " is shared by player " + infoSet.player + " and player " + player);
+                }
+                // the param's value is the index of the selected child, so the action lists must match exactly
+                if (infoSet.actions.join('\u0000') != actions.join('\u0000')) {
+                    throw new Error("Game tree: node " + node.name + " in info set " + param + " has actions [" + actions + "] but expected [" + infoSet.actions + "]");
+                }
+                infoSet.nodes.push(node.name);
+            }
+            node.children.forEach(visit);
+        }
+        visit(def.root);
+        return infoSets;
+    }
+    KGAuthor.collectInfoSets = collectInfoSets;
+    // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
+    // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
+    // Strategy names join the chosen actions with def.strategySeparator (default "").
+    function enumerateStrategies(def, infoSets) {
+        infoSets = infoSets || collectInfoSets(def);
+        var separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
+        function strategiesFor(playerInfoSets) {
+            var plans = [[]];
+            playerInfoSets.forEach(function (infoSet) {
+                var extended = [];
+                plans.forEach(function (plan) {
+                    infoSet.actions.forEach(function (action) {
+                        extended.push(plan.concat([action]));
+                    });
+                });
+                plans = extended;
+            });
+            return plans.map(function (plan) {
+                var actions = {};
+                playerInfoSets.forEach(function (infoSet, i) {
+                    actions[infoSet.param] = plan[i];
+                });
+                return { name: plan.join(separator), actions: actions };
+            });
+        }
+        return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
+    }
+    KGAuthor.enumerateStrategies = enumerateStrategies;
+})(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
 (function (KGAuthor) {
@@ -5997,6 +6101,8 @@ var KGAuthor;
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /// <reference path="layouts/gameTree.ts"/>
+/* GAME THEORY */
+/// <reference path="game_theory/extensiveForm.ts"/>
 /* FUNCTIONAL FORMS */
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>
 /// <reference path="functional_forms/multivariate/cobbDouglas.ts"/>
