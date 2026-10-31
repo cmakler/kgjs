@@ -302,8 +302,11 @@ module KGAuthor {
                 : (playerLabelStyle == 'initial') ? abbreviate(playerNames)
                     : ['1', '2'];
 
-        function playerLabel(player, position: string) {
-            let label: any = {text: playerLabels[player - 1], position: position};
+        function playerLabel(player, position?: string) {
+            let label: any = {text: playerLabels[player - 1]};
+            if (position) {
+                label.position = position;
+            }
             if (playerLabelStyle == 'name') {
                 label.plainText = true;
             }
@@ -386,7 +389,7 @@ module KGAuthor {
                         lineStyle: 'dashed'
                     };
                     if (i == 1) {
-                        edgeDef.label = playerLabel(player, 'r');   // label to the left of the line
+                        edgeDef.label = playerLabel(player);   // centered on the line, like action labels
                     }
                     edges.push(edgeDef);
                 }
