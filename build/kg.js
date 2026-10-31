@@ -4089,6 +4089,246 @@ var KGAuthor;
         return GameMatrixFromTree;
     }(KGAuthor.Layout));
     KGAuthor.GameMatrixFromTree = GameMatrixFromTree;
+    // Wrap a payoff or probability as a label expression, rounded so values like 0.7000000000000001 display cleanly
+    function labelValue(value) {
+        return (typeof value == 'number') ? value : "${+(" + value + ").toPrecision(10)}";
+    }
+    // Convert an extensive-form game into a Tree definition drawn left to right:
+    // the root is at the left, each move goes one column to the right, and terminal nodes are spaced evenly top to bottom.
+    // Any node may override its position with coordinates, or its styling with any Node/Point attribute.
+    function treeFromExtensiveForm(def) {
+        var infoSets = collectInfoSets(def);
+        var xMin = 1.5, xMax = 18, yMin = 1.5, yMax = 22.5;
+        function depth(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return 0;
+            }
+            return 1 + Math.max.apply(null, node.children.map(depth));
+        }
+        function countLeaves(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return 1;
+            }
+            return node.children.reduce(function (total, child) {
+                return total + countLeaves(child);
+            }, 0);
+        }
+        var maxDepth = Math.max(depth(def.root), 1), numLeaves = countLeaves(def.root), xStep = (xMax - xMin) / maxDepth, yStep = (numLeaves > 1) ? (yMax - yMin) / (numLeaves - 1) : 0;
+        var leafIndex = 0;
+        var gameKeys = ['player', 'action', 'prob', 'payoffs', 'children', 'coordinates'];
+        function playerColor(player) {
+            return (player == 'chance') ? 'nature' : "player" + player;
+        }
+        function nodeDef(node, level, isRoot) {
+            var nd = {};
+            Object.keys(node).forEach(function (key) {
+                if (gameKeys.indexOf(key) < 0) {
+                    nd[key] = node[key];
+                }
+            });
+            var y;
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                y = (numLeaves > 1) ? yMax - yStep * leafIndex : 12;
+                leafIndex++;
+                KG.setDefaults(nd, {
+                    color: 'terminal'
+                });
+                nd.payoffs = {
+                    player1: labelValue(node.payoffs[0]),
+                    player2: labelValue(node.payoffs[1]),
+                    position: 'l' // label to the right of the node
+                };
+            }
+            else {
+                nd.children = node.children.map(function (child) {
+                    var cd = nodeDef(child, level + 1, false);
+                    if (!cd.hasOwnProperty('edgeLabel')) {
+                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                    }
+                    return cd;
+                });
+                y = nd.children.reduce(function (total, cd) {
+                    return total + cd.coordinates[1];
+                }, 0) / nd.children.length;
+                KG.setDefaults(nd, {
+                    color: playerColor(node.player)
+                });
+                if (node.player != 'chance') {
+                    KG.setDefaults(nd, {
+                        // player name to the left of the root, above other nodes
+                        label: { text: def["player" + node.player].name, position: isRoot ? 'r' : 'b' }
+                    });
+                }
+            }
+            nd.coordinates = node.coordinates || [xMin + xStep * level, y];
+            return nd;
+        }
+        // connect the nodes of each information set with dashed lines
+        var edges = [];
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                for (var i = 1; i < infoSet.nodes.length; i++) {
+                    edges.push({
+                        node1: infoSet.nodes[i - 1],
+                        node2: infoSet.nodes[i],
+                        color: playerColor(player),
+                        lineStyle: 'dashed'
+                    });
+                }
+            });
+        });
+        return {
+            nodes: [nodeDef(def.root, 0, true)],
+            edges: edges,
+            showGrid: def.showGrid,
+            objects: def.objects
+        };
+    }
+    KGAuthor.treeFromExtensiveForm = treeFromExtensiveForm;
+    // Declare a param for each childSelectParam the author hasn't declared, starting with no child selected.
+    function declareSelectParams(def, parsedData) {
+        var declared = {};
+        parsedData.params.forEach(function (p) {
+            declared[p.name] = true;
+        });
+        function visit(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return;
+            }
+            if (node.hasOwnProperty('childSelectParam')) {
+                var name_1 = KGAuthor.paramName(node.childSelectParam);
+                if (!declared[name_1]) {
+                    parsedData.params.push({ name: name_1, value: 0, min: 0, max: node.children.length, round: 1 });
+                    declared[name_1] = true;
+                }
+            }
+            node.children.forEach(visit);
+        }
+        visit(def.root);
+        return parsedData;
+    }
+    // An extensive-form game drawn as a tree in a wide rectangle.
+    var ExtensiveFormGame = /** @class */ (function (_super) {
+        __extends(ExtensiveFormGame, _super);
+        function ExtensiveFormGame(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree);
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            return _this;
+        }
+        ExtensiveFormGame.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveFormGame;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.ExtensiveFormGame = ExtensiveFormGame;
+    var ExtensiveFormGamePlusSidebar = /** @class */ (function (_super) {
+        __extends(ExtensiveFormGamePlusSidebar, _super);
+        function ExtensiveFormGamePlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree), sidebarDef = def['sidebar'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        ExtensiveFormGamePlusSidebar.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveFormGamePlusSidebar;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.ExtensiveFormGamePlusSidebar = ExtensiveFormGamePlusSidebar;
+    // The game tree on top and its normal form below, positioned like TwoVerticalGraphs.
+    var ExtensiveAndNormalForms = /** @class */ (function (_super) {
+        __extends(ExtensiveAndNormalForms, _super);
+        function ExtensiveAndNormalForms(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree);
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.8,
+                "height": 0.4
+            };
+            var gameDivDef = {
+                position: {
+                    "x": 0.15,
+                    "y": 0.525,
+                    "width": 0.8,
+                    "height": 0.4
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: normalFormFromTree(def.gameTree)
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            return _this;
+        }
+        ExtensiveAndNormalForms.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveAndNormalForms;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.ExtensiveAndNormalForms = ExtensiveAndNormalForms;
+    var ExtensiveAndNormalFormsPlusSidebar = /** @class */ (function (_super) {
+        __extends(ExtensiveAndNormalFormsPlusSidebar, _super);
+        function ExtensiveAndNormalFormsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree), sidebarDef = def['sidebar'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.4
+            };
+            var gameDivDef = {
+                position: {
+                    "x": 0.15,
+                    "y": 0.525,
+                    "width": 0.738,
+                    "height": 0.4
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: normalFormFromTree(def.gameTree)
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        ExtensiveAndNormalFormsPlusSidebar.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveAndNormalFormsPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.ExtensiveAndNormalFormsPlusSidebar = ExtensiveAndNormalFormsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
