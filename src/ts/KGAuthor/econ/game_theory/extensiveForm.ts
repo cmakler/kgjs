@@ -20,9 +20,9 @@ module KGAuthor {
         player2: { name: string, showBestResponses?: any[] };
         root: GameTreeNodeDefinition;
         strategySeparator?: string;
-        showBestResponses1?: any[];     // passed through to the generated GameMatrix
-        showBestResponses2?: any[];
-        showAllBestResponses?: any;
+        showAllBestResponses?: any;     // boolean or param expression: show both players' best responses
+        showBestResponses1?: any;       // boolean or param expression: show player 1's best responses
+        showBestResponses2?: any;       // boolean or param expression: show player 2's best responses
         playerLabel?: 'number' | 'initial' | 'name';    // how the tree labels players; default 'number'
         showGrid?: boolean;             // passed through to the generated Tree
         objects?: any[];                // additional graph objects drawn on the tree
@@ -133,15 +133,34 @@ module KGAuthor {
         2: PureStrategy[];
     }
 
+    // Shorten labels to their first letters, unless that would make two of them the same
+    function abbreviate(labels: string[]): string[] {
+        const initials = labels.map(function (label) {
+            return String(label).charAt(0);
+        });
+        const distinct = initials.every(function (initial, i) {
+            return initials.indexOf(initial) == i;
+        });
+        return distinct ? initials : labels;
+    }
+
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
-    // Strategy names join the chosen actions with def.strategySeparator (default "").
+    // Strategy names join the chosen actions, abbreviated as in the tree, with def.strategySeparator (default "").
     export function enumerateStrategies(def: ExtensiveFormDefinition, infoSets?: InfoSetsByPlayer): StrategiesByPlayer {
 
         infoSets = infoSets || collectInfoSets(def);
         const separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
 
         function strategiesFor(playerInfoSets: InfoSet[]): PureStrategy[] {
+            const shortNames = playerInfoSets.map(function (infoSet) {
+                const short = abbreviate(infoSet.actions);
+                let lookup = {};
+                infoSet.actions.forEach(function (action, i) {
+                    lookup[action] = short[i];
+                });
+                return lookup;
+            });
             let plans: string[][] = [[]];
             playerInfoSets.forEach(function (infoSet) {
                 let extended: string[][] = [];
@@ -157,7 +176,10 @@ module KGAuthor {
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
                 });
-                return {name: plan.join(separator), actions: actions};
+                const name = plan.map(function (action, i) {
+                    return shortNames[i][action];
+                }).join(separator);
+                return {name: name, actions: actions};
             });
         }
 
@@ -216,11 +238,23 @@ module KGAuthor {
             player2: playerDef(def.player2, strategies[2]),
             payoffs: payoffs
         };
-        ['showBestResponses1', 'showBestResponses2', 'showAllBestResponses'].forEach(function (key) {
-            if (def.hasOwnProperty(key)) {
-                game[key] = def[key];
+        // Each may be a boolean or a param expression (or, for 1 and 2, an array with one entry per opponent strategy).
+        // showBestResponses1 and showBestResponses2 take precedence over showAllBestResponses.
+        function bestResponses(key: string, numOpponentStrategies: number) {
+            const value = def.hasOwnProperty(key) ? def[key] : def.showAllBestResponses;
+            if (value === undefined || Array.isArray(value)) {
+                return value;
             }
-        });
+            return Array(numOpponentStrategies).fill(value);
+        }
+        const showBestResponses1 = bestResponses('showBestResponses1', strategies[2].length),
+            showBestResponses2 = bestResponses('showBestResponses2', strategies[1].length);
+        if (showBestResponses1 !== undefined) {
+            game.showBestResponses1 = showBestResponses1;
+        }
+        if (showBestResponses2 !== undefined) {
+            game.showBestResponses2 = showBestResponses2;
+        }
 
         return game;
     }
@@ -282,17 +316,6 @@ module KGAuthor {
 
         function playerColor(player) {
             return (player == 'chance') ? 'nature' : `player${player}`;
-        }
-
-        // Shorten labels to their first letters, unless that would make two of them the same
-        function abbreviate(labels: string[]): string[] {
-            const initials = labels.map(function (label) {
-                return String(label).charAt(0);
-            });
-            const distinct = initials.every(function (initial, i) {
-                return initials.indexOf(initial) == i;
-            });
-            return distinct ? initials : labels;
         }
 
         // label players by number (1, 2), initial, or full name (as plain text rather than LaTeX)

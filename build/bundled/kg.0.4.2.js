@@ -65918,13 +65918,31 @@ var KGAuthor;
         return infoSets;
     }
     KGAuthor.collectInfoSets = collectInfoSets;
+    // Shorten labels to their first letters, unless that would make two of them the same
+    function abbreviate(labels) {
+        var initials = labels.map(function (label) {
+            return String(label).charAt(0);
+        });
+        var distinct = initials.every(function (initial, i) {
+            return initials.indexOf(initial) == i;
+        });
+        return distinct ? initials : labels;
+    }
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
-    // Strategy names join the chosen actions with def.strategySeparator (default "").
+    // Strategy names join the chosen actions, abbreviated as in the tree, with def.strategySeparator (default "").
     function enumerateStrategies(def, infoSets) {
         infoSets = infoSets || collectInfoSets(def);
         var separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
         function strategiesFor(playerInfoSets) {
+            var shortNames = playerInfoSets.map(function (infoSet) {
+                var short = abbreviate(infoSet.actions);
+                var lookup = {};
+                infoSet.actions.forEach(function (action, i) {
+                    lookup[action] = short[i];
+                });
+                return lookup;
+            });
             var plans = [[]];
             playerInfoSets.forEach(function (infoSet) {
                 var extended = [];
@@ -65940,7 +65958,10 @@ var KGAuthor;
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
                 });
-                return { name: plan.join(separator), actions: actions };
+                var name = plan.map(function (action, i) {
+                    return shortNames[i][action];
+                }).join(separator);
+                return { name: name, actions: actions };
             });
         }
         return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
@@ -65992,11 +66013,22 @@ var KGAuthor;
             player2: playerDef(def.player2, strategies[2]),
             payoffs: payoffs
         };
-        ['showBestResponses1', 'showBestResponses2', 'showAllBestResponses'].forEach(function (key) {
-            if (def.hasOwnProperty(key)) {
-                game[key] = def[key];
+        // Each may be a boolean or a param expression (or, for 1 and 2, an array with one entry per opponent strategy).
+        // showBestResponses1 and showBestResponses2 take precedence over showAllBestResponses.
+        function bestResponses(key, numOpponentStrategies) {
+            var value = def.hasOwnProperty(key) ? def[key] : def.showAllBestResponses;
+            if (value === undefined || Array.isArray(value)) {
+                return value;
             }
-        });
+            return Array(numOpponentStrategies).fill(value);
+        }
+        var showBestResponses1 = bestResponses('showBestResponses1', strategies[2].length), showBestResponses2 = bestResponses('showBestResponses2', strategies[1].length);
+        if (showBestResponses1 !== undefined) {
+            game.showBestResponses1 = showBestResponses1;
+        }
+        if (showBestResponses2 !== undefined) {
+            game.showBestResponses2 = showBestResponses2;
+        }
         return game;
     }
     KGAuthor.normalFormFromTree = normalFormFromTree;
@@ -66042,16 +66074,6 @@ var KGAuthor;
         var gameKeys = ['player', 'action', 'prob', 'payoffs', 'children', 'coordinates'];
         function playerColor(player) {
             return (player == 'chance') ? 'nature' : "player" + player;
-        }
-        // Shorten labels to their first letters, unless that would make two of them the same
-        function abbreviate(labels) {
-            var initials = labels.map(function (label) {
-                return String(label).charAt(0);
-            });
-            var distinct = initials.every(function (initial, i) {
-                return initials.indexOf(initial) == i;
-            });
-            return distinct ? initials : labels;
         }
         // label players by number (1, 2), initial, or full name (as plain text rather than LaTeX)
         var playerLabelStyle = String(def.playerLabel || 'number').toLowerCase(), playerNames = [def.player1.name, def.player2.name], playerLabels = (playerLabelStyle == 'name') ? playerNames
