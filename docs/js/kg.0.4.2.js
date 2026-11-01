@@ -65984,16 +65984,32 @@ var KGAuthor;
     KGAuthor.strategyProfilePayoffs = strategyProfilePayoffs;
     // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
     function normalFormFromTree(def) {
-        var strategies = enumerateStrategies(def);
+        var infoSets = collectInfoSets(def), strategies = enumerateStrategies(def, infoSets);
         var payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
                 return strategyProfilePayoffs(def.root, s1, s2);
+            });
+        });
+        // the actions available at each info set, so a chosen action can be converted to its childSelectParam value
+        var actionsByParam = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                actionsByParam[infoSet.param] = infoSet.actions;
             });
         });
         function playerDef(player, playerStrategies) {
             var pd = JSON.parse(JSON.stringify(player));
             pd.strategies = playerStrategies.map(function (s) {
                 return s.name;
+            });
+            // clicking a strategy in the matrix sets each of the player's childSelectParams to the
+            // (1-based) index of the action the strategy chooses there, as clicking that edge in the tree would
+            pd.strategySelect = playerStrategies.map(function (s) {
+                var select = {};
+                Object.keys(s.actions).forEach(function (param) {
+                    select[KGAuthor.paramName(param)] = actionsByParam[param].indexOf(s.actions[param]) + 1;
+                });
+                return select;
             });
             return pd;
         }
@@ -71076,6 +71092,22 @@ var KG;
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
             var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            // if a player's strategies have param values attached, clicking a strategy sets those params;
+            // clicking a strategy that is already selected clears them, as clicking a selected edge in a tree does
+            function makeSelectable(cell, player, index) {
+                if (!player.strategySelect || !player.strategySelect[index]) {
+                    return;
+                }
+                var select = player.strategySelect[index], params = Object.keys(select);
+                cell.style('cursor', 'pointer').on('click', function () {
+                    var model = gameMatrix.model, alreadySelected = params.every(function (p) {
+                        return model.currentParamValues[p] == select[p];
+                    });
+                    params.forEach(function (p) {
+                        model.updateParam(p, alreadySelected ? 0 : select[p]);
+                    });
+                });
+            }
             gameMatrix.rootElement = layer.append('div');
             gameMatrix.table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             // The top row is player 2's name
@@ -71088,8 +71120,9 @@ var KG;
             // The second row is player 2's strategies
             var secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
-            player2.strategies.forEach(function (s2) {
+            player2.strategies.forEach(function (s2, j) {
                 var player2Strategy = secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy');
+                makeSelectable(player2Strategy, player2, j);
                 try {
                     katex.render(s2.toString(), player2Strategy.node());
                 }
@@ -71108,6 +71141,7 @@ var KG;
                         .text(gameMatrix.player1.name);
                 }
                 var player1Strategy = row.append('td').attr('class', 'player1 strategy');
+                makeSelectable(player1Strategy, player1, i);
                 try {
                     katex.render(s1.toString(), player1Strategy.node());
                 }
@@ -71181,6 +71215,12 @@ var KG;
             // Calculate relative width of game matrix
             var gameMatrixWidth = gameMatrix.table.node().clientWidth, divWidth = gameMatrix.rootElement.node().clientWidth, widthPercent = Math.min(100, Math.round(10 * gameMatrixWidth / divWidth) * 10);
             gameMatrix.rootElement.style('width', widthPercent + '%');
+            // If the table is wider than its container (e.g. many strategies beside a sidebar), scale it down to fit
+            // rather than letting it overflow into neighboring elements
+            var scale = Math.min(1, divWidth / gameMatrixWidth);
+            gameMatrix.table
+                .style('transform', (scale < 1) ? "scale(" + scale + ")" : null)
+                .style('transform-origin', 'top left');
             return gameMatrix;
         };
         return GameMatrix;

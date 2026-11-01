@@ -207,7 +207,8 @@ module KGAuthor {
     // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
     export function normalFormFromTree(def: ExtensiveFormDefinition): KG.GameMatrixDefinition {
 
-        const strategies = enumerateStrategies(def);
+        const infoSets = collectInfoSets(def),
+            strategies = enumerateStrategies(def, infoSets);
 
         const payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
@@ -215,10 +216,27 @@ module KGAuthor {
             });
         });
 
+        // the actions available at each info set, so a chosen action can be converted to its childSelectParam value
+        let actionsByParam = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet: InfoSet) {
+                actionsByParam[infoSet.param] = infoSet.actions;
+            });
+        });
+
         function playerDef(player, playerStrategies: PureStrategy[]) {
             let pd = JSON.parse(JSON.stringify(player));
             pd.strategies = playerStrategies.map(function (s) {
                 return s.name;
+            });
+            // clicking a strategy in the matrix sets each of the player's childSelectParams to the
+            // (1-based) index of the action the strategy chooses there, as clicking that edge in the tree would
+            pd.strategySelect = playerStrategies.map(function (s) {
+                let select = {};
+                Object.keys(s.actions).forEach(function (param) {
+                    select[paramName(param)] = actionsByParam[param].indexOf(s.actions[param]) + 1;
+                });
+                return select;
             });
             return pd;
         }
