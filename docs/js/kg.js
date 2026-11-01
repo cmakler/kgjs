@@ -3994,7 +3994,7 @@ var KGAuthor;
         return infoSets;
     }
     KGAuthor.collectInfoSets = collectInfoSets;
-    // Shorten labels to their first letters, unless that would make two of them the same
+    // Shorten labels (e.g. player names) to their first letters, unless that would make two of them the same
     function abbreviate(labels) {
         var initials = labels.map(function (label) {
             return String(label).charAt(0);
@@ -4006,19 +4006,11 @@ var KGAuthor;
     }
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
-    // Strategy names join the chosen actions, abbreviated as in the tree, with def.strategySeparator (default "").
+    // Strategy names join the chosen actions with def.strategySeparator (default "").
     function enumerateStrategies(def, infoSets) {
         infoSets = infoSets || collectInfoSets(def);
         var separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
         function strategiesFor(playerInfoSets) {
-            var shortNames = playerInfoSets.map(function (infoSet) {
-                var short = abbreviate(infoSet.actions);
-                var lookup = {};
-                infoSet.actions.forEach(function (action, i) {
-                    lookup[action] = short[i];
-                });
-                return lookup;
-            });
             var plans = [[]];
             playerInfoSets.forEach(function (infoSet) {
                 var extended = [];
@@ -4034,10 +4026,7 @@ var KGAuthor;
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
                 });
-                var name = plan.map(function (action, i) {
-                    return shortNames[i][action];
-                }).join(separator);
-                return { name: name, actions: actions };
+                return { name: plan.join(separator), actions: actions };
             });
         }
         return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
@@ -4197,13 +4186,10 @@ var KGAuthor;
                 };
             }
             else {
-                var actionLabels_1 = abbreviate(node.children.map(function (child) {
-                    return child.action;
-                }));
-                nd.children = node.children.map(function (child, i) {
+                nd.children = node.children.map(function (child) {
                     var cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + actionLabels_1[i] + "\\\\ (" + labelValue(child.prob) + ")`" : actionLabels_1[i];
+                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
                     }
                     return cd;
                 });

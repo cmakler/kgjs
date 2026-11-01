@@ -133,7 +133,7 @@ module KGAuthor {
         2: PureStrategy[];
     }
 
-    // Shorten labels to their first letters, unless that would make two of them the same
+    // Shorten labels (e.g. player names) to their first letters, unless that would make two of them the same
     function abbreviate(labels: string[]): string[] {
         const initials = labels.map(function (label) {
             return String(label).charAt(0);
@@ -146,21 +146,13 @@ module KGAuthor {
 
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
-    // Strategy names join the chosen actions, abbreviated as in the tree, with def.strategySeparator (default "").
+    // Strategy names join the chosen actions with def.strategySeparator (default "").
     export function enumerateStrategies(def: ExtensiveFormDefinition, infoSets?: InfoSetsByPlayer): StrategiesByPlayer {
 
         infoSets = infoSets || collectInfoSets(def);
         const separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
 
         function strategiesFor(playerInfoSets: InfoSet[]): PureStrategy[] {
-            const shortNames = playerInfoSets.map(function (infoSet) {
-                const short = abbreviate(infoSet.actions);
-                let lookup = {};
-                infoSet.actions.forEach(function (action, i) {
-                    lookup[action] = short[i];
-                });
-                return lookup;
-            });
             let plans: string[][] = [[]];
             playerInfoSets.forEach(function (infoSet) {
                 let extended: string[][] = [];
@@ -176,10 +168,7 @@ module KGAuthor {
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
                 });
-                const name = plan.map(function (action, i) {
-                    return shortNames[i][action];
-                }).join(separator);
-                return {name: name, actions: actions};
+                return {name: plan.join(separator), actions: actions};
             });
         }
 
@@ -371,13 +360,10 @@ module KGAuthor {
                     position: 'l'   // label to the right of the node
                 };
             } else {
-                const actionLabels = abbreviate(node.children.map(function (child) {
-                    return child.action;
-                }));
-                nd.children = node.children.map(function (child, i) {
+                nd.children = node.children.map(function (child) {
                     let cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + actionLabels[i] + "\\\\ (" + labelValue(child.prob) + ")`" : actionLabels[i];
+                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
                     }
                     return cd;
                 });
