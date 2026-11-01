@@ -9,6 +9,7 @@ module KGAuthor {
         player?: 1 | 2 | 'chance';      // required on non-terminal nodes
         childSelectParam?: string;      // required on player 1/2 nodes; defines the info set
         action?: string;                // label of the move into this node
+        plainText?: boolean;            // render the action label as plain text rather than LaTeX
         prob?: any;                     // on children of a chance node
         payoffs?: any[];                // [u1, u2] on terminal nodes
         children?: GameTreeNodeDefinition[];
@@ -301,7 +302,7 @@ module KGAuthor {
 
         let leafIndex = 0;
 
-        const gameKeys = ['player', 'action', 'prob', 'payoffs', 'children', 'coordinates'];
+        const gameKeys = ['player', 'action', 'plainText', 'prob', 'payoffs', 'children', 'coordinates'];
 
         function playerColor(player) {
             return (player == 'chance') ? 'nature' : `player${player}`;
@@ -363,7 +364,14 @@ module KGAuthor {
                 nd.children = node.children.map(function (child) {
                     let cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        if (child.plainText) {
+                            cd.edgeLabel = {
+                                text: (node.player == 'chance') ? "`" + child.action + " (" + labelValue(child.prob) + ")`" : child.action,
+                                plainText: true
+                            };
+                        } else {
+                            cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        }
                     }
                     return cd;
                 });

@@ -64518,7 +64518,7 @@ var KGAuthor;
                         node1: def.name,
                         node2: nodeDef.name,
                         color: def.color,
-                        label: { text: nodeDef.edgeLabel }
+                        label: (typeof nodeDef.edgeLabel == 'object') ? nodeDef.edgeLabel : { text: nodeDef.edgeLabel }
                     };
                     // if selectChildren is true, create a parameter called "select[nodeName]"
                     // which is used to select which child is active
@@ -66094,7 +66094,7 @@ var KGAuthor;
         }
         var maxDepth = Math.max(depth(def.root), 1), numLeaves = countLeaves(def.root), xStep = (xMax - xMin) / maxDepth, yStep = (numLeaves > 1) ? (yMax - yMin) / (numLeaves - 1) : 0;
         var leafIndex = 0;
-        var gameKeys = ['player', 'action', 'prob', 'payoffs', 'children', 'coordinates'];
+        var gameKeys = ['player', 'action', 'plainText', 'prob', 'payoffs', 'children', 'coordinates'];
         function playerColor(player) {
             return (player == 'chance') ? 'nature' : "player" + player;
         }
@@ -66147,7 +66147,15 @@ var KGAuthor;
                 nd.children = node.children.map(function (child) {
                     var cd = nodeDef(child, level + 1, false);
                     if (!cd.hasOwnProperty('edgeLabel')) {
-                        cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        if (child.plainText) {
+                            cd.edgeLabel = {
+                                text: (node.player == 'chance') ? "`" + child.action + " (" + labelValue(child.prob) + ")`" : child.action,
+                                plainText: true
+                            };
+                        }
+                        else {
+                            cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        }
                     }
                     return cd;
                 });

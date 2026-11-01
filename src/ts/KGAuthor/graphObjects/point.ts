@@ -167,7 +167,7 @@ module KGAuthor {
         name?: string;
         children?: NodeDefinition[];
         childSelectParam?: string;
-        edgeLabel?: string; // used to label the edge from the parent node
+        edgeLabel?: string | LabelDefinition; // used to label the edge from the parent node; text or a full label definition
         payoffs?: PayoffDefinition;
     }
 
@@ -209,7 +209,7 @@ module KGAuthor {
                         node1: def.name,
                         node2: nodeDef.name,
                         color: def.color,
-                        label: {text: nodeDef.edgeLabel}
+                        label: (typeof nodeDef.edgeLabel == 'object') ? nodeDef.edgeLabel : {text: nodeDef.edgeLabel}
                     };
 
                     // if selectChildren is true, create a parameter called "select[nodeName]"
