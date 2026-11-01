@@ -11,6 +11,10 @@
 /// <reference path="layouts/edgeworth.ts"/>
 /// <reference path="layouts/gameTree.ts"/>
 
+/* GAME THEORY */
+
+/// <reference path="game_theory/extensiveForm.ts"/>
+
 /* FUNCTIONAL FORMS */
 
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>

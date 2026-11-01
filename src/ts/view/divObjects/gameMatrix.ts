@@ -7,6 +7,7 @@ module KG {
         name: string;
         strategies: any[];
         showBestResponses?: any[]; // Note, this is player 1's responses to player 2's strategies; so the length should be the number of player 2's strategies.
+        strategySelect?: {}[]; // for each strategy, the param values to set when it is clicked, e.g. {tough: 2, weak: 1}
     }
 
     export interface GameMatrixDefinition extends DivObjectDefinition {
@@ -69,6 +70,25 @@ module KG {
                   numStrategies1 = player1.strategies.length,
                   numStrategies2 = player2.strategies.length;
 
+            // if a player's strategies have param values attached, clicking a strategy sets those params;
+            // clicking a strategy that is already selected clears them, as clicking a selected edge in a tree does
+            function makeSelectable(cell, player, index: number) {
+                if (!player.strategySelect || !player.strategySelect[index]) {
+                    return;
+                }
+                const select = player.strategySelect[index],
+                    params = Object.keys(select);
+                cell.style('cursor', 'pointer').on('click', function () {
+                    const model = gameMatrix.model,
+                        alreadySelected = params.every(function (p) {
+                            return model.currentParamValues[p] == select[p];
+                        });
+                    params.forEach(function (p) {
+                        model.updateParam(p, alreadySelected ? 0 : select[p]);
+                    });
+                });
+            }
+
             gameMatrix.rootElement = layer.append('div')
 
             gameMatrix.table = gameMatrix.rootElement.append('table').attr('class','gameMatrix');
@@ -85,8 +105,9 @@ module KG {
             // The second row is player 2's strategies
             let secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan','2').attr('class', 'empty'); // empty row above player 1's name and strategies
-            player2.strategies.forEach(function (s2) {
+            player2.strategies.forEach(function (s2, j) {
                 let player2Strategy = secondRow.append('td').attr('colspan','2').attr('class', 'player2 strategy');
+                makeSelectable(player2Strategy, player2, j);
                 try {
                         katex.render(s2.toString(), player2Strategy.node());
                     }
@@ -107,6 +128,7 @@ module KG {
                         .text(gameMatrix.player1.name)
                 }
                 let player1Strategy = row.append('td').attr('class','player1 strategy')
+                makeSelectable(player1Strategy, player1, i);
                 try {
                         katex.render(s1.toString(), player1Strategy.node());
                     }
@@ -139,12 +161,21 @@ module KG {
                   numStrategies1 = strategies1.length,
                   numStrategies2 = strategies2.length;
 
+            // round computed payoffs so floating-point noise (e.g. 2.9999999999999996) neither displays nor breaks ties
+            const payoffs = gameMatrix.payoffs.map(function(row) {
+                return row.map(function(cell) {
+                    return cell.map(function(payoff) {
+                        return (typeof payoff == 'number') ? parseFloat(payoff.toPrecision(10)) : payoff;
+                    });
+                });
+            });
+
             function isBestResponse(s1:number,s2:number,player:number) {
                 let BR = true;
                 if(player == 1) {
                     // see if player 1 has any other strategies which yield a higher payoff
                     for(let s1other = 0; s1other<numStrategies1; s1other++) {
-                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                        if (payoffs[s1other][s2][0] > payoffs[s1][s2][0]) {
                             BR = false;
                         }
                     }
@@ -152,7 +183,7 @@ module KG {
                 if(player == 2) {
                     // see if player 2 has any other strategies which yield a higher payoff
                     for(let s2other = 0; s2other<numStrategies2; s2other++) {
-                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                        if (payoffs[s1][s2other][1] > payoffs[s1][s2][1]) {
                             BR = false;
                         }
                     }
@@ -163,8 +194,8 @@ module KG {
             for(let i = 0; i < numStrategies1; i++) {
                 for(let j = 0; j < numStrategies2; j++) {
                     let cell = gameMatrix.payoffNodes[i][j],
-                        payoff1 = gameMatrix.payoffs[i][j][0].toString(),
-                        payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                        payoff1 = payoffs[i][j][0].toString(),
+                        payoff2 = payoffs[i][j][1].toString();
                     if(gameMatrix.hasOwnProperty("showBestResponses1")) {
                         if(gameMatrix.showBestResponses1[j]) {
                             if(isBestResponse(i,j,1)){
@@ -190,6 +221,13 @@ module KG {
                  widthPercent = Math.min(100,Math.round(10*gameMatrixWidth/divWidth)*10);
 
             gameMatrix.rootElement.style('width',widthPercent+'%');
+
+            // If the table is wider than its container (e.g. many strategies beside a sidebar), scale it down to fit
+            // rather than letting it overflow into neighboring elements
+            const scale = Math.min(1, divWidth / gameMatrixWidth);
+            gameMatrix.table
+                .style('transform', (scale < 1) ? `scale(${scale})` : null)
+                .style('transform-origin', 'top left');
             return gameMatrix;
         }
     }

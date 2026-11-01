@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "game-tree-test",
+      "runtimeExecutable": "/Users/cmakler/code/kgjs/node_modules/.bin/http-server",
+      "runtimeArgs": ["/private/tmp/claude-501/-Users-cmakler-code-kgjs/836cd512-4824-423a-bc4b-691b9b2a5d83/scratchpad", "-p", "8642", "-c-1"],
+      "port": 8642
+    }
+  ]
+}

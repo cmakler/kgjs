@@ -2560,7 +2560,7 @@ var KGAuthor;
                         node1: def.name,
                         node2: nodeDef.name,
                         color: def.color,
-                        label: { text: nodeDef.edgeLabel }
+                        label: (typeof nodeDef.edgeLabel == 'object') ? nodeDef.edgeLabel : { text: nodeDef.edgeLabel }
                     };
                     // if selectChildren is true, create a parameter called "select[nodeName]"
                     // which is used to select which child is active
@@ -3918,6 +3918,491 @@ var KGAuthor;
         return BayesNashNormalForm;
     }(KGAuthor.GameTreePlusMatrix));
     KGAuthor.BayesNashNormalForm = BayesNashNormalForm;
+})(KGAuthor || (KGAuthor = {}));
+/// <reference path="../eg.ts" />
+var KGAuthor;
+(function (KGAuthor) {
+    // Traverse the tree depth-first (preorder, children in listed order) and
+    // return each player's information sets in the order they are first reached.
+    // Assigns a name to any unnamed node, and throws if the tree is malformed.
+    function collectInfoSets(def) {
+        var infoSets = { 1: [], 2: [] };
+        var infoSetsByParam = {};
+        function visit(node) {
+            KG.setDefaults(node, {
+                name: KG.randomString(10)
+            });
+            // terminal node
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                if (!Array.isArray(node.payoffs) || node.payoffs.length != 2) {
+                    throw new Error("Game tree: terminal node " + node.name + " must have payoffs [u1, u2]");
+                }
+                return;
+            }
+            if (!node.hasOwnProperty('player')) {
+                throw new Error("Game tree: node " + node.name + " has children but no player");
+            }
+            // chance node
+            if (node.player == 'chance') {
+                node.children.forEach(function (child) {
+                    if (!child.hasOwnProperty('prob')) {
+                        throw new Error("Game tree: child " + (child.action || child.name) + " of chance node " + node.name + " has no prob");
+                    }
+                });
+                node.children.forEach(visit);
+                return;
+            }
+            // decision node
+            var player = node.player;
+            if (player != 1 && player != 2) {
+                throw new Error("Game tree: node " + node.name + " has invalid player " + player + "; use 1, 2, or chance");
+            }
+            if (!node.hasOwnProperty('childSelectParam')) {
+                throw new Error("Game tree: decision node " + node.name + " has no childSelectParam");
+            }
+            var actions = node.children.map(function (child) {
+                if (!child.hasOwnProperty('action')) {
+                    throw new Error("Game tree: child " + child.name + " of node " + node.name + " has no action");
+                }
+                return child.action;
+            });
+            actions.forEach(function (action, i) {
+                if (actions.indexOf(action) != i) {
+                    throw new Error("Game tree: node " + node.name + " has duplicate action " + action);
+                }
+            });
+            var param = node.childSelectParam;
+            if (!infoSetsByParam.hasOwnProperty(param)) {
+                var infoSet = { param: param, player: player, actions: actions, nodes: [node.name] };
+                infoSetsByParam[param] = infoSet;
+                infoSets[player].push(infoSet);
+            }
+            else {
+                var infoSet = infoSetsByParam[param];
+                if (infoSet.player != player) {
+                    throw new Error("Game tree: info set " + param + " is shared by player " + infoSet.player + " and player " + player);
+                }
+                // the param's value is the index of the selected child, so the action lists must match exactly
+                if (infoSet.actions.join('\u0000') != actions.join('\u0000')) {
+                    throw new Error("Game tree: node " + node.name + " in info set " + param + " has actions [" + actions + "] but expected [" + infoSet.actions + "]");
+                }
+                infoSet.nodes.push(node.name);
+            }
+            node.children.forEach(visit);
+        }
+        visit(def.root);
+        return infoSets;
+    }
+    KGAuthor.collectInfoSets = collectInfoSets;
+    // Shorten labels (e.g. player names) to their first letters, unless that would make two of them the same
+    function abbreviate(labels) {
+        var initials = labels.map(function (label) {
+            return String(label).charAt(0);
+        });
+        var distinct = initials.every(function (initial, i) {
+            return initials.indexOf(initial) == i;
+        });
+        return distinct ? initials : labels;
+    }
+    // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
+    // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
+    // Strategy names join the chosen actions with def.strategySeparator (default "").
+    function enumerateStrategies(def, infoSets) {
+        infoSets = infoSets || collectInfoSets(def);
+        var separator = def.hasOwnProperty('strategySeparator') ? def.strategySeparator : '';
+        function strategiesFor(playerInfoSets) {
+            var plans = [[]];
+            playerInfoSets.forEach(function (infoSet) {
+                var extended = [];
+                plans.forEach(function (plan) {
+                    infoSet.actions.forEach(function (action) {
+                        extended.push(plan.concat([action]));
+                    });
+                });
+                plans = extended;
+            });
+            return plans.map(function (plan) {
+                var actions = {};
+                playerInfoSets.forEach(function (infoSet, i) {
+                    actions[infoSet.param] = plan[i];
+                });
+                return { name: plan.join(separator), actions: actions };
+            });
+        }
+        return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
+    }
+    KGAuthor.enumerateStrategies = enumerateStrategies;
+    // Payoffs [u1, u2] when player 1 plays s1 and player 2 plays s2.
+    // Chance nodes give expected payoffs; values stay numbers where possible, otherwise expressions.
+    function strategyProfilePayoffs(root, s1, s2) {
+        function evaluate(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return node.payoffs;
+            }
+            if (node.player == 'chance') {
+                var expected_1 = [0, 0];
+                node.children.forEach(function (child) {
+                    var childPayoffs = evaluate(child);
+                    expected_1 = expected_1.map(function (u, i) {
+                        return KGAuthor.addDefs(u, KGAuthor.multiplyDefs(child.prob, childPayoffs[i]));
+                    });
+                });
+                return expected_1;
+            }
+            var strategy = (node.player == 1) ? s1 : s2;
+            var action = strategy.actions[node.childSelectParam];
+            return evaluate(node.children.filter(function (child) {
+                return child.action == action;
+            })[0]);
+        }
+        return evaluate(root);
+    }
+    KGAuthor.strategyProfilePayoffs = strategyProfilePayoffs;
+    // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
+    function normalFormFromTree(def) {
+        var infoSets = collectInfoSets(def), strategies = enumerateStrategies(def, infoSets);
+        var payoffs = strategies[1].map(function (s1) {
+            return strategies[2].map(function (s2) {
+                return strategyProfilePayoffs(def.root, s1, s2);
+            });
+        });
+        // the actions available at each info set, so a chosen action can be converted to its childSelectParam value
+        var actionsByParam = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                actionsByParam[infoSet.param] = infoSet.actions;
+            });
+        });
+        function playerDef(player, playerStrategies) {
+            var pd = JSON.parse(JSON.stringify(player));
+            pd.strategies = playerStrategies.map(function (s) {
+                return s.name;
+            });
+            // clicking a strategy in the matrix sets each of the player's childSelectParams to the
+            // (1-based) index of the action the strategy chooses there, as clicking that edge in the tree would
+            pd.strategySelect = playerStrategies.map(function (s) {
+                var select = {};
+                Object.keys(s.actions).forEach(function (param) {
+                    select[KGAuthor.paramName(param)] = actionsByParam[param].indexOf(s.actions[param]) + 1;
+                });
+                return select;
+            });
+            return pd;
+        }
+        var game = {
+            player1: playerDef(def.player1, strategies[1]),
+            player2: playerDef(def.player2, strategies[2]),
+            payoffs: payoffs
+        };
+        // Each may be a boolean or a param expression (or, for 1 and 2, an array with one entry per opponent strategy).
+        // showBestResponses1 and showBestResponses2 take precedence over showAllBestResponses.
+        function bestResponses(key, numOpponentStrategies) {
+            var value = def.hasOwnProperty(key) ? def[key] : def.showAllBestResponses;
+            if (value === undefined || Array.isArray(value)) {
+                return value;
+            }
+            return Array(numOpponentStrategies).fill(value);
+        }
+        var showBestResponses1 = bestResponses('showBestResponses1', strategies[2].length), showBestResponses2 = bestResponses('showBestResponses2', strategies[1].length);
+        if (showBestResponses1 !== undefined) {
+            game.showBestResponses1 = showBestResponses1;
+        }
+        if (showBestResponses2 !== undefined) {
+            game.showBestResponses2 = showBestResponses2;
+        }
+        return game;
+    }
+    KGAuthor.normalFormFromTree = normalFormFromTree;
+    // Renders the normal form of def.gameTree as a game matrix.
+    var GameMatrixFromTree = /** @class */ (function (_super) {
+        __extends(GameMatrixFromTree, _super);
+        function GameMatrixFromTree(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            l.nosvg = true;
+            l.subObjects.push(new KGAuthor.GameMatrix(normalFormFromTree(def.gameTree)));
+            return _this;
+        }
+        return GameMatrixFromTree;
+    }(KGAuthor.Layout));
+    KGAuthor.GameMatrixFromTree = GameMatrixFromTree;
+    // Wrap a payoff or probability as a label expression, rounded so values like 0.7000000000000001 display cleanly
+    function labelValue(value) {
+        return (typeof value == 'number') ? value : "${+(" + value + ").toPrecision(10)}";
+    }
+    // Convert an extensive-form game into a Tree definition drawn left to right:
+    // the root is at the left, each move goes one column to the right, and terminal nodes are spaced evenly top to bottom.
+    // Any node may override its position with coordinates, or its styling with any Node/Point attribute.
+    function treeFromExtensiveForm(def) {
+        var infoSets = collectInfoSets(def);
+        var xMin = 1.5, xMax = 18, yMin = 1.5, yMax = 22.5;
+        function depth(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return 0;
+            }
+            return 1 + Math.max.apply(null, node.children.map(depth));
+        }
+        function countLeaves(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return 1;
+            }
+            return node.children.reduce(function (total, child) {
+                return total + countLeaves(child);
+            }, 0);
+        }
+        var maxDepth = Math.max(depth(def.root), 1), numLeaves = countLeaves(def.root), xStep = (xMax - xMin) / maxDepth, yStep = (numLeaves > 1) ? (yMax - yMin) / (numLeaves - 1) : 0;
+        var leafIndex = 0;
+        var gameKeys = ['player', 'action', 'plainText', 'prob', 'payoffs', 'children', 'coordinates'];
+        function playerColor(player) {
+            return (player == 'chance') ? 'nature' : "player" + player;
+        }
+        // label players by number (1, 2), initial, or full name (as plain text rather than LaTeX)
+        var playerLabelStyle = String(def.playerLabel || 'number').toLowerCase(), playerNames = [def.player1.name, def.player2.name], playerLabels = (playerLabelStyle == 'name') ? playerNames
+            : (playerLabelStyle == 'initial') ? abbreviate(playerNames)
+                : ['1', '2'];
+        function playerLabel(player, position) {
+            var label = { text: playerLabels[player - 1] };
+            if (position) {
+                label.position = position;
+            }
+            if (playerLabelStyle == 'name') {
+                label.plainText = true;
+            }
+            return label;
+        }
+        // nodes in an information set with more than one node are labeled on the info set, not individually
+        var sharedInfoSetNodes = {};
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                if (infoSet.nodes.length > 1) {
+                    infoSet.nodes.forEach(function (name) {
+                        sharedInfoSetNodes[name] = true;
+                    });
+                }
+            });
+        });
+        function nodeDef(node, level, isRoot) {
+            var nd = {};
+            Object.keys(node).forEach(function (key) {
+                if (gameKeys.indexOf(key) < 0) {
+                    nd[key] = node[key];
+                }
+            });
+            var y;
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                y = (numLeaves > 1) ? yMax - yStep * leafIndex : 12;
+                leafIndex++;
+                KG.setDefaults(nd, {
+                    color: 'terminal'
+                });
+                nd.payoffs = {
+                    player1: labelValue(node.payoffs[0]),
+                    player2: labelValue(node.payoffs[1]),
+                    position: 'l' // label to the right of the node
+                };
+            }
+            else {
+                nd.children = node.children.map(function (child) {
+                    var cd = nodeDef(child, level + 1, false);
+                    if (!cd.hasOwnProperty('edgeLabel')) {
+                        if (child.plainText) {
+                            cd.edgeLabel = {
+                                text: (node.player == 'chance') ? "`" + child.action + " (" + labelValue(child.prob) + ")`" : child.action,
+                                plainText: true
+                            };
+                        }
+                        else {
+                            cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                        }
+                    }
+                    return cd;
+                });
+                y = nd.children.reduce(function (total, cd) {
+                    return total + cd.coordinates[1];
+                }, 0) / nd.children.length;
+                KG.setDefaults(nd, {
+                    color: playerColor(node.player)
+                });
+                if (node.player != 'chance' && !sharedInfoSetNodes[node.name]) {
+                    KG.setDefaults(nd, {
+                        // player name to the left of the root, above other nodes
+                        label: playerLabel(node.player, isRoot ? 'r' : 'b')
+                    });
+                }
+            }
+            nd.coordinates = node.coordinates || [xMin + xStep * level, y];
+            return nd;
+        }
+        // connect the nodes of each information set with dashed lines, labeling the first with the player
+        var edges = [];
+        [1, 2].forEach(function (player) {
+            infoSets[player].forEach(function (infoSet) {
+                for (var i = 1; i < infoSet.nodes.length; i++) {
+                    var edgeDef = {
+                        node1: infoSet.nodes[i - 1],
+                        node2: infoSet.nodes[i],
+                        color: playerColor(player),
+                        lineStyle: 'dashed'
+                    };
+                    if (i == 1) {
+                        edgeDef.label = playerLabel(player); // centered on the line, like action labels
+                    }
+                    edges.push(edgeDef);
+                }
+            });
+        });
+        return {
+            nodes: [nodeDef(def.root, 0, true)],
+            edges: edges,
+            showGrid: def.showGrid,
+            objects: def.objects
+        };
+    }
+    KGAuthor.treeFromExtensiveForm = treeFromExtensiveForm;
+    // Declare a param for each childSelectParam the author hasn't declared, starting with no child selected.
+    function declareSelectParams(def, parsedData) {
+        var declared = {};
+        parsedData.params.forEach(function (p) {
+            declared[p.name] = true;
+        });
+        function visit(node) {
+            if (!node.hasOwnProperty('children') || node.children.length == 0) {
+                return;
+            }
+            if (node.hasOwnProperty('childSelectParam')) {
+                var name_1 = KGAuthor.paramName(node.childSelectParam);
+                if (!declared[name_1]) {
+                    parsedData.params.push({ name: name_1, value: 0, min: 0, max: node.children.length, round: 1 });
+                    declared[name_1] = true;
+                }
+            }
+            node.children.forEach(visit);
+        }
+        visit(def.root);
+        return parsedData;
+    }
+    // An extensive-form game drawn as a tree in a wide rectangle.
+    var ExtensiveFormGame = /** @class */ (function (_super) {
+        __extends(ExtensiveFormGame, _super);
+        function ExtensiveFormGame(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree);
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.74,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            return _this;
+        }
+        ExtensiveFormGame.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveFormGame;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.ExtensiveFormGame = ExtensiveFormGame;
+    var ExtensiveFormGamePlusSidebar = /** @class */ (function (_super) {
+        __extends(ExtensiveFormGamePlusSidebar, _super);
+        function ExtensiveFormGamePlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree), sidebarDef = def['sidebar'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.9
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        ExtensiveFormGamePlusSidebar.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveFormGamePlusSidebar;
+    }(KGAuthor.WideRectangleLayout));
+    KGAuthor.ExtensiveFormGamePlusSidebar = ExtensiveFormGamePlusSidebar;
+    // The game tree on top and its normal form below, positioned like TwoVerticalGraphs.
+    var ExtensiveAndNormalForms = /** @class */ (function (_super) {
+        __extends(ExtensiveAndNormalForms, _super);
+        function ExtensiveAndNormalForms(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree);
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.8,
+                "height": 0.4
+            };
+            var gameDivDef = {
+                position: {
+                    "x": 0.15,
+                    "y": 0.525,
+                    "width": 0.8,
+                    "height": 0.4
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: normalFormFromTree(def.gameTree)
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            return _this;
+        }
+        ExtensiveAndNormalForms.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveAndNormalForms;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.ExtensiveAndNormalForms = ExtensiveAndNormalForms;
+    var ExtensiveAndNormalFormsPlusSidebar = /** @class */ (function (_super) {
+        __extends(ExtensiveAndNormalFormsPlusSidebar, _super);
+        function ExtensiveAndNormalFormsPlusSidebar(def) {
+            var _this = _super.call(this, def) || this;
+            var l = _this;
+            var treeDef = treeFromExtensiveForm(def.gameTree), sidebarDef = def['sidebar'];
+            treeDef.position = {
+                "x": 0.15,
+                "y": 0.025,
+                "width": 0.738,
+                "height": 0.4
+            };
+            var gameDivDef = {
+                position: {
+                    "x": 0.15,
+                    "y": 0.525,
+                    "width": 0.738,
+                    "height": 0.4
+                },
+                children: [
+                    {
+                        type: "GameMatrix",
+                        def: normalFormFromTree(def.gameTree)
+                    }
+                ]
+            };
+            l.subObjects.push(new KGAuthor.Tree(treeDef));
+            l.subObjects.push(new KGAuthor.DivContainer(gameDivDef));
+            l.subObjects.push(new KGAuthor.Sidebar(sidebarDef));
+            return _this;
+        }
+        ExtensiveAndNormalFormsPlusSidebar.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declareSelectParams(this.def.gameTree, parsedData);
+        };
+        return ExtensiveAndNormalFormsPlusSidebar;
+    }(KGAuthor.SquareLayout));
+    KGAuthor.ExtensiveAndNormalFormsPlusSidebar = ExtensiveAndNormalFormsPlusSidebar;
 })(KGAuthor || (KGAuthor = {}));
 /// <reference path="../../eg.ts"/>
 var KGAuthor;
@@ -5997,6 +6482,8 @@ var KGAuthor;
 /* LAYOUTS */
 /// <reference path="layouts/edgeworth.ts"/>
 /// <reference path="layouts/gameTree.ts"/>
+/* GAME THEORY */
+/// <reference path="game_theory/extensiveForm.ts"/>
 /* FUNCTIONAL FORMS */
 /// <reference path="functional_forms/multivariate/multivariate.ts"/>
 /// <reference path="functional_forms/multivariate/cobbDouglas.ts"/>
@@ -8681,6 +9168,22 @@ var KG;
         GameMatrix.prototype.draw = function (layer) {
             var gameMatrix = this;
             var player1 = gameMatrix.player1, player2 = gameMatrix.player2, numStrategies1 = player1.strategies.length, numStrategies2 = player2.strategies.length;
+            // if a player's strategies have param values attached, clicking a strategy sets those params;
+            // clicking a strategy that is already selected clears them, as clicking a selected edge in a tree does
+            function makeSelectable(cell, player, index) {
+                if (!player.strategySelect || !player.strategySelect[index]) {
+                    return;
+                }
+                var select = player.strategySelect[index], params = Object.keys(select);
+                cell.style('cursor', 'pointer').on('click', function () {
+                    var model = gameMatrix.model, alreadySelected = params.every(function (p) {
+                        return model.currentParamValues[p] == select[p];
+                    });
+                    params.forEach(function (p) {
+                        model.updateParam(p, alreadySelected ? 0 : select[p]);
+                    });
+                });
+            }
             gameMatrix.rootElement = layer.append('div');
             gameMatrix.table = gameMatrix.rootElement.append('table').attr('class', 'gameMatrix');
             // The top row is player 2's name
@@ -8693,8 +9196,9 @@ var KG;
             // The second row is player 2's strategies
             var secondRow = gameMatrix.table.append('tr');
             secondRow.append('td').attr('colspan', '2').attr('class', 'empty'); // empty row above player 1's name and strategies
-            player2.strategies.forEach(function (s2) {
+            player2.strategies.forEach(function (s2, j) {
                 var player2Strategy = secondRow.append('td').attr('colspan', '2').attr('class', 'player2 strategy');
+                makeSelectable(player2Strategy, player2, j);
                 try {
                     katex.render(s2.toString(), player2Strategy.node());
                 }
@@ -8713,6 +9217,7 @@ var KG;
                         .text(gameMatrix.player1.name);
                 }
                 var player1Strategy = row.append('td').attr('class', 'player1 strategy');
+                makeSelectable(player1Strategy, player1, i);
                 try {
                     katex.render(s1.toString(), player1Strategy.node());
                 }
@@ -8734,12 +9239,20 @@ var KG;
             var gameMatrix = this;
             console.log(gameMatrix);
             var strategies1 = gameMatrix.player1.strategies, strategies2 = gameMatrix.player2.strategies, numStrategies1 = strategies1.length, numStrategies2 = strategies2.length;
+            // round computed payoffs so floating-point noise (e.g. 2.9999999999999996) neither displays nor breaks ties
+            var payoffs = gameMatrix.payoffs.map(function (row) {
+                return row.map(function (cell) {
+                    return cell.map(function (payoff) {
+                        return (typeof payoff == 'number') ? parseFloat(payoff.toPrecision(10)) : payoff;
+                    });
+                });
+            });
             function isBestResponse(s1, s2, player) {
                 var BR = true;
                 if (player == 1) {
                     // see if player 1 has any other strategies which yield a higher payoff
                     for (var s1other = 0; s1other < numStrategies1; s1other++) {
-                        if (gameMatrix.payoffs[s1other][s2][0] > gameMatrix.payoffs[s1][s2][0]) {
+                        if (payoffs[s1other][s2][0] > payoffs[s1][s2][0]) {
                             BR = false;
                         }
                     }
@@ -8747,7 +9260,7 @@ var KG;
                 if (player == 2) {
                     // see if player 2 has any other strategies which yield a higher payoff
                     for (var s2other = 0; s2other < numStrategies2; s2other++) {
-                        if (gameMatrix.payoffs[s1][s2other][1] > gameMatrix.payoffs[s1][s2][1]) {
+                        if (payoffs[s1][s2other][1] > payoffs[s1][s2][1]) {
                             BR = false;
                         }
                     }
@@ -8756,7 +9269,7 @@ var KG;
             }
             for (var i = 0; i < numStrategies1; i++) {
                 for (var j = 0; j < numStrategies2; j++) {
-                    var cell = gameMatrix.payoffNodes[i][j], payoff1 = gameMatrix.payoffs[i][j][0].toString(), payoff2 = gameMatrix.payoffs[i][j][1].toString();
+                    var cell = gameMatrix.payoffNodes[i][j], payoff1 = payoffs[i][j][0].toString(), payoff2 = payoffs[i][j][1].toString();
                     if (gameMatrix.hasOwnProperty("showBestResponses1")) {
                         if (gameMatrix.showBestResponses1[j]) {
                             if (isBestResponse(i, j, 1)) {
@@ -8778,6 +9291,12 @@ var KG;
             // Calculate relative width of game matrix
             var gameMatrixWidth = gameMatrix.table.node().clientWidth, divWidth = gameMatrix.rootElement.node().clientWidth, widthPercent = Math.min(100, Math.round(10 * gameMatrixWidth / divWidth) * 10);
             gameMatrix.rootElement.style('width', widthPercent + '%');
+            // If the table is wider than its container (e.g. many strategies beside a sidebar), scale it down to fit
+            // rather than letting it overflow into neighboring elements
+            var scale = Math.min(1, divWidth / gameMatrixWidth);
+            gameMatrix.table
+                .style('transform', (scale < 1) ? "scale(" + scale + ")" : null)
+                .style('transform-origin', 'top left');
             return gameMatrix;
         };
         return GameMatrix;
