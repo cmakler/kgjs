@@ -7,3 +7,4 @@ src/lib/js-yaml/
 vendor/
 src/.DS_Store
 */.DS_Store
+.claude/launch.json

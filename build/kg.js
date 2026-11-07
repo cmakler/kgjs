@@ -4004,20 +4004,6 @@ var KGAuthor;
         });
         return distinct ? initials : labels;
     }
-    // A short code for each action: its first letter or digit, ignoring LaTeX commands (U^A -> U, \\text{In} -> I),
-    // unless two actions at the same info set would share it, in which case the action's letters and digits (UA, DA).
-    function actionCodes(actions) {
-        var full = actions.map(function (action) {
-            return String(action).replace(/\\[a-zA-Z]+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-        });
-        var initials = full.map(function (f) {
-            return f.charAt(0);
-        });
-        var distinct = initials.every(function (initial, i) {
-            return initial != '' && initials.indexOf(initial) == i;
-        });
-        return distinct ? initials : full;
-    }
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
     // Strategy names join the chosen actions with def.strategySeparator (default "").
@@ -4035,16 +4021,12 @@ var KGAuthor;
                 });
                 plans = extended;
             });
-            var codes = playerInfoSets.map(function (infoSet) {
-                return actionCodes(infoSet.actions);
-            });
             return plans.map(function (plan) {
-                var actions = {}, code = '';
+                var actions = {};
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
-                    code += codes[i][infoSet.actions.indexOf(plan[i])];
                 });
-                return { name: plan.join(separator), code: code, actions: actions };
+                return { name: plan.join(separator), actions: actions };
             });
         }
         return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
@@ -4076,36 +4058,53 @@ var KGAuthor;
         return evaluate(root);
     }
     KGAuthor.strategyProfilePayoffs = strategyProfilePayoffs;
-    // Name of the calc holding a player's payoff from a strategy profile: payoff<player><s1 code><s2 code>, e.g. payoff1UUL
-    function payoffCalcName(player, s1, s2) {
-        return 'payoff' + player + s1.code + s2.code;
+    // The childSelectParam values (1-based action indices) that select a strategy profile:
+    // player 1's info sets in the order they appear in the tree, then player 2's.
+    function profileIndices(infoSets, s1, s2) {
+        var indices = [];
+        [s1, s2].forEach(function (s, p) {
+            infoSets[p + 1].forEach(function (infoSet) {
+                indices.push(infoSet.actions.indexOf(s.actions[infoSet.param]) + 1);
+            });
+        });
+        return indices;
     }
-    // Every strategy profile's payoffs as calcs, e.g. {payoff1UUL: ..., payoff2UUL: ..., ...}.
-    // Throws if two profiles would get the same name.
+    // Path to a player's payoff from a profile within calcs, e.g. calcs.payoffs.player1["1"]["2"]["1"]
+    function payoffCalcPath(player, indices) {
+        return 'calcs.payoffs.player' + player + indices.map(function (index) {
+            return '["' + index + '"]';
+        }).join('');
+    }
+    // Every strategy profile's payoffs, nested by the childSelectParam values that select it, so that
+    // calcs.payoffs.player1[params.a][params.b][params.c] is player 1's payoff when info sets a, b, c
+    // (player 1's in tree order, then player 2's) have those actions selected.
     function payoffCalcs(def) {
-        var strategies = enumerateStrategies(def);
-        var calcs = {};
+        var infoSets = collectInfoSets(def), strategies = enumerateStrategies(def, infoSets);
+        var calcs = { player1: {}, player2: {} };
         strategies[1].forEach(function (s1) {
             strategies[2].forEach(function (s2) {
-                var payoffs = strategyProfilePayoffs(def.root, s1, s2);
+                var payoffs = strategyProfilePayoffs(def.root, s1, s2), indices = profileIndices(infoSets, s1, s2);
                 [1, 2].forEach(function (player) {
-                    var name = payoffCalcName(player, s1, s2);
-                    if (calcs.hasOwnProperty(name)) {
-                        throw new Error("Game tree: two strategy profiles would both define calcs." + name + "; give actions at each info set distinct letters");
-                    }
-                    calcs[name] = payoffs[player - 1];
+                    var value = payoffs[player - 1];
+                    var obj = calcs['player' + player];
+                    indices.forEach(function (index, i) {
+                        if (i == indices.length - 1) {
+                            obj[index] = (typeof value == 'number') ? value : value.toString();
+                        }
+                        else {
+                            obj[index] = obj[index] || {};
+                            obj = obj[index];
+                        }
+                    });
                 });
             });
         });
         return calcs;
     }
     KGAuthor.payoffCalcs = payoffCalcs;
-    // Add the payoff calcs for a game tree to the parsed graph definition.
+    // Add the payoff calcs for a game tree to the parsed graph definition as calcs.payoffs.
     function declarePayoffCalcs(def, parsedData) {
-        var calcs = payoffCalcs(def);
-        Object.keys(calcs).forEach(function (name) {
-            parsedData.calcs[name] = (typeof calcs[name] == 'number') ? calcs[name] : calcs[name].toString();
-        });
+        parsedData.calcs.payoffs = payoffCalcs(def);
         return parsedData;
     }
     // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
@@ -4114,8 +4113,9 @@ var KGAuthor;
         var infoSets = collectInfoSets(def), strategies = enumerateStrategies(def, infoSets);
         var payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
+                var indices = profileIndices(infoSets, s1, s2);
                 return strategyProfilePayoffs(def.root, s1, s2).map(function (u, i) {
-                    return (typeof u == 'number') ? u : 'calcs.' + payoffCalcName(i + 1, s1, s2);
+                    return (typeof u == 'number') ? u : payoffCalcPath(i + 1, indices);
                 });
             });
         });

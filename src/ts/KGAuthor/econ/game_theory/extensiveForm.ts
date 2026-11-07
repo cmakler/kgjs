@@ -126,7 +126,6 @@ module KGAuthor {
     // A pure strategy: a complete contingent plan choosing one action at each of the player's info sets.
     export interface PureStrategy {
         name: string;
-        code: string;                           // letters identifying the strategy in calc names, e.g. UU
         actions: { [param: string]: string };   // childSelectParam -> chosen action
     }
 
@@ -144,21 +143,6 @@ module KGAuthor {
             return initials.indexOf(initial) == i;
         });
         return distinct ? initials : labels;
-    }
-
-    // A short code for each action: its first letter or digit, ignoring LaTeX commands (U^A -> U, \\text{In} -> I),
-    // unless two actions at the same info set would share it, in which case the action's letters and digits (UA, DA).
-    function actionCodes(actions: string[]): string[] {
-        const full = actions.map(function (action) {
-            return String(action).replace(/\\[a-zA-Z]+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-        });
-        const initials = full.map(function (f) {
-            return f.charAt(0);
-        });
-        const distinct = initials.every(function (initial, i) {
-            return initial != '' && initials.indexOf(initial) == i;
-        });
-        return distinct ? initials : full;
     }
 
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
@@ -180,16 +164,12 @@ module KGAuthor {
                 });
                 plans = extended;
             });
-            const codes = playerInfoSets.map(function (infoSet) {
-                return actionCodes(infoSet.actions);
-            });
             return plans.map(function (plan) {
-                let actions = {}, code = '';
+                let actions = {};
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
-                    code += codes[i][infoSet.actions.indexOf(plan[i])];
                 });
-                return {name: plan.join(separator), code: code, actions: actions};
+                return {name: plan.join(separator), actions: actions};
             });
         }
 
@@ -224,27 +204,49 @@ module KGAuthor {
         return evaluate(root);
     }
 
-    // Name of the calc holding a player's payoff from a strategy profile: payoff<player><s1 code><s2 code>, e.g. payoff1UUL
-    function payoffCalcName(player: number, s1: PureStrategy, s2: PureStrategy): string {
-        return 'payoff' + player + s1.code + s2.code;
+    // The childSelectParam values (1-based action indices) that select a strategy profile:
+    // player 1's info sets in the order they appear in the tree, then player 2's.
+    function profileIndices(infoSets: InfoSetsByPlayer, s1: PureStrategy, s2: PureStrategy): number[] {
+        let indices: number[] = [];
+        [s1, s2].forEach(function (s, p) {
+            infoSets[p + 1].forEach(function (infoSet: InfoSet) {
+                indices.push(infoSet.actions.indexOf(s.actions[infoSet.param]) + 1);
+            });
+        });
+        return indices;
     }
 
-    // Every strategy profile's payoffs as calcs, e.g. {payoff1UUL: ..., payoff2UUL: ..., ...}.
-    // Throws if two profiles would get the same name.
-    export function payoffCalcs(def: ExtensiveFormDefinition): { [name: string]: any } {
+    // Path to a player's payoff from a profile within calcs, e.g. calcs.payoffs.player1["1"]["2"]["1"]
+    function payoffCalcPath(player: number, indices: number[]): string {
+        return 'calcs.payoffs.player' + player + indices.map(function (index) {
+            return '["' + index + '"]';
+        }).join('');
+    }
 
-        const strategies = enumerateStrategies(def);
-        let calcs = {};
+    // Every strategy profile's payoffs, nested by the childSelectParam values that select it, so that
+    // calcs.payoffs.player1[params.a][params.b][params.c] is player 1's payoff when info sets a, b, c
+    // (player 1's in tree order, then player 2's) have those actions selected.
+    export function payoffCalcs(def: ExtensiveFormDefinition): { player1: any, player2: any } {
+
+        const infoSets = collectInfoSets(def),
+            strategies = enumerateStrategies(def, infoSets);
+        let calcs = {player1: {}, player2: {}};
 
         strategies[1].forEach(function (s1) {
             strategies[2].forEach(function (s2) {
-                const payoffs = strategyProfilePayoffs(def.root, s1, s2);
+                const payoffs = strategyProfilePayoffs(def.root, s1, s2),
+                    indices = profileIndices(infoSets, s1, s2);
                 [1, 2].forEach(function (player) {
-                    const name = payoffCalcName(player, s1, s2);
-                    if (calcs.hasOwnProperty(name)) {
-                        throw new Error(`Game tree: two strategy profiles would both define calcs.${name}; give actions at each info set distinct letters`);
-                    }
-                    calcs[name] = payoffs[player - 1];
+                    const value = payoffs[player - 1];
+                    let obj = calcs['player' + player];
+                    indices.forEach(function (index, i) {
+                        if (i == indices.length - 1) {
+                            obj[index] = (typeof value == 'number') ? value : value.toString();
+                        } else {
+                            obj[index] = obj[index] || {};
+                            obj = obj[index];
+                        }
+                    });
                 });
             });
         });
@@ -252,12 +254,9 @@ module KGAuthor {
         return calcs;
     }
 
-    // Add the payoff calcs for a game tree to the parsed graph definition.
+    // Add the payoff calcs for a game tree to the parsed graph definition as calcs.payoffs.
     function declarePayoffCalcs(def: ExtensiveFormDefinition, parsedData) {
-        const calcs = payoffCalcs(def);
-        Object.keys(calcs).forEach(function (name) {
-            parsedData.calcs[name] = (typeof calcs[name] == 'number') ? calcs[name] : calcs[name].toString();
-        });
+        parsedData.calcs.payoffs = payoffCalcs(def);
         return parsedData;
     }
 
@@ -270,8 +269,9 @@ module KGAuthor {
 
         const payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
+                const indices = profileIndices(infoSets, s1, s2);
                 return strategyProfilePayoffs(def.root, s1, s2).map(function (u, i) {
-                    return (typeof u == 'number') ? u : 'calcs.' + payoffCalcName(i + 1, s1, s2);
+                    return (typeof u == 'number') ? u : payoffCalcPath(i + 1, indices);
                 });
             });
         });
