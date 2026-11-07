@@ -65962,6 +65962,20 @@ var KGAuthor;
         });
         return distinct ? initials : labels;
     }
+    // A short code for each action: its first letter or digit, ignoring LaTeX commands (U^A -> U, \\text{In} -> I),
+    // unless two actions at the same info set would share it, in which case the action's letters and digits (UA, DA).
+    function actionCodes(actions) {
+        var full = actions.map(function (action) {
+            return String(action).replace(/\\[a-zA-Z]+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+        });
+        var initials = full.map(function (f) {
+            return f.charAt(0);
+        });
+        var distinct = initials.every(function (initial, i) {
+            return initial != '' && initials.indexOf(initial) == i;
+        });
+        return distinct ? initials : full;
+    }
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
     // The first info set reached varies slowest, so the centipede game gives TT, TP, PT, PP.
     // Strategy names join the chosen actions with def.strategySeparator (default "").
@@ -65979,12 +65993,16 @@ var KGAuthor;
                 });
                 plans = extended;
             });
+            var codes = playerInfoSets.map(function (infoSet) {
+                return actionCodes(infoSet.actions);
+            });
             return plans.map(function (plan) {
-                var actions = {};
+                var actions = {}, code = '';
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
+                    code += codes[i][infoSet.actions.indexOf(plan[i])];
                 });
-                return { name: plan.join(separator), actions: actions };
+                return { name: plan.join(separator), code: code, actions: actions };
             });
         }
         return { 1: strategiesFor(infoSets[1]), 2: strategiesFor(infoSets[2]) };
@@ -66016,12 +66034,47 @@ var KGAuthor;
         return evaluate(root);
     }
     KGAuthor.strategyProfilePayoffs = strategyProfilePayoffs;
+    // Name of the calc holding a player's payoff from a strategy profile: payoff<player><s1 code><s2 code>, e.g. payoff1UUL
+    function payoffCalcName(player, s1, s2) {
+        return 'payoff' + player + s1.code + s2.code;
+    }
+    // Every strategy profile's payoffs as calcs, e.g. {payoff1UUL: ..., payoff2UUL: ..., ...}.
+    // Throws if two profiles would get the same name.
+    function payoffCalcs(def) {
+        var strategies = enumerateStrategies(def);
+        var calcs = {};
+        strategies[1].forEach(function (s1) {
+            strategies[2].forEach(function (s2) {
+                var payoffs = strategyProfilePayoffs(def.root, s1, s2);
+                [1, 2].forEach(function (player) {
+                    var name = payoffCalcName(player, s1, s2);
+                    if (calcs.hasOwnProperty(name)) {
+                        throw new Error("Game tree: two strategy profiles would both define calcs." + name + "; give actions at each info set distinct letters");
+                    }
+                    calcs[name] = payoffs[player - 1];
+                });
+            });
+        });
+        return calcs;
+    }
+    KGAuthor.payoffCalcs = payoffCalcs;
+    // Add the payoff calcs for a game tree to the parsed graph definition.
+    function declarePayoffCalcs(def, parsedData) {
+        var calcs = payoffCalcs(def);
+        Object.keys(calcs).forEach(function (name) {
+            parsedData.calcs[name] = (typeof calcs[name] == 'number') ? calcs[name] : calcs[name].toString();
+        });
+        return parsedData;
+    }
     // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
+    // Payoffs that depend on params refer to the payoff calcs (see payoffCalcs); constant payoffs are numbers.
     function normalFormFromTree(def) {
         var infoSets = collectInfoSets(def), strategies = enumerateStrategies(def, infoSets);
         var payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
-                return strategyProfilePayoffs(def.root, s1, s2);
+                return strategyProfilePayoffs(def.root, s1, s2).map(function (u, i) {
+                    return (typeof u == 'number') ? u : 'calcs.' + payoffCalcName(i + 1, s1, s2);
+                });
             });
         });
         // the actions available at each info set, so a chosen action can be converted to its childSelectParam value
@@ -66081,6 +66134,10 @@ var KGAuthor;
             l.subObjects.push(new KGAuthor.GameMatrix(normalFormFromTree(def.gameTree)));
             return _this;
         }
+        GameMatrixFromTree.prototype.parseSelf = function (parsedData) {
+            parsedData = _super.prototype.parseSelf.call(this, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, parsedData);
+        };
         return GameMatrixFromTree;
     }(KGAuthor.Layout));
     KGAuthor.GameMatrixFromTree = GameMatrixFromTree;
@@ -66274,7 +66331,7 @@ var KGAuthor;
         }
         ExtensiveFormGame.prototype.parseSelf = function (parsedData) {
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         };
         return ExtensiveFormGame;
     }(KGAuthor.WideRectangleLayout));
@@ -66297,7 +66354,7 @@ var KGAuthor;
         }
         ExtensiveFormGamePlusSidebar.prototype.parseSelf = function (parsedData) {
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         };
         return ExtensiveFormGamePlusSidebar;
     }(KGAuthor.WideRectangleLayout));
@@ -66335,7 +66392,7 @@ var KGAuthor;
         }
         ExtensiveAndNormalForms.prototype.parseSelf = function (parsedData) {
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         };
         return ExtensiveAndNormalForms;
     }(KGAuthor.SquareLayout));
@@ -66373,7 +66430,7 @@ var KGAuthor;
         }
         ExtensiveAndNormalFormsPlusSidebar.prototype.parseSelf = function (parsedData) {
             parsedData = _super.prototype.parseSelf.call(this, parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         };
         return ExtensiveAndNormalFormsPlusSidebar;
     }(KGAuthor.SquareLayout));

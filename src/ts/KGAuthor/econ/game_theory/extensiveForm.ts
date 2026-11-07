@@ -126,6 +126,7 @@ module KGAuthor {
     // A pure strategy: a complete contingent plan choosing one action at each of the player's info sets.
     export interface PureStrategy {
         name: string;
+        code: string;                           // letters identifying the strategy in calc names, e.g. UU
         actions: { [param: string]: string };   // childSelectParam -> chosen action
     }
 
@@ -143,6 +144,21 @@ module KGAuthor {
             return initials.indexOf(initial) == i;
         });
         return distinct ? initials : labels;
+    }
+
+    // A short code for each action: its first letter or digit, ignoring LaTeX commands (U^A -> U, \\text{In} -> I),
+    // unless two actions at the same info set would share it, in which case the action's letters and digits (UA, DA).
+    function actionCodes(actions: string[]): string[] {
+        const full = actions.map(function (action) {
+            return String(action).replace(/\\[a-zA-Z]+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+        });
+        const initials = full.map(function (f) {
+            return f.charAt(0);
+        });
+        const distinct = initials.every(function (initial, i) {
+            return initial != '' && initials.indexOf(initial) == i;
+        });
+        return distinct ? initials : full;
     }
 
     // Enumerate each player's pure strategies as the Cartesian product of the actions at their info sets.
@@ -164,12 +180,16 @@ module KGAuthor {
                 });
                 plans = extended;
             });
+            const codes = playerInfoSets.map(function (infoSet) {
+                return actionCodes(infoSet.actions);
+            });
             return plans.map(function (plan) {
-                let actions = {};
+                let actions = {}, code = '';
                 playerInfoSets.forEach(function (infoSet, i) {
                     actions[infoSet.param] = plan[i];
+                    code += codes[i][infoSet.actions.indexOf(plan[i])];
                 });
-                return {name: plan.join(separator), actions: actions};
+                return {name: plan.join(separator), code: code, actions: actions};
             });
         }
 
@@ -204,7 +224,45 @@ module KGAuthor {
         return evaluate(root);
     }
 
+    // Name of the calc holding a player's payoff from a strategy profile: payoff<player><s1 code><s2 code>, e.g. payoff1UUL
+    function payoffCalcName(player: number, s1: PureStrategy, s2: PureStrategy): string {
+        return 'payoff' + player + s1.code + s2.code;
+    }
+
+    // Every strategy profile's payoffs as calcs, e.g. {payoff1UUL: ..., payoff2UUL: ..., ...}.
+    // Throws if two profiles would get the same name.
+    export function payoffCalcs(def: ExtensiveFormDefinition): { [name: string]: any } {
+
+        const strategies = enumerateStrategies(def);
+        let calcs = {};
+
+        strategies[1].forEach(function (s1) {
+            strategies[2].forEach(function (s2) {
+                const payoffs = strategyProfilePayoffs(def.root, s1, s2);
+                [1, 2].forEach(function (player) {
+                    const name = payoffCalcName(player, s1, s2);
+                    if (calcs.hasOwnProperty(name)) {
+                        throw new Error(`Game tree: two strategy profiles would both define calcs.${name}; give actions at each info set distinct letters`);
+                    }
+                    calcs[name] = payoffs[player - 1];
+                });
+            });
+        });
+
+        return calcs;
+    }
+
+    // Add the payoff calcs for a game tree to the parsed graph definition.
+    function declarePayoffCalcs(def: ExtensiveFormDefinition, parsedData) {
+        const calcs = payoffCalcs(def);
+        Object.keys(calcs).forEach(function (name) {
+            parsedData.calcs[name] = (typeof calcs[name] == 'number') ? calcs[name] : calcs[name].toString();
+        });
+        return parsedData;
+    }
+
     // Convert an extensive-form game into the normal-form definition used by KG.GameMatrix.
+    // Payoffs that depend on params refer to the payoff calcs (see payoffCalcs); constant payoffs are numbers.
     export function normalFormFromTree(def: ExtensiveFormDefinition): KG.GameMatrixDefinition {
 
         const infoSets = collectInfoSets(def),
@@ -212,7 +270,9 @@ module KGAuthor {
 
         const payoffs = strategies[1].map(function (s1) {
             return strategies[2].map(function (s2) {
-                return strategyProfilePayoffs(def.root, s1, s2);
+                return strategyProfilePayoffs(def.root, s1, s2).map(function (u, i) {
+                    return (typeof u == 'number') ? u : 'calcs.' + payoffCalcName(i + 1, s1, s2);
+                });
             });
         });
 
@@ -279,6 +339,11 @@ module KGAuthor {
 
             l.subObjects.push(new GameMatrix(normalFormFromTree(def.gameTree)));
 
+        }
+
+        parseSelf(parsedData) {
+            parsedData = super.parseSelf(parsedData);
+            return declarePayoffCalcs(this.def.gameTree, parsedData);
         }
 
     }
@@ -503,7 +568,7 @@ module KGAuthor {
 
         parseSelf(parsedData) {
             parsedData = super.parseSelf(parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         }
     }
 
@@ -529,7 +594,7 @@ module KGAuthor {
 
         parseSelf(parsedData) {
             parsedData = super.parseSelf(parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         }
     }
 
@@ -570,7 +635,7 @@ module KGAuthor {
 
         parseSelf(parsedData) {
             parsedData = super.parseSelf(parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         }
     }
 
@@ -612,7 +677,7 @@ module KGAuthor {
 
         parseSelf(parsedData) {
             parsedData = super.parseSelf(parsedData);
-            return declareSelectParams(this.def.gameTree, parsedData);
+            return declarePayoffCalcs(this.def.gameTree, declareSelectParams(this.def.gameTree, parsedData));
         }
     }
 
