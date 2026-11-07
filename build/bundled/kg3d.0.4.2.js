@@ -66088,6 +66088,23 @@ var KGAuthor;
     function labelValue(value) {
         return (typeof value == 'number') ? value : "${+(" + value + ").toPrecision(10)}";
     }
+    // Edge label for a child of a chance node, e.g. "Tough (0.3)".
+    // A label wrapped in backticks is only evaluated if it references params, calcs, etc.,
+    // so a constant probability (0.3 or "1/3") is computed now and written as static text.
+    function chanceEdgeLabel(action, prob, plainText) {
+        var separator = plainText ? " (" : "\\ (";
+        if (typeof prob == 'string' && /[a-zA-Z]/.test(prob)) {
+            return "`" + action + (plainText ? " (" : "\\\\ (") + labelValue(prob) + ")`";
+        }
+        var value = prob;
+        try {
+            value = +math.evaluate(String(prob)).toPrecision(10);
+        }
+        catch (err) {
+            // leave unparseable values as written
+        }
+        return action + separator + value + ")";
+    }
     // Convert an extensive-form game into a Tree definition drawn left to right:
     // the root is at the left, each move goes one column to the right, and terminal nodes are spaced evenly top to bottom.
     // Any node may override its position with coordinates, or its styling with any Node/Point attribute.
@@ -66165,12 +66182,12 @@ var KGAuthor;
                     if (!cd.hasOwnProperty('edgeLabel')) {
                         if (child.plainText) {
                             cd.edgeLabel = {
-                                text: (node.player == 'chance') ? "`" + child.action + " (" + labelValue(child.prob) + ")`" : child.action,
+                                text: (node.player == 'chance') ? chanceEdgeLabel(child.action, child.prob, true) : child.action,
                                 plainText: true
                             };
                         }
                         else {
-                            cd.edgeLabel = (node.player == 'chance') ? "`" + child.action + "\\\\ (" + labelValue(child.prob) + ")`" : child.action;
+                            cd.edgeLabel = (node.player == 'chance') ? chanceEdgeLabel(child.action, child.prob, false) : child.action;
                         }
                     }
                     return cd;
